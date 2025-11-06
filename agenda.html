@@ -461,50 +461,32 @@
       input.addEventListener('input', validateForm);
     });
     
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      
-      const formData = {
-        chatId: chatId,
-        threadId: threadId,
-        userId: userId,
-        date: document.getElementById('eventDate').value,
-        time: document.getElementById('eventTime').value,
-        description: document.getElementById('eventDesc').value.trim(),
-        location: document.getElementById('eventLocation').value.trim() || null,
-        language: userLang,
-        timestamp: new Date().toISOString()
-      };
-      
-      submitBtn.disabled = true;
-      submitBtn.classList.add('btn-loading');
-      const originalText = submitBtn.textContent;
-      submitBtn.innerHTML = t.btnLoading;
-      
-      try {
-        fetch(N8N_WEBHOOK_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(formData)
-        }).then(() => {
-          submitBtn.innerHTML = t.btnSuccess;
-          tg.showAlert(t.alertSuccess);
-          setTimeout(() => tg.close(), 1000);
-        }).catch(() => {
-          submitBtn.innerHTML = t.btnSuccess;
-          tg.showAlert(t.alertSuccess);
-          setTimeout(() => tg.close(), 1000);
-        });
-      } catch (error) {
-        submitBtn.innerHTML = t.btnSuccess;
-        tg.showAlert(t.alertSuccess);
-        setTimeout(() => tg.close(), 1000);
-      }
-    });
-    
-    cancelBtn.addEventListener('click', () => {
-      tg.close();
-    });
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  
+  const formData = {
+    chatId: chatId,
+    threadId: threadId,
+    userId: userId,
+    date: document.getElementById('eventDate').value,
+    time: document.getElementById('eventTime').value,
+    description: document.getElementById('eventDesc').value.trim(),
+    location: document.getElementById('eventLocation').value.trim() || null,
+    language: userLang,
+    timestamp: new Date().toISOString()
+  };
+  
+  submitBtn.disabled = true;
+  submitBtn.classList.add('btn-loading');
+  submitBtn.innerHTML = t.btnLoading;
+  
+  // ✅ Invia come web_app_data + chiudi
+  tg.sendData(JSON.stringify(formData));
+});
+
+cancelBtn.addEventListener('click', () => {
+  tg.close();
+});
   </script>
 </body>
 </html>
