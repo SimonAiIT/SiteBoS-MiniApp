@@ -38,18 +38,16 @@
         padding-right: 40px;
     }
     
-    /* NUOVA REGOLA: Stile per le opzioni del menu a tendina */
     option {
-      background: var(--bg-end); /* Usa un colore di sfondo solido per la lista */
+      background: var(--bg-end);
       color: var(--text-primary);
     }
 
-    /* NUOVA REGOLA: Rende l'icona del calendario più grande, bianca e cliccabile */
     input[type="date"]::-webkit-calendar-picker-indicator {
       cursor: pointer;
       opacity: 0.7;
-      filter: invert(1); /* Rende l'icona bianca */
-      transform: scale(1.2); /* Aumenta la dimensione del 20% */
+      filter: invert(1);
+      transform: scale(1.2);
       transition: opacity 0.2s ease;
     }
     input[type="date"]::-webkit-calendar-picker-indicator:hover {
@@ -233,6 +231,20 @@
         document.getElementById('cancelHint').textContent = t.cancelHint;
       }
       applyTranslations();
+
+      // NUOVO BLOCCO: Imposta la data minima per il campo della scadenza
+      function setMinDate() {
+        const dueDateInput = document.getElementById('noteDueDate');
+        const today = new Date();
+        const year = today.getFullYear();
+        // getMonth() è 0-based, quindi aggiungiamo 1. Aggiungiamo '0' se è un numero singolo.
+        const month = String(today.getMonth() + 1).padStart(2, '0');
+        const day = String(today.getDate()).padStart(2, '0');
+        
+        const minDate = `${year}-${month}-${day}`;
+        dueDateInput.setAttribute('min', minDate);
+      }
+      setMinDate();
       
       const form = document.getElementById('noteForm');
       const submitBtn = document.getElementById('submitBtn');
