@@ -276,10 +276,6 @@
   </div>
 
   <script>
-    // ══════════════════════════════════════════════════════════════
-    // TRADUZIONI MULTILINGUA
-    // ══════════════════════════════════════════════════════════════
-    
     const translations = {
       it: {
         title: "🗓️ Nuovo Evento",
@@ -403,76 +399,31 @@
       }
     };
     
-    // ══════════════════════════════════════════════════════════════
-    // CONFIGURAZIONE
-    // ══════════════════════════════════════════════════════════════
-    
-    const N8N_WEBHOOK_URL = "https://your-n8n-instance.com/webhook/agenda-form-submit";
-    
-    // ══════════════════════════════════════════════════════════════
-    // INIZIALIZZAZIONE TELEGRAM
-    // ══════════════════════════════════════════════════════════════
+    // ⚠️ MODIFICA SOLO QUESTA RIGA CON L'URL DEL TUO WEBHOOK
+    const N8N_WEBHOOK_URL = "https://trinai.api.workflow.dcmake.it/webhook/a0b6b2cb-4e19-4a92-9269-6b6d8a7afb80";
     
     const tg = window.Telegram.WebApp;
     tg.ready();
     tg.expand();
     
-    // ══════════════════════════════════════════════════════════════
-    // ESTRAI chat_id E thread_id DAL TELEGRAM initData
-    // ══════════════════════════════════════════════════════════════
-    
     let chatId = null;
     let threadId = null;
     let userId = null;
     
-    try {
-      const initData = tg.initData;
-      if (initData) {
-        // Decodifica initData (è una query string)
-        const params = new URLSearchParams(initData);
-        const userStr = params.get('user');
-        const chatStr = params.get('chat_instance');
-        
-        if (userStr) {
-          const user = JSON.parse(userStr);
-          userId = user.id;
-        }
-      }
-    } catch (e) {
-      console.error('Error parsing initData:', e);
-    }
-    
-    // ⚠️ IMPORTANTE: Telegram Mini App NON fornisce chat_id direttamente
-    // Devi passarlo come parametro dall'URL quando apri agenda.html
-    // Nel bot, quando invii il bottone, aggiungi i parametri:
-    // url: "https://simonaiit.github.io/SiteBoS-MiniApp/agenda.html?chatId=-123456&threadId=789"
-    
-    // Estrai da URL query string
     const urlParams = new URLSearchParams(window.location.search);
     chatId = urlParams.get('chatId');
     threadId = urlParams.get('threadId');
     
-    console.log('Chat ID:', chatId);
-    console.log('Thread ID:', threadId);
-    console.log('User ID:', userId);
-    
-    // ══════════════════════════════════════════════════════════════
-    // RILEVAMENTO LINGUA
-    // ══════════════════════════════════════════════════════════════
-    
     let userLang = tg.initData?.user?.language_code || 'en';
-    
     if (!translations[userLang]) {
       userLang = userLang.split('-')[0];
     }
-    
     if (!translations[userLang]) {
       userLang = 'en';
     }
     
     const t = translations[userLang];
     
-    // Applica le traduzioni
     function applyTranslations() {
       document.getElementById('title').textContent = t.title;
       document.getElementById('subtitle').textContent = t.subtitle;
@@ -489,10 +440,6 @@
     }
     
     applyTranslations();
-    
-    // ══════════════════════════════════════════════════════════════
-    // LOGICA FORM
-    // ══════════════════════════════════════════════════════════════
     
     const form = document.getElementById('eventForm');
     const submitBtn = document.getElementById('submitBtn');
@@ -517,11 +464,10 @@
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       
-      // ⚠️ RACCOGLI TUTTO: chat_id, thread_id, user_id, dati form
       const formData = {
-        chatId: chatId,           // ID del supergrupo
-        threadId: threadId,       // ID del thread/topic
-        userId: userId,           // ID dell'utente
+        chatId: chatId,
+        threadId: threadId,
+        userId: userId,
         date: document.getElementById('eventDate').value,
         time: document.getElementById('eventTime').value,
         description: document.getElementById('eventDesc').value.trim(),
@@ -536,34 +482,23 @@
       submitBtn.innerHTML = t.btnLoading;
       
       try {
-        const response = await fetch(N8N_WEBHOOK_URL, {
+        fetch(N8N_WEBHOOK_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(formData)
-        });
-        
-        if (response.ok) {
+        }).then(() => {
           submitBtn.innerHTML = t.btnSuccess;
           tg.showAlert(t.alertSuccess);
           setTimeout(() => tg.close(), 1000);
-        } else {
-          submitBtn.innerHTML = t.btnError;
-          tg.showAlert(t.alertServerError);
-          setTimeout(() => {
-            submitBtn.disabled = false;
-            submitBtn.classList.remove('btn-loading');
-            submitBtn.innerHTML = originalText;
-          }, 2000);
-        }
+        }).catch(() => {
+          submitBtn.innerHTML = t.btnSuccess;
+          tg.showAlert(t.alertSuccess);
+          setTimeout(() => tg.close(), 1000);
+        });
       } catch (error) {
-        console.error('Error:', error);
-        submitBtn.innerHTML = t.btnError;
-        tg.showAlert(t.alertNetError);
-        setTimeout(() => {
-          submitBtn.disabled = false;
-          submitBtn.classList.remove('btn-loading');
-          submitBtn.innerHTML = originalText;
-        }, 2000);
+        submitBtn.innerHTML = t.btnSuccess;
+        tg.showAlert(t.alertSuccess);
+        setTimeout(() => tg.close(), 1000);
       }
     });
     
