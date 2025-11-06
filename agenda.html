@@ -9,7 +9,7 @@
     :root {
       --bg-start: #4a5b8f; --bg-end: #2a3d5f; --text-primary: #ffffff;
       --text-secondary: rgba(255, 255, 255, 0.7); --border-color: rgba(255, 255, 255, 0.2);
-      --input-bg: rgba(255, 255, 255, 0.08); --accent-color: #5B6FED;
+      --input-bg: rgba(255, 255, 255, 0.08); --accent-color: #5B6FED; --error-color: #ff6b6b;
     }
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
@@ -26,6 +26,7 @@
       width: 100%; padding: 14px 16px; border: 1px solid var(--border-color);
       border-radius: 12px; background: var(--input-bg); backdrop-filter: blur(10px);
       color: var(--text-primary); font-size: 15px; font-family: inherit;
+      transition: border-color 0.3s, box-shadow 0.3s;
     }
     input[type="date"]::-webkit-calendar-picker-indicator,
     input[type="time"]::-webkit-calendar-picker-indicator {
@@ -58,6 +59,11 @@
     .row .form-group { flex: 1; }
     .hidden { display: none !important; }
     #customEndContainer { transition: all 0.4s ease-in-out; }
+    .hint { font-size: 12px; color: var(--error-color); margin-top: 6px; font-weight: 500; }
+    .invalid-field {
+      border-color: var(--error-color) !important;
+      box-shadow: 0 0 8px rgba(255, 107, 107, 0.5) !important;
+    }
   </style>
 </head>
 <body>
@@ -103,6 +109,7 @@
             <div class="form-group">
               <label for="eventEndTime" class="required"><span id="lblEndTime"></span></label>
               <input type="time" id="eventEndTime">
+              <div id="timeErrorHint" class="hint hidden"></div>
             </div>
         </div>
       </div>
@@ -130,7 +137,7 @@
         title: "🗓️ Nuovo Evento", subtitle: "Aggiungi un impegno alla tua agenda",
         lblTitle: "✏️ Titolo Evento", lblDate: "🗓️ Data Inizio", lblTime: "⏰ Ora Inizio",
         lblDuration: "⏱️ Durata", opt30: "30 min", opt60: "60 min", optCustom: "Altro",
-        lblEndDate: "🗓️ Data Fine", lblEndTime: "⏰ Ora Fine",
+        lblEndDate: "🗓️ Data Fine", lblEndTime: "⏰ Ora Fine", hintInvalidTime: "L'ora di fine non può precedere quella di inizio.",
         lblDesc: "📄 Descrizione / Note (Opzionale)", lblLocation: "📍 Luogo (Opzionale)",
         btnSubmit: "Aggiungi Evento", btnSuccess: "Aggiunto! Puoi chiudere.", cancelHint: "Per annullare, basta chiudere questa finestra."
       },
@@ -138,11 +145,42 @@
         title: "🗓️ New Event", subtitle: "Add a commitment to your agenda",
         lblTitle: "✏️ Event Title", lblDate: "🗓️ Start Date", lblTime: "⏰ Start Time",
         lblDuration: "⏱️ Duration", opt30: "30 min", opt60: "60 min", optCustom: "Other",
-        lblEndDate: "🗓️ End Date", lblEndTime: "⏰ End Time",
+        lblEndDate: "🗓️ End Date", lblEndTime: "⏰ End Time", hintInvalidTime: "End time cannot be earlier than start time.",
         lblDesc: "📄 Description / Notes (Optional)", lblLocation: "📍 Location (Optional)",
         btnSubmit: "Add Event", btnSuccess: "Added! You can close now.", cancelHint: "To cancel, just close this window."
       },
-      // ... Aggiungere altre 4 lingue se necessario
+      fr: {
+        title: "🗓️ Nouvel Événement", subtitle: "Ajouter un engagement à votre agenda",
+        lblTitle: "✏️ Titre de l'événement", lblDate: "🗓️ Date de début", lblTime: "⏰ Heure de début",
+        lblDuration: "⏱️ Durée", opt30: "30 min", opt60: "60 min", optCustom: "Autre",
+        lblEndDate: "🗓️ Date de fin", lblEndTime: "⏰ Heure de fin", hintInvalidTime: "L'heure de fin ne peut pas être antérieure à l'heure de début.",
+        lblDesc: "📄 Description / Notes (Optionnel)", lblLocation: "📍 Lieu (Optionnel)",
+        btnSubmit: "Ajouter l'événement", btnSuccess: "Ajouté ! Vous pouvez fermer.", cancelHint: "Pour annuler, fermez simplement cette fenêtre."
+      },
+      de: {
+        title: "🗓️ Neues Ereignis", subtitle: "Fügen Sie einen Termin zu Ihrem Kalender hinzu",
+        lblTitle: "✏️ Ereignistitel", lblDate: "🗓️ Startdatum", lblTime: "⏰ Startzeit",
+        lblDuration: "⏱️ Dauer", opt30: "30 Min.", opt60: "60 Min.", optCustom: "Andere",
+        lblEndDate: "🗓️ Enddatum", lblEndTime: "⏰ Endzeit", hintInvalidTime: "Die Endzeit darf nicht vor der Startzeit liegen.",
+        lblDesc: "📄 Beschreibung / Notizen (Optional)", lblLocation: "📍 Ort (Optional)",
+        btnSubmit: "Ereignis hinzufügen", btnSuccess: "Hinzugefügt! Du kannst schließen.", cancelHint: "Zum Abbrechen einfach dieses Fenster schließen."
+      },
+      es: {
+        title: "🗓️ Nuevo Evento", subtitle: "Añade un compromiso a tu agenda",
+        lblTitle: "✏️ Título del Evento", lblDate: "🗓️ Fecha de Inicio", lblTime: "⏰ Hora de Inicio",
+        lblDuration: "⏱️ Duración", opt30: "30 min", opt60: "60 min", optCustom: "Otro",
+        lblEndDate: "🗓️ Fecha de Fin", lblEndTime: "⏰ Hora de Fin", hintInvalidTime: "La hora de fin no puede ser anterior a la de inicio.",
+        lblDesc: "📄 Descripción / Notas (Opcional)", lblLocation: "📍 Ubicación (Opcional)",
+        btnSubmit: "Añadir Evento", btnSuccess: "¡Añadido! Ya puedes cerrar.", cancelHint: "Para cancelar, simplemente cierra esta ventana."
+      },
+      pt: {
+        title: "🗓️ Novo Evento", subtitle: "Adicione um compromisso à sua agenda",
+        lblTitle: "✏️ Título do Evento", lblDate: "🗓️ Data de Início", lblTime: "⏰ Hora de Início",
+        lblDuration: "⏱️ Duração", opt30: "30 min", opt60: "60 min", optCustom: "Outro",
+        lblEndDate: "🗓️ Data de Fim", lblEndTime: "⏰ Hora de Fim", hintInvalidTime: "A hora de término não pode ser anterior à hora de início.",
+        lblDesc: "📄 Descrição / Notas (Opcional)", lblLocation: "📍 Localização (Opcional)",
+        btnSubmit: "Adicionar Evento", btnSuccess: "Adicionado! Pode fechar agora.", cancelHint: "Para cancelar, basta fechar esta janela."
+      }
     };
     
     const N8N_WEBHOOK_URL = "https://trinai.api.workflow.dcmake.it/webhook/a0b6b2cb-4e19-4a92-9269-6b6d8a7afb80";
@@ -153,14 +191,15 @@
       
       const urlParams = new URLSearchParams(window.location.search);
       const lang = urlParams.get('lang') || 'it';
-      const t = translations[lang] || translations.it;
+      const t = translations[lang] || translations.en; // FALLBACK IN INGLESE
       
       const dom = {
           form: document.getElementById('eventForm'), submitBtn: document.getElementById('submitBtn'),
-          eventDate: document.getElementById('eventDate'), eventEndDate: document.getElementById('eventEndDate'),
+          eventDate: document.getElementById('eventDate'), eventTime: document.getElementById('eventTime'),
+          eventEndDate: document.getElementById('eventEndDate'), eventEndTime: document.getElementById('eventEndTime'),
           durationRadios: document.querySelectorAll('input[name="duration"]'),
           customEndContainer: document.getElementById('customEndContainer'),
-          eventEndTime: document.getElementById('eventEndTime')
+          timeErrorHint: document.getElementById('timeErrorHint')
       };
 
       function applyTranslations() {
@@ -170,76 +209,90 @@
         document.getElementById('lblTime').textContent = t.lblTime; document.getElementById('lblDuration').textContent = t.lblDuration;
         document.getElementById('opt30').textContent = t.opt30; document.getElementById('opt60').textContent = t.opt60;
         document.getElementById('optCustom').textContent = t.optCustom; document.getElementById('lblEndDate').textContent = t.lblEndDate;
-        document.getElementById('lblEndTime').textContent = t.lblEndTime; document.getElementById('lblDesc').textContent = t.lblDesc;
-        document.getElementById('lblLocation').textContent = t.lblLocation; dom.submitBtn.textContent = t.btnSubmit;
-        document.getElementById('cancelHint').textContent = t.cancelHint;
+        document.getElementById('lblEndTime').textContent = t.lblEndTime;
+        dom.timeErrorHint.textContent = t.hintInvalidTime;
+        document.getElementById('lblDesc').textContent = t.lblDesc; document.getElementById('lblLocation').textContent = t.lblLocation;
+        dom.submitBtn.textContent = t.btnSubmit; document.getElementById('cancelHint').textContent = t.cancelHint;
       }
       applyTranslations();
       
       function setMinDates() {
         const today = new Date().toISOString().split('T')[0];
-        dom.eventDate.setAttribute('min', today);
-        dom.eventDate.value = today; // Imposta oggi come default
-        dom.eventEndDate.setAttribute('min', today);
-        dom.eventEndDate.value = today;
+        dom.eventDate.setAttribute('min', today); dom.eventDate.value = today;
+        dom.eventEndDate.setAttribute('min', today); dom.eventEndDate.value = today;
       }
       setMinDates();
 
-      // Logica per aggiornare la data di fine in base a quella di inizio
-      dom.eventDate.addEventListener('change', () => {
-          dom.eventEndDate.setAttribute('min', dom.eventDate.value);
-          if (dom.eventEndDate.value < dom.eventDate.value) {
-              dom.eventEndDate.value = dom.eventDate.value;
+      function updateEndDateTimeConstraints() {
+          const startDate = dom.eventDate.value;
+          const startTime = dom.eventTime.value;
+          dom.eventEndDate.setAttribute('min', startDate);
+          if (dom.eventEndDate.value < startDate) dom.eventEndDate.value = startDate;
+          if (dom.eventEndDate.value === startDate && startTime) {
+              dom.eventEndTime.setAttribute('min', startTime);
+          } else {
+              dom.eventEndTime.removeAttribute('min');
           }
+      }
+      
+      function validateForm() {
+        const requiredInputs = dom.form.querySelectorAll('[required]');
+        let isAllFilled = Array.from(requiredInputs).every(input => input.value.trim() !== '');
+        
+        let isTimeValid = true;
+        dom.eventEndTime.classList.remove('invalid-field');
+        dom.timeErrorHint.classList.add('hidden');
+        
+        const isCustomDuration = document.querySelector('input[name="duration"]:checked').value === 'custom';
+        if (isCustomDuration && dom.eventDate.value === dom.eventEndDate.value && dom.eventTime.value && dom.eventEndTime.value && dom.eventEndTime.value < dom.eventTime.value) {
+            isTimeValid = false;
+            dom.eventEndTime.classList.add('invalid-field');
+            dom.timeErrorHint.classList.remove('hidden');
+        }
+        
+        dom.submitBtn.disabled = !isAllFilled || !isTimeValid;
+      }
+
+      ['change', 'input'].forEach(evt => {
+          dom.eventDate.addEventListener(evt, updateEndDateTimeConstraints);
+          dom.eventTime.addEventListener(evt, updateEndDateTimeConstraints);
+          dom.eventEndDate.addEventListener(evt, updateEndDateTimeConstraints);
+          dom.form.addEventListener(evt, validateForm);
       });
       
-      // Logica per mostrare/nascondere i campi custom
       dom.durationRadios.forEach(radio => {
           radio.addEventListener('change', () => {
               const isCustom = radio.value === 'custom';
               dom.customEndContainer.classList.toggle('hidden', !isCustom);
               dom.eventEndDate.toggleAttribute('required', isCustom);
               dom.eventEndTime.toggleAttribute('required', isCustom);
+              if (isCustom) updateEndDateTimeConstraints();
               validateForm();
           });
       });
-
-      function validateForm() {
-        const requiredInputs = dom.form.querySelectorAll('[required]');
-        const isValid = Array.from(requiredInputs).every(input => input.value.trim() !== '');
-        dom.submitBtn.disabled = !isValid;
-      }
-      dom.form.addEventListener('input', validateForm);
+      
       validateForm();
       
       dom.form.addEventListener('submit', (e) => {
         e.preventDefault();
-        
-        const startTimeIso = new Date(`${dom.eventDate.value}T${document.getElementById('eventTime').value}`).toISOString();
+        const startTimeIso = new Date(`${dom.eventDate.value}T${dom.eventTime.value}`).toISOString();
         const durationChoice = document.querySelector('input[name="duration"]:checked').value;
-
-        let endTimeIso = null;
-        let durationInMinutes = null;
-
+        let endTimeIso = null; let durationInMinutes = null;
         if (durationChoice === 'custom') {
             endTimeIso = new Date(`${dom.eventEndDate.value}T${dom.eventEndTime.value}`).toISOString();
         } else {
             durationInMinutes = parseInt(durationChoice);
         }
-
         const eventData = {
           type: 'APPOINTMENT_SUBMISSION',
           payload: {
               title: document.getElementById('eventTitle').value.trim(),
-              start_time: startTimeIso,
-              end_time: endTimeIso,
-              duration: durationInMinutes,
+              start_time: startTimeIso, end_time: endTimeIso, duration: durationInMinutes,
               description: document.getElementById('eventDesc').value.trim() || null,
               location: document.getElementById('eventLocation').value.trim() || null,
           },
           context: { chatId: urlParams.get('chatId'), threadId: urlParams.get('threadId'), language: lang }
         };
-
         fetch(N8N_WEBHOOK_URL, {
             method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(eventData)
         }).finally(() => {
@@ -247,7 +300,6 @@
             setTimeout(() => { tg.close(); }, 1200);
         });
       });
-
     } catch (error) { console.error("Errore nell'inizializzazione dell'app:", error); }
   </script>
 </body>
