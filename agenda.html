@@ -17,6 +17,7 @@
       background: linear-gradient(135deg, #4a5b8f 0%, #3d4f7a 50%, #2a3d5f 100%);
       color: #ffffff;
       padding: 20px;
+      padding-bottom: 100px;
       line-height: 1.5;
       min-height: 100vh;
       position: relative;
@@ -129,6 +130,79 @@
       cursor: pointer;
     }
     
+    /* BOTTONE DI INVIO */
+    .button-container {
+      margin-top: 32px;
+      display: flex;
+      gap: 12px;
+    }
+    
+    button {
+      flex: 1;
+      padding: 14px 24px;
+      border: none;
+      border-radius: 12px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      font-family: inherit;
+    }
+    
+    #submitBtn {
+      background: linear-gradient(135deg, #5B6FED 0%, #7B8FF5 100%);
+      color: #ffffff;
+      box-shadow: 0 8px 24px rgba(91, 111, 237, 0.4);
+    }
+    
+    #submitBtn:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 32px rgba(91, 111, 237, 0.6);
+    }
+    
+    #submitBtn:active:not(:disabled) {
+      transform: translateY(0);
+    }
+    
+    #submitBtn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    
+    #cancelBtn {
+      background: rgba(255, 255, 255, 0.1);
+      color: #ffffff;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    
+    #cancelBtn:hover {
+      background: rgba(255, 255, 255, 0.15);
+      border-color: rgba(255, 255, 255, 0.3);
+    }
+    
+    /* Loading state */
+    .btn-loading {
+      position: relative;
+    }
+    
+    .btn-loading::after {
+      content: '';
+      position: absolute;
+      width: 16px;
+      height: 16px;
+      margin: auto;
+      border: 2px solid transparent;
+      border-radius: 50%;
+      border-top-color: #ffffff;
+      animation: spin 0.8s linear infinite;
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    
     /* Animazione di entrata */
     .form-group {
       animation: slideIn 0.5s ease-out forwards;
@@ -138,6 +212,11 @@
     .form-group:nth-child(2) { animation-delay: 0.2s; }
     .form-group:nth-child(3) { animation-delay: 0.3s; }
     .form-group:nth-child(4) { animation-delay: 0.4s; }
+    
+    .button-container {
+      animation: slideIn 0.5s ease-out 0.5s forwards;
+      opacity: 0;
+    }
     
     @keyframes slideIn {
       from {
@@ -156,9 +235,13 @@
         font-size: 24px;
       }
       
-      input, textarea {
+      input, textarea, button {
         padding: 12px 14px;
         font-size: 14px;
+      }
+      
+      .button-container {
+        flex-direction: column;
       }
     }
   </style>
@@ -192,6 +275,16 @@
           placeholder="Via Roma 10, Milano">
         <div class="hint">Opzionale</div>
       </div>
+      
+      <!-- BOTTONI -->
+      <div class="button-container">
+        <button type="submit" id="submitBtn" disabled>
+          ✅ Conferma Evento
+        </button>
+        <button type="button" id="cancelBtn">
+          ❌ Annulla
+        </button>
+      </div>
     </form>
   </div>
 
@@ -214,14 +307,13 @@
     tg.expand();
     
     // ══════════════════════════════════════════════════════════════
-    // CONFIGURA MAIN BUTTON
+    // RIFERIMENTI AI BOTTONI
     // ══════════════════════════════════════════════════════════════
     
-    tg.MainButton.setText("✅ Conferma Evento");
-    tg.MainButton.color = '#5B6FED';
-    tg.MainButton.textColor = '#ffffff';
-    tg.MainButton.show();
-    tg.MainButton.disable();
+    const form = document.getElementById('eventForm');
+    const submitBtn = document.getElementById('submitBtn');
+    const cancelBtn = document.getElementById('cancelBtn');
+    const requiredInputs = form.querySelectorAll('[required]');
     
     // ══════════════════════════════════════════════════════════════
     // IMPOSTA DATA MINIMA A OGGI
@@ -235,18 +327,15 @@
     // VALIDAZIONE REAL-TIME
     // ══════════════════════════════════════════════════════════════
     
-    const form = document.getElementById('eventForm');
-    const requiredInputs = form.querySelectorAll('[required]');
-    
     function validateForm() {
       const isValid = Array.from(requiredInputs).every(
         input => input.value.trim() !== ''
       );
       
       if (isValid) {
-        tg.MainButton.enable();
+        submitBtn.disabled = false;
       } else {
-        tg.MainButton.disable();
+        submitBtn.disabled = true;
       }
     }
     
@@ -255,10 +344,12 @@
     });
     
     // ══════════════════════════════════════════════════════════════
-    // GESTISCI IL CLICK DEL BOTTONE
+    // GESTISCI IL SUBMIT
     // ══════════════════════════════════════════════════════════════
     
-    tg.MainButton.onClick(async () => {
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
       // Raccogli i dati dal form
       const formData = {
         date: document.getElementById('eventDate').value,
@@ -269,7 +360,9 @@
       };
       
       // Mostra loading
-      tg.MainButton.showProgress();
+      submitBtn.disabled = true;
+      submitBtn.classList.add('btn-loading');
+      submitBtn.innerHTML = '⏳ Invio...';
       
       try {
         // Invia i dati al webhook n8n
@@ -281,29 +374,47 @@
           body: JSON.stringify(formData)
         });
         
-        tg.MainButton.hideProgress();
-        
         if (response.ok) {
           // Successo!
+          submitBtn.innerHTML = '✅ Salvato!';
           tg.showAlert('✅ Evento salvato con successo!');
-          tg.close();
+          
+          // Chiudi dopo 1 secondo
+          setTimeout(() => {
+            tg.close();
+          }, 1000);
         } else {
           // Errore dal server
+          submitBtn.innerHTML = '❌ Errore';
           tg.showAlert('❌ Errore del server. Riprova.');
+          
+          // Reset bottone dopo 2 secondi
+          setTimeout(() => {
+            submitBtn.disabled = false;
+            submitBtn.classList.remove('btn-loading');
+            submitBtn.innerHTML = '✅ Conferma Evento';
+          }, 2000);
         }
       } catch (error) {
         // Errore di rete
-        tg.MainButton.hideProgress();
         console.error('Errore:', error);
+        submitBtn.innerHTML = '❌ Errore connessione';
         tg.showAlert('❌ Errore di connessione. Riprova.');
+        
+        // Reset bottone dopo 2 secondi
+        setTimeout(() => {
+          submitBtn.disabled = false;
+          submitBtn.classList.remove('btn-loading');
+          submitBtn.innerHTML = '✅ Conferma Evento';
+        }, 2000);
       }
     });
     
     // ══════════════════════════════════════════════════════════════
-    // PULSANTE BACK
+    // BOTTONE ANNULLA
     // ══════════════════════════════════════════════════════════════
     
-    tg.BackButton.onClick(() => {
+    cancelBtn.addEventListener('click', () => {
       tg.close();
     });
   </script>
