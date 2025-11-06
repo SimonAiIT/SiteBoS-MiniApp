@@ -13,73 +13,160 @@
     }
     
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      background-color: var(--tg-theme-bg-color, #ffffff);
-      color: var(--tg-theme-text-color, #000000);
+      font-family: 'Segoe UI', 'Helvetica Neue', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: linear-gradient(135deg, #4a5b8f 0%, #3d4f7a 50%, #2a3d5f 100%);
+      color: #ffffff;
       padding: 20px;
       line-height: 1.5;
+      min-height: 100vh;
+      position: relative;
+      overflow-x: hidden;
+    }
+    
+    /* Effetto background con pattern */
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800"><path d="M0,400 Q300,200 600,400 T1200,400" stroke="rgba(255,255,255,0.1)" stroke-width="2" fill="none"/><path d="M0,500 Q300,300 600,500 T1200,500" stroke="rgba(255,255,255,0.08)" stroke-width="2" fill="none"/></svg>') no-repeat center;
+      background-size: cover;
+      pointer-events: none;
+      z-index: -1;
     }
     
     .container {
       max-width: 500px;
       margin: 0 auto;
+      position: relative;
+      z-index: 1;
     }
     
     h1 {
-      font-size: 20px;
-      margin-bottom: 24px;
-      color: var(--tg-theme-text-color);
+      font-size: 28px;
+      margin-bottom: 8px;
+      color: #ffffff;
+      font-weight: 600;
+      text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    }
+    
+    .subtitle {
+      font-size: 14px;
+      color: rgba(255, 255, 255, 0.7);
+      margin-bottom: 32px;
+      font-weight: 300;
     }
     
     .form-group {
       margin-bottom: 20px;
+      position: relative;
     }
     
     label {
       display: block;
-      margin-bottom: 8px;
-      color: var(--tg-theme-hint-color, #999);
+      margin-bottom: 10px;
+      color: rgba(255, 255, 255, 0.9);
       font-size: 14px;
       font-weight: 500;
+      letter-spacing: 0.3px;
     }
     
     input, textarea {
       width: 100%;
-      padding: 12px 16px;
-      border: 1px solid var(--tg-theme-hint-color, #ddd);
-      border-radius: 10px;
-      background: var(--tg-theme-secondary-bg-color, #f5f5f5);
-      color: var(--tg-theme-text-color, #000);
-      font-size: 16px;
+      padding: 14px 16px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(10px);
+      color: #ffffff;
+      font-size: 15px;
       font-family: inherit;
-      transition: border-color 0.2s;
+      transition: all 0.3s ease;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    }
+    
+    input::placeholder, textarea::placeholder {
+      color: rgba(255, 255, 255, 0.5);
     }
     
     input:focus, textarea:focus {
       outline: none;
-      border-color: var(--tg-theme-button-color, #3390ec);
+      border-color: rgba(255, 255, 255, 0.5);
+      background: rgba(255, 255, 255, 0.12);
+      box-shadow: 0 8px 32px rgba(255, 255, 255, 0.1);
+      transform: translateY(-2px);
     }
     
     textarea {
       resize: vertical;
-      min-height: 80px;
+      min-height: 90px;
+      font-family: inherit;
     }
     
     .hint {
       font-size: 12px;
-      color: var(--tg-theme-hint-color, #999);
-      margin-top: 4px;
+      color: rgba(255, 255, 255, 0.6);
+      margin-top: 6px;
+      font-weight: 300;
     }
     
     .required::after {
       content: " *";
-      color: #ff3b30;
+      color: #ff6b6b;
+    }
+    
+    /* Input date e time styling */
+    input[type="date"],
+    input[type="time"] {
+      position: relative;
+    }
+    
+    input[type="date"]::-webkit-calendar-picker-indicator,
+    input[type="time"]::-webkit-calendar-picker-indicator {
+      filter: invert(1) brightness(1.2);
+      cursor: pointer;
+    }
+    
+    /* Animazione di entrata */
+    .form-group {
+      animation: slideIn 0.5s ease-out forwards;
+    }
+    
+    .form-group:nth-child(1) { animation-delay: 0.1s; }
+    .form-group:nth-child(2) { animation-delay: 0.2s; }
+    .form-group:nth-child(3) { animation-delay: 0.3s; }
+    .form-group:nth-child(4) { animation-delay: 0.4s; }
+    
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    /* Responsive */
+    @media (max-width: 480px) {
+      h1 {
+        font-size: 24px;
+      }
+      
+      input, textarea {
+        padding: 12px 14px;
+        font-size: 14px;
+      }
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>🗓️ Nuovo Evento in Agenda</h1>
+    <h1>🗓️ Nuovo Evento</h1>
+    <p class="subtitle">Aggiungi un evento al tuo calendario</p>
     
     <form id="eventForm">
       <div class="form-group">
@@ -95,81 +182,127 @@
       <div class="form-group">
         <label for="eventDesc" class="required">📝 Descrizione</label>
         <textarea id="eventDesc" required 
-          placeholder="Es: Call con Mario Rossi per revisione progetto"></textarea>
-        <div class="hint">Cerca di includere chi, cosa e dove</div>
+          placeholder="Call con Mario Rossi per revisione progetto X"></textarea>
+        <div class="hint">Includi chi, cosa, quando e dove</div>
       </div>
       
       <div class="form-group">
         <label for="eventLocation">📍 Luogo</label>
         <input type="text" id="eventLocation" 
-          placeholder="Es: Via Roma 10, Milano">
-        <div class="hint">Opzionale - utile per eventi in presenza</div>
+          placeholder="Via Roma 10, Milano">
+        <div class="hint">Opzionale</div>
       </div>
     </form>
   </div>
 
   <script>
+    // ══════════════════════════════════════════════════════════════
+    // CONFIGURAZIONE - MODIFICA SOLO QUESTO
+    // ══════════════════════════════════════════════════════════════
+    
+    // ⚠️ SOSTITUISCI QUESTO CON L'URL DEL TUO WEBHOOK N8N
+    const N8N_WEBHOOK_URL = "https://your-n8n-instance.com/webhook/agenda-form";
+    
+    // ══════════════════════════════════════════════════════════════
+    // INIZIALIZZAZIONE TELEGRAM
+    // ══════════════════════════════════════════════════════════════
+    
     const tg = window.Telegram.WebApp;
     
-    // Inizializza la Mini App
+    // Inizializza
     tg.ready();
     tg.expand();
     
-    // Imposta il tema
-    document.body.style.backgroundColor = tg.themeParams.bg_color || '#ffffff';
+    // ══════════════════════════════════════════════════════════════
+    // CONFIGURA MAIN BUTTON
+    // ══════════════════════════════════════════════════════════════
     
-    // Configura il MainButton
     tg.MainButton.setText("✅ Conferma Evento");
-    tg.MainButton.color = tg.themeParams.button_color || '#3390ec';
-    tg.MainButton.textColor = tg.themeParams.button_text_color || '#ffffff';
+    tg.MainButton.color = '#5B6FED';
+    tg.MainButton.textColor = '#ffffff';
+    tg.MainButton.show();
+    tg.MainButton.disable();
     
-    // Imposta la data minima a oggi
+    // ══════════════════════════════════════════════════════════════
+    // IMPOSTA DATA MINIMA A OGGI
+    // ══════════════════════════════════════════════════════════════
+    
     const today = new Date().toISOString().split('T')[0];
     document.getElementById('eventDate').min = today;
     document.getElementById('eventDate').value = today;
     
-    // Validazione real-time
+    // ══════════════════════════════════════════════════════════════
+    // VALIDAZIONE REAL-TIME
+    // ══════════════════════════════════════════════════════════════
+    
     const form = document.getElementById('eventForm');
     const requiredInputs = form.querySelectorAll('[required]');
     
     function validateForm() {
-      const isValid = Array.from(requiredInputs).every(input => input.value.trim() !== '');
+      const isValid = Array.from(requiredInputs).every(
+        input => input.value.trim() !== ''
+      );
       
       if (isValid) {
-        tg.MainButton.show();
         tg.MainButton.enable();
       } else {
         tg.MainButton.disable();
       }
     }
     
-    // Aggiungi listener a tutti i campi
     requiredInputs.forEach(input => {
       input.addEventListener('input', validateForm);
     });
     
-    // Validazione iniziale
-    validateForm();
+    // ══════════════════════════════════════════════════════════════
+    // GESTISCI IL CLICK DEL BOTTONE
+    // ══════════════════════════════════════════════════════════════
     
-    // Gestisci il click del MainButton
-    tg.MainButton.onClick(() => {
-      const data = {
+    tg.MainButton.onClick(async () => {
+      // Raccogli i dati dal form
+      const formData = {
         date: document.getElementById('eventDate').value,
         time: document.getElementById('eventTime').value,
         description: document.getElementById('eventDesc').value.trim(),
-        location: document.getElementById('eventLocation').value.trim() || null
+        location: document.getElementById('eventLocation').value.trim() || null,
+        userId: tg.initData
       };
       
-      // Mostra feedback
+      // Mostra loading
       tg.MainButton.showProgress();
       
-      // Invia dati al bot
-      tg.sendData(JSON.stringify(data));
-      
-      // La Mini App si chiuderà automaticamente dopo sendData
+      try {
+        // Invia i dati al webhook n8n
+        const response = await fetch(N8N_WEBHOOK_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(formData)
+        });
+        
+        tg.MainButton.hideProgress();
+        
+        if (response.ok) {
+          // Successo!
+          tg.showAlert('✅ Evento salvato con successo!');
+          tg.close();
+        } else {
+          // Errore dal server
+          tg.showAlert('❌ Errore del server. Riprova.');
+        }
+      } catch (error) {
+        // Errore di rete
+        tg.MainButton.hideProgress();
+        console.error('Errore:', error);
+        tg.showAlert('❌ Errore di connessione. Riprova.');
+      }
     });
     
-    // Gestisci il pulsante back di Telegram
+    // ══════════════════════════════════════════════════════════════
+    // PULSANTE BACK
+    // ══════════════════════════════════════════════════════════════
+    
     tg.BackButton.onClick(() => {
       tg.close();
     });
