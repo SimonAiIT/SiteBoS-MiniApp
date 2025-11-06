@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nuovo Evento Agenda</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background-color: var(--tg-theme-bg-color, #ffffff);
+      color: var(--tg-theme-text-color, #000000);
+      padding: 20px;
+      line-height: 1.5;
+    }
+    
+    .container {
+      max-width: 500px;
+      margin: 0 auto;
+    }
+    
+    h1 {
+      font-size: 20px;
+      margin-bottom: 24px;
+      color: var(--tg-theme-text-color);
+    }
+    
+    .form-group {
+      margin-bottom: 20px;
+    }
+    
+    label {
+      display: block;
+      margin-bottom: 8px;
+      color: var(--tg-theme-hint-color, #999);
+      font-size: 14px;
+      font-weight: 500;
+    }
+    
+    input, textarea {
+      width: 100%;
+      padding: 12px 16px;
+      border: 1px solid var(--tg-theme-hint-color, #ddd);
+      border-radius: 10px;
+      background: var(--tg-theme-secondary-bg-color, #f5f5f5);
+      color: var(--tg-theme-text-color, #000);
+      font-size: 16px;
+      font-family: inherit;
+      transition: border-color 0.2s;
+    }
+    
+    input:focus, textarea:focus {
+      outline: none;
+      border-color: var(--tg-theme-button-color, #3390ec);
+    }
+    
+    textarea {
+      resize: vertical;
+      min-height: 80px;
+    }
+    
+    .hint {
+      font-size: 12px;
+      color: var(--tg-theme-hint-color, #999);
+      margin-top: 4px;
+    }
+    
+    .required::after {
+      content: " *";
+      color: #ff3b30;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🗓️ Nuovo Evento in Agenda</h1>
+    
+    <form id="eventForm">
+      <div class="form-group">
+        <label for="eventDate" class="required">📅 Data</label>
+        <input type="date" id="eventDate" required>
+      </div>
+      
+      <div class="form-group">
+        <label for="eventTime" class="required">🕐 Ora</label>
+        <input type="time" id="eventTime" required>
+      </div>
+      
+      <div class="form-group">
+        <label for="eventDesc" class="required">📝 Descrizione</label>
+        <textarea id="eventDesc" required 
+          placeholder="Es: Call con Mario Rossi per revisione progetto"></textarea>
+        <div class="hint">Cerca di includere chi, cosa e dove</div>
+      </div>
+      
+      <div class="form-group">
+        <label for="eventLocation">📍 Luogo</label>
+        <input type="text" id="eventLocation" 
+          placeholder="Es: Via Roma 10, Milano">
+        <div class="hint">Opzionale - utile per eventi in presenza</div>
+      </div>
+    </form>
+  </div>
+
+  <script>
+    const tg = window.Telegram.WebApp;
+    
+    // Inizializza la Mini App
+    tg.ready();
+    tg.expand();
+    
+    // Imposta il tema
+    document.body.style.backgroundColor = tg.themeParams.bg_color || '#ffffff';
+    
+    // Configura il MainButton
+    tg.MainButton.setText("✅ Conferma Evento");
+    tg.MainButton.color = tg.themeParams.button_color || '#3390ec';
+    tg.MainButton.textColor = tg.themeParams.button_text_color || '#ffffff';
+    
+    // Imposta la data minima a oggi
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('eventDate').min = today;
+    document.getElementById('eventDate').value = today;
+    
+    // Validazione real-time
+    const form = document.getElementById('eventForm');
+    const requiredInputs = form.querySelectorAll('[required]');
+    
+    function validateForm() {
+      const isValid = Array.from(requiredInputs).every(input => input.value.trim() !== '');
+      
+      if (isValid) {
+        tg.MainButton.show();
+        tg.MainButton.enable();
+      } else {
+        tg.MainButton.disable();
+      }
+    }
+    
+    // Aggiungi listener a tutti i campi
+    requiredInputs.forEach(input => {
+      input.addEventListener('input', validateForm);
+    });
+    
+    // Validazione iniziale
+    validateForm();
+    
+    // Gestisci il click del MainButton
+    tg.MainButton.onClick(() => {
+      const data = {
+        date: document.getElementById('eventDate').value,
+        time: document.getElementById('eventTime').value,
+        description: document.getElementById('eventDesc').value.trim(),
+        location: document.getElementById('eventLocation').value.trim() || null
+      };
+      
+      // Mostra feedback
+      tg.MainButton.showProgress();
+      
+      // Invia dati al bot
+      tg.sendData(JSON.stringify(data));
+      
+      // La Mini App si chiuderà automaticamente dopo sendData
+    });
+    
+    // Gestisci il pulsante back di Telegram
+    tg.BackButton.onClick(() => {
+      tg.close();
+    });
+  </script>
+</body>
+</html>
