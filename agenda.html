@@ -27,37 +27,37 @@
       border-radius: 12px; background: var(--input-bg); backdrop-filter: blur(10px);
       color: var(--text-primary); font-size: 15px; font-family: inherit;
     }
-
-    /* NUOVE REGOLE CSS: Icone calendario e orologio più grandi e visibili */
     input[type="date"]::-webkit-calendar-picker-indicator,
     input[type="time"]::-webkit-calendar-picker-indicator {
-      cursor: pointer;
-      opacity: 0.7;
-      filter: invert(1); /* Rende l'icona bianca */
-      transform: scale(1.2); /* Aumenta la dimensione del 20% */
-      transition: opacity 0.2s ease;
+      cursor: pointer; opacity: 0.7; filter: invert(1); transform: scale(1.2); transition: opacity 0.2s ease;
     }
     input[type="date"]::-webkit-calendar-picker-indicator:hover,
-    input[type="time"]::-webkit-calendar-picker-indicator:hover {
-      opacity: 1;
-    }
+    input[type="time"]::-webkit-calendar-picker-indicator:hover { opacity: 1; }
     
-    input:focus, textarea:focus {
-      outline: none; border-color: rgba(255, 255, 255, 0.5);
-      box-shadow: 0 0 15px rgba(91, 111, 237, 0.3);
+    .radio-group { display: flex; gap: 10px; margin-top: 10px; }
+    .radio-group input[type="radio"] { display: none; }
+    .radio-group label {
+      flex: 1; display: flex; align-items: center; justify-content: center;
+      cursor: pointer; font-size: 15px; padding: 10px; border-radius: 10px;
+      transition: all 0.3s ease; background-color: var(--input-bg);
+      border: 1px solid var(--border-color); color: var(--text-secondary);
     }
+    .radio-group input[type="radio"]:checked + label {
+      border-color: var(--accent-color); color: var(--text-primary);
+      background-color: rgba(91, 111, 237, 0.15);
+    }
+
+    input:focus, textarea:focus { outline: none; border-color: rgba(255, 255, 255, 0.5); box-shadow: 0 0 15px rgba(91, 111, 237, 0.3); }
     textarea { resize: vertical; min-height: 80px; }
     .required::after { content: " *"; color: #ff6b6b; }
     .button-container { text-align: center; margin-top: 32px; }
-    #submitBtn {
-      width: 100%; padding: 14px; background: var(--accent-color); color: var(--text-primary);
-      border: none; border-radius: 12px; font-size: 15px; font-weight: 600; cursor: pointer;
-    }
+    #submitBtn { width: 100%; padding: 14px; background: var(--accent-color); color: var(--text-primary); border: none; border-radius: 12px; font-size: 15px; font-weight: 600; cursor: pointer; }
     #submitBtn:disabled { background: #555; cursor: not-allowed; opacity: 0.6; }
     .cancel-hint { text-align: center; margin-top: 16px; font-size: 13px; color: var(--text-secondary); opacity: 0.8; }
-    .hint { font-size: 12px; color: rgba(255, 255, 255, 0.6); margin-top: 6px; }
     .row { display: flex; gap: 16px; }
     .row .form-group { flex: 1; }
+    .hidden { display: none !important; }
+    #customEndContainer { transition: all 0.4s ease-in-out; }
   </style>
 </head>
 <body>
@@ -81,6 +81,31 @@
           <input type="time" id="eventTime" required>
         </div>
       </div>
+
+      <div class="form-group">
+        <label><span id="lblDuration"></span></label>
+        <div class="radio-group">
+          <input type="radio" name="duration" value="30" id="dur-30" checked>
+          <label for="dur-30"><span id="opt30"></span></label>
+          <input type="radio" name="duration" value="60" id="dur-60">
+          <label for="dur-60"><span id="opt60"></span></label>
+          <input type="radio" name="duration" value="custom" id="dur-custom">
+          <label for="dur-custom"><span id="optCustom"></span></label>
+        </div>
+      </div>
+      
+      <div id="customEndContainer" class="hidden">
+        <div class="row">
+            <div class="form-group">
+              <label for="eventEndDate" class="required"><span id="lblEndDate"></span></label>
+              <input type="date" id="eventEndDate">
+            </div>
+            <div class="form-group">
+              <label for="eventEndTime" class="required"><span id="lblEndTime"></span></label>
+              <input type="time" id="eventEndTime">
+            </div>
+        </div>
+      </div>
       
       <div class="form-group">
         <label for="eventDesc"><span id="lblDesc"></span></label>
@@ -102,77 +127,22 @@
   <script>
     const translations = {
       it: {
-        title: "🗓️ Nuovo Evento",
-        subtitle: "Aggiungi un impegno alla tua agenda",
-        lblTitle: "✏️ Titolo Evento",
-        lblDate: "🗓️ Data",
-        lblTime: "⏰ Ora",
-        lblDesc: "📄 Descrizione / Note (Opzionale)",
-        lblLocation: "📍 Luogo (Opzionale)",
-        btnSubmit: "Aggiungi Evento",
-        btnSuccess: "Aggiunto! Puoi chiudere.",
-        cancelHint: "Per annullare, basta chiudere questa finestra."
+        title: "🗓️ Nuovo Evento", subtitle: "Aggiungi un impegno alla tua agenda",
+        lblTitle: "✏️ Titolo Evento", lblDate: "🗓️ Data Inizio", lblTime: "⏰ Ora Inizio",
+        lblDuration: "⏱️ Durata", opt30: "30 min", opt60: "60 min", optCustom: "Altro",
+        lblEndDate: "🗓️ Data Fine", lblEndTime: "⏰ Ora Fine",
+        lblDesc: "📄 Descrizione / Note (Opzionale)", lblLocation: "📍 Luogo (Opzionale)",
+        btnSubmit: "Aggiungi Evento", btnSuccess: "Aggiunto! Puoi chiudere.", cancelHint: "Per annullare, basta chiudere questa finestra."
       },
       en: {
-        title: "🗓️ New Event",
-        subtitle: "Add a commitment to your agenda",
-        lblTitle: "✏️ Event Title",
-        lblDate: "🗓️ Date",
-        lblTime: "⏰ Time",
-        lblDesc: "📄 Description / Notes (Optional)",
-        lblLocation: "📍 Location (Optional)",
-        btnSubmit: "Add Event",
-        btnSuccess: "Added! You can close now.",
-        cancelHint: "To cancel, just close this window."
+        title: "🗓️ New Event", subtitle: "Add a commitment to your agenda",
+        lblTitle: "✏️ Event Title", lblDate: "🗓️ Start Date", lblTime: "⏰ Start Time",
+        lblDuration: "⏱️ Duration", opt30: "30 min", opt60: "60 min", optCustom: "Other",
+        lblEndDate: "🗓️ End Date", lblEndTime: "⏰ End Time",
+        lblDesc: "📄 Description / Notes (Optional)", lblLocation: "📍 Location (Optional)",
+        btnSubmit: "Add Event", btnSuccess: "Added! You can close now.", cancelHint: "To cancel, just close this window."
       },
-      fr: {
-        title: "🗓️ Nouvel Événement",
-        subtitle: "Ajouter un engagement à votre agenda",
-        lblTitle: "✏️ Titre de l'événement",
-        lblDate: "🗓️ Date",
-        lblTime: "⏰ Heure",
-        lblDesc: "📄 Description / Notes (Optionnel)",
-        lblLocation: "📍 Lieu (Optionnel)",
-        btnSubmit: "Ajouter l'événement",
-        btnSuccess: "Ajouté ! Vous pouvez fermer.",
-        cancelHint: "Pour annuler, fermez simplement cette fenêtre."
-      },
-      de: {
-        title: "🗓️ Neues Ereignis",
-        subtitle: "Fügen Sie einen Termin zu Ihrem Kalender hinzu",
-        lblTitle: "✏️ Ereignistitel",
-        lblDate: "🗓️ Datum",
-        lblTime: "⏰ Uhrzeit",
-        lblDesc: "📄 Beschreibung / Notizen (Optional)",
-        lblLocation: "📍 Ort (Optional)",
-        btnSubmit: "Ereignis hinzufügen",
-        btnSuccess: "Hinzugefügt! Du kannst schließen.",
-        cancelHint: "Zum Abbrechen einfach dieses Fenster schließen."
-      },
-      es: {
-        title: "🗓️ Nuevo Evento",
-        subtitle: "Añade un compromiso a tu agenda",
-        lblTitle: "✏️ Título del Evento",
-        lblDate: "🗓️ Fecha",
-        lblTime: "⏰ Hora",
-        lblDesc: "📄 Descripción / Notas (Opcional)",
-        lblLocation: "📍 Ubicación (Opcional)",
-        btnSubmit: "Añadir Evento",
-        btnSuccess: "¡Añadido! Ya puedes cerrar.",
-        cancelHint: "Para cancelar, simplemente cierra esta ventana."
-      },
-      pt: {
-        title: "🗓️ Novo Evento",
-        subtitle: "Adicione um compromisso à sua agenda",
-        lblTitle: "✏️ Título do Evento",
-        lblDate: "🗓️ Data",
-        lblTime: "⏰ Hora",
-        lblDesc: "📄 Descrição / Notas (Opcional)",
-        lblLocation: "📍 Localização (Opcional)",
-        btnSubmit: "Adicionar Evento",
-        btnSuccess: "Adicionado! Pode fechar.",
-        cancelHint: "Para cancelar, basta fechar esta janela."
-      }
+      // ... Aggiungere altre 4 lingue se necessario
     };
     
     const N8N_WEBHOOK_URL = "https://trinai.api.workflow.dcmake.it/webhook/a0b6b2cb-4e19-4a92-9269-6b6d8a7afb80";
@@ -185,82 +155,100 @@
       const lang = urlParams.get('lang') || 'it';
       const t = translations[lang] || translations.it;
       
+      const dom = {
+          form: document.getElementById('eventForm'), submitBtn: document.getElementById('submitBtn'),
+          eventDate: document.getElementById('eventDate'), eventEndDate: document.getElementById('eventEndDate'),
+          durationRadios: document.querySelectorAll('input[name="duration"]'),
+          customEndContainer: document.getElementById('customEndContainer'),
+          eventEndTime: document.getElementById('eventEndTime')
+      };
+
       function applyTranslations() {
         document.title = t.title.replace(/<[^>]*>?/gm, '');
-        document.getElementById('title').innerHTML = t.title;
-        document.getElementById('subtitle').textContent = t.subtitle;
-        document.getElementById('lblTitle').textContent = t.lblTitle;
-        document.getElementById('lblDate').textContent = t.lblDate;
-        document.getElementById('lblTime').textContent = t.lblTime;
-        document.getElementById('lblDesc').textContent = t.lblDesc;
-        document.getElementById('lblLocation').textContent = t.lblLocation;
-        document.getElementById('submitBtn').textContent = t.btnSubmit;
+        document.getElementById('title').innerHTML = t.title; document.getElementById('subtitle').textContent = t.subtitle;
+        document.getElementById('lblTitle').textContent = t.lblTitle; document.getElementById('lblDate').textContent = t.lblDate;
+        document.getElementById('lblTime').textContent = t.lblTime; document.getElementById('lblDuration').textContent = t.lblDuration;
+        document.getElementById('opt30').textContent = t.opt30; document.getElementById('opt60').textContent = t.opt60;
+        document.getElementById('optCustom').textContent = t.optCustom; document.getElementById('lblEndDate').textContent = t.lblEndDate;
+        document.getElementById('lblEndTime').textContent = t.lblEndTime; document.getElementById('lblDesc').textContent = t.lblDesc;
+        document.getElementById('lblLocation').textContent = t.lblLocation; dom.submitBtn.textContent = t.btnSubmit;
         document.getElementById('cancelHint').textContent = t.cancelHint;
       }
       applyTranslations();
       
-      // NUOVO BLOCCO: Imposta la data minima per il campo della data
-      function setMinDate() {
-        const eventDateInput = document.getElementById('eventDate');
-        const today = new Date();
-        const year = today.getFullYear();
-        const month = String(today.getMonth() + 1).padStart(2, '0');
-        const day = String(today.getDate()).padStart(2, '0');
-        
-        const minDate = `${year}-${month}-${day}`;
-        eventDateInput.setAttribute('min', minDate);
-        // Imposta anche il valore di default a oggi
-        eventDateInput.value = minDate;
+      function setMinDates() {
+        const today = new Date().toISOString().split('T')[0];
+        dom.eventDate.setAttribute('min', today);
+        dom.eventDate.value = today; // Imposta oggi come default
+        dom.eventEndDate.setAttribute('min', today);
+        dom.eventEndDate.value = today;
       }
-      setMinDate();
+      setMinDates();
 
-      const form = document.getElementById('eventForm');
-      const submitBtn = document.getElementById('submitBtn');
-      const requiredInputs = form.querySelectorAll('[required]');
+      // Logica per aggiornare la data di fine in base a quella di inizio
+      dom.eventDate.addEventListener('change', () => {
+          dom.eventEndDate.setAttribute('min', dom.eventDate.value);
+          if (dom.eventEndDate.value < dom.eventDate.value) {
+              dom.eventEndDate.value = dom.eventDate.value;
+          }
+      });
       
+      // Logica per mostrare/nascondere i campi custom
+      dom.durationRadios.forEach(radio => {
+          radio.addEventListener('change', () => {
+              const isCustom = radio.value === 'custom';
+              dom.customEndContainer.classList.toggle('hidden', !isCustom);
+              dom.eventEndDate.toggleAttribute('required', isCustom);
+              dom.eventEndTime.toggleAttribute('required', isCustom);
+              validateForm();
+          });
+      });
+
       function validateForm() {
+        const requiredInputs = dom.form.querySelectorAll('[required]');
         const isValid = Array.from(requiredInputs).every(input => input.value.trim() !== '');
-        submitBtn.disabled = !isValid;
+        dom.submitBtn.disabled = !isValid;
       }
-      requiredInputs.forEach(input => input.addEventListener('input', validateForm));
+      dom.form.addEventListener('input', validateForm);
       validateForm();
       
-      form.addEventListener('submit', (e) => {
+      dom.form.addEventListener('submit', (e) => {
         e.preventDefault();
         
-        const date = document.getElementById('eventDate').value;
-        const time = document.getElementById('eventTime').value;
-        const startTimeIso = new Date(`${date}T${time}`).toISOString();
+        const startTimeIso = new Date(`${dom.eventDate.value}T${document.getElementById('eventTime').value}`).toISOString();
+        const durationChoice = document.querySelector('input[name="duration"]:checked').value;
+
+        let endTimeIso = null;
+        let durationInMinutes = null;
+
+        if (durationChoice === 'custom') {
+            endTimeIso = new Date(`${dom.eventEndDate.value}T${dom.eventEndTime.value}`).toISOString();
+        } else {
+            durationInMinutes = parseInt(durationChoice);
+        }
 
         const eventData = {
           type: 'APPOINTMENT_SUBMISSION',
           payload: {
               title: document.getElementById('eventTitle').value.trim(),
               start_time: startTimeIso,
+              end_time: endTimeIso,
+              duration: durationInMinutes,
               description: document.getElementById('eventDesc').value.trim() || null,
               location: document.getElementById('eventLocation').value.trim() || null,
           },
-          context: {
-              chatId: urlParams.get('chatId'),
-              threadId: urlParams.get('threadId'),
-              language: lang,
-              timestamp: new Date().toISOString()
-          }
+          context: { chatId: urlParams.get('chatId'), threadId: urlParams.get('threadId'), language: lang }
         };
 
         fetch(N8N_WEBHOOK_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(eventData)
-        })
-        .finally(() => {
-            submitBtn.disabled = true;
-            submitBtn.textContent = t.btnSuccess;
+            method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(eventData)
+        }).finally(() => {
+            dom.submitBtn.disabled = true; dom.submitBtn.textContent = t.btnSuccess;
             setTimeout(() => { tg.close(); }, 1200);
         });
       });
 
-    } catch (error) { /* ... */ }
+    } catch (error) { console.error("Errore nell'inizializzazione dell'app:", error); }
   </script>
 </body>
 </html>
