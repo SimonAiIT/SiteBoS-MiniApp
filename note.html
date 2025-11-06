@@ -2,260 +2,115 @@
 <html lang="it">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>Nuova Nota</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
+    :root {
+      --bg-start: #4a5b8f;
+      --bg-end: #2a3d5f;
+      --text-primary: #ffffff;
+      --text-secondary: rgba(255, 255, 255, 0.7);
+      --border-color: rgba(255, 255, 255, 0.2);
+      --input-bg: rgba(255, 255, 255, 0.08);
+      --accent-color: #5B6FED;
     }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
     
     body {
-      font-family: 'Segoe UI', 'Helvetica Neue', -apple-system, BlinkMacSystemFont, sans-serif;
-      background: linear-gradient(135deg, #4a5b8f 0%, #3d4f7a 50%, #2a3d5f 100%);
-      color: #ffffff;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      background: linear-gradient(135deg, var(--bg-start) 0%, var(--bg-end) 100%);
+      color: var(--text-primary);
       padding: 20px;
-      padding-bottom: 100px;
+      padding-top: env(safe-area-inset-top, 20px);
+      padding-left: env(safe-area-inset-left, 20px);
+      padding-right: env(safe-area-inset-right, 20px);
       line-height: 1.5;
       min-height: 100vh;
-      position: relative;
       overflow-x: hidden;
     }
     
-    body::before {
-      content: '';
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800"><path d="M0,400 Q300,200 600,400 T1200,400" stroke="rgba(255,255,255,0.1)" stroke-width="2" fill="none"/><path d="M0,500 Q300,300 600,500 T1200,500" stroke="rgba(255,255,255,0.08)" stroke-width="2" fill="none"/></svg>') no-repeat center;
-      background-size: cover;
-      pointer-events: none;
-      z-index: -1;
-    }
+    .container { max-width: 500px; margin: 0 auto; }
     
-    .close-hint {
-      position: fixed;
-      top: 12px;
-      right: 12px;
-      background: rgba(255, 255, 255, 0.1);
-      border: 1px solid rgba(255, 255, 255, 0.3);
-      color: rgba(255, 255, 255, 0.7);
-      padding: 8px 12px;
-      border-radius: 20px;
-      font-size: 12px;
-      cursor: pointer;
-      transition: all 0.3s;
-      z-index: 100;
-    }
+    h1 { font-size: 26px; margin-bottom: 8px; font-weight: 600; }
     
-    .close-hint:hover {
-      background: rgba(255, 255, 255, 0.2);
-      border-color: rgba(255, 255, 255, 0.5);
-      color: rgba(255, 255, 255, 0.9);
-    }
+    .subtitle { font-size: 14px; color: var(--text-secondary); margin-bottom: 32px; font-weight: 300; }
     
-    .container {
-      max-width: 500px;
-      margin: 0 auto;
-      position: relative;
-      z-index: 1;
-    }
+    .form-group { margin-bottom: 20px; }
     
-    h1 {
-      font-size: 28px;
-      margin-bottom: 8px;
-      color: #ffffff;
-      font-weight: 600;
-      text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-    }
-    
-    .subtitle {
-      font-size: 14px;
-      color: rgba(255, 255, 255, 0.7);
-      margin-bottom: 32px;
-      font-weight: 300;
-    }
-    
-    .form-group {
-      margin-bottom: 20px;
-      position: relative;
-    }
-    
-    label {
-      display: block;
-      margin-bottom: 10px;
-      color: rgba(255, 255, 255, 0.9);
-      font-size: 14px;
-      font-weight: 500;
-      letter-spacing: 0.3px;
-    }
+    label { display: block; margin-bottom: 10px; font-size: 14px; font-weight: 500; }
     
     input, textarea {
       width: 100%;
       padding: 14px 16px;
-      border: 1px solid rgba(255, 255, 255, 0.2);
+      border: 1px solid var(--border-color);
       border-radius: 12px;
-      background: rgba(255, 255, 255, 0.08);
+      background: var(--input-bg);
       backdrop-filter: blur(10px);
-      color: #ffffff;
+      color: var(--text-primary);
       font-size: 15px;
       font-family: inherit;
       transition: all 0.3s ease;
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-    }
-    
-    input::placeholder, textarea::placeholder {
-      color: rgba(255, 255, 255, 0.5);
     }
     
     input:focus, textarea:focus {
       outline: none;
       border-color: rgba(255, 255, 255, 0.5);
-      background: rgba(255, 255, 255, 0.12);
-      box-shadow: 0 8px 32px rgba(255, 255, 255, 0.1);
-      transform: translateY(-2px);
+      box-shadow: 0 0 15px rgba(91, 111, 237, 0.3);
     }
     
-    textarea {
-      resize: vertical;
-      min-height: 150px;
-      font-family: inherit;
-    }
+    textarea { resize: vertical; min-height: 150px; }
     
-    .hint {
-      font-size: 12px;
-      color: rgba(255, 255, 255, 0.6);
-      margin-top: 6px;
-      font-weight: 300;
-    }
-    
-    .required::after {
-      content: " *";
-      color: #ff6b6b;
-    }
-    
-    .button-container {
-      margin-top: 32px;
-      display: flex;
-      justify-content: center;
-    }
+    .required::after { content: " *"; color: #ff6b6b; }
+
+    .button-container { text-align: center; margin-top: 32px; }
     
     #submitBtn {
-      padding: 14px 48px;
-      background: linear-gradient(135deg, #5B6FED 0%, #7B8FF5 100%);
-      color: #ffffff;
+      width: 100%;
+      padding: 14px;
+      background: var(--accent-color);
+      color: var(--text-primary);
       border: none;
       border-radius: 12px;
       font-size: 15px;
       font-weight: 600;
       cursor: pointer;
       transition: all 0.3s ease;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      box-shadow: 0 8px 24px rgba(91, 111, 237, 0.4);
     }
     
-    #submitBtn:hover:not(:disabled) {
-      transform: translateY(-2px);
-      box-shadow: 0 12px 32px rgba(91, 111, 237, 0.6);
-    }
-    
-    #submitBtn:active:not(:disabled) {
-      transform: translateY(0);
-    }
-    
-    #submitBtn:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
-    
-    .btn-loading {
-      position: relative;
-    }
-    
-    .btn-loading::after {
-      content: '';
-      position: absolute;
-      width: 14px;
-      height: 14px;
-      right: 16px;
-      margin: auto;
-      border: 2px solid transparent;
-      border-radius: 50%;
-      border-top-color: #ffffff;
-      animation: spin 0.8s linear infinite;
-    }
-    
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-    
-    .form-group {
-      animation: slideIn 0.5s ease-out forwards;
-    }
-    
-    .form-group:nth-child(1) { animation-delay: 0.1s; }
-    .form-group:nth-child(2) { animation-delay: 0.2s; }
-    
-    .button-container {
-      animation: slideIn 0.5s ease-out 0.3s forwards;
-      opacity: 0;
-    }
-    
-    @keyframes slideIn {
-      from {
-        opacity: 0;
-        transform: translateY(20px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-    
-    @media (max-width: 480px) {
-      h1 {
-        font-size: 24px;
-      }
-      
-      input, textarea, button {
-        padding: 12px 14px;
-        font-size: 14px;
-      }
-      
-      .close-hint {
-        font-size: 11px;
-        padding: 6px 10px;
-      }
+    #submitBtn:disabled { background: #555; cursor: not-allowed; opacity: 0.6; }
+
+    .cancel-hint {
+        text-align: center;
+        margin-top: 16px;
+        font-size: 13px;
+        color: var(--text-secondary);
+        opacity: 0.8;
     }
   </style>
 </head>
 <body>
-  <div class="close-hint" id="closeHint">✕ Chiudi</div>
   
   <div class="container">
-    <h1 id="title">📝 Nuova Nota</h1>
-    <p class="subtitle" id="subtitle">Salva una nota rapida</p>
+    <h1 id="title"></h1>
+    <p class="subtitle" id="subtitle"></p>
     
     <form id="noteForm">
       <div class="form-group">
-        <label for="noteTitle" class="required"><span id="lblTitle">✏️ Titolo</span></label>
+        <label for="noteTitle" class="required"><span id="lblTitle"></span></label>
         <input type="text" id="noteTitle" required>
       </div>
       
       <div class="form-group">
-        <label for="noteContent" class="required"><span id="lblContent">📄 Contenuto</span></label>
+        <label for="noteContent" class="required"><span id="lblContent"></span></label>
         <textarea id="noteContent" required></textarea>
-        <div class="hint" id="hintContent">Scrivi i tuoi pensieri, idee o appunti</div>
       </div>
       
       <div class="button-container">
         <button type="submit" id="submitBtn"></button>
       </div>
+      <p class="cancel-hint" id="cancelHint"></p>
     </form>
   </div>
 
@@ -266,165 +121,134 @@
         subtitle: "Salva una nota rapida",
         lblTitle: "✏️ Titolo",
         lblContent: "📄 Contenuto",
-        hintContent: "Scrivi i tuoi pensieri, idee o appunti",
-        placeholderTitle: "Titolo della nota",
-        placeholderContent: "Scrivi qui il contenuto della tua nota...",
-        btnSubmit: "✅ Salva Nota",
-        btnLoading: "⏳ Salvataggio...",
-        btnSuccess: "✅ Salvato!",
-        alertSuccess: "✅ Nota salvata con successo!",
-        closeHint: "✕ Chiudi"
+        btnSubmit: "Invia Nota",
+        btnSuccess: "Inviato! Puoi chiudere.",
+        cancelHint: "Per annullare, basta chiudere questa finestra."
       },
       en: {
         title: "📝 New Note",
         subtitle: "Save a quick note",
         lblTitle: "✏️ Title",
         lblContent: "📄 Content",
-        hintContent: "Write your thoughts, ideas or notes",
-        placeholderTitle: "Note title",
-        placeholderContent: "Write your note content here...",
-        btnSubmit: "✅ Save Note",
-        btnLoading: "⏳ Saving...",
-        btnSuccess: "✅ Saved!",
-        alertSuccess: "✅ Note saved successfully!",
-        closeHint: "✕ Close"
-      },
-      es: {
-        title: "📝 Nueva Nota",
-        subtitle: "Guarda una nota rápida",
-        lblTitle: "✏️ Título",
-        lblContent: "📄 Contenido",
-        hintContent: "Escribe tus pensamientos, ideas o notas",
-        placeholderTitle: "Título de la nota",
-        placeholderContent: "Escribe aquí el contenido de tu nota...",
-        btnSubmit: "✅ Guardar Nota",
-        btnLoading: "⏳ Guardando...",
-        btnSuccess: "✅ ¡Guardado!",
-        alertSuccess: "✅ ¡Nota guardada exitosamente!",
-        closeHint: "✕ Cerrar"
+        btnSubmit: "Send Note",
+        btnSuccess: "Sent! You can close now.",
+        cancelHint: "To cancel, just close this window."
       },
       fr: {
         title: "📝 Nouvelle Note",
         subtitle: "Enregistrer une note rapide",
         lblTitle: "✏️ Titre",
         lblContent: "📄 Contenu",
-        hintContent: "Écrivez vos pensées, idées ou notes",
-        placeholderTitle: "Titre de la note",
-        placeholderContent: "Écrivez le contenu de votre note ici...",
-        btnSubmit: "✅ Enregistrer Note",
-        btnLoading: "⏳ Enregistrement...",
-        btnSuccess: "✅ Enregistré!",
-        alertSuccess: "✅ Note enregistrée avec succès!",
-        closeHint: "✕ Fermer"
+        btnSubmit: "Envoyer la Note",
+        btnSuccess: "Envoyé ! Vous pouvez fermer.",
+        cancelHint: "Pour annuler, fermez simplement cette fenêtre."
       },
       de: {
         title: "📝 Neue Notiz",
-        subtitle: "Speichern Sie eine schnelle Notiz",
+        subtitle: "Schnelle Notiz speichern",
         lblTitle: "✏️ Titel",
         lblContent: "📄 Inhalt",
-        hintContent: "Schreiben Sie Ihre Gedanken, Ideen oder Notizen",
-        placeholderTitle: "Notiztitel",
-        placeholderContent: "Schreiben Sie hier den Inhalt Ihrer Notiz...",
-        btnSubmit: "✅ Notiz Speichern",
-        btnLoading: "⏳ Speichern...",
-        btnSuccess: "✅ Gespeichert!",
-        alertSuccess: "✅ Notiz erfolgreich gespeichert!",
-        closeHint: "✕ Schließen"
+        btnSubmit: "Notiz Senden",
+        btnSuccess: "Gesendet! Du kannst jetzt schließen.",
+        cancelHint: "Zum Abbrechen einfach dieses Fenster schließen."
+      },
+      es: {
+        title: "📝 Nueva Nota",
+        subtitle: "Guarda una nota rápida",
+        lblTitle: "✏️ Título",
+        lblContent: "📄 Contenido",
+        btnSubmit: "Enviar Nota",
+        btnSuccess: "¡Enviado! Ya puedes cerrar.",
+        cancelHint: "Para cancelar, simplemente cierra esta ventana."
       },
       pt: {
         title: "📝 Nova Nota",
-        subtitle: "Salve uma nota rápida",
+        subtitle: "Salvar uma nota rápida",
         lblTitle: "✏️ Título",
         lblContent: "📄 Conteúdo",
-        hintContent: "Escreva seus pensamentos, ideias ou notas",
-        placeholderTitle: "Título da nota",
-        placeholderContent: "Escreva aqui o conteúdo da sua nota...",
-        btnSubmit: "✅ Salvar Nota",
-        btnLoading: "⏳ Salvando...",
-        btnSuccess: "✅ Salvo!",
-        alertSuccess: "✅ Nota salva com sucesso!",
-        closeHint: "✕ Fechar"
+        btnSubmit: "Enviar Nota",
+        btnSuccess: "Enviado! Pode fechar agora.",
+        cancelHint: "Para cancelar, basta fechar esta janela."
       }
     };
     
-    const N8N_WEBHOOK_URL = "https://trinai.api.workflow.dcmake.it/webhook/a0b6b2cb-4e19-4a92-9269-6b6d8a7afb80";
+    const N8N_WEBHOOK_URL = "INSERISCI_QUI_IL_TUO_URL_WEBHOOK_N8N"; // <-- IMPORTANTE
     
-    const tg = window.Telegram.WebApp;
-    tg.ready();
-    tg.expand();
-    
-    const urlParams = new URLSearchParams(window.location.search);
-    const lang = urlParams.get('lang') || 'it';
-    const chatId = urlParams.get('chatId');
-    const threadId = urlParams.get('threadId');
-    
-    const t = translations[lang] || translations.it;
-    
-    function applyTranslations() {
-      document.getElementById('title').textContent = t.title;
-      document.getElementById('subtitle').textContent = t.subtitle;
-      document.getElementById('lblTitle').textContent = t.lblTitle;
-      document.getElementById('lblContent').textContent = t.lblContent;
-      document.getElementById('hintContent').textContent = t.hintContent;
-      document.getElementById('noteTitle').placeholder = t.placeholderTitle;
-      document.getElementById('noteContent').placeholder = t.placeholderContent;
-      document.getElementById('submitBtn').textContent = t.btnSubmit;
-      document.getElementById('closeHint').textContent = t.closeHint;
-    }
-    
-    applyTranslations();
-    
-    const form = document.getElementById('noteForm');
-    const submitBtn = document.getElementById('submitBtn');
-    const closeHint = document.getElementById('closeHint');
-    const requiredInputs = form.querySelectorAll('[required]');
-    
-    function validateForm() {
-      const isValid = Array.from(requiredInputs).every(
-        input => input.value.trim() !== ''
-      );
-      submitBtn.disabled = !isValid;
-    }
-    
-    requiredInputs.forEach(input => {
-      input.addEventListener('input', validateForm);
-    });
-    
-    validateForm();
-    
-    form.addEventListener('submit', (e) => {
-      e.preventDefault();
+    try {
+      const tg = window.Telegram.WebApp;
+      tg.ready();
+      tg.expand();
       
-      const formData = {
-        chatId: chatId,
-        threadId: threadId,
-        title: document.getElementById('noteTitle').value.trim(),
-        content: document.getElementById('noteContent').value.trim(),
-        language: lang,
-        timestamp: new Date().toISOString()
-      };
+      const urlParams = new URLSearchParams(window.location.search);
+      const lang = urlParams.get('lang') || 'it';
+      const chatId = urlParams.get('chatId');
+      const threadId = urlParams.get('threadId');
       
-      submitBtn.disabled = true;
-      submitBtn.classList.add('btn-loading');
-      const originalText = submitBtn.textContent;
-      submitBtn.innerHTML = t.btnLoading;
+      const t = translations[lang] || translations.it;
       
-      fetch(N8N_WEBHOOK_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
-      }).then(() => {
-        submitBtn.innerHTML = t.btnSuccess;
-        tg.showAlert(t.alertSuccess);
-        setTimeout(() => tg.close(), 1000);
-      }).catch(() => {
-        submitBtn.innerHTML = t.btnSuccess;
-        tg.showAlert(t.alertSuccess);
-        setTimeout(() => tg.close(), 1000);
+      function applyTranslations() {
+          document.getElementById('title').textContent = t.title;
+          document.getElementById('subtitle').textContent = t.subtitle;
+          document.getElementById('lblTitle').textContent = t.lblTitle;
+          document.getElementById('lblContent').textContent = t.lblContent;
+          document.getElementById('submitBtn').textContent = t.btnSubmit;
+          document.getElementById('cancelHint').textContent = t.cancelHint;
+      }
+      
+      applyTranslations();
+      
+      const form = document.getElementById('noteForm');
+      const submitBtn = document.getElementById('submitBtn');
+      const requiredInputs = form.querySelectorAll('[required]');
+      
+      function validateForm() {
+        const isValid = Array.from(requiredInputs).every(input => input.value.trim() !== '');
+        submitBtn.disabled = !isValid;
+      }
+      
+      requiredInputs.forEach(input => input.addEventListener('input', validateForm));
+      validateForm();
+      
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        
+        const noteData = {
+          type: 'NOTE_SUBMISSION',
+          payload: {
+              title: document.getElementById('noteTitle').value.trim(),
+              content: document.getElementById('noteContent').value.trim(),
+          },
+          context: {
+              chatId: chatId,
+              threadId: threadId,
+              language: lang,
+              timestamp: new Date().toISOString()
+          }
+        };
+
+        // Usa fetch per inviare i dati al webhook n8n
+        fetch(N8N_WEBHOOK_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(noteData)
+        })
+        .finally(() => {
+            // Indipendentemente dal successo o fallimento della chiamata,
+            // diamo feedback all'utente e chiudiamo la Mini App.
+            submitBtn.disabled = true;
+            submitBtn.textContent = t.btnSuccess;
+            
+            // Un piccolo ritardo per permettere all'utente di leggere il messaggio
+            setTimeout(() => {
+                tg.close();
+            }, 1200); // 1.2 secondi
+        });
       });
-    });
-    
-    closeHint.addEventListener('click', () => tg.close());
+
+    } catch (error) {
+      document.body.innerHTML = 'Error: Impossibile caricare l\'app. Assicurati di aprirla da Telegram.';
+      console.error(error);
+    }
   </script>
 </body>
 </html>
