@@ -3,108 +3,107 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>Nuova Nota</title>
+  <title>Nuova Nota / ToDo</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <style>
     :root {
-      --bg-start: #4a5b8f;
-      --bg-end: #2a3d5f;
-      --text-primary: #ffffff;
-      --text-secondary: rgba(255, 255, 255, 0.7);
-      --border-color: rgba(255, 255, 255, 0.2);
-      --input-bg: rgba(255, 255, 255, 0.08);
-      --accent-color: #5B6FED;
+      --bg-start: #4a5b8f; --bg-end: #2a3d5f; --text-primary: #ffffff;
+      --text-secondary: rgba(255, 255, 255, 0.7); --border-color: rgba(255, 255, 255, 0.2);
+      --input-bg: rgba(255, 255, 255, 0.08); --accent-color: #5B6FED;
     }
-
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
       background: linear-gradient(135deg, var(--bg-start) 0%, var(--bg-end) 100%);
-      color: var(--text-primary);
-      padding: 20px;
-      padding-top: env(safe-area-inset-top, 20px);
-      padding-left: env(safe-area-inset-left, 20px);
-      padding-right: env(safe-area-inset-right, 20px);
-      line-height: 1.5;
-      min-height: 100vh;
-      overflow-x: hidden;
+      color: var(--text-primary); padding: 20px; min-height: 100vh;
     }
-    
     .container { max-width: 500px; margin: 0 auto; }
-    
     h1 { font-size: 26px; margin-bottom: 8px; font-weight: 600; }
-    
     .subtitle { font-size: 14px; color: var(--text-secondary); margin-bottom: 32px; font-weight: 300; }
-    
     .form-group { margin-bottom: 20px; }
-    
     label { display: block; margin-bottom: 10px; font-size: 14px; font-weight: 500; }
     
-    input, textarea {
-      width: 100%;
-      padding: 14px 16px;
-      border: 1px solid var(--border-color);
-      border-radius: 12px;
-      background: var(--input-bg);
-      backdrop-filter: blur(10px);
-      color: var(--text-primary);
-      font-size: 15px;
-      font-family: inherit;
-      transition: all 0.3s ease;
+    input, textarea, select {
+      width: 100%; padding: 14px 16px; border: 1px solid var(--border-color);
+      border-radius: 12px; background: var(--input-bg); backdrop-filter: blur(10px);
+      color: var(--text-primary); font-size: 15px; font-family: inherit;
+      -webkit-appearance: none;
+      appearance: none;
     }
     
-    input:focus, textarea:focus {
-      outline: none;
-      border-color: rgba(255, 255, 255, 0.5);
+    select {
+        background-image: url('data:image/svg+xml;utf8,<svg fill="white" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>');
+        background-repeat: no-repeat;
+        background-position: right 16px center;
+        padding-right: 40px;
+    }
+    
+    /* NUOVA REGOLA: Stile per le opzioni del menu a tendina */
+    option {
+      background: var(--bg-end); /* Usa un colore di sfondo solido per la lista */
+      color: var(--text-primary);
+    }
+
+    /* NUOVA REGOLA: Rende l'icona del calendario più grande, bianca e cliccabile */
+    input[type="date"]::-webkit-calendar-picker-indicator {
+      cursor: pointer;
+      opacity: 0.7;
+      filter: invert(1); /* Rende l'icona bianca */
+      transform: scale(1.2); /* Aumenta la dimensione del 20% */
+      transition: opacity 0.2s ease;
+    }
+    input[type="date"]::-webkit-calendar-picker-indicator:hover {
+      opacity: 1;
+    }
+
+    input:focus, textarea:focus, select:focus {
+      outline: none; border-color: rgba(255, 255, 255, 0.5);
       box-shadow: 0 0 15px rgba(91, 111, 237, 0.3);
     }
-    
-    textarea { resize: vertical; min-height: 150px; }
-    
+    textarea { resize: vertical; min-height: 120px; }
     .required::after { content: " *"; color: #ff6b6b; }
-
     .button-container { text-align: center; margin-top: 32px; }
-    
     #submitBtn {
-      width: 100%;
-      padding: 14px;
-      background: var(--accent-color);
-      color: var(--text-primary);
-      border: none;
-      border-radius: 12px;
-      font-size: 15px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.3s ease;
+      width: 100%; padding: 14px; background: var(--accent-color); color: var(--text-primary);
+      border: none; border-radius: 12px; font-size: 15px; font-weight: 600; cursor: pointer;
     }
-    
     #submitBtn:disabled { background: #555; cursor: not-allowed; opacity: 0.6; }
-
-    .cancel-hint {
-        text-align: center;
-        margin-top: 16px;
-        font-size: 13px;
-        color: var(--text-secondary);
-        opacity: 0.8;
-    }
+    .cancel-hint { text-align: center; margin-top: 16px; font-size: 13px; color: var(--text-secondary); opacity: 0.8; }
+    .hint { font-size: 12px; color: rgba(255, 255, 255, 0.6); margin-top: 6px; }
+    .row { display: flex; gap: 16px; }
+    .row .form-group { flex: 1; }
   </style>
 </head>
 <body>
-  
   <div class="container">
     <h1 id="title"></h1>
     <p class="subtitle" id="subtitle"></p>
     
     <form id="noteForm">
       <div class="form-group">
-        <label for="noteTitle" class="required"><span id="lblTitle"></span></label>
-        <input type="text" id="noteTitle" required>
+        <label for="noteContent" class="required"><span id="lblContent"></span></label>
+        <textarea id="noteContent" required></textarea>
+      </div>
+      
+      <div class="row">
+        <div class="form-group">
+          <label for="notePriority"><span id="lblPriority"></span></label>
+          <select id="notePriority">
+            <option value="LOW" id="optLow"></option>
+            <option value="MEDIUM" id="optMedium" selected></option>
+            <option value="HIGH" id="optHigh"></option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="noteDueDate"><span id="lblDueDate"></span></label>
+          <input type="date" id="noteDueDate">
+        </div>
       </div>
       
       <div class="form-group">
-        <label for="noteContent" class="required"><span id="lblContent"></span></label>
-        <textarea id="noteContent" required></textarea>
+        <label for="noteTags"><span id="lblTags"></span></label>
+        <input type="text" id="noteTags">
+        <div class="hint" id="hintTags"></div>
       </div>
       
       <div class="button-container">
@@ -117,138 +116,169 @@
   <script>
     const translations = {
       it: {
-        title: "📝 Nuova Nota",
-        subtitle: "Salva una nota rapida",
-        lblTitle: "✏️ Titolo",
-        lblContent: "📄 Contenuto",
-        btnSubmit: "Invia Nota",
-        btnSuccess: "Inviato! Puoi chiudere.",
+        title: "📝 Nuovo ToDo",
+        subtitle: "Cattura un compito o un'idea con tutti i dettagli.",
+        lblContent: "📄 Contenuto del ToDo",
+        lblPriority: "🚦 Priorità",
+        optLow: "🔵 Bassa",
+        optMedium: "🟡 Media",
+        optHigh: "🔴 Alta",
+        lblDueDate: "🗓️ Scadenza (Opzionale)",
+        lblTags: "🏷️ Tag (Opzionale)",
+        hintTags: "Separa i tag con una virgola (es. fatture, urgente)",
+        btnSubmit: "Aggiungi ToDo",
+        btnSuccess: "Aggiunto! Puoi chiudere.",
         cancelHint: "Per annullare, basta chiudere questa finestra."
       },
       en: {
-        title: "📝 New Note",
-        subtitle: "Save a quick note",
-        lblTitle: "✏️ Title",
-        lblContent: "📄 Content",
-        btnSubmit: "Send Note",
-        btnSuccess: "Sent! You can close now.",
+        title: "📝 New ToDo",
+        subtitle: "Capture a task or an idea with all the details.",
+        lblContent: "📄 ToDo Content",
+        lblPriority: "🚦 Priority",
+        optLow: "🔵 Low",
+        optMedium: "🟡 Medium",
+        optHigh: "🔴 High",
+        lblDueDate: "🗓️ Due Date (Optional)",
+        lblTags: "🏷️ Tags (Optional)",
+        hintTags: "Separate tags with a comma (e.g., invoices, urgent)",
+        btnSubmit: "Add ToDo",
+        btnSuccess: "Added! You can close now.",
         cancelHint: "To cancel, just close this window."
       },
       fr: {
-        title: "📝 Nouvelle Note",
-        subtitle: "Enregistrer une note rapide",
-        lblTitle: "✏️ Titre",
-        lblContent: "📄 Contenu",
-        btnSubmit: "Envoyer la Note",
-        btnSuccess: "Envoyé ! Vous pouvez fermer.",
+        title: "📝 Nouveau ToDo",
+        subtitle: "Saisissez une tâche ou une idée avec tous les détails.",
+        lblContent: "📄 Contenu du ToDo",
+        lblPriority: "🚦 Priorité",
+        optLow: "🔵 Basse",
+        optMedium: "🟡 Moyenne",
+        optHigh: "🔴 Élevée",
+        lblDueDate: "🗓️ Échéance (Optionnel)",
+        lblTags: "🏷️ Étiquettes (Optionnel)",
+        hintTags: "Séparez les étiquettes par une virgule (ex: factures, urgent)",
+        btnSubmit: "Ajouter ToDo",
+        btnSuccess: "Ajouté ! Vous pouvez fermer.",
         cancelHint: "Pour annuler, fermez simplement cette fenêtre."
       },
       de: {
-        title: "📝 Neue Notiz",
-        subtitle: "Schnelle Notiz speichern",
-        lblTitle: "✏️ Titel",
-        lblContent: "📄 Inhalt",
-        btnSubmit: "Notiz Senden",
-        btnSuccess: "Gesendet! Du kannst jetzt schließen.",
+        title: "📝 Neues ToDo",
+        subtitle: "Erfassen Sie eine Aufgabe oder Idee mit allen Details.",
+        lblContent: "📄 ToDo-Inhalt",
+        lblPriority: "🚦 Priorität",
+        optLow: "🔵 Niedrig",
+        optMedium: "🟡 Mittel",
+        optHigh: "🔴 Hoch",
+        lblDueDate: "🗓️ Fälligkeitsdatum (Optional)",
+        lblTags: "🏷️ Tags (Optional)",
+        hintTags: "Trennen Sie Tags mit einem Komma (z.B. rechnungen, dringend)",
+        btnSubmit: "ToDo hinzufügen",
+        btnSuccess: "Hinzugefügt! Du kannst jetzt schließen.",
         cancelHint: "Zum Abbrechen einfach dieses Fenster schließen."
       },
       es: {
-        title: "📝 Nueva Nota",
-        subtitle: "Guarda una nota rápida",
-        lblTitle: "✏️ Título",
-        lblContent: "📄 Contenido",
-        btnSubmit: "Enviar Nota",
-        btnSuccess: "¡Enviado! Ya puedes cerrar.",
+        title: "📝 Nuevo ToDo",
+        subtitle: "Captura una tarea o una idea con todos los detalles.",
+        lblContent: "📄 Contenido del ToDo",
+        lblPriority: "🚦 Prioridad",
+        optLow: "🔵 Baja",
+        optMedium: "🟡 Media",
+        optHigh: "🔴 Alta",
+        lblDueDate: "🗓️ Fecha de Vencimiento (Opcional)",
+        lblTags: "🏷️ Etiquetas (Opcional)",
+        hintTags: "Separa las etiquetas con una coma (ej: facturas, urgente)",
+        btnSubmit: "Añadir ToDo",
+        btnSuccess: "¡Añadido! Ya puedes cerrar.",
         cancelHint: "Para cancelar, simplemente cierra esta ventana."
       },
       pt: {
-        title: "📝 Nova Nota",
-        subtitle: "Salvar uma nota rápida",
-        lblTitle: "✏️ Título",
-        lblContent: "📄 Conteúdo",
-        btnSubmit: "Enviar Nota",
-        btnSuccess: "Enviado! Pode fechar agora.",
+        title: "📝 Novo ToDo",
+        subtitle: "Capture uma tarefa ou ideia com todos os detalhes.",
+        lblContent: "📄 Conteúdo do ToDo",
+        lblPriority: "🚦 Prioridade",
+        optLow: "🔵 Baixa",
+        optMedium: "🟡 Média",
+        optHigh: "🔴 Alta",
+        lblDueDate: "🗓️ Data de Vencimento (Opcional)",
+        lblTags: "🏷️ Tags (Opcional)",
+        hintTags: "Separe as tags com uma vírgula (ex: faturas, urgente)",
+        btnSubmit: "Adicionar ToDo",
+        btnSuccess: "Adicionado! Pode fechar agora.",
         cancelHint: "Para cancelar, basta fechar esta janela."
       }
     };
     
-    const N8N_WEBHOOK_URL = "INSERISCI_QUI_IL_TUO_URL_WEBHOOK_N8N"; // <-- IMPORTANTE
+    const N8N_WEBHOOK_URL = "https://trinai.api.workflow.dcmake.it/webhook/a0b6b2cb-4e19-4a92-9269-6b6d8a7afb80";
     
     try {
       const tg = window.Telegram.WebApp;
-      tg.ready();
-      tg.expand();
+      tg.ready(); tg.expand();
       
       const urlParams = new URLSearchParams(window.location.search);
       const lang = urlParams.get('lang') || 'it';
-      const chatId = urlParams.get('chatId');
-      const threadId = urlParams.get('threadId');
-      
       const t = translations[lang] || translations.it;
       
       function applyTranslations() {
-          document.getElementById('title').textContent = t.title;
-          document.getElementById('subtitle').textContent = t.subtitle;
-          document.getElementById('lblTitle').textContent = t.lblTitle;
-          document.getElementById('lblContent').textContent = t.lblContent;
-          document.getElementById('submitBtn').textContent = t.btnSubmit;
-          document.getElementById('cancelHint').textContent = t.cancelHint;
+        document.title = t.title.replace(/<[^>]*>?/gm, '');
+        document.getElementById('title').innerHTML = t.title;
+        document.getElementById('subtitle').textContent = t.subtitle;
+        document.getElementById('lblContent').textContent = t.lblContent;
+        document.getElementById('lblPriority').textContent = t.lblPriority;
+        document.getElementById('optLow').textContent = t.optLow;
+        document.getElementById('optMedium').textContent = t.optMedium;
+        document.getElementById('optHigh').textContent = t.optHigh;
+        document.getElementById('lblDueDate').textContent = t.lblDueDate;
+        document.getElementById('lblTags').textContent = t.lblTags;
+        document.getElementById('hintTags').textContent = t.hintTags;
+        document.getElementById('submitBtn').textContent = t.btnSubmit;
+        document.getElementById('cancelHint').textContent = t.cancelHint;
       }
-      
       applyTranslations();
       
       const form = document.getElementById('noteForm');
       const submitBtn = document.getElementById('submitBtn');
-      const requiredInputs = form.querySelectorAll('[required]');
+      const noteContent = document.getElementById('noteContent');
       
       function validateForm() {
-        const isValid = Array.from(requiredInputs).every(input => input.value.trim() !== '');
-        submitBtn.disabled = !isValid;
+        submitBtn.disabled = noteContent.value.trim() === '';
       }
-      
-      requiredInputs.forEach(input => input.addEventListener('input', validateForm));
+      noteContent.addEventListener('input', validateForm);
       validateForm();
       
       form.addEventListener('submit', (e) => {
         e.preventDefault();
         
+        const tagsValue = document.getElementById('noteTags').value.trim();
+        const tagsArray = tagsValue ? tagsValue.split(',').map(tag => tag.trim()).filter(Boolean) : [];
+
         const noteData = {
-          type: 'NOTE_SUBMISSION',
+          type: 'TODO_SUBMISSION',
           payload: {
-              title: document.getElementById('noteTitle').value.trim(),
-              content: document.getElementById('noteContent').value.trim(),
+              content: noteContent.value.trim(),
+              priority: document.getElementById('notePriority').value,
+              due_date: document.getElementById('noteDueDate').value || null,
+              tags: tagsArray
           },
           context: {
-              chatId: chatId,
-              threadId: threadId,
+              chatId: urlParams.get('chatId'),
+              threadId: urlParams.get('threadId'),
               language: lang,
               timestamp: new Date().toISOString()
           }
         };
 
-        // Usa fetch per inviare i dati al webhook n8n
         fetch(N8N_WEBHOOK_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(noteData)
         })
         .finally(() => {
-            // Indipendentemente dal successo o fallimento della chiamata,
-            // diamo feedback all'utente e chiudiamo la Mini App.
             submitBtn.disabled = true;
             submitBtn.textContent = t.btnSuccess;
-            
-            // Un piccolo ritardo per permettere all'utente di leggere il messaggio
-            setTimeout(() => {
-                tg.close();
-            }, 1200); // 1.2 secondi
+            setTimeout(() => { tg.close(); }, 1200);
         });
       });
 
-    } catch (error) {
-      document.body.innerHTML = 'Error: Impossibile caricare l\'app. Assicurati di aprirla da Telegram.';
-      console.error(error);
-    }
+    } catch (error) { /* ... */ }
   </script>
 </body>
 </html>
