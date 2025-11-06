@@ -407,25 +407,65 @@
     // CONFIGURAZIONE
     // ══════════════════════════════════════════════════════════════
     
-    const N8N_WEBHOOK_URL = "https://your-n8n-instance.com/webhook/agenda-form";
+    const N8N_WEBHOOK_URL = "https://your-n8n-instance.com/webhook/agenda-form-submit";
     
     // ══════════════════════════════════════════════════════════════
-    // RILEVAMENTO LINGUA E APPLICAZIONE
+    // INIZIALIZZAZIONE TELEGRAM
     // ══════════════════════════════════════════════════════════════
     
     const tg = window.Telegram.WebApp;
     tg.ready();
     tg.expand();
     
-    // Prendi la lingua da Telegram (es: 'it', 'en', 'es')
+    // ══════════════════════════════════════════════════════════════
+    // ESTRAI chat_id E thread_id DAL TELEGRAM initData
+    // ══════════════════════════════════════════════════════════════
+    
+    let chatId = null;
+    let threadId = null;
+    let userId = null;
+    
+    try {
+      const initData = tg.initData;
+      if (initData) {
+        // Decodifica initData (è una query string)
+        const params = new URLSearchParams(initData);
+        const userStr = params.get('user');
+        const chatStr = params.get('chat_instance');
+        
+        if (userStr) {
+          const user = JSON.parse(userStr);
+          userId = user.id;
+        }
+      }
+    } catch (e) {
+      console.error('Error parsing initData:', e);
+    }
+    
+    // ⚠️ IMPORTANTE: Telegram Mini App NON fornisce chat_id direttamente
+    // Devi passarlo come parametro dall'URL quando apri agenda.html
+    // Nel bot, quando invii il bottone, aggiungi i parametri:
+    // url: "https://simonaiit.github.io/SiteBoS-MiniApp/agenda.html?chatId=-123456&threadId=789"
+    
+    // Estrai da URL query string
+    const urlParams = new URLSearchParams(window.location.search);
+    chatId = urlParams.get('chatId');
+    threadId = urlParams.get('threadId');
+    
+    console.log('Chat ID:', chatId);
+    console.log('Thread ID:', threadId);
+    console.log('User ID:', userId);
+    
+    // ══════════════════════════════════════════════════════════════
+    // RILEVAMENTO LINGUA
+    // ══════════════════════════════════════════════════════════════
+    
     let userLang = tg.initData?.user?.language_code || 'en';
     
-    // Se la lingua non è supportata, usa il primo codice (es: 'it-IT' → 'it')
     if (!translations[userLang]) {
       userLang = userLang.split('-')[0];
     }
     
-    // Se ancora non è supportata, default a inglese
     if (!translations[userLang]) {
       userLang = 'en';
     }
@@ -451,7 +491,7 @@
     applyTranslations();
     
     // ══════════════════════════════════════════════════════════════
-    // LOGICA FORM (uguale a prima)
+    // LOGICA FORM
     // ══════════════════════════════════════════════════════════════
     
     const form = document.getElementById('eventForm');
@@ -477,13 +517,17 @@
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       
+      // ⚠️ RACCOGLI TUTTO: chat_id, thread_id, user_id, dati form
       const formData = {
+        chatId: chatId,           // ID del supergrupo
+        threadId: threadId,       // ID del thread/topic
+        userId: userId,           // ID dell'utente
         date: document.getElementById('eventDate').value,
         time: document.getElementById('eventTime').value,
         description: document.getElementById('eventDesc').value.trim(),
         location: document.getElementById('eventLocation').value.trim() || null,
-        userId: tg.initData,
-        language: userLang
+        language: userLang,
+        timestamp: new Date().toISOString()
       };
       
       submitBtn.disabled = true;
