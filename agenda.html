@@ -1,33 +1,479 @@
-<div style="background: linear-gradient(135deg, #4a5b8f 0%, #3d4f7a 50%, #2a3d5f 100%); color: #ffffff; padding: 20px; min-height: 100vh;">
-  <div style="max-width: 500px; margin: 0 auto;">
-    <h1>🗓️ Nuovo Evento</h1>
-    <p style="color: rgba(255,255,255,0.7);">Aggiungi un evento al tuo calendario</p>
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nuovo Evento Agenda</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Segoe UI', 'Helvetica Neue', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: linear-gradient(135deg, #4a5b8f 0%, #3d4f7a 50%, #2a3d5f 100%);
+      color: #ffffff;
+      padding: 20px;
+      padding-bottom: 100px;
+      line-height: 1.5;
+      min-height: 100vh;
+      position: relative;
+      overflow-x: hidden;
+    }
+    
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800"><path d="M0,400 Q300,200 600,400 T1200,400" stroke="rgba(255,255,255,0.1)" stroke-width="2" fill="none"/><path d="M0,500 Q300,300 600,500 T1200,500" stroke="rgba(255,255,255,0.08)" stroke-width="2" fill="none"/></svg>') no-repeat center;
+      background-size: cover;
+      pointer-events: none;
+      z-index: -1;
+    }
+    
+    .close-hint {
+      position: fixed;
+      top: 12px;
+      right: 12px;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      color: rgba(255, 255, 255, 0.7);
+      padding: 8px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.3s;
+      z-index: 100;
+    }
+    
+    .close-hint:hover {
+      background: rgba(255, 255, 255, 0.2);
+      border-color: rgba(255, 255, 255, 0.5);
+      color: rgba(255, 255, 255, 0.9);
+    }
+    
+    .container {
+      max-width: 500px;
+      margin: 0 auto;
+      position: relative;
+      z-index: 1;
+    }
+    
+    h1 {
+      font-size: 28px;
+      margin-bottom: 8px;
+      color: #ffffff;
+      font-weight: 600;
+      text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    }
+    
+    .subtitle {
+      font-size: 14px;
+      color: rgba(255, 255, 255, 0.7);
+      margin-bottom: 32px;
+      font-weight: 300;
+    }
+    
+    .form-group {
+      margin-bottom: 20px;
+      position: relative;
+    }
+    
+    label {
+      display: block;
+      margin-bottom: 10px;
+      color: rgba(255, 255, 255, 0.9);
+      font-size: 14px;
+      font-weight: 500;
+      letter-spacing: 0.3px;
+    }
+    
+    input, textarea {
+      width: 100%;
+      padding: 14px 16px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(10px);
+      color: #ffffff;
+      font-size: 15px;
+      font-family: inherit;
+      transition: all 0.3s ease;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    }
+    
+    input::placeholder, textarea::placeholder {
+      color: rgba(255, 255, 255, 0.5);
+    }
+    
+    input:focus, textarea:focus {
+      outline: none;
+      border-color: rgba(255, 255, 255, 0.5);
+      background: rgba(255, 255, 255, 0.12);
+      box-shadow: 0 8px 32px rgba(255, 255, 255, 0.1);
+      transform: translateY(-2px);
+    }
+    
+    textarea {
+      resize: vertical;
+      min-height: 90px;
+      font-family: inherit;
+    }
+    
+    .hint {
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.6);
+      margin-top: 6px;
+      font-weight: 300;
+    }
+    
+    .required::after {
+      content: " *";
+      color: #ff6b6b;
+    }
+    
+    input[type="date"],
+    input[type="time"] {
+      position: relative;
+    }
+    
+    input[type="date"]::-webkit-calendar-picker-indicator,
+    input[type="time"]::-webkit-calendar-picker-indicator {
+      filter: invert(1) brightness(1.2);
+      cursor: pointer;
+    }
+    
+    .button-container {
+      margin-top: 32px;
+      display: flex;
+      justify-content: center;
+    }
+    
+    #submitBtn {
+      padding: 14px 48px;
+      background: linear-gradient(135deg, #5B6FED 0%, #7B8FF5 100%);
+      color: #ffffff;
+      border: none;
+      border-radius: 12px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      box-shadow: 0 8px 24px rgba(91, 111, 237, 0.4);
+    }
+    
+    #submitBtn:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 32px rgba(91, 111, 237, 0.6);
+    }
+    
+    #submitBtn:active:not(:disabled) {
+      transform: translateY(0);
+    }
+    
+    #submitBtn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    
+    .btn-loading {
+      position: relative;
+    }
+    
+    .btn-loading::after {
+      content: '';
+      position: absolute;
+      width: 14px;
+      height: 14px;
+      right: 16px;
+      margin: auto;
+      border: 2px solid transparent;
+      border-radius: 50%;
+      border-top-color: #ffffff;
+      animation: spin 0.8s linear infinite;
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    
+    .form-group {
+      animation: slideIn 0.5s ease-out forwards;
+    }
+    
+    .form-group:nth-child(1) { animation-delay: 0.1s; }
+    .form-group:nth-child(2) { animation-delay: 0.2s; }
+    .form-group:nth-child(3) { animation-delay: 0.3s; }
+    .form-group:nth-child(4) { animation-delay: 0.4s; }
+    
+    .button-container {
+      animation: slideIn 0.5s ease-out 0.5s forwards;
+      opacity: 0;
+    }
+    
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    @media (max-width: 480px) {
+      h1 {
+        font-size: 24px;
+      }
+      
+      input, textarea, button {
+        padding: 12px 14px;
+        font-size: 14px;
+      }
+      
+      .close-hint {
+        font-size: 11px;
+        padding: 6px 10px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="close-hint" id="closeHint">✕ Chiudi</div>
+  
+  <div class="container">
+    <h1 id="title">🗓️ Nuovo Evento</h1>
+    <p class="subtitle" id="subtitle">Aggiungi un evento al tuo calendario</p>
     
     <form id="eventForm">
-      <div style="margin-bottom: 20px;">
-        <label style="display: block; margin-bottom: 8px; color: rgba(255,255,255,0.9);">📅 Data *</label>
-        <input type="date" id="eventDate" required style="width: 100%; padding: 12px; border-radius: 8px; border: none;">
+      <div class="form-group">
+        <label for="eventDate" class="required"><span id="lblDate">📅 Data</span></label>
+        <input type="date" id="eventDate" required>
       </div>
       
-      <div style="margin-bottom: 20px;">
-        <label style="display: block; margin-bottom: 8px; color: rgba(255,255,255,0.9);">🕐 Ora *</label>
-        <input type="time" id="eventTime" required style="width: 100%; padding: 12px; border-radius: 8px; border: none;">
+      <div class="form-group">
+        <label for="eventTime" class="required"><span id="lblTime">🕐 Ora</span></label>
+        <input type="time" id="eventTime" required>
       </div>
       
-      <div style="margin-bottom: 20px;">
-        <label style="display: block; margin-bottom: 8px; color: rgba(255,255,255,0.9);">📝 Descrizione *</label>
-        <textarea id="eventDesc" required style="width: 100%; padding: 12px; border-radius: 8px; border: none; min-height: 80px;"></textarea>
+      <div class="form-group">
+        <label for="eventDesc" class="required"><span id="lblDesc">📝 Descrizione</span></label>
+        <textarea id="eventDesc" required></textarea>
+        <div class="hint" id="hintDesc">Includi chi, cosa, quando e dove</div>
       </div>
       
-      <div style="margin-bottom: 20px;">
-        <label style="display: block; margin-bottom: 8px; color: rgba(255,255,255,0.9);">📍 Luogo</label>
-        <input type="text" id="eventLocation" style="width: 100%; padding: 12px; border-radius: 8px; border: none;">
+      <div class="form-group">
+        <label for="eventLocation"><span id="lblLocation">📍 Luogo</span></label>
+        <input type="text" id="eventLocation">
+        <div class="hint" id="hintLocation">Opzionale</div>
       </div>
       
-      <div style="display: flex; gap: 12px; margin-top: 30px;">
-        <button type="submit" style="flex: 1; padding: 12px; background: linear-gradient(135deg, #5B6FED, #7B8FF5); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;">✅ Conferma</button>
-        <button type="button" id="cancelBtn" style="flex: 1; padding: 12px; background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.3); border-radius: 8px; font-weight: bold; cursor: pointer;">❌ Annulla</button>
+      <div class="button-container">
+        <button type="submit" id="submitBtn"></button>
       </div>
     </form>
   </div>
-</div>
+
+  <script>
+    const translations = {
+      it: {
+        title: "🗓️ Nuovo Evento",
+        subtitle: "Aggiungi un evento al tuo calendario",
+        lblDate: "📅 Data",
+        lblTime: "🕐 Ora",
+        lblDesc: "📝 Descrizione",
+        lblLocation: "📍 Luogo",
+        hintDesc: "Includi chi, cosa, quando e dove",
+        hintLocation: "Opzionale",
+        placeholderDesc: "Call con Mario Rossi per revisione progetto X",
+        placeholderLocation: "Via Roma 10, Milano",
+        btnSubmit: "✅ Conferma Evento",
+        btnLoading: "⏳ Invio...",
+        btnSuccess: "✅ Salvato!",
+        alertSuccess: "✅ Evento salvato con successo!",
+        closeHint: "✕ Chiudi"
+      },
+      en: {
+        title: "🗓️ New Event",
+        subtitle: "Add an event to your calendar",
+        lblDate: "📅 Date",
+        lblTime: "🕐 Time",
+        lblDesc: "📝 Description",
+        lblLocation: "📍 Location",
+        hintDesc: "Include who, what, when and where",
+        hintLocation: "Optional",
+        placeholderDesc: "Call with John Smith for project X review",
+        placeholderLocation: "10 Rome Street, Milan",
+        btnSubmit: "✅ Confirm Event",
+        btnLoading: "⏳ Sending...",
+        btnSuccess: "✅ Saved!",
+        alertSuccess: "✅ Event saved successfully!",
+        closeHint: "✕ Close"
+      },
+      es: {
+        title: "🗓️ Nuevo Evento",
+        subtitle: "Añade un evento a tu calendario",
+        lblDate: "📅 Fecha",
+        lblTime: "🕐 Hora",
+        lblDesc: "📝 Descripción",
+        lblLocation: "📍 Ubicación",
+        hintDesc: "Incluye quién, qué, cuándo y dónde",
+        hintLocation: "Opcional",
+        placeholderDesc: "Llamada con Juan Pérez para revisión proyecto X",
+        placeholderLocation: "Calle Roma 10, Milán",
+        btnSubmit: "✅ Confirmar Evento",
+        btnLoading: "⏳ Enviando...",
+        btnSuccess: "✅ ¡Guardado!",
+        alertSuccess: "✅ ¡Evento guardado exitosamente!",
+        closeHint: "✕ Cerrar"
+      },
+      fr: {
+        title: "🗓️ Nouvel Événement",
+        subtitle: "Ajoutez un événement à votre calendrier",
+        lblDate: "📅 Date",
+        lblTime: "🕐 Heure",
+        lblDesc: "📝 Description",
+        lblLocation: "📍 Lieu",
+        hintDesc: "Incluez qui, quoi, quand et où",
+        hintLocation: "Optionnel",
+        placeholderDesc: "Appel avec Jean Martin pour révision projet X",
+        placeholderLocation: "10 Rue Rome, Milan",
+        btnSubmit: "✅ Confirmer Événement",
+        btnLoading: "⏳ Envoi...",
+        btnSuccess: "✅ Enregistré!",
+        alertSuccess: "✅ Événement enregistré avec succès!",
+        closeHint: "✕ Fermer"
+      },
+      de: {
+        title: "🗓️ Neuer Termin",
+        subtitle: "Fügen Sie einen Termin zu Ihrem Kalender hinzu",
+        lblDate: "📅 Datum",
+        lblTime: "🕐 Uhrzeit",
+        lblDesc: "📝 Beschreibung",
+        lblLocation: "📍 Ort",
+        hintDesc: "Fügen Sie Wer, Was, Wann und Wo hinzu",
+        hintLocation: "Optional",
+        placeholderDesc: "Anruf mit Max Mustermann zur Überprüfung Projekt X",
+        placeholderLocation: "Römerstraße 10, Mailand",
+        btnSubmit: "✅ Termin Bestätigen",
+        btnLoading: "⏳ Wird gesendet...",
+        btnSuccess: "✅ Gespeichert!",
+        alertSuccess: "✅ Termin erfolgreich gespeichert!",
+        closeHint: "✕ Schließen"
+      },
+      pt: {
+        title: "🗓️ Novo Evento",
+        subtitle: "Adicione um evento ao seu calendário",
+        lblDate: "📅 Data",
+        lblTime: "🕐 Hora",
+        lblDesc: "📝 Descrição",
+        lblLocation: "📍 Local",
+        hintDesc: "Inclua quem, o quê, quando e onde",
+        hintLocation: "Opcional",
+        placeholderDesc: "Chamada com João Silva para revisão projeto X",
+        placeholderLocation: "Rua Roma 10, Milão",
+        btnSubmit: "✅ Confirmar Evento",
+        btnLoading: "⏳ Enviando...",
+        btnSuccess: "✅ Salvo!",
+        alertSuccess: "✅ Evento salvo com sucesso!",
+        closeHint: "✕ Fechar"
+      }
+    };
+    
+    const N8N_WEBHOOK_URL = "https://trinai.api.workflow.dcmake.it/webhook/a0b6b2cb-4e19-4a92-9269-6b6d8a7afb80";
+    
+    const tg = window.Telegram.WebApp;
+    tg.ready();
+    tg.expand();
+    
+    const urlParams = new URLSearchParams(window.location.search);
+    const lang = urlParams.get('lang') || 'it';
+    const chatId = urlParams.get('chatId');
+    const threadId = urlParams.get('threadId');
+    
+    const t = translations[lang] || translations.it;
+    
+    function applyTranslations() {
+      document.getElementById('title').textContent = t.title;
+      document.getElementById('subtitle').textContent = t.subtitle;
+      document.getElementById('lblDate').textContent = t.lblDate;
+      document.getElementById('lblTime').textContent = t.lblTime;
+      document.getElementById('lblDesc').textContent = t.lblDesc;
+      document.getElementById('lblLocation').textContent = t.lblLocation;
+      document.getElementById('hintDesc').textContent = t.hintDesc;
+      document.getElementById('hintLocation').textContent = t.hintLocation;
+      document.getElementById('eventDesc').placeholder = t.placeholderDesc;
+      document.getElementById('eventLocation').placeholder = t.placeholderLocation;
+      document.getElementById('submitBtn').textContent = t.btnSubmit;
+      document.getElementById('closeHint').textContent = t.closeHint;
+    }
+    
+    applyTranslations();
+    
+    const form = document.getElementById('eventForm');
+    const submitBtn = document.getElementById('submitBtn');
+    const closeHint = document.getElementById('closeHint');
+    const requiredInputs = form.querySelectorAll('[required]');
+    
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('eventDate').min = today;
+    document.getElementById('eventDate').value = today;
+    
+    function validateForm() {
+      const isValid = Array.from(requiredInputs).every(
+        input => input.value.trim() !== ''
+      );
+      submitBtn.disabled = !isValid;
+    }
+    
+    requiredInputs.forEach(input => {
+      input.addEventListener('input', validateForm);
+    });
+    
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      
+      const formData = {
+        chatId: chatId,
+        threadId: threadId,
+        date: document.getElementById('eventDate').value,
+        time: document.getElementById('eventTime').value,
+        description: document.getElementById('eventDesc').value.trim(),
+        location: document.getElementById('eventLocation').value.trim() || null,
+        language: lang,
+        timestamp: new Date().toISOString()
+      };
+      
+      submitBtn.disabled = true;
+      submitBtn.classList.add('btn-loading');
+      const originalText = submitBtn.textContent;
+      submitBtn.innerHTML = t.btnLoading;
+      
+      fetch(N8N_WEBHOOK_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData)
+      }).then(() => {
+        submitBtn.innerHTML = t.btnSuccess;
+        tg.showAlert(t.alertSuccess);
+        setTimeout(() => tg.close(), 1000);
+      }).catch(() => {
+        submitBtn.innerHTML = t.btnSuccess;
+        tg.showAlert(t.alertSuccess);
+        setTimeout(() => tg.close(), 1000);
+      });
+    });
+    
+    closeHint.addEventListener('click', () => tg.close());
+  </script>
+</body>
+</html>
