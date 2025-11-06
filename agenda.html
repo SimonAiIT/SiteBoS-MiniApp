@@ -24,7 +24,6 @@
       overflow-x: hidden;
     }
     
-    /* Effetto background con pattern */
     body::before {
       content: '';
       position: fixed;
@@ -118,7 +117,6 @@
       color: #ff6b6b;
     }
     
-    /* Input date e time styling */
     input[type="date"],
     input[type="time"] {
       position: relative;
@@ -130,7 +128,6 @@
       cursor: pointer;
     }
     
-    /* BOTTONE DI INVIO */
     .button-container {
       margin-top: 32px;
       display: flex;
@@ -182,7 +179,6 @@
       border-color: rgba(255, 255, 255, 0.3);
     }
     
-    /* Loading state */
     .btn-loading {
       position: relative;
     }
@@ -203,7 +199,6 @@
       to { transform: rotate(360deg); }
     }
     
-    /* Animazione di entrata */
     .form-group {
       animation: slideIn 0.5s ease-out forwards;
     }
@@ -229,7 +224,6 @@
       }
     }
     
-    /* Responsive */
     @media (max-width: 480px) {
       h1 {
         font-size: 24px;
@@ -248,66 +242,216 @@
 </head>
 <body>
   <div class="container">
-    <h1>🗓️ Nuovo Evento</h1>
-    <p class="subtitle">Aggiungi un evento al tuo calendario</p>
+    <h1 id="title">🗓️ Nuovo Evento</h1>
+    <p class="subtitle" id="subtitle">Aggiungi un evento al tuo calendario</p>
     
     <form id="eventForm">
       <div class="form-group">
-        <label for="eventDate" class="required">📅 Data</label>
+        <label for="eventDate" class="required"><span id="lblDate">📅 Data</span></label>
         <input type="date" id="eventDate" required>
       </div>
       
       <div class="form-group">
-        <label for="eventTime" class="required">🕐 Ora</label>
+        <label for="eventTime" class="required"><span id="lblTime">🕐 Ora</span></label>
         <input type="time" id="eventTime" required>
       </div>
       
       <div class="form-group">
-        <label for="eventDesc" class="required">📝 Descrizione</label>
-        <textarea id="eventDesc" required 
-          placeholder="Call con Mario Rossi per revisione progetto X"></textarea>
-        <div class="hint">Includi chi, cosa, quando e dove</div>
+        <label for="eventDesc" class="required"><span id="lblDesc">📝 Descrizione</span></label>
+        <textarea id="eventDesc" required id="placeholderDesc"></textarea>
+        <div class="hint" id="hintDesc">Includi chi, cosa, quando e dove</div>
       </div>
       
       <div class="form-group">
-        <label for="eventLocation">📍 Luogo</label>
-        <input type="text" id="eventLocation" 
-          placeholder="Via Roma 10, Milano">
-        <div class="hint">Opzionale</div>
+        <label for="eventLocation"><span id="lblLocation">📍 Luogo</span></label>
+        <input type="text" id="eventLocation" id="placeholderLocation">
+        <div class="hint" id="hintLocation">Opzionale</div>
       </div>
       
-      <!-- BOTTONI -->
       <div class="button-container">
-        <button type="submit" id="submitBtn" disabled>
-          ✅ Conferma Evento
-        </button>
-        <button type="button" id="cancelBtn">
-          ❌ Annulla
-        </button>
+        <button type="submit" id="submitBtn" disabled></button>
+        <button type="button" id="cancelBtn"></button>
       </div>
     </form>
   </div>
 
   <script>
     // ══════════════════════════════════════════════════════════════
-    // CONFIGURAZIONE - MODIFICA SOLO QUESTO
+    // TRADUZIONI MULTILINGUA
     // ══════════════════════════════════════════════════════════════
     
-    // ⚠️ SOSTITUISCI QUESTO CON L'URL DEL TUO WEBHOOK N8N
+    const translations = {
+      it: {
+        title: "🗓️ Nuovo Evento",
+        subtitle: "Aggiungi un evento al tuo calendario",
+        lblDate: "📅 Data",
+        lblTime: "🕐 Ora",
+        lblDesc: "📝 Descrizione",
+        lblLocation: "📍 Luogo",
+        hintDesc: "Includi chi, cosa, quando e dove",
+        hintLocation: "Opzionale",
+        placeholderDesc: "Call con Mario Rossi per revisione progetto X",
+        placeholderLocation: "Via Roma 10, Milano",
+        btnSubmit: "✅ Conferma Evento",
+        btnCancel: "❌ Annulla",
+        btnLoading: "⏳ Invio...",
+        btnSuccess: "✅ Salvato!",
+        btnError: "❌ Errore",
+        alertSuccess: "✅ Evento salvato con successo!",
+        alertServerError: "❌ Errore del server. Riprova.",
+        alertNetError: "❌ Errore di connessione. Riprova."
+      },
+      en: {
+        title: "🗓️ New Event",
+        subtitle: "Add an event to your calendar",
+        lblDate: "📅 Date",
+        lblTime: "🕐 Time",
+        lblDesc: "📝 Description",
+        lblLocation: "📍 Location",
+        hintDesc: "Include who, what, when and where",
+        hintLocation: "Optional",
+        placeholderDesc: "Call with John Smith for project X review",
+        placeholderLocation: "10 Rome Street, Milan",
+        btnSubmit: "✅ Confirm Event",
+        btnCancel: "❌ Cancel",
+        btnLoading: "⏳ Sending...",
+        btnSuccess: "✅ Saved!",
+        btnError: "❌ Error",
+        alertSuccess: "✅ Event saved successfully!",
+        alertServerError: "❌ Server error. Try again.",
+        alertNetError: "❌ Connection error. Try again."
+      },
+      es: {
+        title: "🗓️ Nuevo Evento",
+        subtitle: "Añade un evento a tu calendario",
+        lblDate: "📅 Fecha",
+        lblTime: "🕐 Hora",
+        lblDesc: "📝 Descripción",
+        lblLocation: "📍 Ubicación",
+        hintDesc: "Incluye quién, qué, cuándo y dónde",
+        hintLocation: "Opcional",
+        placeholderDesc: "Llamada con Juan Pérez para revisión proyecto X",
+        placeholderLocation: "Calle Roma 10, Milán",
+        btnSubmit: "✅ Confirmar Evento",
+        btnCancel: "❌ Cancelar",
+        btnLoading: "⏳ Enviando...",
+        btnSuccess: "✅ ¡Guardado!",
+        btnError: "❌ Error",
+        alertSuccess: "✅ ¡Evento guardado exitosamente!",
+        alertServerError: "❌ Error del servidor. Intenta de nuevo.",
+        alertNetError: "❌ Error de conexión. Intenta de nuevo."
+      },
+      fr: {
+        title: "🗓️ Nouvel Événement",
+        subtitle: "Ajoutez un événement à votre calendrier",
+        lblDate: "📅 Date",
+        lblTime: "🕐 Heure",
+        lblDesc: "📝 Description",
+        lblLocation: "📍 Lieu",
+        hintDesc: "Incluez qui, quoi, quand et où",
+        hintLocation: "Optionnel",
+        placeholderDesc: "Appel avec Jean Martin pour révision projet X",
+        placeholderLocation: "10 Rue Rome, Milan",
+        btnSubmit: "✅ Confirmer Événement",
+        btnCancel: "❌ Annuler",
+        btnLoading: "⏳ Envoi...",
+        btnSuccess: "✅ Enregistré!",
+        btnError: "❌ Erreur",
+        alertSuccess: "✅ Événement enregistré avec succès!",
+        alertServerError: "❌ Erreur serveur. Réessayez.",
+        alertNetError: "❌ Erreur de connexion. Réessayez."
+      },
+      de: {
+        title: "🗓️ Neuer Termin",
+        subtitle: "Fügen Sie einen Termin zu Ihrem Kalender hinzu",
+        lblDate: "📅 Datum",
+        lblTime: "🕐 Uhrzeit",
+        lblDesc: "📝 Beschreibung",
+        lblLocation: "📍 Ort",
+        hintDesc: "Fügen Sie Wer, Was, Wann und Wo hinzu",
+        hintLocation: "Optional",
+        placeholderDesc: "Anruf mit Max Mustermann zur Überprüfung Projekt X",
+        placeholderLocation: "Römerstraße 10, Mailand",
+        btnSubmit: "✅ Termin Bestätigen",
+        btnCancel: "❌ Abbrechen",
+        btnLoading: "⏳ Wird gesendet...",
+        btnSuccess: "✅ Gespeichert!",
+        btnError: "❌ Fehler",
+        alertSuccess: "✅ Termin erfolgreich gespeichert!",
+        alertServerError: "❌ Serverfehler. Bitte versuchen Sie es erneut.",
+        alertNetError: "❌ Verbindungsfehler. Bitte versuchen Sie es erneut."
+      },
+      pt: {
+        title: "🗓️ Novo Evento",
+        subtitle: "Adicione um evento ao seu calendário",
+        lblDate: "📅 Data",
+        lblTime: "🕐 Hora",
+        lblDesc: "📝 Descrição",
+        lblLocation: "📍 Local",
+        hintDesc: "Inclua quem, o quê, quando e onde",
+        hintLocation: "Opcional",
+        placeholderDesc: "Chamada com João Silva para revisão projeto X",
+        placeholderLocation: "Rua Roma 10, Milão",
+        btnSubmit: "✅ Confirmar Evento",
+        btnCancel: "❌ Cancelar",
+        btnLoading: "⏳ Enviando...",
+        btnSuccess: "✅ Salvo!",
+        btnError: "❌ Erro",
+        alertSuccess: "✅ Evento salvo com sucesso!",
+        alertServerError: "❌ Erro do servidor. Tente novamente.",
+        alertNetError: "❌ Erro de conexão. Tente novamente."
+      }
+    };
+    
+    // ══════════════════════════════════════════════════════════════
+    // CONFIGURAZIONE
+    // ══════════════════════════════════════════════════════════════
+    
     const N8N_WEBHOOK_URL = "https://your-n8n-instance.com/webhook/agenda-form";
     
     // ══════════════════════════════════════════════════════════════
-    // INIZIALIZZAZIONE TELEGRAM
+    // RILEVAMENTO LINGUA E APPLICAZIONE
     // ══════════════════════════════════════════════════════════════
     
     const tg = window.Telegram.WebApp;
-    
-    // Inizializza
     tg.ready();
     tg.expand();
     
+    // Prendi la lingua da Telegram (es: 'it', 'en', 'es')
+    let userLang = tg.initData?.user?.language_code || 'en';
+    
+    // Se la lingua non è supportata, usa il primo codice (es: 'it-IT' → 'it')
+    if (!translations[userLang]) {
+      userLang = userLang.split('-')[0];
+    }
+    
+    // Se ancora non è supportata, default a inglese
+    if (!translations[userLang]) {
+      userLang = 'en';
+    }
+    
+    const t = translations[userLang];
+    
+    // Applica le traduzioni
+    function applyTranslations() {
+      document.getElementById('title').textContent = t.title;
+      document.getElementById('subtitle').textContent = t.subtitle;
+      document.getElementById('lblDate').textContent = t.lblDate;
+      document.getElementById('lblTime').textContent = t.lblTime;
+      document.getElementById('lblDesc').textContent = t.lblDesc;
+      document.getElementById('lblLocation').textContent = t.lblLocation;
+      document.getElementById('hintDesc').textContent = t.hintDesc;
+      document.getElementById('hintLocation').textContent = t.hintLocation;
+      document.getElementById('eventDesc').placeholder = t.placeholderDesc;
+      document.getElementById('eventLocation').placeholder = t.placeholderLocation;
+      document.getElementById('submitBtn').textContent = t.btnSubmit;
+      document.getElementById('cancelBtn').textContent = t.btnCancel;
+    }
+    
+    applyTranslations();
+    
     // ══════════════════════════════════════════════════════════════
-    // RIFERIMENTI AI BOTTONI
+    // LOGICA FORM (uguale a prima)
     // ══════════════════════════════════════════════════════════════
     
     const form = document.getElementById('eventForm');
@@ -315,104 +459,69 @@
     const cancelBtn = document.getElementById('cancelBtn');
     const requiredInputs = form.querySelectorAll('[required]');
     
-    // ══════════════════════════════════════════════════════════════
-    // IMPOSTA DATA MINIMA A OGGI
-    // ══════════════════════════════════════════════════════════════
-    
     const today = new Date().toISOString().split('T')[0];
     document.getElementById('eventDate').min = today;
     document.getElementById('eventDate').value = today;
-    
-    // ══════════════════════════════════════════════════════════════
-    // VALIDAZIONE REAL-TIME
-    // ══════════════════════════════════════════════════════════════
     
     function validateForm() {
       const isValid = Array.from(requiredInputs).every(
         input => input.value.trim() !== ''
       );
-      
-      if (isValid) {
-        submitBtn.disabled = false;
-      } else {
-        submitBtn.disabled = true;
-      }
+      submitBtn.disabled = !isValid;
     }
     
     requiredInputs.forEach(input => {
       input.addEventListener('input', validateForm);
     });
     
-    // ══════════════════════════════════════════════════════════════
-    // GESTISCI IL SUBMIT
-    // ══════════════════════════════════════════════════════════════
-    
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       
-      // Raccogli i dati dal form
       const formData = {
         date: document.getElementById('eventDate').value,
         time: document.getElementById('eventTime').value,
         description: document.getElementById('eventDesc').value.trim(),
         location: document.getElementById('eventLocation').value.trim() || null,
-        userId: tg.initData
+        userId: tg.initData,
+        language: userLang
       };
       
-      // Mostra loading
       submitBtn.disabled = true;
       submitBtn.classList.add('btn-loading');
-      submitBtn.innerHTML = '⏳ Invio...';
+      const originalText = submitBtn.textContent;
+      submitBtn.innerHTML = t.btnLoading;
       
       try {
-        // Invia i dati al webhook n8n
         const response = await fetch(N8N_WEBHOOK_URL, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(formData)
         });
         
         if (response.ok) {
-          // Successo!
-          submitBtn.innerHTML = '✅ Salvato!';
-          tg.showAlert('✅ Evento salvato con successo!');
-          
-          // Chiudi dopo 1 secondo
-          setTimeout(() => {
-            tg.close();
-          }, 1000);
+          submitBtn.innerHTML = t.btnSuccess;
+          tg.showAlert(t.alertSuccess);
+          setTimeout(() => tg.close(), 1000);
         } else {
-          // Errore dal server
-          submitBtn.innerHTML = '❌ Errore';
-          tg.showAlert('❌ Errore del server. Riprova.');
-          
-          // Reset bottone dopo 2 secondi
+          submitBtn.innerHTML = t.btnError;
+          tg.showAlert(t.alertServerError);
           setTimeout(() => {
             submitBtn.disabled = false;
             submitBtn.classList.remove('btn-loading');
-            submitBtn.innerHTML = '✅ Conferma Evento';
+            submitBtn.innerHTML = originalText;
           }, 2000);
         }
       } catch (error) {
-        // Errore di rete
-        console.error('Errore:', error);
-        submitBtn.innerHTML = '❌ Errore connessione';
-        tg.showAlert('❌ Errore di connessione. Riprova.');
-        
-        // Reset bottone dopo 2 secondi
+        console.error('Error:', error);
+        submitBtn.innerHTML = t.btnError;
+        tg.showAlert(t.alertNetError);
         setTimeout(() => {
           submitBtn.disabled = false;
           submitBtn.classList.remove('btn-loading');
-          submitBtn.innerHTML = '✅ Conferma Evento';
+          submitBtn.innerHTML = originalText;
         }, 2000);
       }
     });
-    
-    // ══════════════════════════════════════════════════════════════
-    // BOTTONE ANNULLA
-    // ══════════════════════════════════════════════════════════════
     
     cancelBtn.addEventListener('click', () => {
       tg.close();
