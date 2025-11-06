@@ -1,0 +1,23 @@
+<div style="background: linear-gradient(135deg, #4a5b8f 0%, #3d4f7a 50%, #2a3d5f 100%); color: #ffffff; padding: 20px; min-height: 100vh;">
+  <div style="max-width: 500px; margin: 0 auto;">
+    <h1>📝 Nuova Nota</h1>
+    <p style="color: rgba(255,255,255,0.7);">Aggiungi una nota</p>
+    
+    <form id="noteForm">
+      <div style="margin-bottom: 20px;">
+        <label style="display: block; margin-bottom: 8px; color: rgba(255,255,255,0.9);">Titolo *</label>
+        <input type="text" id="noteTitle" required style="width: 100%; padding: 12px; border-radius: 8px; border: none;">
+      </div>
+      
+      <div style="margin-bottom: 20px;">
+        <label style="display: block; margin-bottom: 8px; color: rgba(255,255,255,0.9);">Contenuto *</label>
+        <textarea id="noteContent" required style="width: 100%; padding: 12px; border-radius: 8px; border: none; min-height: 120px;"></textarea>
+      </div>
+      
+      <div style="display: flex; gap: 12px; margin-top: 30px;">
+        <button type="submit" style="flex: 1; padding: 12px; background: linear-gradient(135deg, #5B6FED, #7B8FF5); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;">✅ Salva</button>
+        <button type="button" id="cancelBtn" style="flex: 1; padding: 12px; background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.3); border-radius: 8px; font-weight: bold; cursor: pointer;">❌ Annulla</button>
+      </div>
+    </form>
+  </div>
+</div>
