@@ -13,7 +13,8 @@
     :root {
       --bg-start: #4a5b8f; --bg-end: #2a3d5f; --text-primary: #ffffff;
       --text-secondary: rgba(255, 255, 255, 0.7); --border-color: rgba(255, 255, 255, 0.2);
-      --input-bg: rgba(255, 255, 255, 0.08); --accent-color: #5B6FED; --error-color: #ff6b6b;
+      --input-bg: #606492; /* COLORE CAMPIIONATO DAL TUO SCREENSHOT */
+      --accent-color: #5B6FED; --error-color: #ff6b6b;
       --highlight-color: #8A9AFF;
       --highlight-bg-color: rgba(138, 154, 255, 0.1);
       --fc-border-color: var(--border-color);
@@ -45,16 +46,28 @@
       background-color: rgba(91, 111, 27, 0.15); box-shadow: none;
     }
 
+    /* --- INTESTAZIONI UNIFORMI, COLORE SFONDO FORM --- */
     .fc-col-header-cell,
-.fc-timegrid-axis,
-.fc-timegrid-slot-label,
-.fc-list-day-cushion {
-  background: #606492 !important; /* Usa qui il colore esatto dello sfondo */
-  color: #fff !important;
-  font-weight: 600;
-  border-bottom: 1px solid rgba(255,255,255,0.2) !important;
-}
+    .fc-timegrid-axis,
+    .fc-timegrid-slot-label,
+    .fc-list-day-cushion {
+      background: var(--input-bg) !important; /* colore blu/viola uniforme */
+      color: #fff !important;
+      font-weight: 600;
+      border-bottom: 1px solid var(--border-color) !important;
+    }
 
+    /* --- EVIDENZIAZIONE GIORNO CORRENTE (SFONDO CHIARO, TESTO SCURO) --- */
+    .fc-col-header-cell.fc-day-today,
+    .fc-timegrid-axis.fc-day-today,
+    .fc-timegrid-slot-label.fc-day-today,
+    .fc .fc-day-today,
+    .fc .fc-list-day.fc-day-today,
+    .fc .fc-list-day-cushion.fc-day-today {
+      background: #ece9f5 !important;
+      color: #373545 !important;
+      font-weight: bold;
+    }
 
     .fc .fc-col-header-cell-cushion { padding: 12px 4px; }
     .fc .fc-list-day-cushion { padding: 8px 16px; }
@@ -98,8 +111,9 @@
         background-color: var(--highlight-bg-color) !important;
     }
     .fc .fc-day-today {
-        background-color: rgba(91,111,237,0.15) !important;
+        background-color: #ece9f5 !important;
         box-shadow: 0 0 0 2px var(--accent-color) inset !important;
+        color: #373545 !important;
     }
     
     .fc .fc-daygrid-day-number {
@@ -121,6 +135,7 @@
     .fc .fc-timegrid-slot-label { color: var(--text-secondary); }
     .fc .fc-timegrid-body, .fc .fc-timegrid-axis-frame, .fc .fc-daygrid-day-frame { background: transparent; }
 
+    /* --- REGOLA MOBILE PER SICUREZZA --- */
     @media (max-width: 768px) {
       body { padding: 0; }
       #calendar {
@@ -128,6 +143,23 @@
         border: none; backdrop-filter: none; box-shadow: none;
       }
       .fc .fc-toolbar-title { font-size: 1.1rem; }
+      .fc-col-header-cell,
+      .fc-timegrid-axis,
+      .fc-timegrid-slot-label,
+      .fc-list-day-cushion {
+        background: #606492 !important;
+        color: #fff !important;
+      }
+      .fc-col-header-cell.fc-day-today,
+      .fc-timegrid-axis.fc-day-today,
+      .fc-timegrid-slot-label.fc-day-today,
+      .fc .fc-day-today,
+      .fc .fc-list-day.fc-day-today,
+      .fc .fc-list-day-cushion.fc-day-today {
+        background: #ece9f5 !important;
+        color: #373545 !important;
+        font-weight: bold;
+      }
     }
     
     .modal-overlay {
