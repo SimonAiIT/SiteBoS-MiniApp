@@ -24,10 +24,10 @@
     #calendar {
       max-width: 900px;
       margin: 0 auto;
-      background: rgba(255 255 255 / 0.07);
+      background: rgba(255, 255, 255, 0.07);
       border-radius: 14px;
       padding: 16px;
-      box-shadow: 0 12px 30px rgb(0 0 0 / 0.3);
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3);
     }
     .fc {
       font-family: inherit;
@@ -59,11 +59,62 @@
       font-weight: 600;
       line-height: 1.2;
       white-space: normal;
+      cursor: pointer;
+    }
+    .fc .fc-timegrid-event {
+      cursor: pointer;
+    }
+    
+    /* Modal popup fallback */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.7);
+      z-index: 9999;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-overlay.active {
+      display: flex;
+    }
+    .modal-content {
+      background: linear-gradient(135deg, var(--bg-start) 0%, var(--bg-end) 100%);
+      border-radius: 16px;
+      padding: 24px;
+      max-width: 400px;
+      width: 90%;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+      color: var(--text-primary);
+      white-space: pre-line;
+      line-height: 1.6;
+    }
+    .modal-close {
+      margin-top: 20px;
+      background: var(--accent-color);
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      width: 100%;
     }
   </style>
 </head>
 <body>
   <div id="calendar"></div>
+  
+  <!-- Modal fallback per dettagli evento -->
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal-content">
+      <div id="modalText"></div>
+      <button class="modal-close" onclick="closeModal()">Chiudi</button>
+    </div>
+  </div>
   
   <script>
     const tg = window.Telegram.WebApp;
@@ -74,11 +125,30 @@
     const groupId = params.get('group_id');
 
     if (!groupId) {
-      document.body.innerHTML = '<h2 style="color: red; text-align:center;">Parametro group_id mancante nell\'URL</h2>';
+      document.body.innerHTML = '<h2 style="color: red; text-align:center;">Parametro group_id mancante</h2>';
       throw new Error('Parametro group_id mancante');
     }
 
     const apiUrl = `https://trinai.api.workflow.dcmake.it/webhook/manager-desk/appointments?group_id=${groupId}`;
+
+    function showEventDetails(details) {
+      // Prova prima con Telegram
+      if (tg && tg.showAlert) {
+        try {
+          tg.showAlert(details);
+          return;
+        } catch (e) {
+          console.warn('Telegram showAlert fallito, uso modal', e);
+        }
+      }
+      // Fallback: modal custom
+      document.getElementById('modalText').textContent = details;
+      document.getElementById('modalOverlay').classList.add('active');
+    }
+
+    function closeModal() {
+      document.getElementById('modalOverlay').classList.remove('active');
+    }
 
     fetch(apiUrl)
       .then(res => {
@@ -86,6 +156,8 @@
         return res.json();
       })
       .then(events => {
+        console.log('Eventi caricati:', events);
+        
         const calendarEl = document.getElementById('calendar');
         const calendar = new FullCalendar.Calendar(calendarEl, {
           initialView: window.innerWidth < 768 ? 'timeGridDay' : 'dayGridMonth',
@@ -100,9 +172,10 @@
           slotMaxTime: '22:00:00',
           events: events,
           height: 'auto',
-          dayMaxEventRows: true, // mostra '+ altro' se tanti eventi
+          dayMaxEventRows: true,
           selectable: false,
           editable: false,
+          
           eventClick: function(info) {
             const event = info.event;
             const props = event.extendedProps;
@@ -112,39 +185,43 @@
               const dueDate = new Date(event.start);
               const priorityEmoji = { 'HIGH': '🔴', 'MEDIUM': '🟡', 'LOW': '🔵' };
 
-              details = `
-📌 ${event.title.replace('📌 ', '')}
+              details = `📌 ${event.title.replace('📌 ', '')}
 
 ${priorityEmoji[props.priority] || '⚪'} Priorità: ${props.priority}
 📅 Scadenza: ${dueDate.toLocaleDateString('it-IT', {
-                weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'})}
+  weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
+})}
 📊 Status: ${props.status}
-${props.tags && props.tags.length > 0 ? '🏷️ Tags: ' + props.tags.join(', ') : ''}
-              `.trim();
+${props.tags && props.tags.length > 0 ? '🏷️ Tags: ' + props.tags.join(', ') : ''}`;
             } else {
               const start = new Date(event.start);
               const end = event.end ? new Date(event.end) : null;
-              details = `
-📅 ${event.title}
+              
+              details = `📅 ${event.title}
+
 🕐 ${start.toLocaleString('it-IT', {
-                weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit'})}
+  weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
+  hour: '2-digit', minute: '2-digit'
+})}
 ${end ? '🕐 Fine: ' + end.toLocaleTimeString('it-IT', {hour: '2-digit', minute: '2-digit'}) : ''}
+
 ⏱️ Durata: ${props.duration_minutes || 'N/A'} min
 📍 ${props.location || 'Non specificato'}
-${props.description ? '📝 ' + props.description : ''}
-              `.trim();
+${props.description ? '📝 ' + props.description : ''}`;
             }
 
-            tg.showAlert(details);
+            showEventDetails(details);
           },
+          
           dateClick: function(info) {
             calendar.changeView('timeGridDay', info.dateStr);
           }
         });
+        
         calendar.render();
       })
       .catch(err => {
-        document.body.innerHTML = '<h2 style="color: red; text-align:center;">Errore caricamento calendario: ' + err.message + '</h2>';
+        document.body.innerHTML = '<h2 style="color: red; text-align:center;">Errore: ' + err.message + '</h2>';
       });
   </script>
 </body>
