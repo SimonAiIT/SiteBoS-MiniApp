@@ -14,11 +14,9 @@
       --bg-start: #4a5b8f; --bg-end: #2a3d5f; --text-primary: #ffffff;
       --text-secondary: rgba(255, 255, 255, 0.7); --border-color: rgba(255, 255, 255, 0.2);
       --input-bg: rgba(255, 255, 255, 0.08); --accent-color: #5B6FED; --error-color: #ff6b6b;
-      
       --highlight-color: #8A9AFF;
       --highlight-bg-color: rgba(138, 154, 255, 0.1);
       --header-bg-color: rgba(0, 0, 0, 0.25);
-
       --fc-border-color: var(--border-color);
     }
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -48,42 +46,57 @@
       background-color: rgba(91, 111, 237, 0.15); box-shadow: none;
     }
 
-    .fc .fc-col-header-cell {
+    /* 1. INTESTAZIONI LEGGIBILI IN TUTTE LE VISTE */
+    .fc .fc-col-header-cell, .fc-list-day {
         background: var(--header-bg-color) !important;
-        border: none !important;
     }
     .fc .fc-col-header-cell-cushion, .fc-list-day-cushion {
-        color: #fff !important; font-weight: bold;
+        color: white !important; font-weight: bold;
         padding: 12px 4px; background: none;
+    }
+    .fc-list-day-cushion {
+        padding: 8px 16px;
     }
     .fc .fc-col-header-cell.fc-day-sun .fc-col-header-cell-cushion, 
     .fc .fc-col-header-cell.fc-day-sat .fc-col-header-cell-cushion {
         color: var(--highlight-color) !important;
     }
 
+    /* 2. STILE EVENTI CON TESTO A CAPO AUTOMATICO */
     .fc-event {
         font-weight: 500; border-radius: 6px; padding: 5px 8px;
-        transition: filter 0.3s ease, transform 0.2s ease;
+        transition: filter 0.3s ease;
         border: none !important;
         background-color: var(--accent-color) !important;
         color: var(--text-primary) !important;
-        display: flex; align-items: center; gap: 6px;
     }
-    .fc-event:hover { filter: brightness(1.15); transform: translateY(-1px); }
+    .fc-event-title {
+        white-space: normal !important; /* <-- LA SOLUZIONE CHIAVE PER IL TESTO A CAPO */
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+    .fc-event:hover { filter: brightness(1.15); }
     
     .fc-event-note {
         background: linear-gradient(90deg, var(--accent-color), var(--highlight-color)) !important;
     }
     .fc-event-title::before {
-        font-size: 1.1em;
+        font-size: 1em;
+        flex-shrink: 0; /* Impedisce all'icona di rimpicciolirsi */
     }
-    .fc-event-note .fc-event-title::before {
-        content: '📌';
-    }
-    .fc-event-high .fc-event-title::before {
-        content: '🔴';
-    }
-
+    .fc-event-note .fc-event-title::before { content: '📌'; }
+    .fc-event-high .fc-event-title::before { content: '🔴'; }
+    
+    /* VISTA LISTA: Allineamento e stile puntini */
+    .fc-list-event > td { vertical-align: middle; }
+    .fc-list-event:hover td { background-color: var(--highlight-color) !important; }
+    .fc-list-event-dot { border-color: var(--accent-color) !important; }
+    .fc-list-event.fc-event-high .fc-list-event-dot { border-color: var(--error-color) !important; }
+    .fc-list-event.fc-event-note .fc-list-event-dot { border-color: var(--highlight-color) !important; }
+    .fc-list-event-title a { color: inherit !important; text-decoration: none; }
+    
+    /* 3. TODAY E WEEKEND COERENTI */
     .fc .fc-day-sat, .fc .fc-day-sun {
         background: var(--highlight-bg-color) !important;
     }
@@ -92,10 +105,10 @@
         box-shadow: 0 0 0 2px var(--accent-color) inset !important;
     }
     
+    /* 4. VISTA MESE CON BADGE */
     .fc .fc-daygrid-day-number {
         color: var(--text-primary); font-weight: bold; background: var(--accent-color);
-        border-radius: 20px; padding: 2px 8px; margin: 4px;
-        display: inline-block;
+        border-radius: 20px; padding: 2px 8px; margin: 4px; display: inline-block;
     }
     .fc .fc-daygrid-day.fc-day-sat .fc-daygrid-day-number,
     .fc .fc-daygrid-day.fc-day-sun .fc-daygrid-day-number {
@@ -103,9 +116,11 @@
         color: var(--text-primary);
     }
 
+    /* 5. VISTA TIMEGRID */
     .fc .fc-timegrid-slot-lane { border-color: rgba(255,255,255,0.15) !important; }
     .fc .fc-timegrid-slot-lane:nth-child(even) { background: rgba(255,255,255,0.02); }
     .fc .fc-timegrid-slot-label { color: var(--text-secondary); }
+    .fc .fc-timegrid-body, .fc .fc-timegrid-axis-frame { background: transparent; }
 
     @media (max-width: 768px) {
       body { padding: 0; }
@@ -117,41 +132,19 @@
     }
     
     .modal-overlay {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.7);
-      z-index: 9999;
-      align-items: center;
-      justify-content: center;
+      display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.7); z-index: 9999; align-items: center; justify-content: center;
     }
-    .modal-overlay.active {
-      display: flex;
-    }
+    .modal-overlay.active { display: flex; }
     .modal-content {
       background: linear-gradient(135deg, var(--bg-start) 0%, var(--bg-end) 100%);
-      border-radius: 16px;
-      padding: 24px;
-      max-width: 400px;
-      width: 90%;
-      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
-      color: var(--text-primary);
-      white-space: pre-line;
-      line-height: 1.6;
+      border-radius: 16px; padding: 24px; max-width: 400px; width: 90%;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5); color: var(--text-primary);
+      white-space: pre-line; line-height: 1.6;
     }
     .modal-close {
-      margin-top: 20px;
-      background: var(--accent-color);
-      color: white;
-      border: none;
-      padding: 12px 24px;
-      border-radius: 8px;
-      font-weight: 600;
-      cursor: pointer;
-      width: 100%;
+      margin-top: 20px; background: var(--accent-color); color: white; border: none;
+      padding: 12px 24px; border-radius: 8px; font-weight: 600; cursor: pointer; width: 100%;
     }
   </style>
 </head>
