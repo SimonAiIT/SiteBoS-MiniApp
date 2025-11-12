@@ -83,7 +83,7 @@
         
         function loadCalendar(groupId) {
             // URL del tuo webhook n8n - SOSTITUISCI CON IL TUO
-            const apiUrl = `https://tuo-n8n-instance.app/webhook/manager-desk/appointments?group_id=${groupId}`;
+            const apiUrl = `https://trinai.api.workflow.dcmake.it/webhook/manager-desk/appointments?group_id=${groupId}`;
             
             fetch(apiUrl)
                 .then(res => {
