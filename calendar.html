@@ -9,182 +9,215 @@
   <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
   <style>
     :root {
-      --bg-start: #4a5b8f;
-      --bg-end: #2a3d5f;
-      --text-primary: #ffffff;
-      --text-secondary: rgba(255, 255, 255, 0.7);
-      --border-color: rgba(255, 255, 255, 0.2);
-      --input-bg: rgba(255, 255, 255, 0.08);
-      --accent-color: #5B6FED;
+      --bg-start: #4a5b8f; --bg-end: #2a3d5f; --text-primary: #ffffff;
+      --text-secondary: rgba(255, 255, 255, 0.7); --border-color: rgba(255, 255, 255, 0.2);
+      --input-bg: rgba(255, 255, 255, 0.08); --accent-color: #5B6FED; --error-color: #ff6b6b;
     }
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
       background: linear-gradient(135deg, var(--bg-start) 0%, var(--bg-end) 100%);
       color: var(--text-primary); padding: 20px; min-height: 100vh;
-      -webkit-font-smoothing: antialiased;
     }
     #calendar {
-      max-width: 900px; margin: 0 auto; background: var(--input-bg);
-      backdrop-filter: blur(10px); border: 1px solid var(--border-color);
-      border-radius: 14px; padding: 16px; box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3);
+      max-width: 900px;
+      margin: 0 auto;
+      background: rgba(255, 255, 255, 0.07);
+      border-radius: 14px;
+      padding: 16px;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3);
     }
-    .fc { font-family: inherit; color: var(--text-primary); }
-    .fc .fc-toolbar-title { font-weight: 600; font-size: 1.5rem; }
-
-    .fc .fc-button-primary {
-      background-color: var(--input-bg); border: 1px solid var(--border-color);
-      color: var(--text-secondary); border-radius: 10px;
-    }
-    .fc .fc-button-primary:not(:disabled).fc-button-active,
-    .fc .fc-button-primary:hover {
-      border-color: var(--accent-color); color: var(--text-primary); box-shadow: none;
-    }
-
-    .fc-col-header-cell,
-    .fc-timegrid-axis,
-    .fc-timegrid-slot-label,
-    .fc-list-day-cushion {
-      background: var(--input-bg) !important;
-      color: var(--text-primary) !important;
-      font-weight: 600;
-      border-bottom: 1px solid var(--border-color) !important;
-      padding: 12px 8px;
-      font-size: 1rem;
-      min-height: 32px;
-      z-index: 2;
-    }
-    .fc .fc-toolbar {
-      z-index: 10;
-      position: relative;
-      background: var(--input-bg);
-      padding: 12px 4px;
+    .fc {
+      font-family: inherit;
+      color: var(--text-primary);
     }
     .fc .fc-toolbar-title {
-      font-size: 1.2rem;
-      font-weight: bold;
-      color: var(--text-primary);
-      background: none;
-      padding: 0 8px;
-    }
-    .fc-col-header-cell.fc-day-today,
-    .fc .fc-day-today {
-      background: rgba(91, 111, 237, 0.18) !important;
-      color: #232533 !important;
-      font-weight: bold;
-    }
-
-    .fc .fc-button-group,
-    .fc .fc-button {
-      z-index: 10;
-      position: relative;
-    }
-    .fc .fc-view-harness {
-      z-index: 1;
-      position: relative;
-    }
-    .fc .fc-timegrid-slots td,
-    .fc .fc-timegrid-slot-label {
-      padding: 4px 2px;
-      font-size: 0.95rem;
-    }
-    .fc-event {
       font-weight: 600;
-      border-radius: 8px;
-      box-shadow: 0 4px 9px rgba(91,111,237,0.13);
-      padding: 6px 10px;
-      background: var(--accent-color) !important;
-      color: var(--text-primary) !important;
+      font-size: 1.3rem;
+      color: var(--text-primary);
     }
-    .fc-event-title { white-space: normal !important; }
-
-    @media (max-width: 768px) {
-      body { padding: 0; }
-      #calendar {
-        border-radius: 0; height: 100vh; padding: 8px; background: transparent;
-        border: none; backdrop-filter: none; box-shadow: none;
-      }
-      .fc .fc-toolbar-title {
-        font-size: 1rem;
-        padding: 0 4px;
-      }
-      .fc-col-header-cell,
-      .fc-timegrid-axis,
-      .fc-timegrid-slot-label,
-      .fc-list-day-cushion {
-        padding: 8px 6px;
-        font-size: 0.98rem;
-        min-height: 28px;
-      }
+    .fc button {
+      background: var(--input-bg);
+      border: 1px solid var(--border-color);
+      color: var(--text-primary);
+      border-radius: 8px;
+      font-weight: 600;
+    }
+    .fc button:hover, .fc button:focus {
+      background: var(--accent-color);
+      border-color: var(--accent-color);
+      color: #fff;
+      outline: none;
+      box-shadow: 0 0 10px var(--accent-color);
+    }
+    .fc .fc-daygrid-event {
+      border-radius: 8px;
+      padding: 2px 6px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      line-height: 1.2;
+      white-space: normal;
+      cursor: pointer;
+    }
+    .fc .fc-timegrid-event {
+      cursor: pointer;
+    }
+    
+    /* Modal popup fallback */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.7);
+      z-index: 9999;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-overlay.active {
+      display: flex;
+    }
+    .modal-content {
+      background: linear-gradient(135deg, var(--bg-start) 0%, var(--bg-end) 100%);
+      border-radius: 16px;
+      padding: 24px;
+      max-width: 400px;
+      width: 90%;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+      color: var(--text-primary);
+      white-space: pre-line;
+      line-height: 1.6;
+    }
+    .modal-close {
+      margin-top: 20px;
+      background: var(--accent-color);
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      width: 100%;
     }
   </style>
 </head>
 <body>
   <div id="calendar"></div>
+  <!-- Modal fallback per dettagli evento -->
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal-content">
+      <div id="modalText"></div>
+      <button class="modal-close" onclick="closeModal()">Chiudi</button>
+    </div>
+  </div>
   <script>
     const tg = window.Telegram.WebApp;
     tg.ready();
     tg.expand();
 
-    if (tg.themeParams) {
-      const root = document.documentElement;
-      if (tg.themeParams.bg_color) {
-        root.style.setProperty('--bg-start', tg.themeParams.bg_color);
-        root.style.setProperty('--bg-end', tg.themeParams.bg_color);
-      }
-      if (tg.themeParams.button_color) {
-        root.style.setProperty('--accent-color', tg.themeParams.button_color);
-      }
-      if (tg.themeParams.text_color) {
-        root.style.setProperty('--text-primary', tg.themeParams.text_color);
-      }
-    }
-
     const params = new URLSearchParams(window.location.search);
     const groupId = params.get('group_id');
+
     if (!groupId) {
-      document.body.innerHTML = `<h2 style="color: red; text-align:center;">Parametro group_id mancante</h2>`;
+      document.body.innerHTML = '<h2 style="color: red; text-align:center;">Parametro group_id mancante</h2>';
       throw new Error('Parametro group_id mancante');
     }
+
     const apiUrl = `https://trinai.api.workflow.prod.dcmake.it/webhook/manager-desk/appointments?group_id=${groupId}`;
 
-    fetch(apiUrl)
-      .then(res => { if (!res.ok) throw new Error(`HTTP Error: ${res.status}`); return res.json(); })
-      .then(events => {
-        const calendarEl = document.getElementById('calendar');
-        const isMobile = window.innerWidth < 768;
+    function showEventDetails(details) {
+      // Prova prima con Telegram
+      if (tg && tg.showAlert) {
+        try {
+          tg.showAlert(details);
+          return;
+        } catch (e) {
+          console.warn('Telegram showAlert fallito, uso modal', e);
+        }
+      }
+      // Fallback: modal custom
+      document.getElementById('modalText').textContent = details;
+      document.getElementById('modalOverlay').classList.add('active');
+    }
 
+    function closeModal() {
+      document.getElementById('modalOverlay').classList.remove('active');
+    }
+
+    fetch(apiUrl)
+      .then(res => {
+        if (!res.ok) throw new Error(`HTTP Error: ${res.status}`);
+        return res.json();
+      })
+      .then(events => {
+        console.log('Eventi caricati:', events);
+        
+        const calendarEl = document.getElementById('calendar');
         const calendar = new FullCalendar.Calendar(calendarEl, {
-          initialView: isMobile ? 'listWeek' : 'dayGridMonth',
-          headerToolbar: isMobile
-              ? { left: 'prev,next', center: 'title', right: 'today' }
-              : { left: 'prev,next today', center: 'title', right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek' },
-          buttonText: { today: 'Oggi', month: 'Mese', week: 'Settimana', day: 'Giorno', list: 'Lista' },
+          initialView: window.innerWidth < 768 ? 'timeGridDay' : 'dayGridMonth',
+          headerToolbar: {
+            left: 'prev,next today',
+            center: 'title',
+            right: 'dayGridMonth,timeGridWeek,timeGridDay'
+          },
           locale: 'it',
           firstDay: 1,
           slotMinTime: '07:00:00',
           slotMaxTime: '22:00:00',
           events: events,
-          height: isMobile ? '100%' : 'auto',
+          height: 'auto',
           dayMaxEventRows: true,
-
-          eventClassNames: function(arg) {
-            let classNames = [];
-            const props = arg.event.extendedProps;
-            if (props.type === 'note') classNames.push('fc-event-note');
-            if (props.priority === 'HIGH') classNames.push('fc-event-high');
-            return classNames;
-          },
-
+          selectable: false,
+          editable: false,
+          
           eventClick: function(info) {
             const event = info.event;
-            tg.showAlert(event.title);
+            const props = event.extendedProps;
+            let details;
+
+            if (props.type === 'note') {
+              const dueDate = new Date(event.start);
+              const priorityEmoji = { 'HIGH': '🔴', 'MEDIUM': '🟡', 'LOW': '🔵' };
+
+              details = `📌 ${event.title.replace('📌 ', '')}
+
+${priorityEmoji[props.priority] || '⚪'} Priorità: ${props.priority}
+📅 Scadenza: ${dueDate.toLocaleDateString('it-IT', {
+  weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
+})}
+📊 Status: ${props.status}
+${props.tags && props.tags.length > 0 ? '🏷️ Tags: ' + props.tags.join(', ') : ''}`;
+            } else {
+              const start = new Date(event.start);
+              const end = event.end ? new Date(event.end) : null;
+              
+              details = `📅 ${event.title}
+
+🕐 ${start.toLocaleString('it-IT', {
+  weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
+  hour: '2-digit', minute: '2-digit'
+})}
+${end ? '🕐 Fine: ' + end.toLocaleTimeString('it-IT', {hour: '2-digit', minute: '2-digit'}) : ''}
+
+⏱️ Durata: ${props.duration_minutes || 'N/A'} min
+📍 ${props.location || 'Non specificato'}
+${props.description ? '📝 ' + props.description : ''}`;
+            }
+
+            showEventDetails(details);
+          },
+          
+          dateClick: function(info) {
+            calendar.changeView('timeGridDay', info.dateStr);
           }
         });
+        
         calendar.render();
       })
       .catch(err => {
-        document.body.innerHTML = `<h2 style="color: red; text-align:center;">Errore: ${err.message}</h2>`;
+        document.body.innerHTML = '<h2 style="color: red; text-align:center;">Errore: ' + err.message + '</h2>';
       });
   </script>
 </body>
