@@ -12,110 +12,66 @@
   <style>
     :root {
       --bg-start: #4a5b8f; --bg-end: #2a3d5f;
-      --fc-header-bg: linear-gradient(135deg, #4a5b8f 0%, #2a3d5f 100%);
       --text-primary: #ffffff;
-      --text-secondary: rgba(255,255,255,0.7);
-      --border-color: rgba(255,255,255,0.12);
-      --input-bg: rgba(255,255,255,0.06);
-      --accent-color: #5B6FED;
-      --error-color: #ff6b6b;
-      --highlight-color: #FFD166;
+      --text-secondary: rgba(255, 255, 255, 0.7);
+      --border-color: rgba(255, 255, 255, 0.2);
+      --input-bg: rgba(255, 255, 255, 0.08);
+      --accent-color: #5B6FED; --error-color: #ff6b6b;
     }
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
       font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
-      background: var(--fc-header-bg) fixed;
-      color: var(--text-primary);
-      padding: 20px; min-height: 100vh; -webkit-font-smoothing: antialiased;
+      background: linear-gradient(135deg, var(--bg-start) 0%, var(--bg-end) 100%) fixed;
+      color: var(--text-primary); padding: 20px; min-height: 100vh;-webkit-font-smoothing: antialiased;
     }
     #calendar {
       max-width: 900px; margin: 0 auto;
       background: var(--input-bg);
       backdrop-filter: blur(10px);
       border: 1px solid var(--border-color);
-      border-radius: 14px;
-      padding: 16px;
+      border-radius: 14px; padding: 16px;
       box-shadow: 0 12px 30px rgba(0,0,0,0.3);
     }
     @supports not (backdrop-filter: blur(10px)) {
       #calendar { background: rgba(44,91,143,0.18); }
     }
 
-    /* Toolbar e intestazioni di tutte le viste */
-    .fc-toolbar, .fc .fc-header-toolbar, .fc .fc-list-day-cushion, .fc th.fc-col-header-cell,
-    .fc .fc-day-header, .fc .fc-timegrid-axis-frame {
-      background: var(--fc-header-bg) !important;
+    /* Elimina SFONDO BIANCO DA INTESTAZIONI header */
+    .fc th.fc-col-header-cell,
+    .fc .fc-list-day-cushion,
+    .fc .fc-day-header {
+      background: var(--input-bg) !important;
       color: var(--text-primary) !important;
       border: none !important;
-    }
-    .fc-toolbar-title, .fc .fc-col-header-cell-cushion, .fc .fc-list-day-cushion, .fc .fc-day-header,
-    .fc .fc-timegrid-axis-frame {
-      color: var(--text-primary) !important;
       font-weight: 600;
     }
-    .fc .fc-day-sat .fc-col-header-cell-cushion, .fc .fc-day-sun .fc-col-header-cell-cushion,
-    .fc .fc-day-sat .fc-list-day-cushion, .fc .fc-day-sun .fc-list-day-cushion,
-    .fc .fc-day-sat .fc-day-header, .fc .fc-day-sun .fc-day-header {
-      color: var(--highlight-color) !important;
-      text-shadow: 0 1px 4px #1a2460;
-    }
-
-    /* Numeri, bordi, slot: fondo blu anche in mese/week/day */
+    /* Togli eventuale bianco dai numeri dei giorni */
     .fc .fc-daygrid-day-number {
       color: var(--text-primary);
-      font-weight: bold;
       background: var(--accent-color);
-      border-radius: 14px;
-      padding: 2px 10px;
-      margin: 4px 0;
+      border-radius: 10px;
+      font-weight: bold;
+      padding: 2px 8px;
+      margin: 2px 0;
       display: inline-block;
-    }
-    .fc .fc-daygrid-day.fc-day-sat .fc-daygrid-day-number,
-    .fc .fc-daygrid-day.fc-day-sun .fc-daygrid-day-number {
-      background: var(--highlight-color);
-      color: #333;
     }
     .fc .fc-day-other .fc-daygrid-day-number {
       opacity: 0.45;
+      background: none !important;
     }
-
-    /* Eventi: MAI bianco! */
+    /* Eventi */
     .fc-event {
-      font-weight: 500;
-      border-radius: 6px;
-      padding: 5px 8px;
-      border: none !important;
       background-color: var(--accent-color) !important;
       color: var(--text-primary) !important;
+      font-weight: 500;
+      border-radius: 8px;
+      padding: 4px 6px;
     }
-    .fc-event-title, .fc-event-title a {
+    .fc-event-title {
       white-space: normal !important;
-      color: var(--text-primary) !important;
-      text-decoration: none !important;
     }
-    .fc-event-note { background: linear-gradient(90deg, var(--accent-color), var(--highlight-color)) !important; }
-    .fc-event-high { border-left: 5px solid var(--error-color) !important; }
 
-    /* List week/giorno/all-day: fondo blu anche qui! */
-    .fc-list-day-cushion, .fc-list-event > td {
-      background: var(--fc-header-bg) !important;
-      color: var(--text-primary) !important;
-      font-weight: 600;
-    }
-    .fc-list-event:hover td { filter: brightness(1.12); }
-
-    /* Today, weekend, slot, etc. */
-    .fc-day-today {
-      background: rgba(91,111,237,0.18) !important;
-      box-shadow: 0 0 0 2px var(--accent-color) inset !important;
-    }
-    .fc-day-sat, .fc-day-sun {
-      background-color: rgba(255,214,102,0.06) !important;
-    }
-    .fc-timegrid-slot-lane { border-color: rgba(255,255,255,0.15) !important; }
-    .fc-timegrid-slot-lane:nth-child(even) { background: rgba(44,91,143,0.10); }
-    .fc-timegrid-body, .fc-timegrid-axis-frame, .fc-daygrid-day-frame { background: transparent; }
-
+    /* Responsive invariato */
     @media (max-width: 768px) {
       body { padding: 0; }
       #calendar { border-radius: 0; height: 100vh; padding: 8px; background: transparent;
@@ -123,17 +79,16 @@
       .fc-toolbar-title { font-size: 1.1rem; }
     }
     /* Modal invariato */
-    .modal-overlay { display: none; position: fixed; top:0; left:0; width:100%; height:100%;
-      background: rgba(0,0,0,0.7); z-index:9999; align-items:center; justify-content:center; }
-    .modal-overlay.active { display: flex; }
-    .modal-content {
-      background: var(--fc-header-bg);
-      border-radius: 16px; padding: 24px; max-width: 400px; width: 90%;
-      box-shadow: 0 20px 60px rgba(0,0,0,0.5); color: var(--text-primary);
-      white-space: pre-line; line-height: 1.6;
+    .modal-overlay { display: none; position:fixed; top:0; left:0; width:100%; height:100%;
+      background:rgba(0,0,0,0.7); z-index:9999; align-items:center; justify-content:center; }
+    .modal-overlay.active{display:flex;}
+    .modal-content{background:linear-gradient(135deg,var(--bg-start) 0%,var(--bg-end) 100%);
+      border-radius:16px; padding:24px; max-width:400px; width:90%;
+      box-shadow:0 20px 60px rgba(0,0,0,0.5); color:var(--text-primary);
+      white-space:pre-line; line-height:1.6;
     }
-    .modal-close { margin-top: 20px; background: var(--accent-color); color: white; border: none;
-        padding: 12px 24px; border-radius: 8px; font-weight: 600; cursor: pointer; width: 100%; }
+    .modal-close{margin-top:20px; background:var(--accent-color); color:white; border:none;
+      padding:12px 24px; border-radius:8px; font-weight:600; cursor:pointer; width:100%;}
   </style>
 </head>
 <body>
@@ -146,24 +101,7 @@
   </div>
   <script>
     const tg = window.Telegram.WebApp;
-    tg.ready();
-    tg.expand();
-
-    // integrazione colori Telegram
-    if (tg.themeParams) {
-      const root = document.documentElement;
-      if (tg.themeParams.bg_color) {
-        root.style.setProperty('--bg-start', tg.themeParams.bg_color);
-        root.style.setProperty('--bg-end', tg.themeParams.bg_color);
-        root.style.setProperty('--fc-header-bg', tg.themeParams.bg_color);
-      }
-      if (tg.themeParams.button_color) {
-        root.style.setProperty('--accent-color', tg.themeParams.button_color);
-      }
-      if (tg.themeParams.text_color) {
-        root.style.setProperty('--text-primary', tg.themeParams.text_color);
-      }
-    }
+    tg.ready(); tg.expand();
 
     const params = new URLSearchParams(window.location.search);
     const groupId = params.get('group_id');
@@ -177,7 +115,7 @@
 
     function showEventDetails(details) {
       if (tg && tg.showAlert) {
-        try { tg.showAlert(details); return; } catch (e) { }
+        try { tg.showAlert(details); return; } catch (e) {}
       }
       document.getElementById('modalText').textContent = details;
       document.getElementById('modalOverlay').classList.add('active');
@@ -205,13 +143,6 @@
           events: events,
           height: isMobile ? '100%' : 'auto',
           dayMaxEventRows: true,
-          eventClassNames: function(arg) {
-            let cn = [];
-            const props = arg.event.extendedProps;
-            if (props.type === 'note') cn.push('fc-event-note');
-            if (props.priority === 'HIGH') cn.push('fc-event-high');
-            return cn;
-          },
           eventClick: function(info) {
             const event = info.event;
             const props = event.extendedProps;
