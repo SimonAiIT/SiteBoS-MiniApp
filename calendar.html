@@ -22,6 +22,7 @@
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
       background: linear-gradient(135deg, var(--bg-start) 0%, var(--bg-end) 100%);
       color: var(--text-primary); padding: 20px; min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
     }
     #calendar {
       max-width: 900px; margin: 0 auto; background: var(--input-bg);
@@ -48,22 +49,53 @@
       color: var(--text-primary) !important;
       font-weight: 600;
       border-bottom: 1px solid var(--border-color) !important;
+      padding: 12px 8px;
+      font-size: 1rem;
+      min-height: 32px;
+      z-index: 2;
     }
-
+    .fc .fc-toolbar {
+      z-index: 10;
+      position: relative;
+      background: var(--input-bg);
+      padding: 12px 4px;
+    }
+    .fc .fc-toolbar-title {
+      font-size: 1.2rem;
+      font-weight: bold;
+      color: var(--text-primary);
+      background: none;
+      padding: 0 8px;
+    }
     .fc-col-header-cell.fc-day-today,
     .fc .fc-day-today {
-      background: rgba(91, 111, 237, 0.15) !important;
-      color: #222 !important;
+      background: rgba(91, 111, 237, 0.18) !important;
+      color: #232533 !important;
       font-weight: bold;
     }
 
-    .fc-event {
-      font-weight: 500; border-radius: 6px; padding: 5px 8px;
-      background-color: var(--accent-color) !important;
-      color: var(--text-primary) !important;
-      border: none !important;
+    .fc .fc-button-group,
+    .fc .fc-button {
+      z-index: 10;
+      position: relative;
     }
-
+    .fc .fc-view-harness {
+      z-index: 1;
+      position: relative;
+    }
+    .fc .fc-timegrid-slots td,
+    .fc .fc-timegrid-slot-label {
+      padding: 4px 2px;
+      font-size: 0.95rem;
+    }
+    .fc-event {
+      font-weight: 600;
+      border-radius: 8px;
+      box-shadow: 0 4px 9px rgba(91,111,237,0.13);
+      padding: 6px 10px;
+      background: var(--accent-color) !important;
+      color: var(--text-primary) !important;
+    }
     .fc-event-title { white-space: normal !important; }
 
     @media (max-width: 768px) {
@@ -72,18 +104,17 @@
         border-radius: 0; height: 100vh; padding: 8px; background: transparent;
         border: none; backdrop-filter: none; box-shadow: none;
       }
-      .fc .fc-toolbar-title { font-size: 1.1rem; }
+      .fc .fc-toolbar-title {
+        font-size: 1rem;
+        padding: 0 4px;
+      }
       .fc-col-header-cell,
       .fc-timegrid-axis,
       .fc-timegrid-slot-label,
       .fc-list-day-cushion {
-        background: var(--input-bg) !important;
-        color: var(--text-primary) !important;
-      }
-      .fc-col-header-cell.fc-day-today,
-      .fc .fc-day-today {
-        background: rgba(91, 111, 237, 0.15) !important;
-        color: #222 !important;
+        padding: 8px 6px;
+        font-size: 0.98rem;
+        min-height: 28px;
       }
     }
   </style>
