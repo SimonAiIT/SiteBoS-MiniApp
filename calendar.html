@@ -42,9 +42,6 @@
       font-size: 1.5rem;
       color: var(--text-primary);
     }
-    .fc-theme-standard td, .fc-theme-standard th, .fc-scrollgrid, .fc-theme-standard .fc-list {
-      border-color: var(--border-color);
-    }
     .fc .fc-button-primary {
       background-color: var(--input-bg);
       border: 1px solid var(--border-color);
@@ -63,17 +60,6 @@
       background-color: rgba(91, 111, 237, 0.15);
       box-shadow: none;
     }
-    .fc .fc-daygrid-day.fc-day-today {
-      background-color: rgba(91, 111, 237, 0.1) !important;
-    }
-    .fc-list-day-cushion, .fc-col-header-cell-cushion {
-        background: rgba(0, 0, 0, 0.2);
-        padding: 8px 4px;
-        border-radius: 6px;
-    }
-    .fc .fc-day-other .fc-daygrid-day-top {
-      opacity: 0.4;
-    }
     .fc-event {
         cursor: pointer;
         border: 1px solid var(--accent-color) !important;
@@ -85,33 +71,37 @@
     }
     .fc-event-main { color: var(--text-primary) !important; }
 
-    .fc .fc-timegrid-slot-lane {
-      background: transparent;
+    /* Stili generali e sicuri per tutte le viste */
+    .fc-theme-standard th, .fc-theme-standard td, .fc-theme-standard .fc-list {
+        border-color: var(--border-color);
+    }
+    .fc-list-day-cushion, .fc .fc-col-header-cell-cushion {
+        background: rgba(0, 0, 0, 0.2);
+        padding: 8px 4px;
+        border-radius: 6px;
+        color: var(--text-primary);
+    }
+    .fc .fc-daygrid-day.fc-day-today, .fc .fc-timegrid-col.fc-day-today {
+        background-color: rgba(91, 111, 237, 0.1) !important;
+    }
+    .fc .fc-day-other .fc-daygrid-day-top { opacity: 0.4; }
+
+    /* Stili specifici e corretti per TimeGrid (Vista Giorno/Settimana) */
+    .fc .fc-timegrid-slot-lane, .fc .fc-timegrid-axis-frame, .fc-timegrid .fc-daygrid-body {
+        background-color: transparent !important; /* Rimuove lo sfondo grigio in modo sicuro */
     }
     .fc .fc-timegrid-slot-label {
-      color: var(--text-secondary);
+        color: var(--text-secondary);
     }
-    .fc-theme-standard .fc-timegrid-slots td {
-        height: 3em; /* Ripristina un'altezza minima per le righe */
-    }
-    .fc .fc-timegrid-slot-lane {
-        border-bottom: 0; /* Rimuove il bordo inferiore di default se presente */
-        border-top: 1px dotted var(--border-color); /* Applica una linea superiore visibile */
-    }
-     .fc .fc-timegrid-col.fc-day-today {
-        background-color: rgba(91, 111, 237, 0.05); /* Sfondo leggero per colonna 'oggi' */
+    .fc .fc-timegrid-slot-lane, .fc .fc-timegrid-slots tr {
+        border-color: var(--border-color) !important; /* Assicura che le linee orizzontali usino il colore corretto */
     }
 
     @media (max-width: 768px) {
       body { padding: 0; }
       #calendar {
-        border-radius: 0;
-        height: 100vh;
-        padding: 8px;
-        background: transparent;
-        border: none;
-        backdrop-filter: none;
-        box-shadow: none;
+        border-radius: 0; height: 100vh; padding: 8px; background: transparent;
+        border: none; backdrop-filter: none; box-shadow: none;
       }
       .fc .fc-toolbar-title { font-size: 1.1rem; }
     }
@@ -242,7 +232,7 @@
           },
           
           dateClick: function(info) {
-            if (calendar.view.type.includes('Grid')) {
+            if (calendar.view.type.includes('Grid') && !info.allDay) {
                 calendar.changeView('timeGridDay', info.dateStr);
             }
           }
