@@ -10,7 +10,6 @@
   <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
   
   <style>
-    /* MODIFICATO: Variabili e stili di base presi dal tuo form per coerenza */
     :root {
       --bg-start: #4a5b8f; --bg-end: #2a3d5f; --text-primary: #ffffff;
       --text-secondary: rgba(255, 255, 255, 0.7); --border-color: rgba(255, 255, 255, 0.2);
@@ -19,14 +18,12 @@
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-      background: linear-gradient(135deg, var(--bg-start) 0%, var(--bg-end) 100%) fixed; /* Aggiunto 'fixed' per gradiente stabile */
+      background: linear-gradient(135deg, var(--bg-start) 0%, var(--bg-end) 100%) fixed;
       color: var(--text-primary); 
       padding: 20px;
       min-height: 100vh;
       -webkit-font-smoothing: antialiased;
     }
-
-    /* MODIFICATO: Contenitore principale del calendario con stile "glass" */
     #calendar {
       max-width: 900px;
       margin: 0 auto;
@@ -40,25 +37,21 @@
     .fc {
       font-family: inherit;
     }
-    
-    /* MODIFICATO: Stili globali per il calendario (testo, bordi, etc.) */
     .fc .fc-toolbar-title {
       font-weight: 600;
       font-size: 1.5rem;
       color: var(--text-primary);
     }
     .fc, .fc-theme-standard .fc-list, .fc-theme-standard th, .fc-theme-standard td {
-      border-color: var(--border-color); /* Bordi coerenti */
+      border-color: var(--border-color);
     }
     .fc-theme-standard .fc-list {
       border: 1px solid var(--border-color);
     }
     .fc-scrollgrid {
       border-radius: 10px;
-      overflow: hidden; /* Nasconde gli angoli sporgenti dei bordi interni */
+      overflow: hidden;
     }
-
-    /* MODIFICATO: Stile dei bottoni (Mese, Giorno, etc.) identico al form */
     .fc .fc-button-primary {
       background-color: var(--input-bg);
       border: 1px solid var(--border-color);
@@ -77,27 +70,23 @@
       background-color: rgba(91, 111, 237, 0.15);
       box-shadow: none;
     }
-
-    /* MODIFICATO: Stile degli slot orari, intestazioni e giorno corrente */
     .fc .fc-daygrid-day.fc-day-today {
-      background-color: rgba(91, 111, 237, 0.1) !important; /* Evidenzia oggi */
+      background-color: rgba(91, 111, 237, 0.1) !important;
     }
     .fc .fc-timegrid-slot-lane, .fc .fc-daygrid-day-frame {
-        background: transparent !important; /* Elimina lo sfondo grigio */
+        background: transparent !important;
     }
     .fc-list-day-cushion, .fc-col-header-cell-cushion {
-        background: rgba(0, 0, 0, 0.2); /* Sfondo semi-trasparente per intestazioni */
+        background: rgba(0, 0, 0, 0.2);
         padding: 8px 4px;
         border-radius: 6px;
     }
     .fc .fc-timegrid-axis-cushion, .fc .fc-list-event-time {
-      color: var(--text-secondary); /* Colore per gli orari */
+      color: var(--text-secondary);
     }
     .fc .fc-day-other .fc-daygrid-day-top {
-      opacity: 0.4; /* Giorni del mese precedente/successivo meno visibili */
+      opacity: 0.4;
     }
-
-    /* MODIFICATO: Stile degli eventi */
     .fc-event {
         cursor: pointer;
         border: 1px solid var(--accent-color) !important;
@@ -109,7 +98,6 @@
     }
     .fc-event-main { color: var(--text-primary) !important; }
 
-    /* Media Query per la visualizzazione mobile */
     @media (max-width: 768px) {
       body { padding: 0; }
       #calendar {
@@ -124,15 +112,48 @@
       .fc .fc-toolbar-title { font-size: 1.1rem; }
     }
     
-    /* Modal popup fallback (invariato) */
-    .modal-overlay { display: none; /* ... */ }
-    /* ... resto degli stili del modal */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.7);
+      z-index: 9999;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-overlay.active {
+      display: flex;
+    }
+    .modal-content {
+      background: linear-gradient(135deg, var(--bg-start) 0%, var(--bg-end) 100%);
+      border-radius: 16px;
+      padding: 24px;
+      max-width: 400px;
+      width: 90%;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+      color: var(--text-primary);
+      white-space: pre-line;
+      line-height: 1.6;
+    }
+    .modal-close {
+      margin-top: 20px;
+      background: var(--accent-color);
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      width: 100%;
+    }
   </style>
 </head>
 <body>
   <div id="calendar"></div>
   
-  <!-- Il resto del body (modal e script) rimane identico alla versione precedente -->
   <div class="modal-overlay" id="modalOverlay">
     <div class="modal-content">
       <div id="modalText"></div>
@@ -141,7 +162,6 @@
   </div>
   
   <script>
-    // Lo script JavaScript è identico alla versione precedente e non necessita modifiche.
     const tg = window.Telegram.WebApp;
     tg.ready();
     tg.expand();
