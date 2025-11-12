@@ -46,35 +46,33 @@
       background-color: rgba(91, 111, 237, 0.15); box-shadow: none;
     }
 
-    /* 1. INTESTAZIONI LEGGIBILI IN TUTTE LE VISTE */
+    /* 1. INTESTAZIONI CON SFONDO SCURO - SOLUZIONE DEFINITIVA */
     .fc .fc-col-header-cell, .fc-list-day {
-        background: var(--header-bg-color) !important;
+        background-color: var(--header-bg-color) !important;
+        border-color: var(--border-color) !important;
     }
     .fc .fc-col-header-cell-cushion, .fc-list-day-cushion {
-        color: white !important; font-weight: bold;
-        padding: 12px 4px; background: none;
+        color: white !important;
+        font-weight: 600;
+        padding: 12px 4px;
     }
-    .fc-list-day-cushion {
-        padding: 8px 16px;
-    }
-    .fc .fc-col-header-cell.fc-day-sun .fc-col-header-cell-cushion, 
-    .fc .fc-col-header-cell.fc-day-sat .fc-col-header-cell-cushion {
+    .fc .fc-list-day-cushion { padding: 8px 16px; }
+    .fc .fc-col-header-cell.fc-day-sat .fc-col-header-cell-cushion,
+    .fc .fc-col-header-cell.fc-day-sun .fc-col-header-cell-cushion {
         color: var(--highlight-color) !important;
     }
 
-    /* 2. STILE EVENTI CON TESTO A CAPO AUTOMATICO */
+    /* 2. STILE EVENTI CON TESTO A CAPO */
     .fc-event {
         font-weight: 500; border-radius: 6px; padding: 5px 8px;
-        transition: filter 0.3s ease;
+        transition: filter 0.2s ease;
         border: none !important;
         background-color: var(--accent-color) !important;
         color: var(--text-primary) !important;
     }
     .fc-event-title {
-        white-space: normal !important; /* <-- LA SOLUZIONE CHIAVE PER IL TESTO A CAPO */
-        display: flex;
-        align-items: center;
-        gap: 6px;
+        white-space: normal !important;
+        display: flex; align-items: center; gap: 6px;
     }
     .fc-event:hover { filter: brightness(1.15); }
     
@@ -82,13 +80,11 @@
         background: linear-gradient(90deg, var(--accent-color), var(--highlight-color)) !important;
     }
     .fc-event-title::before {
-        font-size: 1em;
-        flex-shrink: 0; /* Impedisce all'icona di rimpicciolirsi */
+        font-size: 1em; flex-shrink: 0;
     }
     .fc-event-note .fc-event-title::before { content: '📌'; }
     .fc-event-high .fc-event-title::before { content: '🔴'; }
     
-    /* VISTA LISTA: Allineamento e stile puntini */
     .fc-list-event > td { vertical-align: middle; }
     .fc-list-event:hover td { background-color: var(--highlight-color) !important; }
     .fc-list-event-dot { border-color: var(--accent-color) !important; }
@@ -96,16 +92,16 @@
     .fc-list-event.fc-event-note .fc-list-event-dot { border-color: var(--highlight-color) !important; }
     .fc-list-event-title a { color: inherit !important; text-decoration: none; }
     
-    /* 3. TODAY E WEEKEND COERENTI */
+    /* 3. TODAY E WEEKEND */
     .fc .fc-day-sat, .fc .fc-day-sun {
-        background: var(--highlight-bg-color) !important;
+        background-color: var(--highlight-bg-color) !important;
     }
     .fc .fc-day-today {
-        background: rgba(91,111,237,0.15) !important;
+        background-color: rgba(91,111,237,0.15) !important;
         box-shadow: 0 0 0 2px var(--accent-color) inset !important;
     }
     
-    /* 4. VISTA MESE CON BADGE */
+    /* 4. VISTA MESE */
     .fc .fc-daygrid-day-number {
         color: var(--text-primary); font-weight: bold; background: var(--accent-color);
         border-radius: 20px; padding: 2px 8px; margin: 4px; display: inline-block;
