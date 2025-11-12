@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Manager Desk Calendar</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
+    <style>
+        * { 
+            box-sizing: border-box; 
+            margin: 0;
+            padding: 0;
+        }
+        
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
+            padding: 10px;
+            background-color: var(--tg-theme-bg-color, #fff);
+            color: var(--tg-theme-text-color, #000);
+        }
+        
+        #calendar { 
+            max-width: 1200px; 
+            margin: 0 auto;
+            background: var(--tg-theme-secondary-bg-color, #f5f5f5);
+            padding: 15px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .loading { 
+            text-align: center; 
+            padding: 40px 20px; 
+            font-size: 18px;
+            color: var(--tg-theme-text-color, #333);
+        }
+        
+        .error {
+            color: #e74c3c;
+            padding: 20px;
+            text-align: center;
+            border-radius: 8px;
+            background: #fee;
+            margin: 20px;
+        }
+        
+        /* Personalizzazione eventi FullCalendar */
+        .fc-event {
+            cursor: pointer;
+            border-radius: 4px;
+            padding: 2px 4px;
+        }
+        
+        .fc-daygrid-event {
+            white-space: normal !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="loading" id="loadingMsg">📅 Caricamento calendario...</div>
+    <div id="calendar" style="display: none;"></div>
+    
+    <script>
+        // Inizializza Telegram WebApp
+        const tg = window.Telegram.WebApp;
+        tg.expand();
+        tg.ready();
+        
+        // Leggi parametri URL
+        const params = new URLSearchParams(window.location.search);
+        const groupId = params.get('group_id');
+        
+        // Verifica che group_id sia presente
+        if (!groupId) {
+            document.getElementById('loadingMsg').innerHTML = '❌ Parametro group_id mancante';
+            document.getElementById('loadingMsg').className = 'error';
+            console.error('group_id parameter is missing');
+        } else {
+            loadCalendar(groupId);
+        }
+        
+        function loadCalendar(groupId) {
+            // URL del tuo webhook n8n - SOSTITUISCI CON IL TUO
+            const apiUrl = `https://tuo-n8n-instance.app/webhook/manager-desk/appointments?group_id=${groupId}`;
+            
+            fetch(apiUrl)
+                .then(res => {
+                    if (!res.ok) {
+                        throw new Error(`HTTP error! status: ${res.status}`);
+                    }
+                    return res.json();
+                })
+                .then(events => {
+                    console.log('Eventi caricati:', events.length);
+                    
+                    // Nascondi loading e mostra calendario
+                    document.getElementById('loadingMsg').style.display = 'none';
+                    document.getElementById('calendar').style.display = 'block';
+                    
+                    // Inizializza FullCalendar
+                    const calendarEl = document.getElementById('calendar');
+                    const calendar = new FullCalendar.Calendar(calendarEl, {
+                        // Vista iniziale in base alla dimensione schermo
+                        initialView: window.innerWidth < 768 ? 'timeGridDay' : 'dayGridMonth',
+                        
+                        // Toolbar configurazione
+                        headerToolbar: {
+                            left: 'prev,next today',
+                            center: 'title',
+                            right: 'dayGridMonth,timeGridWeek,timeGridDay'
+                        },
+                        
+                        // Opzioni localizzazione italiana
+                        locale: 'it',
+                        firstDay: 1, // Lunedì come primo giorno
+                        
+                        // Configurazione orari
+                        slotMinTime: '07:00:00',
+                        slotMaxTime: '22:00:00',
+                        
+                        // Eventi dal backend
+                        events: events,
+                        
+                        // Altezza calendario
+                        height: 'auto',
+                        
+                        // Click su evento
+                        eventClick: function(info) {
+                            const event = info.event;
+                            const props = event.extendedProps;
+                            
+                            let details;
+                            
+                            if (props.type === 'note') {
+                                // Formato per sticky note/task
+                                const dueDate = new Date(event.start);
+                                const priorityEmoji = {
+                                    'HIGH': '🔴',
+                                    'MEDIUM': '🟡',
+                                    'LOW': '🔵'
+                                };
+                                
+                                details = `
+📌 ${event.title.replace('📌 ', '')}
+
+${priorityEmoji[props.priority] || '⚪'} Priorità: ${props.priority}
+📅 Scadenza: ${dueDate.toLocaleDateString('it-IT', { 
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric'
+})}
+📊 Status: ${props.status}
+${props.tags && props.tags.length > 0 ? '🏷️ Tags: ' + props.tags.join(', ') : ''}
+                                `.trim();
+                            } else {
+                                // Formato per appointments
+                                const start = new Date(event.start);
+                                const end = event.end ? new Date(event.end) : null;
+                                
+                                details = `
+📅 ${event.title}
+
+🕐 ${start.toLocaleString('it-IT', { 
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+})}
+${end ? '🕐 Fine: ' + end.toLocaleTimeString('it-IT', {hour: '2-digit', minute: '2-digit'}) : ''}
+
+⏱️ Durata: ${props.duration_minutes || 'N/A'} min
+📍 ${props.location || 'Non specificato'}
+${props.description ? '📝 ' + props.description : ''}
+                                `.trim();
+                            }
+                            
+                            // Mostra alert Telegram
+                            tg.showAlert(details);
+                        },
+                        
+                        // Opzionale: Click su data vuota per creare evento
+                        dateClick: function(info) {
+                            tg.showPopup({
+                                title: 'Nuova data selezionata',
+                                message: `Data: ${info.dateStr}\n\nVuoi creare un nuovo evento?`,
+                                buttons: [
+                                    { id: 'create', type: 'default', text: 'Crea Evento' },
+                                    { type: 'cancel' }
+                                ]
+                            }, function(buttonId) {
+                                if (buttonId === 'create') {
+                                    // Qui puoi integrare con i tuoi workflow CRUD
+                                    tg.showAlert('Funzionalità in arrivo!');
+                                }
+                            });
+                        }
+                    });
+                    
+                    calendar.render();
+                })
+                .catch(error => {
+                    console.error('Errore caricamento calendario:', error);
+                    document.getElementById('loadingMsg').innerHTML = 
+                        '❌ Errore nel caricamento del calendario<br><small>' + error.message + '</small>';
+                    document.getElementById('loadingMsg').className = 'error';
+                });
+        }
+    </script>
+</body>
+</html>
