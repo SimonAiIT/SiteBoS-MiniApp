@@ -46,27 +46,23 @@
       background-color: rgba(91, 111, 237, 0.15); box-shadow: none;
     }
 
-    /* 1. INTESTAZIONI CON SFONDO SCURO - SOLUZIONE DEFINITIVA */
-    .fc .fc-col-header-cell, .fc-list-day {
-        background-color: var(--header-bg-color) !important;
-        border-color: var(--border-color) !important;
+    /* 1. INTESTAZIONI: UNA REGOLA PER DOMARLE TUTTE. SFONDO SCURO. SEMPRE. */
+    .fc th.fc-col-header-cell, .fc .fc-list-day-cushion {
+      background: var(--header-bg-color) !important;
+      color: white !important;
+      font-weight: 600;
     }
-    .fc .fc-col-header-cell-cushion, .fc-list-day-cushion {
-        color: white !important;
-        font-weight: 600;
-        padding: 12px 4px;
-    }
+    .fc .fc-col-header-cell-cushion { padding: 12px 4px; }
     .fc .fc-list-day-cushion { padding: 8px 16px; }
     .fc .fc-col-header-cell.fc-day-sat .fc-col-header-cell-cushion,
     .fc .fc-col-header-cell.fc-day-sun .fc-col-header-cell-cushion {
         color: var(--highlight-color) !important;
     }
 
-    /* 2. STILE EVENTI CON TESTO A CAPO */
+    /* 2. EVENTI: TESTO A CAPO E STILE UNIFICATO */
     .fc-event {
         font-weight: 500; border-radius: 6px; padding: 5px 8px;
-        transition: filter 0.2s ease;
-        border: none !important;
+        transition: filter 0.2s ease; border: none !important;
         background-color: var(--accent-color) !important;
         color: var(--text-primary) !important;
     }
@@ -75,13 +71,10 @@
         display: flex; align-items: center; gap: 6px;
     }
     .fc-event:hover { filter: brightness(1.15); }
-    
     .fc-event-note {
         background: linear-gradient(90deg, var(--accent-color), var(--highlight-color)) !important;
     }
-    .fc-event-title::before {
-        font-size: 1em; flex-shrink: 0;
-    }
+    .fc-event-title::before { font-size: 1em; flex-shrink: 0; }
     .fc-event-note .fc-event-title::before { content: '📌'; }
     .fc-event-high .fc-event-title::before { content: '🔴'; }
     
@@ -101,7 +94,7 @@
         box-shadow: 0 0 0 2px var(--accent-color) inset !important;
     }
     
-    /* 4. VISTA MESE */
+    /* 4. VISTA MESE: NUMERI PULITI E VIA IL GRIGIO */
     .fc .fc-daygrid-day-number {
         color: var(--text-primary); font-weight: bold; background: var(--accent-color);
         border-radius: 20px; padding: 2px 8px; margin: 4px; display: inline-block;
@@ -111,12 +104,16 @@
         background: var(--highlight-color);
         color: var(--text-primary);
     }
+    .fc .fc-day-other .fc-daygrid-day-number {
+        background: none !important;
+        opacity: 0.4;
+    }
 
     /* 5. VISTA TIMEGRID */
     .fc .fc-timegrid-slot-lane { border-color: rgba(255,255,255,0.15) !important; }
     .fc .fc-timegrid-slot-lane:nth-child(even) { background: rgba(255,255,255,0.02); }
     .fc .fc-timegrid-slot-label { color: var(--text-secondary); }
-    .fc .fc-timegrid-body, .fc .fc-timegrid-axis-frame { background: transparent; }
+    .fc .fc-timegrid-body, .fc .fc-timegrid-axis-frame, .fc .fc-daygrid-day-frame { background: transparent; }
 
     @media (max-width: 768px) {
       body { padding: 0; }
