@@ -100,8 +100,9 @@
           slotMaxTime: '22:00:00',
           events: events,
           height: 'auto',
-          selectable: false, // niente selezione
-          editable: false,   // niente drag/drop
+          dayMaxEventRows: true, // mostra '+ altro' se tanti eventi
+          selectable: false,
+          editable: false,
           eventClick: function(info) {
             const event = info.event;
             const props = event.extendedProps;
@@ -135,6 +136,9 @@ ${props.description ? '📝 ' + props.description : ''}
             }
 
             tg.showAlert(details);
+          },
+          dateClick: function(info) {
+            calendar.changeView('timeGridDay', info.dateStr);
           }
         });
         calendar.render();
