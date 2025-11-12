@@ -16,7 +16,6 @@
       --input-bg: rgba(255, 255, 255, 0.08); --accent-color: #5B6FED; --error-color: #ff6b6b;
       --highlight-color: #8A9AFF;
       --highlight-bg-color: rgba(138, 154, 255, 0.1);
-      --header-bg-color: rgba(0, 0, 0, 0.25);
       --fc-border-color: var(--border-color);
     }
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -43,12 +42,13 @@
     }
     .fc .fc-button-primary:not(:disabled).fc-button-active {
       border-color: var(--accent-color); color: var(--text-primary);
-      background-color: rgba(91, 111, 237, 0.15); box-shadow: none;
+      background-color: rgba(91, 111, 27, 0.15); box-shadow: none;
     }
 
-    /* 1. INTESTAZIONI: UNA REGOLA PER DOMARLE TUTTE. SFONDO SCURO. SEMPRE. */
+    /* 1. INTESTAZIONI CON LO STESSO SFONDO DEL CALENDARIO. FINE. */
     .fc th.fc-col-header-cell, .fc .fc-list-day-cushion {
-      background: var(--header-bg-color) !important;
+      background: var(--input-bg) !important;
+      border-bottom: 1px solid var(--border-color) !important;
       color: white !important;
       font-weight: 600;
     }
@@ -58,8 +58,14 @@
     .fc .fc-col-header-cell.fc-day-sun .fc-col-header-cell-cushion {
         color: var(--highlight-color) !important;
     }
+    .fc th.fc-col-header-cell {
+        border-right: 1px solid var(--border-color) !important;
+    }
+    .fc th.fc-col-header-cell:last-child {
+        border-right: none !important;
+    }
 
-    /* 2. EVENTI: TESTO A CAPO E STILE UNIFICATO */
+    /* 2. STILE EVENTI CON TESTO A CAPO */
     .fc-event {
         font-weight: 500; border-radius: 6px; padding: 5px 8px;
         transition: filter 0.2s ease; border: none !important;
@@ -245,16 +251,4 @@
           
           dateClick: function(info) {
             if (calendar.view.type.includes('Grid') && !info.allDay) {
-                calendar.changeView('timeGridDay', info.dateStr);
-            }
-          }
-        });
-        
-        calendar.render();
-      })
-      .catch(err => {
-        document.body.innerHTML = `<h2 style="color: red; text-align:center;">Errore: ${err.message}</h2>`;
-      });
-  </script>
-</body>
-</html>
+                calendar.changeVi
