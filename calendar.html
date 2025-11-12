@@ -42,14 +42,8 @@
       font-size: 1.5rem;
       color: var(--text-primary);
     }
-    .fc-theme-standard .fc-list, .fc-theme-standard th, .fc-theme-standard td {
+    .fc-theme-standard td, .fc-theme-standard th, .fc-scrollgrid, .fc-theme-standard .fc-list {
       border-color: var(--border-color);
-    }
-    .fc-theme-standard .fc-list {
-      border: 1px solid var(--border-color);
-    }
-    .fc-scrollgrid {
-      border: none;
     }
     .fc .fc-button-primary {
       background-color: var(--input-bg);
@@ -91,19 +85,23 @@
     }
     .fc-event-main { color: var(--text-primary) !important; }
 
-    .fc .fc-timegrid-slot-lane, .fc .fc-daygrid-day-frame {
+    .fc .fc-timegrid-slot-lane {
       background: transparent;
     }
     .fc .fc-timegrid-slot-label {
       color: var(--text-secondary);
     }
     .fc-theme-standard .fc-timegrid-slots td {
-      border-bottom: 1px solid var(--border-color);
+        height: 3em; /* Ripristina un'altezza minima per le righe */
     }
-    .fc .fc-timegrid-axis-frame {
-      border-right: 1px solid var(--border-color);
+    .fc .fc-timegrid-slot-lane {
+        border-bottom: 0; /* Rimuove il bordo inferiore di default se presente */
+        border-top: 1px dotted var(--border-color); /* Applica una linea superiore visibile */
     }
-    
+     .fc .fc-timegrid-col.fc-day-today {
+        background-color: rgba(91, 111, 237, 0.05); /* Sfondo leggero per colonna 'oggi' */
+    }
+
     @media (max-width: 768px) {
       body { padding: 0; }
       #calendar {
