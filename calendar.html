@@ -251,4 +251,16 @@
           
           dateClick: function(info) {
             if (calendar.view.type.includes('Grid') && !info.allDay) {
-                calendar.changeVi
+                calendar.changeView('timeGridDay', info.dateStr);
+            }
+          }
+        });
+        
+        calendar.render();
+      })
+      .catch(err => {
+        document.body.innerHTML = `<h2 style="color: red; text-align:center;">Errore: ${err.message}</h2>`;
+      });
+  </script>
+</body>
+</html>
