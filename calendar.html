@@ -42,15 +42,14 @@
       font-size: 1.5rem;
       color: var(--text-primary);
     }
-    .fc, .fc-theme-standard .fc-list, .fc-theme-standard th, .fc-theme-standard td {
+    .fc-theme-standard .fc-list, .fc-theme-standard th, .fc-theme-standard td {
       border-color: var(--border-color);
     }
     .fc-theme-standard .fc-list {
       border: 1px solid var(--border-color);
     }
     .fc-scrollgrid {
-      border-radius: 10px;
-      overflow: hidden;
+      border: none;
     }
     .fc .fc-button-primary {
       background-color: var(--input-bg);
@@ -73,16 +72,10 @@
     .fc .fc-daygrid-day.fc-day-today {
       background-color: rgba(91, 111, 237, 0.1) !important;
     }
-    .fc .fc-timegrid-slot-lane, .fc .fc-daygrid-day-frame {
-        background: transparent !important;
-    }
     .fc-list-day-cushion, .fc-col-header-cell-cushion {
         background: rgba(0, 0, 0, 0.2);
         padding: 8px 4px;
         border-radius: 6px;
-    }
-    .fc .fc-timegrid-axis-cushion, .fc .fc-list-event-time {
-      color: var(--text-secondary);
     }
     .fc .fc-day-other .fc-daygrid-day-top {
       opacity: 0.4;
@@ -98,6 +91,19 @@
     }
     .fc-event-main { color: var(--text-primary) !important; }
 
+    .fc .fc-timegrid-slot-lane, .fc .fc-daygrid-day-frame {
+      background: transparent;
+    }
+    .fc .fc-timegrid-slot-label {
+      color: var(--text-secondary);
+    }
+    .fc-theme-standard .fc-timegrid-slots td {
+      border-bottom: 1px solid var(--border-color);
+    }
+    .fc .fc-timegrid-axis-frame {
+      border-right: 1px solid var(--border-color);
+    }
+    
     @media (max-width: 768px) {
       body { padding: 0; }
       #calendar {
@@ -113,41 +119,19 @@
     }
     
     .modal-overlay {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.7);
-      z-index: 9999;
-      align-items: center;
-      justify-content: center;
+      display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.7); z-index: 9999; align-items: center; justify-content: center;
     }
-    .modal-overlay.active {
-      display: flex;
-    }
+    .modal-overlay.active { display: flex; }
     .modal-content {
       background: linear-gradient(135deg, var(--bg-start) 0%, var(--bg-end) 100%);
-      border-radius: 16px;
-      padding: 24px;
-      max-width: 400px;
-      width: 90%;
-      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
-      color: var(--text-primary);
-      white-space: pre-line;
-      line-height: 1.6;
+      border-radius: 16px; padding: 24px; max-width: 400px; width: 90%;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5); color: var(--text-primary);
+      white-space: pre-line; line-height: 1.6;
     }
     .modal-close {
-      margin-top: 20px;
-      background: var(--accent-color);
-      color: white;
-      border: none;
-      padding: 12px 24px;
-      border-radius: 8px;
-      font-weight: 600;
-      cursor: pointer;
-      width: 100%;
+      margin-top: 20px; background: var(--accent-color); color: white; border: none;
+      padding: 12px 24px; border-radius: 8px; font-weight: 600; cursor: pointer; width: 100%;
     }
   </style>
 </head>
