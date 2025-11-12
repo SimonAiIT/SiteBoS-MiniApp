@@ -45,17 +45,16 @@
       background-color: rgba(91, 111, 27, 0.15); box-shadow: none;
     }
 
-    /* --- MODIFICA PER INTESTAZIONI CON STESSO SFONDO DEL FORM --- */
     .fc-col-header-cell,
-    .fc-timegrid-axis,
-    .fc-timegrid-slot-label,
-    .fc-list-day-cushion {
-      background: var(--input-bg) !important;
-      color: var(--text-primary) !important;
-      font-weight: 600;
-      border-bottom: 1px solid var(--border-color) !important;
-    }
-    /* --- FINE MODIFICA --- */
+.fc-timegrid-axis,
+.fc-timegrid-slot-label,
+.fc-list-day-cushion {
+  background: #606492 !important; /* Usa qui il colore esatto dello sfondo */
+  color: #fff !important;
+  font-weight: 600;
+  border-bottom: 1px solid rgba(255,255,255,0.2) !important;
+}
+
 
     .fc .fc-col-header-cell-cushion { padding: 12px 4px; }
     .fc .fc-list-day-cushion { padding: 8px 16px; }
