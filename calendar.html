@@ -109,23 +109,122 @@
   <div class="modal-overlay" id="modalOverlay">
     <div class="modal-content">
       <div id="modalText"></div>
-      <button class="modal-close" onclick="closeModal()">Chiudi</button>
+      <button class="modal-close" id="modalCloseBtn" onclick="closeModal()">Chiudi</button>
     </div>
   </div>
   <script>
+    // Traduzioni multilingua
+    const translations = {
+      it: {
+        title: 'Calendario Manager Desk',
+        missingParam: 'Parametro group_id mancante',
+        error: 'Errore',
+        close: 'Chiudi',
+        priority: 'Priorità',
+        dueDate: 'Scadenza',
+        status: 'Status',
+        tags: 'Tags',
+        duration: 'Durata',
+        end: 'Fine',
+        location: 'Non specificato',
+        locale: 'it'
+      },
+      en: {
+        title: 'Manager Desk Calendar',
+        missingParam: 'Missing group_id parameter',
+        error: 'Error',
+        close: 'Close',
+        priority: 'Priority',
+        dueDate: 'Due Date',
+        status: 'Status',
+        tags: 'Tags',
+        duration: 'Duration',
+        end: 'End',
+        location: 'Not specified',
+        locale: 'en'
+      },
+      fr: {
+        title: 'Calendrier Manager Desk',
+        missingParam: 'Paramètre group_id manquant',
+        error: 'Erreur',
+        close: 'Fermer',
+        priority: 'Priorité',
+        dueDate: 'Date limite',
+        status: 'Statut',
+        tags: 'Tags',
+        duration: 'Durée',
+        end: 'Fin',
+        location: 'Non spécifié',
+        locale: 'fr'
+      },
+      de: {
+        title: 'Manager Desk Kalender',
+        missingParam: 'Fehlender group_id Parameter',
+        error: 'Fehler',
+        close: 'Schließen',
+        priority: 'Priorität',
+        dueDate: 'Fälligkeitsdatum',
+        status: 'Status',
+        tags: 'Tags',
+        duration: 'Dauer',
+        end: 'Ende',
+        location: 'Nicht angegeben',
+        locale: 'de'
+      },
+      es: {
+        title: 'Calendario Manager Desk',
+        missingParam: 'Falta el parámetro group_id',
+        error: 'Error',
+        close: 'Cerrar',
+        priority: 'Prioridad',
+        dueDate: 'Fecha límite',
+        status: 'Estado',
+        tags: 'Etiquetas',
+        duration: 'Duración',
+        end: 'Fin',
+        location: 'No especificado',
+        locale: 'es'
+      },
+      pt: {
+        title: 'Calendário Manager Desk',
+        missingParam: 'Parâmetro group_id ausente',
+        error: 'Erro',
+        close: 'Fechar',
+        priority: 'Prioridade',
+        dueDate: 'Data limite',
+        status: 'Status',
+        tags: 'Tags',
+        duration: 'Duração',
+        end: 'Fim',
+        location: 'Não especificado',
+        locale: 'pt'
+      }
+    };
+
     const tg = window.Telegram.WebApp;
     tg.ready();
     tg.expand();
 
     const params = new URLSearchParams(window.location.search);
     const groupId = params.get('group_id');
+    const langParam = params.get('lang') || 'en';
+    
+    // Seleziona la lingua con fallback su inglese
+    const lang = translations[langParam] ? langParam : 'en';
+    const t = translations[lang];
+
+    // Imposta il titolo della pagina
+    document.title = t.title;
 
     if (!groupId) {
-      document.body.innerHTML = '<h2 style="color: red; text-align:center;">Parametro group_id mancante</h2>';
-      throw new Error('Parametro group_id mancante');
+      document.body.innerHTML = `<h2 style="color: red; text-align:center;">${t.missingParam}</h2>`;
+      throw new Error(t.missingParam);
     }
 
     const apiUrl = `https://trinai.api.workflow.prod.dcmake.it/webhook/manager-desk/appointments?group_id=${groupId}`;
+
+    // Imposta il testo del pulsante chiudi
+    document.getElementById('modalCloseBtn').textContent = t.close;
 
     function showEventDetails(details) {
       // Prova prima con Telegram
@@ -148,7 +247,7 @@
 
     fetch(apiUrl)
       .then(res => {
-        if (!res.ok) throw new Error(`HTTP Error: ${res.status}`);
+        if (!res.ok) throw new Error(`HTTP ${t.error}: ${res.status}`);
         return res.json();
       })
       .then(events => {
@@ -162,7 +261,7 @@
             center: 'title',
             right: 'dayGridMonth,timeGridWeek,timeGridDay'
           },
-          locale: 'it',
+          locale: t.locale,
           firstDay: 1,
           slotMinTime: '07:00:00',
           slotMaxTime: '22:00:00',
@@ -183,26 +282,26 @@
 
               details = `📌 ${event.title.replace('📌 ', '')}
 
-${priorityEmoji[props.priority] || '⚪'} Priorità: ${props.priority}
-📅 Scadenza: ${dueDate.toLocaleDateString('it-IT', {
+${priorityEmoji[props.priority] || '⚪'} ${t.priority}: ${props.priority}
+📅 ${t.dueDate}: ${dueDate.toLocaleDateString(t.locale, {
   weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
 })}
-📊 Status: ${props.status}
-${props.tags && props.tags.length > 0 ? '🏷️ Tags: ' + props.tags.join(', ') : ''}`;
+📊 ${t.status}: ${props.status}
+${props.tags && props.tags.length > 0 ? '🏷️ ' + t.tags + ': ' + props.tags.join(', ') : ''}`;
             } else {
               const start = new Date(event.start);
               const end = event.end ? new Date(event.end) : null;
               
               details = `📅 ${event.title}
 
-🕐 ${start.toLocaleString('it-IT', {
+🕐 ${start.toLocaleString(t.locale, {
   weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
   hour: '2-digit', minute: '2-digit'
 })}
-${end ? '🕐 Fine: ' + end.toLocaleTimeString('it-IT', {hour: '2-digit', minute: '2-digit'}) : ''}
+${end ? '🕐 ' + t.end + ': ' + end.toLocaleTimeString(t.locale, {hour: '2-digit', minute: '2-digit'}) : ''}
 
-⏱️ Durata: ${props.duration_minutes || 'N/A'} min
-📍 ${props.location || 'Non specificato'}
+⏱️ ${t.duration}: ${props.duration_minutes || 'N/A'} min
+📍 ${props.location || t.location}
 ${props.description ? '📝 ' + props.description : ''}`;
             }
 
@@ -217,7 +316,7 @@ ${props.description ? '📝 ' + props.description : ''}`;
         calendar.render();
       })
       .catch(err => {
-        document.body.innerHTML = '<h2 style="color: red; text-align:center;">Errore: ' + err.message + '</h2>';
+        document.body.innerHTML = `<h2 style="color: red; text-align:center;">${t.error}: ${err.message}</h2>`;
       });
   </script>
 </body>
