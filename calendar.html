@@ -18,12 +18,10 @@
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
       background: linear-gradient(135deg, var(--bg-start) 0%, var(--bg-end) 100%);
       color: var(--text-primary); padding: 20px; min-height: 100vh;
-      /* Abilita lo scorrimento orizzontale se il contenuto è troppo largo */
       overflow-x: auto;
     }
     #calendar {
       max-width: 900px;
-      /* Imposta una larghezza minima per evitare che si comprima troppo */
       min-width: 650px; 
       margin: 0 auto;
       background: rgba(255, 255, 255, 0.07);
@@ -67,14 +65,18 @@
       cursor: pointer;
     }
     
+    /* ===== NUOVA REGOLA PER RISOLVERE IL PROBLEMA VISIVO ===== */
+    /* Rimuove l'evidenziazione del giorno corrente che stona con il tema scuro */
+    .fc .fc-day-today {
+      background-color: transparent !important;
+    }
+
     /* Stili per gli header e i bordi del calendario */
     .fc .fc-col-header-cell {
-      /* Usa esattamente il colore azzurrino dello sfondo come richiesto */
       background-color: var(--bg-start);
     }
     .fc-theme-standard th, 
     .fc-theme-standard td {
-      /* Rende i bordi interni coerenti con il tema */
       border-color: var(--border-color);
     }
 
@@ -204,11 +206,9 @@
     const groupId = params.get('group_id');
     const langParam = params.get('lang') || 'en';
     
-    // Seleziona la lingua con fallback su inglese
     const lang = translations[langParam] ? langParam : 'en';
     const t = translations[lang];
 
-    // Imposta il titolo della pagina
     document.title = t.title;
 
     if (!groupId) {
@@ -217,21 +217,15 @@
     }
 
     const apiUrl = `https://trinai.api.workflow.dcmake.it/webhook/manager-desk/appointments?group_id=${groupId}`;
-
-    // Imposta il testo del pulsante chiudi
     document.getElementById('modalCloseBtn').textContent = t.close;
 
     function showEventDetails(details) {
-      // Prova prima con Telegram
       if (tg && tg.showAlert) {
         try {
           tg.showAlert(details);
           return;
-        } catch (e) {
-          console.warn('Telegram showAlert fallito, uso modal', e);
-        }
+        } catch (e) { console.warn('Telegram showAlert fallito, uso modal', e); }
       }
-      // Fallback: modal custom
       document.getElementById('modalText').textContent = details;
       document.getElementById('modalOverlay').classList.add('active');
     }
@@ -271,32 +265,21 @@
             const event = info.event;
             const props = event.extendedProps;
             let details;
-
             if (props.type === 'note') {
               const dueDate = new Date(event.start);
               const priorityEmoji = { 'HIGH': '🔴', 'MEDIUM': '🟡', 'LOW': '🔵' };
-
-              details = `📌 ${event.title.replace('📌 ', '')}\n\n${priorityEmoji[props.priority] || '⚪'} ${t.priority}: ${props.priority}\n📅 ${t.dueDate}: ${dueDate.toLocaleDateString(t.locale, {
-  weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
-})}\n📊 ${t.status}: ${props.status}\n${props.tags && props.tags.length > 0 ? '🏷️ ' + t.tags + ': ' + props.tags.join(', ') : ''}`;
+              details = `📌 ${event.title.replace('📌 ', '')}\n\n${priorityEmoji[props.priority] || '⚪'} ${t.priority}: ${props.priority}\n📅 ${t.dueDate}: ${dueDate.toLocaleDateString(t.locale, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}\n📊 ${t.status}: ${props.status}\n${props.tags && props.tags.length > 0 ? '🏷️ ' + t.tags + ': ' + props.tags.join(', ') : ''}`;
             } else {
               const start = new Date(event.start);
               const end = event.end ? new Date(event.end) : null;
-              
-              details = `📅 ${event.title}\n\n🕐 ${start.toLocaleString(t.locale, {
-  weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
-  hour: '2-digit', minute: '2-digit'
-})}\n${end ? '🕐 ' + t.end + ': ' + end.toLocaleTimeString(t.locale, {hour: '2-digit', minute: '2-digit'}) : ''}\n\n⏱️ ${t.duration}: ${props.duration_minutes || 'N/A'} min\n📍 ${props.location || t.location}\n${props.description ? '📝 ' + props.description : ''}`;
+              details = `📅 ${event.title}\n\n🕐 ${start.toLocaleString(t.locale, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })}\n${end ? '🕐 ' + t.end + ': ' + end.toLocaleTimeString(t.locale, {hour: '2-digit', minute: '2-digit'}) : ''}\n\n⏱️ ${t.duration}: ${props.duration_minutes || 'N/A'} min\n📍 ${props.location || t.location}\n${props.description ? '📝 ' + props.description : ''}`;
             }
-
             showEventDetails(details);
           },
-          
           dateClick: function(info) {
             calendar.changeView('timeGridDay', info.dateStr);
           }
         });
-        
         calendar.render();
       })
       .catch(err => {
