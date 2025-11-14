@@ -250,8 +250,13 @@
         if (!res.ok) throw new Error(`HTTP ${t.error}: ${res.status}`);
         return res.json();
       })
-      .then(events => {
-        console.log('Eventi caricati:', events);
+      // ---------- MODIFICA QUI ----------
+      // La risposta non è più un array, ma un oggetto { "events": [...] }
+      .then(responseData => {
+        // Estraiamo l'array 'events' dall'oggetto di risposta
+        const eventsArray = responseData.events; 
+        
+        console.log('Eventi caricati:', eventsArray);
         
         const calendarEl = document.getElementById('calendar');
         const calendar = new FullCalendar.Calendar(calendarEl, {
@@ -265,7 +270,8 @@
           firstDay: 1,
           slotMinTime: '07:00:00',
           slotMaxTime: '22:00:00',
-          events: events,
+          // Passiamo al calendario l'array corretto
+          events: eventsArray,
           height: 'auto',
           dayMaxEventRows: true,
           selectable: false,
