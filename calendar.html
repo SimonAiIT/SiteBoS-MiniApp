@@ -14,12 +14,22 @@
       --input-bg: rgba(255, 255, 255, 0.08); --accent-color: #5B6FED; --error-color: #ff6b6b;
     }
     * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    /* Rimuoviamo lo stile dal body e lo impostiamo come contenitore base */
     body {
+      background-color: var(--bg-end); /* Colore di fallback solido */
+    }
+
+    /* === NUOVO CONTENITORE PER GESTIRE SFONDO E SCORRIMENTO === */
+    .page-container {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
       background: linear-gradient(135deg, var(--bg-start) 0%, var(--bg-end) 100%);
-      color: var(--text-primary); padding: 20px; min-height: 100vh;
-      overflow-x: auto;
+      color: var(--text-primary); 
+      padding: 20px; 
+      min-height: 100vh;
+      overflow-x: auto; /* La logica di scorrimento è qui ora */
     }
+
     #calendar {
       max-width: 900px;
       min-width: 650px; 
@@ -34,41 +44,28 @@
       color: var(--text-primary);
     }
     .fc .fc-toolbar-title {
-      font-weight: 600;
-      font-size: 1.3rem;
-      color: var(--text-primary);
+      font-weight: 600; font-size: 1.3rem; color: var(--text-primary);
     }
     .fc button {
-      background: var(--input-bg);
-      border: 1px solid var(--border-color);
-      color: var(--text-primary);
-      border-radius: 8px;
-      font-weight: 600;
+      background: var(--input-bg); border: 1px solid var(--border-color);
+      color: var(--text-primary); border-radius: 8px; font-weight: 600;
     }
     .fc button:hover, .fc button:focus {
-      background: var(--accent-color);
-      border-color: var(--accent-color);
-      color: #fff;
-      outline: none;
-      box-shadow: 0 0 10px var(--accent-color);
+      background: var(--accent-color); border-color: var(--accent-color);
+      color: #fff; outline: none; box-shadow: 0 0 10px var(--accent-color);
     }
     .fc .fc-daygrid-event {
-      border-radius: 8px;
-      padding: 2px 6px;
-      font-size: 0.9rem;
-      font-weight: 600;
-      line-height: 1.2;
-      white-space: normal;
-      cursor: pointer;
+      border-radius: 8px; padding: 2px 6px; font-size: 0.9rem;
+      font-weight: 600; line-height: 1.2; white-space: normal; cursor: pointer;
     }
     .fc .fc-timegrid-event {
       cursor: pointer;
     }
     
-    /* ===== NUOVA REGOLA PER RISOLVERE IL PROBLEMA VISIVO ===== */
-    /* Rimuove l'evidenziazione del giorno corrente che stona con il tema scuro */
+    /* === EVIDENZIAZIONE DEL GIORNO CORRENTE RIPRISTINATA E MIGLIORATA === */
     .fc .fc-day-today {
-      background-color: transparent !important;
+      /* Un colore semi-trasparente che si integra col tema, senza stonare */
+      background-color: rgba(255, 255, 255, 0.08) !important;
     }
 
     /* Stili per gli header e i bordi del calendario */
@@ -82,9 +79,8 @@
 
     /* Modal popup fallback */
     .modal-overlay {
-      display: none; position: fixed; top: 0; left: 0;
-      width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7);
-      z-index: 9999; align-items: center; justify-content: center;
+      display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.7); z-index: 9999; align-items: center; justify-content: center;
     }
     .modal-overlay.active { display: flex; }
     .modal-content {
@@ -101,124 +97,56 @@
   </style>
 </head>
 <body>
-  <div id="calendar"></div>
-  <!-- Modal fallback per dettagli evento -->
-  <div class="modal-overlay" id="modalOverlay">
-    <div class="modal-content">
-      <div id="modalText"></div>
-      <button class="modal-close" id="modalCloseBtn" onclick="closeModal()">Chiudi</button>
+  
+  <!-- === NUOVO CONTENITORE WRAPPER === -->
+  <div class="page-container">
+    <div id="calendar"></div>
+    <!-- Modal fallback per dettagli evento -->
+    <div class="modal-overlay" id="modalOverlay">
+      <div class="modal-content">
+        <div id="modalText"></div>
+        <button class="modal-close" id="modalCloseBtn" onclick="closeModal()">Chiudi</button>
+      </div>
     </div>
   </div>
+
   <script>
-    // Traduzioni multilingua
+    // Il JavaScript rimane identico
     const translations = {
       it: {
-        title: 'Calendario Manager Desk',
-        missingParam: 'Parametro group_id mancante',
-        error: 'Errore',
-        close: 'Chiudi',
-        priority: 'Priorità',
-        dueDate: 'Scadenza',
-        status: 'Status',
-        tags: 'Tags',
-        duration: 'Durata',
-        end: 'Fine',
-        location: 'Non specificato',
-        locale: 'it'
+        title: 'Calendario Manager Desk', missingParam: 'Parametro group_id mancante', error: 'Errore', close: 'Chiudi', priority: 'Priorità', dueDate: 'Scadenza', status: 'Status', tags: 'Tags', duration: 'Durata', end: 'Fine', location: 'Non specificato', locale: 'it'
       },
       en: {
-        title: 'Manager Desk Calendar',
-        missingParam: 'Missing group_id parameter',
-        error: 'Error',
-        close: 'Close',
-        priority: 'Priority',
-        dueDate: 'Due Date',
-        status: 'Status',
-        tags: 'Tags',
-        duration: 'Duration',
-        end: 'End',
-        location: 'Not specified',
-        locale: 'en'
+        title: 'Manager Desk Calendar', missingParam: 'Missing group_id parameter', error: 'Error', close: 'Close', priority: 'Priority', dueDate: 'Due Date', status: 'Status', tags: 'Tags', duration: 'Duration', end: 'End', location: 'Not specified', locale: 'en'
       },
       fr: {
-        title: 'Calendrier Manager Desk',
-        missingParam: 'Paramètre group_id manquant',
-        error: 'Erreur',
-        close: 'Fermer',
-        priority: 'Priorité',
-        dueDate: 'Date limite',
-        status: 'Statut',
-        tags: 'Tags',
-        duration: 'Durée',
-        end: 'Fin',
-        location: 'Non spécifié',
-        locale: 'fr'
+        title: 'Calendrier Manager Desk', missingParam: 'Paramètre group_id manquant', error: 'Erreur', close: 'Fermer', priority: 'Priorité', dueDate: 'Date limite', status: 'Statut', tags: 'Tags', duration: 'Durée', end: 'Fin', location: 'Non spécifié', locale: 'fr'
       },
       de: {
-        title: 'Manager Desk Kalender',
-        missingParam: 'Fehlender group_id Parameter',
-        error: 'Fehler',
-        close: 'Schließen',
-        priority: 'Priorität',
-        dueDate: 'Fälligkeitsdatum',
-        status: 'Status',
-        tags: 'Tags',
-        duration: 'Dauer',
-        end: 'Ende',
-        location: 'Nicht angegeben',
-        locale: 'de'
+        title: 'Manager Desk Kalender', missingParam: 'Fehlender group_id Parameter', error: 'Fehler', close: 'Schließen', priority: 'Priorität', dueDate: 'Fälligkeitsdatum', status: 'Status', tags: 'Tags', duration: 'Dauer', end: 'Ende', location: 'Nicht angegeben', locale: 'de'
       },
       es: {
-        title: 'Calendario Manager Desk',
-        missingParam: 'Falta el parámetro group_id',
-        error: 'Error',
-        close: 'Cerrar',
-        priority: 'Prioridad',
-        dueDate: 'Fecha límite',
-        status: 'Estado',
-        tags: 'Etiquetas',
-        duration: 'Duración',
-        end: 'Fin',
-        location: 'No especificado',
-        locale: 'es'
+        title: 'Calendario Manager Desk', missingParam: 'Falta el parámetro group_id', error: 'Error', close: 'Cerrar', priority: 'Prioridad', dueDate: 'Fecha límite', status: 'Estado', tags: 'Etiquetas', duration: 'Duración', end: 'Fin', location: 'No especificado', locale: 'es'
       },
       pt: {
-        title: 'Calendário Manager Desk',
-        missingParam: 'Parâmetro group_id ausente',
-        error: 'Erro',
-        close: 'Fechar',
-        priority: 'Prioridade',
-        dueDate: 'Data limite',
-        status: 'Status',
-        tags: 'Tags',
-        duration: 'Duração',
-        end: 'Fim',
-        location: 'Não especificado',
-        locale: 'pt'
+        title: 'Calendário Manager Desk', missingParam: 'Parâmetro group_id ausente', error: 'Erro', close: 'Fechar', priority: 'Prioridade', dueDate: 'Data limite', status: 'Status', tags: 'Tags', duration: 'Duração', end: 'Fim', location: 'Não especificado', locale: 'pt'
       }
     };
-
     const tg = window.Telegram.WebApp;
     tg.ready();
     tg.expand();
-
     const params = new URLSearchParams(window.location.search);
     const groupId = params.get('group_id');
     const langParam = params.get('lang') || 'en';
-    
     const lang = translations[langParam] ? langParam : 'en';
     const t = translations[lang];
-
     document.title = t.title;
-
     if (!groupId) {
       document.body.innerHTML = `<h2 style="color: red; text-align:center;">${t.missingParam}</h2>`;
       throw new Error(t.missingParam);
     }
-
     const apiUrl = `https://trinai.api.workflow.dcmake.it/webhook/manager-desk/appointments?group_id=${groupId}`;
     document.getElementById('modalCloseBtn').textContent = t.close;
-
     function showEventDetails(details) {
       if (tg && tg.showAlert) {
         try {
@@ -229,11 +157,9 @@
       document.getElementById('modalText').textContent = details;
       document.getElementById('modalOverlay').classList.add('active');
     }
-
     function closeModal() {
       document.getElementById('modalOverlay').classList.remove('active');
     }
-
     fetch(apiUrl)
       .then(res => {
         if (!res.ok) throw new Error(`HTTP ${t.error}: ${res.status}`);
@@ -242,25 +168,12 @@
       .then(responseData => {
         const eventsArray = responseData.events; 
         console.log('Eventi caricati:', eventsArray);
-        
         const calendarEl = document.getElementById('calendar');
         const calendar = new FullCalendar.Calendar(calendarEl, {
           initialView: window.innerWidth < 768 ? 'timeGridDay' : 'dayGridMonth',
-          headerToolbar: {
-            left: 'prev,next today',
-            center: 'title',
-            right: 'dayGridMonth,timeGridWeek,timeGridDay'
-          },
-          locale: t.locale,
-          firstDay: 1,
-          slotMinTime: '07:00:00',
-          slotMaxTime: '22:00:00',
-          events: eventsArray,
-          height: 'auto',
-          dayMaxEventRows: true,
-          selectable: false,
-          editable: false,
-          
+          headerToolbar: { left: 'prev,next today', center: 'title', right: 'dayGridMonth,timeGridWeek,timeGridDay' },
+          locale: t.locale, firstDay: 1, slotMinTime: '07:00:00', slotMaxTime: '22:00:00',
+          events: eventsArray, height: 'auto', dayMaxEventRows: true, selectable: false, editable: false,
           eventClick: function(info) {
             const event = info.event;
             const props = event.extendedProps;
