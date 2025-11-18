@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Nuovo Prodotto/Servizio</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        :root {
+            --bg-start: #4a5b8f; --bg-end: #2a3d5f; --text-primary: #ffffff;
+            --text-secondary: rgba(255, 255, 255, 0.7); --border-color: rgba(255, 255, 255, 0.2);
+            --input-bg: rgba(255, 255, 255, 0.08); --accent-color: #5B6FED; --error-color: #ff6b6b;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: linear-gradient(135deg, var(--bg-start) 0%, var(--bg-end) 100%);
+            color: var(--text-primary); padding: 20px; min-height: 100vh;
+        }
+        .container { max-width: 500px; margin: 0 auto; }
+        h1 { font-size: 26px; margin-bottom: 8px; font-weight: 600; }
+        h2 { font-size: 20px; margin-bottom: 16px; font-weight: 500; }
+        .subtitle { font-size: 14px; color: var(--text-secondary); margin-bottom: 32px; font-weight: 300; }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 10px; font-size: 14px; font-weight: 500; }
+        input, textarea, select {
+            width: 100%; padding: 14px 16px; border: 1px solid var(--border-color);
+            border-radius: 12px; background: var(--input-bg); backdrop-filter: blur(10px);
+            color: var(--text-primary); font-size: 15px; font-family: inherit;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+        input:focus, textarea:focus, select:focus { outline: none; border-color: rgba(255, 255, 255, 0.5); box-shadow: 0 0 15px rgba(91, 111, 237, 0.3); }
+        textarea { resize: vertical; min-height: 80px; }
+        .required::after { content: " *"; color: var(--error-color); }
+        .button {
+            width: 100%; padding: 14px; background: var(--accent-color); color: var(--text-primary);
+            border: none; border-radius: 12px; font-size: 15px; font-weight: 600; cursor: pointer;
+            transition: background-color 0.3s, opacity 0.3s;
+        }
+        .button:disabled { background: #555; cursor: not-allowed; opacity: 0.6; }
+        .hidden { display: none; }
+        #status { text-align: center; margin-top: 16px; font-size: 14px; }
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.3); border-radius: 50%;
+            border-top: 4px solid var(--text-primary); width: 24px; height: 24px;
+            animation: spin 1s linear infinite; margin: 16px auto;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .row { display: flex; gap: 16px; }
+        .row .form-group { flex: 1; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- SEZIONE 1: INPUT INIZIALE -->
+        <div id="initialInputSection">
+            <h1 id="title"></h1>
+            <p class="subtitle" id="subtitle"></p>
+            <div class="form-group">
+                <label for="productName" class="required" id="lblProductName"></label>
+                <input type="text" id="productName" required>
+            </div>
+            <div class="form-group">
+                <label for="productDescription" id="lblProductDesc"></label>
+                <textarea id="productDescription" rows="3"></textarea>
+            </div>
+            <button id="enrichBtn" class="button"></button>
+        </div>
+
+        <!-- SEZIONE 2: CURA DELLA BOZZA (INIZIALMENTE NASCOSTA) -->
+        <form id="productForm" class="hidden">
+            <h2 id="formTitle"></h2>
+            <div class="form-group">
+                <label for="edit_itemName" class="required" id="lblEditItemName"></label>
+                <input type="text" id="edit_itemName" required>
+            </div>
+            <div class="row">
+                <div class="form-group">
+                    <label for="edit_itemSku" class="required" id="lblEditSku"></label>
+                    <input type="text" id="edit_itemSku" required>
+                </div>
+                <div class="form-group">
+                    <label for="edit_basePrice" class="required" id="lblEditPrice"></label>
+                    <input type="number" id="edit_basePrice" step="0.01" required>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="edit_descriptionLong" id="lblEditDescLong"></label>
+                <textarea id="edit_descriptionLong" rows="5"></textarea>
+            </div>
+            <div class="form-group">
+                <label for="edit_tags" id="lblEditTags"></label>
+                <input type="text" id="edit_tags">
+            </div>
+            
+            <button type="submit" id="saveBtn" class="button"></button>
+        </form>
+
+        <div id="status"></div>
+    </div>
+
+    <script>
+        const ENRICH_WEBHOOK_URL = "https://TUO_URL_N8N.com/webhook/ID_WEBHOOK_ARricchisci_prodotto";
+        const SAVE_WEBHOOK_URL = "https://TUO_URL_N8N.com/webhook/ID_WEBHOOK_salva_prodotto";
+
+        const translations = {
+            it: {
+                title: "➕ Nuovo Servizio",
+                subtitle: "nella categoria:",
+                lblProductName: "Nome Prodotto/Servizio",
+                lblProductDesc: "Descrizione Breve (Opzionale)",
+                btnEnrich: "✨ Analizza e Crea Bozza con AI",
+                btnEnriching: "Analisi in corso...",
+                formTitle: "✏️ Bozza per:",
+                lblEditItemName: "Nome Prodotto",
+                lblEditSku: "SKU / Codice",
+                lblEditPrice: "Prezzo (€)",
+                lblEditDescLong: "Descrizione Lunga",
+                lblEditTags: "Tag (separati da virgola)",
+                btnSave: "✅ Salva Prodotto nel Catalogo",
+                btnSaving: "Salvataggio...",
+                statusEnriching: "Il tuo assistente sta facendo ricerche...",
+                statusError: "❌ Errore, riprova.",
+                statusSuccess: "✅ Prodotto salvato! Puoi chiudere."
+            },
+            en: {
+                title: "➕ New Service",
+                subtitle: "in category:",
+                lblProductName: "Product/Service Name",
+                lblProductDesc: "Short Description (Optional)",
+                btnEnrich: "✨ Analyze and Create Draft with AI",
+                btnEnriching: "Analyzing...",
+                formTitle: "✏️ Draft for:",
+                lblEditItemName: "Product Name",
+                lblEditSku: "SKU / Code",
+                lblEditPrice: "Price (€)",
+                lblEditDescLong: "Long Description",
+                lblEditTags: "Tags (comma-separated)",
+                btnSave: "✅ Save Product to Catalog",
+                btnSaving: "Saving...",
+                statusEnriching: "Your assistant is researching...",
+                statusError: "❌ Error, please try again.",
+                statusSuccess: "✅ Product saved! You can close now."
+            },
+            fr: {
+                title: "➕ Nouveau Service",
+                subtitle: "dans la catégorie :",
+                lblProductName: "Nom du Produit/Service",
+                lblProductDesc: "Description Courte (Optionnel)",
+                btnEnrich: "✨ Analyser et Créer une Ébauche avec l'IA",
+                btnEnriching: "Analyse en cours...",
+                formTitle: "✏️ Ébauche pour :",
+                lblEditItemName: "Nom du Produit",
+                lblEditSku: "SKU / Code",
+                lblEditPrice: "Prix (€)",
+                lblEditDescLong: "Description Longue",
+                lblEditTags: "Tags (séparés par une virgule)",
+                btnSave: "✅ Enregistrer le Produit au Catalogue",
+                btnSaving: "Enregistrement...",
+                statusEnriching: "Votre assistant fait des recherches...",
+                statusError: "❌ Erreur, veuillez réessayer.",
+                statusSuccess: "✅ Produit enregistré ! Vous pouvez fermer."
+            },
+            de: {
+                title: "➕ Neuer Dienst",
+                subtitle: "in Kategorie:",
+                lblProductName: "Produkt-/Dienstname",
+                lblProductDesc: "Kurzbeschreibung (Optional)",
+                btnEnrich: "✨ Analysieren und Entwurf mit KI erstellen",
+                btnEnriching: "Analysiere...",
+                formTitle: "✏️ Entwurf für:",
+                lblEditItemName: "Produktname",
+                lblEditSku: "SKU / Code",
+                lblEditPrice: "Preis (€)",
+                lblEditDescLong: "Lange Beschreibung",
+                lblEditTags: "Tags (kommagetrennt)",
+                btnSave: "✅ Produkt im Katalog speichern",
+                btnSaving: "Speichern...",
+                statusEnriching: "Ihr Assistent recherchiert...",
+                statusError: "❌ Fehler, bitte erneut versuchen.",
+                statusSuccess: "✅ Produkt gespeichert! Sie können schließen."
+            },
+            es: {
+                title: "➕ Nuevo Servicio",
+                subtitle: "en la categoría:",
+                lblProductName: "Nombre del Producto/Servicio",
+                lblProductDesc: "Descripción Corta (Opcional)",
+                btnEnrich: "✨ Analizar y Crear Borrador con IA",
+                btnEnriching: "Analizando...",
+                formTitle: "✏️ Borrador para:",
+                lblEditItemName: "Nombre del Producto",
+                lblEditSku: "SKU / Código",
+                lblEditPrice: "Precio (€)",
+                lblEditDescLong: "Descripción Larga",
+                lblEditTags: "Etiquetas (separadas por coma)",
+                btnSave: "✅ Guardar Producto en el Catálogo",
+                btnSaving: "Guardando...",
+                statusEnriching: "Tu asistente está investigando...",
+                statusError: "❌ Error, por favor inténtalo de nuevo.",
+                statusSuccess: "✅ ¡Producto guardado! Ya puedes cerrar."
+            },
+            pt: {
+                title: "➕ Novo Serviço",
+                subtitle: "na categoria:",
+                lblProductName: "Nome do Produto/Serviço",
+                lblProductDesc: "Descrição Curta (Opcional)",
+                btnEnrich: "✨ Analisar e Criar Rascunho com IA",
+                btnEnriching: "Analisando...",
+                formTitle: "✏️ Rascunho para:",
+                lblEditItemName: "Nome do Produto",
+                lblEditSku: "SKU / Código",
+                lblEditPrice: "Preço (€)",
+                lblEditDescLong: "Descrição Longa",
+                lblEditTags: "Tags (separadas por vírgula)",
+                btnSave: "✅ Salvar Produto no Catálogo",
+                btnSaving: "Salvando...",
+                statusEnriching: "Seu assistente está pesquisando...",
+                statusError: "❌ Erro, por favor tente novamente.",
+                statusSuccess: "✅ Produto salvo! Pode fechar agora."
+            }
+        };
+
+        const tg = window.Telegram.WebApp;
+        tg.ready(); tg.expand();
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const chatId = urlParams.get('chat_id');
+        const lang = urlParams.get('language') || 'it';
+        const categoryId = urlParams.get('category_id');
+        const categoryName = decodeURIComponent(urlParams.get('category_name'));
+        const t = translations[lang] || translations.it;
+
+        const dom = {
+            initialSection: document.getElementById('initialInputSection'),
+            productForm: document.getElementById('productForm'),
+            enrichBtn: document.getElementById('enrichBtn'),
+            saveBtn: document.getElementById('saveBtn'),
+            status: document.getElementById('status'),
+            title: document.getElementById('title'),
+            subtitle: document.getElementById('subtitle'),
+            formTitle: document.getElementById('formTitle'),
+        };
+        
+        function applyTranslations() {
+            document.title = t.title;
+            dom.title.textContent = t.title;
+            dom.subtitle.textContent = `${t.subtitle} "${categoryName}"`;
+            document.getElementById('lblProductName').textContent = t.lblProductName;
+            document.getElementById('lblProductDesc').textContent = t.lblProductDesc;
+            dom.enrichBtn.textContent = t.btnEnrich;
+            dom.formTitle.textContent = t.formTitle;
+            document.getElementById('lblEditItemName').textContent = t.lblEditItemName;
+            document.getElementById('lblEditSku').textContent = t.lblEditSku;
+            document.getElementById('lblEditPrice').textContent = t.lblEditPrice;
+            document.getElementById('lblEditDescLong').textContent = t.lblEditDescLong;
+            document.getElementById('lblEditTags').textContent = t.lblEditTags;
+            dom.saveBtn.textContent = t.btnSave;
+        }
+
+        let productDraftData = null; 
+
+        dom.enrichBtn.addEventListener('click', async () => {
+            const productName = document.getElementById('productName').value;
+            if (!productName) { alert('Il nome del prodotto è obbligatorio!'); return; }
+            
+            dom.enrichBtn.disabled = true;
+            dom.enrichBtn.textContent = t.btnEnriching;
+            dom.status.innerHTML = `<div class="spinner"></div><p>${t.statusEnriching}</p>`;
+
+            try {
+                const response = await fetch(ENRICH_WEBHOOK_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        product_name: productName,
+                        product_description: document.getElementById('productDescription').value,
+                        category_name: categoryName,
+                        chat_id: chatId, language: lang
+                    })
+                });
+                const data = await response.json();
+                productDraftData = data; 
+
+                dom.formTitle.textContent = `${t.formTitle} ${data.identity.item_name}`;
+                document.getElementById('edit_itemName').value = data.identity.item_name || '';
+                document.getElementById('edit_itemSku').value = data.identity.item_sku || '';
+                document.getElementById('edit_basePrice').value = data.pricing.base_price || '';
+                document.getElementById('edit_descriptionLong').value = data.identity.description.long || '';
+                document.getElementById('edit_tags').value = (data.identity.tags || []).join(', ');
+
+                dom.initialSection.classList.add('hidden');
+                dom.productForm.classList.remove('hidden');
+                dom.status.innerHTML = '';
+
+            } catch (error) {
+                console.error("Errore arricchimento AI:", error);
+                dom.status.textContent = t.statusError;
+                dom.enrichBtn.disabled = false;
+                dom.enrichBtn.textContent = t.btnEnrich;
+            }
+        });
+
+        dom.productForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            dom.saveBtn.disabled = true;
+            dom.saveBtn.textContent = t.btnSaving;
+            dom.status.innerHTML = `<div class="spinner"></div>`;
+
+            productDraftData.identity.item_name = document.getElementById('edit_itemName').value;
+            productDraftData.identity.item_sku = document.getElementById('edit_itemSku').value;
+            productDraftData.pricing.base_price = parseFloat(document.getElementById('edit_basePrice').value);
+            productDraftData.identity.description.long = document.getElementById('edit_descriptionLong').value;
+            productDraftData.identity.tags = document.getElementById('edit_tags').value.split(',').map(tag => tag.trim()).filter(Boolean);
+            
+            const finalPayload = {
+                chat_id: chatId,
+                category_id: categoryId,
+                new_product_block: productDraftData,
+                user_data: tg.initDataUnsafe?.user,
+                language: lang
+            };
+
+            try {
+                const response = await fetch(SAVE_WEBHOOK_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(finalPayload)
+                });
+                if (response.ok) {
+                    dom.status.innerHTML = `<p>${t.statusSuccess}</p>`;
+                    setTimeout(() => tg.close(), 1500);
+                } else {
+                    throw new Error('Errore salvataggio server.');
+                }
+            } catch (error) {
+                console.error("Errore salvataggio prodotto:", error);
+                dom.status.textContent = t.statusError;
+                dom.saveBtn.disabled = false;
+                dom.saveBtn.textContent = t.btnSave;
+            }
+        });
+        
+        applyTranslations();
+    </script>
+</body>
+</html>
+</html>
