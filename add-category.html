@@ -20,6 +20,7 @@
         }
         .container { max-width: 500px; margin: 0 auto; }
         h1 { font-size: 26px; margin-bottom: 8px; font-weight: 600; }
+        h2 { font-size: 20px; margin-bottom: 16px; font-weight: 500; }
         .subtitle { font-size: 14px; color: var(--text-secondary); margin-bottom: 32px; font-weight: 300; }
         .form-group { margin-bottom: 20px; }
         label { display: block; margin-bottom: 10px; font-size: 14px; font-weight: 500; }
@@ -31,7 +32,7 @@
         }
         input:focus, textarea:focus { outline: none; border-color: rgba(255, 255, 255, 0.5); box-shadow: 0 0 15px rgba(91, 111, 237, 0.3); }
         textarea { resize: vertical; min-height: 80px; }
-        .required::after { content: " *"; color: #ff6b6b; }
+        .required::after { content: " *"; color: var(--error-color); }
         
         .button {
             width: 100%; padding: 14px; background: var(--accent-color); color: var(--text-primary);
@@ -46,7 +47,24 @@
             background: var(--list-item-bg); padding: 12px 16px; border-radius: 10px;
             margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between;
         }
-        #subcategoriesList input[type="checkbox"] { margin-right: 12px; width: 18px; height: 18px; }
+        .checkbox-container { display: flex; align-items: center; cursor: pointer; }
+        .checkbox-container input[type="checkbox"] { display: none; }
+        .custom-checkbox {
+            width: 20px; height: 20px; border: 2px solid var(--border-color);
+            border-radius: 6px; margin-right: 12px; display: flex;
+            align-items: center; justify-content: center; transition: all 0.2s;
+        }
+        .custom-checkbox::after {
+            content: '✔'; color: var(--text-primary); font-size: 14px;
+            opacity: 0; transform: scale(0.5); transition: all 0.2s;
+        }
+        .checkbox-container input[type="checkbox"]:checked + .custom-checkbox {
+            background-color: var(--accent-color); border-color: var(--accent-color);
+        }
+        .checkbox-container input[type="checkbox"]:checked + .custom-checkbox::after {
+            opacity: 1; transform: scale(1);
+        }
+        
         .subcat-label { flex-grow: 1; }
         
         .hidden { display: none; }
@@ -92,8 +110,7 @@
     </div>
 
     <script>
-        // URLs DEI TUOI WEBHOOK
-        const GENERATE_WEBHOOK_URL = "https://trinai.api.workflow.dcmake.it/webhook/5e225cf6-76bb-4e19-8657-35cac49fd399";
+        const GENERATE_WEBHOOK_URL = "https://TUO_URL_N8N.com/webhook/ID_WEBHOOK_GENERA_SUBCAT";
         const SAVE_WEBHOOK_URL = "https://TUO_URL_N8N.com/webhook/ID_WEBHOOK_SALVA_CATEGORIA";
 
         const translations = {
@@ -117,7 +134,46 @@
                 statusGenerating: "Your assistant is thinking...", statusError: "❌ Error, please try again.",
                 statusSuccess: "✅ Done! You can close now."
             },
-            // ... Aggiungi le altre lingue (fr, de, es, pt) qui
+            fr: {
+                title: "➕ Nouvelle Catégorie", subtitle: "Définissez une nouvelle zone pour vos produits ou services.",
+                lblCatName: "Nom de la Catégorie", lblCatDesc: "Description (Optionnel)",
+                btnGenerate: "✨ Générer des Services Suggérés par l'IA", btnGenerating: "Analyse en cours...",
+                subcatTitle: "Sélectionnez les services à inclure",
+                manualSubcatPlaceholder: "Ajouter un service manuellement...", btnAddSubcat: "Ajouter",
+                btnSave: "✅ Enregistrer la Catégorie et les Services", btnSaving: "Enregistrement...",
+                statusGenerating: "Votre assistant réfléchit...", statusError: "❌ Erreur, veuillez réessayer.",
+                statusSuccess: "✅ Terminé ! Vous pouvez fermer."
+            },
+            de: {
+                title: "➕ Neue Kategorie", subtitle: "Definieren Sie einen neuen Bereich für Ihre Produkte oder Dienstleistungen.",
+                lblCatName: "Kategoriename", lblCatDesc: "Beschreibung (Optional)",
+                btnGenerate: "✨ KI-gestützte Dienstvorschläge generieren", btnGenerating: "Analysiere...",
+                subcatTitle: "Wählen Sie die einzuschließenden Dienste aus",
+                manualSubcatPlaceholder: "Dienst manuell hinzufügen...", btnAddSubcat: "Hinzufügen",
+                btnSave: "✅ Kategorie und Dienste speichern", btnSaving: "Speichern...",
+                statusGenerating: "Ihr Assistent denkt nach...", statusError: "❌ Fehler, bitte erneut versuchen.",
+                statusSuccess: "✅ Fertig! Sie können schließen."
+            },
+            es: {
+                title: "➕ Nueva Categoría", subtitle: "Define una nueva área para tus productos o servicios.",
+                lblCatName: "Nombre de la Categoría", lblCatDesc: "Descripción (Opcional)",
+                btnGenerate: "✨ Generar Servicios Sugeridos con IA", btnGenerating: "Analizando...",
+                subcatTitle: "Selecciona los servicios a incluir",
+                manualSubcatPlaceholder: "Añadir un servicio manualmente...", btnAddSubcat: "Añadir",
+                btnSave: "✅ Guardar Categoría y Servicios", btnSaving: "Guardando...",
+                statusGenerating: "Tu asistente está pensando...", statusError: "❌ Error, por favor inténtalo de nuevo.",
+                statusSuccess: "✅ ¡Hecho! Ya puedes cerrar."
+            },
+            pt: {
+                title: "➕ Nova Categoria", subtitle: "Defina uma nova área para seus produtos ou serviços.",
+                lblCatName: "Nome da Categoria", lblCatDesc: "Descrição (Opcional)",
+                btnGenerate: "✨ Gerar Serviços Sugeridos com IA", btnGenerating: "Analisando...",
+                subcatTitle: "Selecione os serviços a incluir",
+                manualSubcatPlaceholder: "Adicionar um serviço manualmente...", btnAddSubcat: "Adicionar",
+                btnSave: "✅ Salvar Categoria e Serviços", btnSaving: "Salvando...",
+                statusGenerating: "Seu assistente está pensando...", statusError: "❌ Erro, por favor tente novamente.",
+                statusSuccess: "✅ Feito! Pode fechar agora."
+            }
         };
 
         const tg = window.Telegram.WebApp;
@@ -128,7 +184,6 @@
         const lang = urlParams.get('language') || 'it';
         const t = translations[lang] || translations.it;
 
-        // Elementi DOM
         const dom = {
             initialSection: document.getElementById('initialInputSection'),
             subcatSection: document.getElementById('subcategoriesSection'),
@@ -138,10 +193,15 @@
             manualSubcatInput: document.getElementById('manualSubcat'),
             addSubcatBtn: document.getElementById('addSubcatBtn'),
             status: document.getElementById('status'),
+            categoryName: document.getElementById('categoryName'),
+            categoryDescription: document.getElementById('categoryDescription'),
         };
+        
+        // Salva i dati della categoria generata dall'AI
+        let generatedCategoryData = null;
 
         function applyTranslations() {
-            document.title = t.title.replace(/<[^>]*>?/gm, '');
+            document.title = t.title;
             document.getElementById('title').innerHTML = t.title;
             document.getElementById('subtitle').textContent = t.subtitle;
             document.getElementById('lblCatName').textContent = t.lblCatName;
@@ -153,23 +213,32 @@
             dom.saveBtn.textContent = t.btnSave;
         }
 
-        function createSubcategoryItem(name, isChecked = true) {
+        function createSubcategoryItem(subcatObject, isChecked = true) {
             const li = document.createElement('li');
+            const labelEl = document.createElement('label');
+            labelEl.className = 'checkbox-container';
+
             const checkbox = document.createElement('input');
             checkbox.type = 'checkbox';
             checkbox.checked = isChecked;
-            checkbox.value = name;
-            const label = document.createElement('span');
-            label.className = 'subcat-label';
-            label.textContent = name;
-            li.appendChild(checkbox);
-li.appendChild(label);
+            checkbox.value = subcatObject.name;
+            
+            const customCheckbox = document.createElement('div');
+            customCheckbox.className = 'custom-checkbox';
+
+            const labelText = document.createElement('span');
+            labelText.className = 'subcat-label';
+            labelText.textContent = subcatObject.short_name;
+
+            labelEl.appendChild(checkbox);
+            labelEl.appendChild(customCheckbox);
+            labelEl.appendChild(labelText);
+            li.appendChild(labelEl);
             return li;
         }
 
-        // --- Event Listener per Generare Suggerimenti ---
         dom.generateBtn.addEventListener('click', async () => {
-            const categoryName = document.getElementById('categoryName').value;
+            const categoryName = dom.categoryName.value;
             if (!categoryName) { alert('Il nome della categoria è obbligatorio!'); return; }
             
             dom.generateBtn.disabled = true;
@@ -182,13 +251,18 @@ li.appendChild(label);
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         category_name: categoryName,
-                        category_description: document.getElementById('categoryDescription').value,
-                        chat_id: chatId, // Passiamo il chat_id per recuperare il contesto del tenant
-                        language: lang
+                        category_description: dom.categoryDescription.value,
+                        chat_id: chatId, language: lang
                     })
                 });
                 const data = await response.json();
                 
+                generatedCategoryData = data; // Salva l'intero blocco categoria
+                
+                dom.categoryName.value = data.name; // Aggiorna il nome con quello raffinato dall'AI
+                dom.categoryName.readOnly = true; // Blocca la modifica del nome
+                dom.categoryDescription.readOnly = true;
+
                 if (data.subcategories && data.subcategories.length > 0) {
                     dom.subcatList.innerHTML = '';
                     data.subcategories.forEach(subcat => {
@@ -199,7 +273,6 @@ li.appendChild(label);
                 dom.initialSection.classList.add('hidden');
                 dom.subcatSection.classList.remove('hidden');
                 dom.status.innerHTML = '';
-
             } catch (error) {
                 console.error("Errore generazione sottocategorie:", error);
                 dom.status.textContent = t.statusError;
@@ -208,38 +281,59 @@ li.appendChild(label);
             }
         });
 
-        // --- Event Listener per Aggiungere Manualmente ---
         dom.addSubcatBtn.addEventListener('click', () => {
             const newSubcatName = dom.manualSubcatInput.value.trim();
             if (newSubcatName) {
-                dom.subcatList.appendChild(createSubcategoryItem(newSubcatName));
+                const manualObject = { name: newSubcatName, short_name: newSubcatName };
+                dom.subcatList.appendChild(createSubcategoryItem(manualObject));
                 dom.manualSubcatInput.value = '';
             }
         });
 
-        // --- Event Listener per Salvare Tutto ---
         dom.saveBtn.addEventListener('click', async () => {
             dom.saveBtn.disabled = true;
             dom.saveBtn.textContent = t.btnSaving;
             dom.status.innerHTML = `<div class="spinner"></div>`;
             
-            const selectedSubcats = Array.from(dom.subcatList.querySelectorAll('input[type="checkbox"]:checked'))
+            const selectedSubcatNames = Array.from(dom.subcatList.querySelectorAll('input[type="checkbox"]:checked'))
                 .map(cb => cb.value);
+            
+            // Filtra le sottocategorie originali per tenere solo quelle selezionate
+            const selectedSubcategories = generatedCategoryData.subcategories.filter(
+                subcat => selectedSubcatNames.includes(subcat.name)
+            );
+
+            // Aggiungi le voci manuali se ci sono
+            const manualNames = Array.from(dom.subcatList.querySelectorAll('input[type="checkbox"]:checked'))
+                .map(cb => cb.value)
+                .filter(name => !generatedCategoryData.subcategories.some(s => s.name === name));
+            
+            manualNames.forEach(name => {
+                selectedSubcategories.push({
+                    name: name,
+                    short_name: name, // Per le voci manuali, name e short_name coincidono
+                    callback_data: name.toUpperCase().replace(/ /g, '_') // Genera un callback base
+                });
+            });
+
+            const finalPayload = {
+                chat_id: chatId,
+                new_category_block: {
+                    name: generatedCategoryData.name,
+                    short_name: generatedCategoryData.short_name,
+                    callback_data: generatedCategoryData.callback_data,
+                    subcategories: selectedSubcategories
+                },
+                user_data: tg.initDataUnsafe?.user,
+                language: lang
+            };
 
             try {
                 const response = await fetch(SAVE_WEBHOOK_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        chat_id: chatId,
-                        category_name: document.getElementById('categoryName').value,
-                        category_description: document.getElementById('categoryDescription').value,
-                        subcategories_to_add: selectedSubcats,
-                        user_data: tg.initDataUnsafe?.user,
-                        language: lang
-                    })
+                    body: JSON.stringify(finalPayload)
                 });
-
                 if (response.ok) {
                     dom.status.innerHTML = `<p>${t.statusSuccess}</p>`;
                     setTimeout(() => tg.close(), 1500);
