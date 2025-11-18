@@ -48,23 +48,10 @@
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .row { display: flex; gap: 16px; }
         .row .form-group { flex: 1; }
-
-        /* Stili per l'upload del file */
-        .file-upload-label {
-            display: block; width: 100%; padding: 14px 16px; border: 1px dashed var(--border-color);
-            border-radius: 12px; background: var(--input-bg); color: var(--text-secondary);
-            text-align: center; cursor: pointer; transition: all 0.3s;
-        }
-        .file-upload-label:hover { border-color: var(--accent-color); color: var(--text-primary); }
-        input[type="file"] { display: none; }
-        #filePreview { margin-top: 15px; text-align: center; }
-        #filePreview img { max-width: 100%; max-height: 200px; border-radius: 8px; border: 1px solid var(--border-color); }
-        #filePreview p { font-size: 14px; color: var(--text-secondary); background: var(--input-bg); padding: 10px; border-radius: 8px; }
     </style>
 </head>
 <body>
     <div class="container">
-        <!-- SEZIONE 1: INPUT INIZIALE -->
         <div id="initialInputSection">
             <h1 id="title"></h1>
             <p class="subtitle" id="subtitle"></p>
@@ -76,19 +63,9 @@
                 <label for="productDescription" id="lblProductDesc"></label>
                 <textarea id="productDescription" rows="3"></textarea>
             </div>
-
-            <!-- NUOVO: Sezione Upload File -->
-            <div class="form-group">
-                <label id="lblProductFile"></label>
-                <label for="productFile" class="file-upload-label" id="fileUploadLabelText"></label>
-                <input type="file" id="productFile" accept="image/*,application/pdf">
-                <div id="filePreview" class="hidden"></div>
-            </div>
-
             <button id="enrichBtn" class="button"></button>
         </div>
 
-        <!-- SEZIONE 2: CURA DELLA BOZZA (INIZIALMENTE NASCOSTA) -->
         <form id="productForm" class="hidden">
             <h2 id="formTitle"></h2>
             <div class="form-group">
@@ -113,7 +90,6 @@
                 <label for="edit_tags" id="lblEditTags"></label>
                 <input type="text" id="edit_tags">
             </div>
-
             <button type="submit" id="saveBtn" class="button"></button>
         </form>
 
@@ -125,136 +101,17 @@
         const SAVE_WEBHOOK_URL = "https://TUO_URL_N8N.com/webhook/ID_WEBHOOK_salva_prodotto";
 
         const translations = {
-            it: {
-                title: "➕ Nuovo Servizio",
-                subtitle: "nella categoria:",
-                lblProductName: "Nome Prodotto/Servizio",
-                lblProductDesc: "Descrizione Breve (Opzionale)",
-                lblProductFile: "Allegato (Opzionale)",
-                fileUploadLabelText: "🖼️ Allega Immagine o PDF",
-                btnEnrich: "✨ Analizza e Crea Bozza con AI",
-                btnEnriching: "Analisi in corso...",
-                formTitle: "✏️ Bozza per:",
-                lblEditItemName: "Nome Prodotto",
-                lblEditSku: "SKU / Codice",
-                lblEditPrice: "Prezzo (€)",
-                lblEditDescLong: "Descrizione Lunga",
-                lblEditTags: "Tag (separati da virgola)",
-                btnSave: "✅ Salva Prodotto nel Catalogo",
-                btnSaving: "Salvataggio...",
-                statusEnriching: "Il tuo assistente sta facendo ricerche...",
-                statusError: "❌ Errore, riprova.",
-                statusSuccess: "✅ Prodotto salvato! Puoi chiudere."
-            },
-            en: {
-                title: "➕ New Service",
-                subtitle: "in category:",
-                lblProductName: "Product/Service Name",
-                lblProductDesc: "Short Description (Optional)",
-                lblProductFile: "Attachment (Optional)",
-                fileUploadLabelText: "🖼️ Attach Image or PDF",
-                btnEnrich: "✨ Analyze and Create Draft with AI",
-                btnEnriching: "Analyzing...",
-                formTitle: "✏️ Draft for:",
-                lblEditItemName: "Product Name",
-                lblEditSku: "SKU / Code",
-                lblEditPrice: "Price (€)",
-                lblEditDescLong: "Long Description",
-                lblEditTags: "Tags (comma-separated)",
-                btnSave: "✅ Save Product to Catalog",
-                btnSaving: "Saving...",
-                statusEnriching: "Your assistant is researching...",
-                statusError: "❌ Error, please try again.",
-                statusSuccess: "✅ Product saved! You can close now."
-            },
-            fr: {
-                title: "➕ Nouveau Service",
-                subtitle: "dans la catégorie :",
-                lblProductName: "Nom du Produit/Service",
-                lblProductDesc: "Description Courte (Optionnel)",
-                lblProductFile: "Pièce Jointe (Optionnel)",
-                fileUploadLabelText: "🖼️ Joindre une Image ou un PDF",
-                btnEnrich: "✨ Analyser et Créer une Ébauche avec l'IA",
-                btnEnriching: "Analyse en cours...",
-                formTitle: "✏️ Ébauche pour :",
-                lblEditItemName: "Nom du Produit",
-                lblEditSku: "SKU / Code",
-                lblEditPrice: "Prix (€)",
-                lblEditDescLong: "Description Longue",
-                lblEditTags: "Tags (séparés par une virgule)",
-                btnSave: "✅ Enregistrer le Produit au Catalogue",
-                btnSaving: "Enregistrement...",
-                statusEnriching: "Votre assistant fait des recherches...",
-                statusError: "❌ Erreur, veuillez réessayer.",
-                statusSuccess: "✅ Produit enregistré ! Vous pouvez fermer."
-            },
-            de: {
-                title: "➕ Neuer Dienst",
-                subtitle: "in Kategorie:",
-                lblProductName: "Produkt-/Dienstname",
-                lblProductDesc: "Kurzbeschreibung (Optional)",
-                lblProductFile: "Anhang (Optional)",
-                fileUploadLabelText: "🖼️ Bild oder PDF anhängen",
-                btnEnrich: "✨ Analysieren und Entwurf mit KI erstellen",
-                btnEnriching: "Analysiere...",
-                formTitle: "✏️ Entwurf für:",
-                lblEditItemName: "Produktname",
-                lblEditSku: "SKU / Code",
-                lblEditPrice: "Preis (€)",
-                lblEditDescLong: "Lange Beschreibung",
-                lblEditTags: "Tags (kommagetrennt)",
-                btnSave: "✅ Produkt im Katalog speichern",
-                btnSaving: "Speichern...",
-                statusEnriching: "Ihr Assistent recherchiert...",
-                statusError: "❌ Fehler, bitte erneut versuchen.",
-                statusSuccess: "✅ Produkt gespeichert! Sie können schließen."
-            },
-            es: {
-                title: "➕ Nuevo Servicio",
-                subtitle: "en la categoría:",
-                lblProductName: "Nombre del Producto/Servicio",
-                lblProductDesc: "Descripción Corta (Opcional)",
-                lblProductFile: "Archivo Adjunto (Opcional)",
-                fileUploadLabelText: "🖼️ Adjuntar Imagen o PDF",
-                btnEnrich: "✨ Analizar y Crear Borrador con IA",
-                btnEnriching: "Analizando...",
-                formTitle: "✏️ Borrador para:",
-                lblEditItemName: "Nombre del Producto",
-                lblEditSku: "SKU / Código",
-                lblEditPrice: "Precio (€)",
-                lblEditDescLong: "Descripción Larga",
-                lblEditTags: "Etiquetas (separadas por coma)",
-                btnSave: "✅ Guardar Producto en el Catálogo",
-                btnSaving: "Guardando...",
-                statusEnriching: "Tu asistente está investigando...",
-                statusError: "❌ Error, por favor inténtalo de nuevo.",
-                statusSuccess: "✅ ¡Producto guardado! Ya puedes cerrar."
-            },
-            pt: {
-                title: "➕ Novo Serviço",
-                subtitle: "na categoria:",
-                lblProductName: "Nome do Produto/Serviço",
-                lblProductDesc: "Descrição Curta (Opcional)",
-                lblProductFile: "Anexo (Opcional)",
-                fileUploadLabelText: "🖼️ Anexar Imagem ou PDF",
-                btnEnrich: "✨ Analisar e Criar Rascunho com IA",
-                btnEnriching: "Analisando...",
-                formTitle: "✏️ Rascunho para:",
-                lblEditItemName: "Nome do Produto",
-                lblEditSku: "SKU / Código",
-                lblEditPrice: "Preço (€)",
-                lblEditDescLong: "Descrição Longa",
-                lblEditTags: "Tags (separadas por vírgula)",
-                btnSave: "✅ Salvar Produto no Catálogo",
-                btnSaving: "Salvando...",
-                statusEnriching: "Seu assistente está pesquisando...",
-                statusError: "❌ Erro, por favor tente novamente.",
-                statusSuccess: "✅ Produto salvo! Pode fechar agora."
-            }
+            it: { title: "➕ Nuovo Servizio", subtitle: "nella categoria:", lblProductName: "Nome Prodotto/Servizio", lblProductDesc: "Descrizione Breve (Opzionale)", btnEnrich: "✨ Analizza e Crea Bozza con AI", btnEnriching: "Analisi in corso...", formTitle: "✏️ Bozza per:", lblEditItemName: "Nome Prodotto", lblEditSku: "SKU / Codice", lblEditPrice: "Prezzo (€)", lblEditDescLong: "Descrizione Lunga", lblEditTags: "Tag (separati da virgola)", btnSave: "✅ Salva Prodotto nel Catalogo", btnSaving: "Salvataggio...", statusEnriching: "Il tuo assistente sta facendo ricerche...", statusError: "❌ Errore, riprova.", statusSuccess: "✅ Prodotto salvato! Puoi chiudere." },
+            en: { title: "➕ New Service", subtitle: "in category:", lblProductName: "Product/Service Name", lblProductDesc: "Short Description (Optional)", btnEnrich: "✨ Analyze and Create Draft with AI", btnEnriching: "Analyzing...", formTitle: "✏️ Draft for:", lblEditItemName: "Product Name", lblEditSku: "SKU / Code", lblEditPrice: "Price (€)", lblEditDescLong: "Long Description", lblEditTags: "Tags (comma-separated)", btnSave: "✅ Save Product to Catalog", btnSaving: "Saving...", statusEnriching: "Your assistant is researching...", statusError: "❌ Error, please try again.", statusSuccess: "✅ Product saved! You can close now." },
+            fr: { title: "➕ Nouveau Service", subtitle: "dans la catégorie :", lblProductName: "Nom du Produit/Service", lblProductDesc: "Description Courte (Optionnel)", btnEnrich: "✨ Analyser et Créer une Ébauche avec l'IA", btnEnriching: "Analyse en cours...", formTitle: "✏️ Ébauche pour :", lblEditItemName: "Nom du Produit", lblEditSku: "SKU / Code", lblEditPrice: "Prix (€)", lblEditDescLong: "Description Longue", lblEditTags: "Tags (séparés par une virgule)", btnSave: "✅ Enregistrer le Produit au Catalogue", btnSaving: "Enregistrement...", statusEnriching: "Votre assistant fait des recherches...", statusError: "❌ Erreur, veuillez réessayer.", statusSuccess: "✅ Produit enregistré ! Vous pouvez fermer." },
+            de: { title: "➕ Neuer Dienst", subtitle: "in Kategorie:", lblProductName: "Produkt-/Dienstname", lblProductDesc: "Kurzbeschreibung (Optional)", btnEnrich: "✨ Analysieren und Entwurf mit KI erstellen", btnEnriching: "Analysiere...", formTitle: "✏️ Entwurf für:", lblEditItemName: "Produktname", lblEditSku: "SKU / Code", lblEditPrice: "Preis (€)", lblEditDescLong: "Lange Beschreibung", lblEditTags: "Tags (kommagetrennt)", btnSave: "✅ Produkt im Katalog speichern", btnSaving: "Speichern...", statusEnriching: "Ihr Assistent recherchiert...", statusError: "❌ Fehler, bitte erneut versuchen.", statusSuccess: "✅ Produkt gespeichert! Sie können schließen." },
+            es: { title: "➕ Nuevo Servicio", subtitle: "en la categoría:", lblProductName: "Nombre del Producto/Servicio", lblProductDesc: "Descripción Corta (Opcional)", btnEnrich: "✨ Analizar y Crear Borrador con IA", btnEnriching: "Analizando...", formTitle: "✏️ Borrador para:", lblEditItemName: "Nombre del Producto", lblEditSku: "SKU / Código", lblEditPrice: "Precio (€)", lblEditDescLong: "Descripción Larga", lblEditTags: "Etiquetas (separadas por coma)", btnSave: "✅ Guardar Producto en el Catálogo", btnSaving: "Guardando...", statusEnriching: "Tu asistente está investigando...", statusError: "❌ Error, por favor inténtalo de nuevo.", statusSuccess: "✅ ¡Producto guardado! Ya puedes cerrar." },
+            pt: { title: "➕ Novo Serviço", subtitle: "na categoria:", lblProductName: "Nome do Produto/Serviço", lblProductDesc: "Descrição Curta (Opcional)", btnEnrich: "✨ Analisar e Criar Rascunho com IA", btnEnriching: "Analisando...", formTitle: "✏️ Rascunho para:", lblEditItemName: "Nome do Produto", lblEditSku: "SKU / Código", lblEditPrice: "Preço (€)", lblEditDescLong: "Descrição Longa", lblEditTags: "Tags (separadas por vírgula)", btnSave: "✅ Salvar Produto no Catálogo", btnSaving: "Salvando...", statusEnriching: "Seu assistente está pesquisando...", statusError: "❌ Erro, por favor tente novamente.", statusSuccess: "✅ Produto salvo! Pode fechar agora." }
         };
 
         const tg = window.Telegram.WebApp;
-        tg.ready(); tg.expand();
+        tg.ready();
+        tg.expand();
 
         const urlParams = new URLSearchParams(window.location.search);
         const chatId = urlParams.get('chat_id');
@@ -272,8 +129,6 @@
             title: document.getElementById('title'),
             subtitle: document.getElementById('subtitle'),
             formTitle: document.getElementById('formTitle'),
-            productFile: document.getElementById('productFile'),
-            filePreview: document.getElementById('filePreview')
         };
         
         function applyTranslations() {
@@ -282,8 +137,6 @@
             dom.subtitle.textContent = `${t.subtitle} "${categoryName}"`;
             document.getElementById('lblProductName').textContent = t.lblProductName;
             document.getElementById('lblProductDesc').textContent = t.lblProductDesc;
-            document.getElementById('lblProductFile').textContent = t.lblProductFile;
-            document.getElementById('fileUploadLabelText').textContent = t.fileUploadLabelText;
             dom.enrichBtn.textContent = t.btnEnrich;
             dom.formTitle.textContent = t.formTitle;
             document.getElementById('lblEditItemName').textContent = t.lblEditItemName;
@@ -295,74 +148,27 @@
         }
 
         let productDraftData = null; 
-        let uploadedFileData = { base64: null, mimetype: null };
-
-        // Gestione del caricamento file
-        dom.productFile.addEventListener('change', (event) => {
-            const file = event.target.files[0];
-            if (!file) {
-                dom.filePreview.classList.add('hidden');
-                uploadedFileData = { base64: null, mimetype: null };
-                return;
-            }
-
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                const dataUrl = e.target.result;
-                const parts = dataUrl.split(',');
-                const mimePart = parts[0].split(':')[1].split(';')[0];
-                const base64Data = parts[1];
-
-                uploadedFileData.mimetype = mimePart;
-                uploadedFileData.base64 = base64Data;
-                
-                // Mostra anteprima
-                dom.filePreview.innerHTML = ''; 
-                if (file.type.startsWith('image/')) {
-                    const img = document.createElement('img');
-                    img.src = dataUrl;
-                    dom.filePreview.appendChild(img);
-                } else if (file.type === 'application/pdf') {
-                    const p = document.createElement('p');
-                    p.textContent = `📄 File selezionato: ${file.name}`;
-                    dom.filePreview.appendChild(p);
-                }
-                dom.filePreview.classList.remove('hidden');
-            };
-            reader.onerror = (error) => {
-                console.error("Errore lettura file:", error);
-                dom.filePreview.classList.add('hidden');
-                uploadedFileData = { base64: null, mimetype: null };
-                alert("Impossibile leggere il file.");
-            };
-            reader.readAsDataURL(file);
-        });
 
         dom.enrichBtn.addEventListener('click', async () => {
             const productName = document.getElementById('productName').value;
-            if (!productName) { alert('Il nome del prodotto è obbligatorio!'); return; }
+            if (!productName) { alert(t.lblProductName + ' is required!'); return; }
             
             dom.enrichBtn.disabled = true;
             dom.enrichBtn.textContent = t.btnEnriching;
             dom.status.innerHTML = `<div class="spinner"></div><p>${t.statusEnriching}</p>`;
-            
-            const payload = {
-                product_name: productName,
-                product_description: document.getElementById('productDescription').value,
-                category_name: categoryName,
-                chat_id: chatId,
-                language: lang,
-                ...(uploadedFileData.base64 && { 
-                    file_base64: uploadedFileData.base64,
-                    file_mimetype: uploadedFileData.mimetype 
-                })
-            };
 
             try {
                 const response = await fetch(ENRICH_WEBHOOK_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
+                    body: JSON.stringify({
+                        product_name: productName,
+                        product_description: document.getElementById('productDescription').value,
+                        category_name: categoryName,
+                        category_id: categoryId, // <-- Passa l'ID
+                        chat_id: chatId,
+                        language: lang
+                    })
                 });
                 const data = await response.json();
                 productDraftData = data; 
@@ -377,7 +183,6 @@
                 dom.initialSection.classList.add('hidden');
                 dom.productForm.classList.remove('hidden');
                 dom.status.innerHTML = '';
-
             } catch (error) {
                 console.error("Errore arricchimento AI:", error);
                 dom.status.textContent = t.statusError;
@@ -400,7 +205,7 @@
             
             const finalPayload = {
                 chat_id: chatId,
-                category_id: categoryId,
+                category_id: categoryId, // <-- Passa l'ID
                 new_product_block: productDraftData,
                 user_data: tg.initDataUnsafe?.user,
                 language: lang
