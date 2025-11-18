@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Nuova Categoria</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        :root {
+            --bg-start: #4a5b8f; --bg-end: #2a3d5f; --text-primary: #ffffff;
+            --text-secondary: rgba(255, 255, 255, 0.7); --border-color: rgba(255, 255, 255, 0.2);
+            --input-bg: rgba(255, 255, 255, 0.08); --accent-color: #5B6FED; --error-color: #ff6b6b;
+            --success-color: #28a745; --list-item-bg: rgba(255, 255, 255, 0.05);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: linear-gradient(135deg, var(--bg-start) 0%, var(--bg-end) 100%);
+            color: var(--text-primary); padding: 20px; min-height: 100vh;
+        }
+        .container { max-width: 500px; margin: 0 auto; }
+        h1 { font-size: 26px; margin-bottom: 8px; font-weight: 600; }
+        .subtitle { font-size: 14px; color: var(--text-secondary); margin-bottom: 32px; font-weight: 300; }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 10px; font-size: 14px; font-weight: 500; }
+        input, textarea {
+            width: 100%; padding: 14px 16px; border: 1px solid var(--border-color);
+            border-radius: 12px; background: var(--input-bg); backdrop-filter: blur(10px);
+            color: var(--text-primary); font-size: 15px; font-family: inherit;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+        input:focus, textarea:focus { outline: none; border-color: rgba(255, 255, 255, 0.5); box-shadow: 0 0 15px rgba(91, 111, 237, 0.3); }
+        textarea { resize: vertical; min-height: 80px; }
+        .required::after { content: " *"; color: #ff6b6b; }
+        
+        .button {
+            width: 100%; padding: 14px; background: var(--accent-color); color: var(--text-primary);
+            border: none; border-radius: 12px; font-size: 15px; font-weight: 600; cursor: pointer;
+            transition: background-color 0.3s, opacity 0.3s;
+        }
+        .button:disabled { background: #555; cursor: not-allowed; opacity: 0.6; }
+
+        #subcategoriesSection { margin-top: 32px; border-top: 1px solid var(--border-color); padding-top: 24px; }
+        #subcategoriesList { list-style: none; margin-bottom: 20px; }
+        #subcategoriesList li {
+            background: var(--list-item-bg); padding: 12px 16px; border-radius: 10px;
+            margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between;
+        }
+        #subcategoriesList input[type="checkbox"] { margin-right: 12px; width: 18px; height: 18px; }
+        .subcat-label { flex-grow: 1; }
+        
+        .hidden { display: none; }
+        #status { text-align: center; margin-top: 16px; font-size: 14px; }
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.3); border-radius: 50%;
+            border-top: 4px solid var(--text-primary); width: 24px; height: 24px;
+            animation: spin 1s linear infinite; margin: 16px auto;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- SEZIONE 1: INPUT INIZIALE -->
+        <div id="initialInputSection">
+            <h1 id="title"></h1>
+            <p class="subtitle" id="subtitle"></p>
+            <div class="form-group">
+                <label for="categoryName" class="required"><span id="lblCatName"></span></label>
+                <input type="text" id="categoryName" required>
+            </div>
+            <div class="form-group">
+                <label for="categoryDescription"><span id="lblCatDesc"></span></label>
+                <textarea id="categoryDescription" rows="3"></textarea>
+            </div>
+            <button id="generateBtn" class="button"></button>
+        </div>
+
+        <!-- SEZIONE 2: ESPANSIONE E CURA (INIZIALMENTE NASCOSTA) -->
+        <div id="subcategoriesSection" class="hidden">
+            <h2 id="subcatTitle"></h2>
+            <ul id="subcategoriesList"></ul>
+            <div class="form-group">
+                <input type="text" id="manualSubcat" placeholder="">
+            </div>
+            <button id="addSubcatBtn" class="button"></button>
+            <hr style="border: none; border-top: 1px solid var(--border-color); margin: 24px 0;">
+            <button id="saveBtn" class="button"></button>
+        </div>
+
+        <div id="status"></div>
+    </div>
+
+    <script>
+        // URLs DEI TUOI WEBHOOK
+        const GENERATE_WEBHOOK_URL = "https://TUO_URL_N8N.com/webhook/ID_WEBHOOK_GENERA_SUBCAT";
+        const SAVE_WEBHOOK_URL = "https://TUO_URL_N8N.com/webhook/ID_WEBHOOK_SALVA_CATEGORIA";
+
+        const translations = {
+            it: {
+                title: "➕ Nuova Categoria", subtitle: "Definisci una nuova area per i tuoi prodotti o servizi.",
+                lblCatName: "Nome Categoria", lblCatDesc: "Descrizione (Opzionale)",
+                btnGenerate: "✨ Genera Servizi Suggeriti con AI", btnGenerating: "Analisi in corso...",
+                subcatTitle: "Seleziona i servizi da includere",
+                manualSubcatPlaceholder: "Aggiungi un servizio manualmente...", btnAddSubcat: "Aggiungi",
+                btnSave: "✅ Salva Categoria e Servizi", btnSaving: "Salvataggio...",
+                statusGenerating: "Il tuo assistente sta pensando...", statusError: "❌ Errore, riprova.",
+                statusSuccess: "✅ Fatto! Puoi chiudere."
+            },
+            en: {
+                title: "➕ New Category", subtitle: "Define a new area for your products or services.",
+                lblCatName: "Category Name", lblCatDesc: "Description (Optional)",
+                btnGenerate: "✨ Generate Suggested Services with AI", btnGenerating: "Analyzing...",
+                subcatTitle: "Select the services to include",
+                manualSubcatPlaceholder: "Add a service manually...", btnAddSubcat: "Add",
+                btnSave: "✅ Save Category and Services", btnSaving: "Saving...",
+                statusGenerating: "Your assistant is thinking...", statusError: "❌ Error, please try again.",
+                statusSuccess: "✅ Done! You can close now."
+            },
+            // ... Aggiungi le altre lingue (fr, de, es, pt) qui
+        };
+
+        const tg = window.Telegram.WebApp;
+        tg.ready(); tg.expand();
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const chatId = urlParams.get('chat_id');
+        const lang = urlParams.get('language') || 'it';
+        const t = translations[lang] || translations.it;
+
+        // Elementi DOM
+        const dom = {
+            initialSection: document.getElementById('initialInputSection'),
+            subcatSection: document.getElementById('subcategoriesSection'),
+            generateBtn: document.getElementById('generateBtn'),
+            saveBtn: document.getElementById('saveBtn'),
+            subcatList: document.getElementById('subcategoriesList'),
+            manualSubcatInput: document.getElementById('manualSubcat'),
+            addSubcatBtn: document.getElementById('addSubcatBtn'),
+            status: document.getElementById('status'),
+        };
+
+        function applyTranslations() {
+            document.title = t.title.replace(/<[^>]*>?/gm, '');
+            document.getElementById('title').innerHTML = t.title;
+            document.getElementById('subtitle').textContent = t.subtitle;
+            document.getElementById('lblCatName').textContent = t.lblCatName;
+            document.getElementById('lblCatDesc').textContent = t.lblCatDesc;
+            dom.generateBtn.textContent = t.btnGenerate;
+            document.getElementById('subcatTitle').textContent = t.subcatTitle;
+            dom.manualSubcatInput.placeholder = t.manualSubcatPlaceholder;
+            dom.addSubcatBtn.textContent = t.btnAddSubcat;
+            dom.saveBtn.textContent = t.btnSave;
+        }
+
+        function createSubcategoryItem(name, isChecked = true) {
+            const li = document.createElement('li');
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.checked = isChecked;
+            checkbox.value = name;
+            const label = document.createElement('span');
+            label.className = 'subcat-label';
+            label.textContent = name;
+            li.appendChild(checkbox);
+li.appendChild(label);
+            return li;
+        }
+
+        // --- Event Listener per Generare Suggerimenti ---
+        dom.generateBtn.addEventListener('click', async () => {
+            const categoryName = document.getElementById('categoryName').value;
+            if (!categoryName) { alert('Il nome della categoria è obbligatorio!'); return; }
+            
+            dom.generateBtn.disabled = true;
+            dom.generateBtn.textContent = t.btnGenerating;
+            dom.status.innerHTML = `<div class="spinner"></div><p>${t.statusGenerating}</p>`;
+
+            try {
+                const response = await fetch(GENERATE_WEBHOOK_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        category_name: categoryName,
+                        category_description: document.getElementById('categoryDescription').value,
+                        chat_id: chatId, // Passiamo il chat_id per recuperare il contesto del tenant
+                        language: lang
+                    })
+                });
+                const data = await response.json();
+                
+                if (data.subcategories && data.subcategories.length > 0) {
+                    dom.subcatList.innerHTML = '';
+                    data.subcategories.forEach(subcat => {
+                        dom.subcatList.appendChild(createSubcategoryItem(subcat));
+                    });
+                }
+                
+                dom.initialSection.classList.add('hidden');
+                dom.subcatSection.classList.remove('hidden');
+                dom.status.innerHTML = '';
+
+            } catch (error) {
+                console.error("Errore generazione sottocategorie:", error);
+                dom.status.textContent = t.statusError;
+                dom.generateBtn.disabled = false;
+                dom.generateBtn.textContent = t.btnGenerate;
+            }
+        });
+
+        // --- Event Listener per Aggiungere Manualmente ---
+        dom.addSubcatBtn.addEventListener('click', () => {
+            const newSubcatName = dom.manualSubcatInput.value.trim();
+            if (newSubcatName) {
+                dom.subcatList.appendChild(createSubcategoryItem(newSubcatName));
+                dom.manualSubcatInput.value = '';
+            }
+        });
+
+        // --- Event Listener per Salvare Tutto ---
+        dom.saveBtn.addEventListener('click', async () => {
+            dom.saveBtn.disabled = true;
+            dom.saveBtn.textContent = t.btnSaving;
+            dom.status.innerHTML = `<div class="spinner"></div>`;
+            
+            const selectedSubcats = Array.from(dom.subcatList.querySelectorAll('input[type="checkbox"]:checked'))
+                .map(cb => cb.value);
+
+            try {
+                const response = await fetch(SAVE_WEBHOOK_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        chat_id: chatId,
+                        category_name: document.getElementById('categoryName').value,
+                        category_description: document.getElementById('categoryDescription').value,
+                        subcategories_to_add: selectedSubcats,
+                        user_data: tg.initDataUnsafe?.user,
+                        language: lang
+                    })
+                });
+
+                if (response.ok) {
+                    dom.status.innerHTML = `<p>${t.statusSuccess}</p>`;
+                    setTimeout(() => tg.close(), 1500);
+                } else {
+                    throw new Error('Errore salvataggio server.');
+                }
+            } catch (error) {
+                console.error("Errore salvataggio categoria:", error);
+                dom.status.textContent = t.statusError;
+                dom.saveBtn.disabled = false;
+                dom.saveBtn.textContent = t.btnSave;
+            }
+        });
+
+        applyTranslations();
+    </script>
+</body>
+</html>
