@@ -76,15 +76,15 @@
                 <label for="productDescription" id="lblProductDesc"></label>
                 <textarea id="productDescription" rows="3"></textarea>
             </div>
-            
+
             <!-- NUOVO: Sezione Upload File -->
             <div class="form-group">
                 <label id="lblProductFile"></label>
-                <label for="productFile" class="file-upload-label" id="fileUploadLabelText">🖼️ Allega Immagine o PDF</label>
+                <label for="productFile" class="file-upload-label" id="fileUploadLabelText"></label>
                 <input type="file" id="productFile" accept="image/*,application/pdf">
                 <div id="filePreview" class="hidden"></div>
             </div>
-            
+
             <button id="enrichBtn" class="button"></button>
         </div>
 
@@ -113,7 +113,7 @@
                 <label for="edit_tags" id="lblEditTags"></label>
                 <input type="text" id="edit_tags">
             </div>
-            
+
             <button type="submit" id="saveBtn" class="button"></button>
         </form>
 
@@ -121,7 +121,7 @@
     </div>
 
     <script>
-        const ENRICH_WEBHOOK_URL = "https://TUO_URL_N8N.com/webhook/ID_WEBHOOK_ARricchisci_prodotto";
+        const ENRICH_WEBHOOK_URL = "https://trinai.api.workflow.dcmake.it/webhook/31f89350-4d7f-44b7-9aaf-e7d9e3655b6c";
         const SAVE_WEBHOOK_URL = "https://TUO_URL_N8N.com/webhook/ID_WEBHOOK_salva_prodotto";
 
         const translations = {
@@ -146,7 +146,6 @@
                 statusError: "❌ Errore, riprova.",
                 statusSuccess: "✅ Prodotto salvato! Puoi chiudere."
             },
-            // ... (altre traduzioni possono essere aggiornate qui)
             en: {
                 title: "➕ New Service",
                 subtitle: "in category:",
@@ -168,6 +167,90 @@
                 statusError: "❌ Error, please try again.",
                 statusSuccess: "✅ Product saved! You can close now."
             },
+            fr: {
+                title: "➕ Nouveau Service",
+                subtitle: "dans la catégorie :",
+                lblProductName: "Nom du Produit/Service",
+                lblProductDesc: "Description Courte (Optionnel)",
+                lblProductFile: "Pièce Jointe (Optionnel)",
+                fileUploadLabelText: "🖼️ Joindre une Image ou un PDF",
+                btnEnrich: "✨ Analyser et Créer une Ébauche avec l'IA",
+                btnEnriching: "Analyse en cours...",
+                formTitle: "✏️ Ébauche pour :",
+                lblEditItemName: "Nom du Produit",
+                lblEditSku: "SKU / Code",
+                lblEditPrice: "Prix (€)",
+                lblEditDescLong: "Description Longue",
+                lblEditTags: "Tags (séparés par une virgule)",
+                btnSave: "✅ Enregistrer le Produit au Catalogue",
+                btnSaving: "Enregistrement...",
+                statusEnriching: "Votre assistant fait des recherches...",
+                statusError: "❌ Erreur, veuillez réessayer.",
+                statusSuccess: "✅ Produit enregistré ! Vous pouvez fermer."
+            },
+            de: {
+                title: "➕ Neuer Dienst",
+                subtitle: "in Kategorie:",
+                lblProductName: "Produkt-/Dienstname",
+                lblProductDesc: "Kurzbeschreibung (Optional)",
+                lblProductFile: "Anhang (Optional)",
+                fileUploadLabelText: "🖼️ Bild oder PDF anhängen",
+                btnEnrich: "✨ Analysieren und Entwurf mit KI erstellen",
+                btnEnriching: "Analysiere...",
+                formTitle: "✏️ Entwurf für:",
+                lblEditItemName: "Produktname",
+                lblEditSku: "SKU / Code",
+                lblEditPrice: "Preis (€)",
+                lblEditDescLong: "Lange Beschreibung",
+                lblEditTags: "Tags (kommagetrennt)",
+                btnSave: "✅ Produkt im Katalog speichern",
+                btnSaving: "Speichern...",
+                statusEnriching: "Ihr Assistent recherchiert...",
+                statusError: "❌ Fehler, bitte erneut versuchen.",
+                statusSuccess: "✅ Produkt gespeichert! Sie können schließen."
+            },
+            es: {
+                title: "➕ Nuevo Servicio",
+                subtitle: "en la categoría:",
+                lblProductName: "Nombre del Producto/Servicio",
+                lblProductDesc: "Descripción Corta (Opcional)",
+                lblProductFile: "Archivo Adjunto (Opcional)",
+                fileUploadLabelText: "🖼️ Adjuntar Imagen o PDF",
+                btnEnrich: "✨ Analizar y Crear Borrador con IA",
+                btnEnriching: "Analizando...",
+                formTitle: "✏️ Borrador para:",
+                lblEditItemName: "Nombre del Producto",
+                lblEditSku: "SKU / Código",
+                lblEditPrice: "Precio (€)",
+                lblEditDescLong: "Descripción Larga",
+                lblEditTags: "Etiquetas (separadas por coma)",
+                btnSave: "✅ Guardar Producto en el Catálogo",
+                btnSaving: "Guardando...",
+                statusEnriching: "Tu asistente está investigando...",
+                statusError: "❌ Error, por favor inténtalo de nuevo.",
+                statusSuccess: "✅ ¡Producto guardado! Ya puedes cerrar."
+            },
+            pt: {
+                title: "➕ Novo Serviço",
+                subtitle: "na categoria:",
+                lblProductName: "Nome do Produto/Serviço",
+                lblProductDesc: "Descrição Curta (Opcional)",
+                lblProductFile: "Anexo (Opcional)",
+                fileUploadLabelText: "🖼️ Anexar Imagem ou PDF",
+                btnEnrich: "✨ Analisar e Criar Rascunho com IA",
+                btnEnriching: "Analisando...",
+                formTitle: "✏️ Rascunho para:",
+                lblEditItemName: "Nome do Produto",
+                lblEditSku: "SKU / Código",
+                lblEditPrice: "Preço (€)",
+                lblEditDescLong: "Descrição Longa",
+                lblEditTags: "Tags (separadas por vírgula)",
+                btnSave: "✅ Salvar Produto no Catálogo",
+                btnSaving: "Salvando...",
+                statusEnriching: "Seu assistente está pesquisando...",
+                statusError: "❌ Erro, por favor tente novamente.",
+                statusSuccess: "✅ Produto salvo! Pode fechar agora."
+            }
         };
 
         const tg = window.Telegram.WebApp;
@@ -214,7 +297,7 @@
         let productDraftData = null; 
         let uploadedFileData = { base64: null, mimetype: null };
 
-        // NUOVO: Gestione del caricamento file
+        // Gestione del caricamento file
         dom.productFile.addEventListener('change', (event) => {
             const file = event.target.files[0];
             if (!file) {
@@ -226,7 +309,6 @@
             const reader = new FileReader();
             reader.onload = (e) => {
                 const dataUrl = e.target.result;
-                // Formato Data URL: "data:[<mediatype>][;base64],<data>"
                 const parts = dataUrl.split(',');
                 const mimePart = parts[0].split(':')[1].split(';')[0];
                 const base64Data = parts[1];
@@ -235,7 +317,7 @@
                 uploadedFileData.base64 = base64Data;
                 
                 // Mostra anteprima
-                dom.filePreview.innerHTML = ''; // Pulisci anteprima precedente
+                dom.filePreview.innerHTML = ''; 
                 if (file.type.startsWith('image/')) {
                     const img = document.createElement('img');
                     img.src = dataUrl;
@@ -264,7 +346,6 @@
             dom.enrichBtn.textContent = t.btnEnriching;
             dom.status.innerHTML = `<div class="spinner"></div><p>${t.statusEnriching}</p>`;
             
-            // AGGIORNATO: Aggiungi i dati del file al payload se presenti
             const payload = {
                 product_name: productName,
                 product_description: document.getElementById('productDescription').value,
