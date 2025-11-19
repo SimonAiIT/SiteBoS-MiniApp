@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Editor</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        :root { --bg: #1e293b; --card: #334155; --text: #f8fafc; --accent: #6366f1; }
+        body { background: var(--bg); color: var(--text); font-family: sans-serif; padding: 20px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-size: 0.9em; opacity: 0.8; }
+        input, textarea, select { width: 100%; padding: 10px; background: var(--card); border: 1px solid #475569; color: white; border-radius: 8px; }
+        .btn { width: 100%; padding: 12px; background: var(--accent); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; margin-top: 20px; }
+        .spinner { border: 3px solid #ffffff33; border-top: 3px solid #fff; border-radius: 50%; width: 20px; height: 20px; animation: spin 1s linear infinite; margin: 0 auto; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+    <h2 id="title">Caricamento...</h2>
+    <form id="form" style="display:none;">
+        
+        <!-- Identità -->
+        <div class="form-group">
+            <label>Nome Prodotto</label>
+            <input type="text" id="name" required>
+        </div>
+        <div class="form-group">
+            <label>SKU (Immutabile)</label>
+            <input type="text" id="sku" disabled style="opacity: 0.5;">
+        </div>
+
+        <!-- Descrizioni -->
+        <div class="form-group">
+            <label>Descrizione Breve (UI)</label>
+            <input type="text" id="descShort">
+        </div>
+        <div class="form-group">
+            <label>Descrizione Lunga</label>
+            <textarea id="descLong" rows="4"></textarea>
+        </div>
+        <div class="form-group">
+            <label>Note Interne (Staff)</label>
+            <textarea id="internalNotes" rows="2" style="background: #252e3e; font-family: monospace;"></textarea>
+        </div>
+
+        <!-- Pricing -->
+        <div style="display: flex; gap: 10px;">
+            <div class="form-group" style="flex:1">
+                <label>Prezzo (€)</label>
+                <input type="number" id="price" step="0.01">
+            </div>
+            <div class="form-group" style="flex:1">
+                <label>Unità</label>
+                <input type="text" id="unit">
+            </div>
+        </div>
+
+        <button type="submit" id="btnSave" class="btn">Salva Modifiche</button>
+    </form>
+    <div id="status" style="text-align: center; margin-top: 10px;"></div>
+
+    <script>
+        // CONFIG
+        const API_URL = "https://trinai.api.workflow.dcmake.it/webhook/2c6416b1-32c6-4661-bd8f-b175d24fd035";
+        const tg = window.Telegram.WebApp; tg.ready(); tg.expand();
+        
+        // PARAMS
+        const p = new URLSearchParams(location.search);
+        const ID = p.get('id');
+        const OWNER = p.get('owner');
+        
+        let currentData = null;
+
+        // LOAD
+        async function load() {
+            try {
+                const res = await fetch(API_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ action: "GET", type: "PRODUCT", id: ID, owner_id: OWNER })
+                });
+                const json = await res.json();
+                currentData = json; // Il documento intero da Mongo
+
+                // Map Data
+                const item = currentData.identity;
+                document.getElementById('title').innerText = "✏️ Modifica: " + item.item_name;
+                document.getElementById('name').value = item.item_name;
+                document.getElementById('sku').value = item.item_sku;
+                document.getElementById('descShort').value = item.description.short;
+                document.getElementById('descLong').value = item.description.long;
+                document.getElementById('internalNotes').value = item.description.internal_notes || '';
+                
+                document.getElementById('price').value = currentData.pricing.base_price;
+                document.getElementById('unit').value = currentData.pricing.unit_of_measure;
+
+                document.getElementById('form').style.display = 'block';
+            } catch(e) {
+                document.getElementById('title').innerText = "Errore Caricamento";
+            }
+        }
+
+        // SAVE
+        document.getElementById('form').onsubmit = async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('btnSave');
+            btn.innerHTML = '<div class="spinner"></div>';
+            
+            // Update Object
+            currentData.identity.item_name = document.getElementById('name').value;
+            currentData.identity.description.short = document.getElementById('descShort').value;
+            currentData.identity.description.long = document.getElementById('descLong').value;
+            currentData.identity.description.internal_notes = document.getElementById('internalNotes').value;
+            currentData.pricing.base_price = parseFloat(document.getElementById('price').value);
+            currentData.pricing.unit_of_measure = document.getElementById('unit').value;
+
+            try {
+                await fetch(API_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ 
+                        action: "SAVE", 
+                        type: "PRODUCT", 
+                        id: ID, 
+                        owner_id: OWNER, 
+                        payload: currentData 
+                    })
+                });
+                btn.innerHTML = "✅ Salvato!";
+                setTimeout(() => tg.close(), 1000);
+            } catch(e) {
+                btn.innerHTML = "❌ Errore";
+            }
+        };
+
+        load();
+    </script>
+</body>
+</html>
