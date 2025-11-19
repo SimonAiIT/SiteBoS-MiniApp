@@ -3,291 +3,384 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Nuovo Prodotto/Servizio</title>
+    <title>TrinAI Product Manager</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         :root {
             --bg-start: #4a5b8f; --bg-end: #2a3d5f; --text-primary: #ffffff;
             --text-secondary: rgba(255, 255, 255, 0.7); --border-color: rgba(255, 255, 255, 0.2);
             --input-bg: rgba(255, 255, 255, 0.08); --accent-color: #5B6FED; --error-color: #ff6b6b;
+            --warning-color: #ffcc00; --warning-bg: rgba(255, 204, 0, 0.15);
+            --section-bg: rgba(0, 0, 0, 0.2);
         }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             background: linear-gradient(135deg, var(--bg-start) 0%, var(--bg-end) 100%);
-            color: var(--text-primary); padding: 20px; min-height: 100vh;
+            color: var(--text-primary); padding: 20px; min-height: 100vh; padding-bottom: 80px;
         }
-        .container { max-width: 500px; margin: 0 auto; }
-        h1 { font-size: 26px; margin-bottom: 8px; font-weight: 600; }
-        h2 { font-size: 20px; margin-bottom: 16px; font-weight: 500; }
-        .subtitle { font-size: 14px; color: var(--text-secondary); margin-bottom: 32px; font-weight: 300; }
-        .form-group { margin-bottom: 20px; }
-        label { display: block; margin-bottom: 10px; font-size: 14px; font-weight: 500; }
+        .container { max-width: 600px; margin: 0 auto; }
+        
+        h1 { font-size: 24px; margin-bottom: 5px; font-weight: 600; }
+        h2 { font-size: 18px; margin-bottom: 15px; font-weight: 500; color: var(--accent-color); text-transform: uppercase; letter-spacing: 1px; margin-top: 25px;}
+        .subtitle { font-size: 13px; color: var(--text-secondary); margin-bottom: 25px; }
+
+        .form-section {
+            background: var(--section-bg); padding: 15px; border-radius: 16px; margin-bottom: 20px;
+            border: 1px solid var(--border-color);
+        }
+
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 8px; font-size: 13px; font-weight: 500; color: var(--text-secondary); }
+        
         input, textarea, select {
-            width: 100%; padding: 14px 16px; border: 1px solid var(--border-color);
-            border-radius: 12px; background: var(--input-bg); backdrop-filter: blur(10px);
-            color: var(--text-primary); font-size: 15px; font-family: inherit;
-            transition: border-color 0.3s, box-shadow 0.3s;
+            width: 100%; padding: 12px; border: 1px solid var(--border-color);
+            border-radius: 10px; background: var(--input-bg);
+            color: var(--text-primary); font-size: 14px; font-family: inherit;
+            transition: all 0.3s;
         }
-        input:focus, textarea:focus, select:focus { outline: none; border-color: rgba(255, 255, 255, 0.5); box-shadow: 0 0 15px rgba(91, 111, 237, 0.3); }
-        textarea { resize: vertical; min-height: 80px; }
-        .required::after { content: " *"; color: var(--error-color); }
+        input:focus, textarea:focus { outline: none; border-color: var(--accent-color); background: rgba(255,255,255,0.1); }
+        
+        .row { display: flex; gap: 12px; }
+        .col { flex: 1; }
+
+        /* Checkbox Style */
+        .checkbox-group { display: flex; align-items: center; gap: 10px; margin-bottom: 15px; background: var(--input-bg); padding: 10px; border-radius: 10px; border: 1px solid var(--border-color); }
+        .checkbox-group input { width: 20px; height: 20px; margin: 0; }
+        .checkbox-group label { margin: 0; color: var(--text-primary); cursor: pointer; }
+
         .button {
-            width: 100%; padding: 14px; background: var(--accent-color); color: var(--text-primary);
-            border: none; border-radius: 12px; font-size: 15px; font-weight: 600; cursor: pointer;
-            transition: background-color 0.3s, opacity 0.3s;
+            width: 100%; padding: 16px; background: var(--accent-color); color: var(--text-primary);
+            border: none; border-radius: 12px; font-size: 16px; font-weight: 600; cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
         }
-        .button:disabled { background: #555; cursor: not-allowed; opacity: 0.6; }
-        .hidden { display: none; }
-        #status { text-align: center; margin-top: 16px; font-size: 14px; }
+        .button:disabled { opacity: 0.6; cursor: not-allowed; }
+
+        .hidden { display: none !important; }
+        
+        /* Status & Warning */
+        .warning-box {
+            background: var(--warning-bg); border: 1px solid var(--warning-color);
+            color: var(--warning-color); padding: 12px; border-radius: 10px;
+            margin-bottom: 20px; font-size: 13px; display: flex; align-items: center; gap: 10px;
+        }
+        #status { text-align: center; margin-top: 20px; }
         .spinner {
-            border: 4px solid rgba(255, 255, 255, 0.3); border-radius: 50%;
-            border-top: 4px solid var(--text-primary); width: 24px; height: 24px;
-            animation: spin 1s linear infinite; margin: 16px auto;
+            border: 3px solid rgba(255,255,255,0.3); border-top: 3px solid #fff;
+            border-radius: 50%; width: 20px; height: 20px; animation: spin 1s linear infinite; display: inline-block; vertical-align: middle; margin-right: 8px;
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .row { display: flex; gap: 16px; }
-        .row .form-group { flex: 1; }
-        .file-upload-label {
-            display: block; width: 100%; padding: 14px 16px; border: 1px dashed var(--border-color);
-            border-radius: 12px; background: var(--input-bg); color: var(--text-secondary);
-            text-align: center; cursor: pointer; transition: all 0.3s;
+
+        /* File Upload */
+        .file-label {
+            border: 1px dashed var(--border-color); padding: 20px; text-align: center;
+            border-radius: 12px; color: var(--text-secondary); cursor: pointer;
         }
-        .file-upload-label:hover { border-color: var(--accent-color); color: var(--text-primary); }
-        input[type="file"] { display: none; }
-        #filePreview { margin-top: 15px; text-align: center; }
-        #filePreview img { max-width: 100%; max-height: 200px; border-radius: 8px; border: 1px solid var(--border-color); }
-        #filePreview p { font-size: 14px; color: var(--text-secondary); background: var(--input-bg); padding: 10px; border-radius: 8px; }
+        .file-label:hover { border-color: var(--accent-color); color: #fff; }
+        #filePreview img { max-width: 100%; border-radius: 8px; margin-top: 10px; }
     </style>
 </head>
 <body>
     <div class="container">
-        <div id="initialInputSection">
-            <h1 id="title"></h1>
-            <p class="subtitle" id="subtitle"></p>
+        
+        <!-- SECTION 1: INPUT -->
+        <div id="inputSection">
+            <h1 id="mainTitle"></h1>
+            <p class="subtitle" id="subTitle"></p>
+            
             <div class="form-group">
-                <label for="productName" class="required" id="lblProductName"></label>
-                <input type="text" id="productName" required>
+                <label id="lblInName"></label>
+                <input type="text" id="inName" required autocomplete="off">
             </div>
             <div class="form-group">
-                <label for="productDescription" id="lblProductDesc"></label>
-                <textarea id="productDescription" rows="3"></textarea>
+                <label id="lblInDesc"></label>
+                <textarea id="inDesc" rows="3"></textarea>
             </div>
             <div class="form-group">
-                <label id="lblProductFile"></label>
-                <label for="productFile" class="file-upload-label" id="fileUploadLabelText"></label>
-                <input type="file" id="productFile" accept="image/*,application/pdf">
-                <div id="filePreview" class="hidden"></div>
+                <label id="lblInFile"></label>
+                <label for="inFile" class="file-label" id="lblFileBtn"></label>
+                <input type="file" id="inFile" hidden accept="image/*,application/pdf">
+                <div id="filePreview"></div>
             </div>
-            <button id="enrichBtn" class="button"></button>
+            
+            <button id="btnEnrich" class="button"></button>
         </div>
 
-        <form id="productForm" class="hidden">
-            <h2 id="formTitle"></h2>
-            <div class="form-group">
-                <label for="edit_itemName" class="required" id="lblEditItemName"></label>
-                <input type="text" id="edit_itemName" required>
+        <!-- SECTION 2: EDIT FORM -->
+        <form id="editForm" class="hidden">
+            <div id="duplicateBanner" class="warning-box hidden">
+                <span>⚠️</span> <span id="dupText"></span>
             </div>
-            <div class="row">
+
+            <!-- IDENTITÀ -->
+            <h2 id="secIdentity"></h2>
+            <div class="form-section">
                 <div class="form-group">
-                    <label for="edit_itemSku" class="required" id="lblEditSku"></label>
-                    <input type="text" id="edit_itemSku" required>
+                    <label id="lblOutName"></label>
+                    <input type="text" id="outName" required>
+                </div>
+                <div class="row">
+                    <div class="col">
+                        <label id="lblOutSku"></label>
+                        <input type="text" id="outSku" required>
+                    </div>
+                    <div class="col">
+                        <label id="lblOutType"></label>
+                        <select id="outType">
+                            <option value="SERVICE">SERVICE</option>
+                            <option value="PRODUCT">PRODUCT</option>
+                        </select>
+                    </div>
                 </div>
                 <div class="form-group">
-                    <label for="edit_basePrice" class="required" id="lblEditPrice"></label>
-                    <input type="number" id="edit_basePrice" step="0.01" required>
+                    <label id="lblOutShortDesc"></label>
+                    <input type="text" id="outShortDesc">
+                </div>
+                <div class="form-group">
+                    <label id="lblOutLongDesc"></label>
+                    <textarea id="outLongDesc" rows="4"></textarea>
+                </div>
+                <div class="form-group">
+                    <label id="lblOutInternal"></label>
+                    <textarea id="outInternal" rows="2" style="font-family: monospace; font-size: 12px;"></textarea>
                 </div>
             </div>
-            <div class="form-group">
-                <label for="edit_descriptionLong" id="lblEditDescLong"></label>
-                <textarea id="edit_descriptionLong" rows="5"></textarea>
+
+            <!-- PRICING & OPS -->
+            <h2 id="secPricing"></h2>
+            <div class="form-section">
+                <div class="row">
+                    <div class="col">
+                        <label id="lblOutPrice"></label>
+                        <input type="number" id="outPrice" step="0.01">
+                    </div>
+                    <div class="col">
+                        <label id="lblOutUnit"></label>
+                        <input type="text" id="outUnit" placeholder="es. hour, item">
+                    </div>
+                </div>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="outDynamicPrice">
+                    <label for="outDynamicPrice" id="lblOutDynamic"></label>
+                </div>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="outBooking">
+                    <label for="outBooking" id="lblOutBooking"></label>
+                </div>
             </div>
-            <div class="form-group">
-                <label for="edit_tags" id="lblEditTags"></label>
-                <input type="text" id="edit_tags">
+
+            <!-- MARKETING -->
+            <h2 id="secMarketing"></h2>
+            <div class="form-section">
+                <div class="form-group">
+                    <label id="lblOutTags"></label>
+                    <input type="text" id="outTags" placeholder="Tag1, Tag2...">
+                </div>
+                <div class="form-group">
+                    <label id="lblOutTarget"></label>
+                    <input type="text" id="outTarget" placeholder="PMI, Hotel...">
+                </div>
             </div>
-            <button type="submit" id="saveBtn" class="button"></button>
+
+            <button type="submit" id="btnSave" class="button"></button>
         </form>
 
         <div id="status"></div>
     </div>
 
     <script>
-        const ENRICH_WEBHOOK_URL = "https://trinai.api.workflow.dcmake.it/webhook/31f89350-4d7f-44b7-9aaf-e7d9e3655b6c";
-        const SAVE_WEBHOOK_URL = "https://TUO_URL_N8N.com/webhook/ID_WEBHOOK_salva_prodotto";
+        // CONFIG
+        const ENRICH_URL = "https://trinai.api.workflow.dcmake.it/webhook/31f89350-4d7f-44b7-9aaf-e7d9e3655b6c";
+        const SAVE_URL = "https://trinai.api.workflow.dcmake.it/webhook/ID_WEBHOOK_SALVA_PRODOTTO"; // AGGIORNARE
 
-        const translations = {
-            it: { title: "➕ Nuovo Servizio", subtitle: "nella categoria:", lblProductName: "Nome Prodotto/Servizio", lblProductDesc: "Descrizione Breve (Opzionale)", lblProductFile: "Allegato (Opzionale)", fileUploadLabelText: "🖼️ Allega Immagine o PDF", btnEnrich: "✨ Analizza e Crea Bozza con AI", btnEnriching: "Analisi in corso...", formTitle: "✏️ Bozza per:", lblEditItemName: "Nome Prodotto", lblEditSku: "SKU / Codice", lblEditPrice: "Prezzo (€)", lblEditDescLong: "Descrizione Lunga", lblEditTags: "Tag (separati da virgola)", btnSave: "✅ Salva Prodotto nel Catalogo", btnSaving: "Salvataggio...", statusEnriching: "Il tuo assistente sta facendo ricerche...", statusError: "❌ Errore, riprova.", statusSuccess: "✅ Prodotto salvato! Puoi chiudere." },
-            en: { title: "➕ New Service", subtitle: "in category:", lblProductName: "Product/Service Name", lblProductDesc: "Short Description (Optional)", lblProductFile: "Attachment (Optional)", fileUploadLabelText: "🖼️ Attach Image or PDF", btnEnrich: "✨ Analyze and Create Draft with AI", btnEnriching: "Analyzing...", formTitle: "✏️ Draft for:", lblEditItemName: "Product Name", lblEditSku: "SKU / Code", lblEditPrice: "Price (€)", lblEditDescLong: "Long Description", lblEditTags: "Tags (comma-separated)", btnSave: "✅ Save Product to Catalog", btnSaving: "Saving...", statusEnriching: "Your assistant is researching...", statusError: "❌ Error, please try again.", statusSuccess: "✅ Product saved! You can close now." },
-            fr: { title: "➕ Nouveau Service", subtitle: "dans la catégorie :", lblProductName: "Nom du Produit/Service", lblProductDesc: "Description Courte (Optionnel)", lblProductFile: "Pièce Jointe (Optionnel)", fileUploadLabelText: "🖼️ Joindre une Image ou un PDF", btnEnrich: "✨ Analyser et Créer une Ébauche avec l'IA", btnEnriching: "Analyse en cours...", formTitle: "✏️ Ébauche pour :", lblEditItemName: "Nom du Produit", lblEditSku: "SKU / Code", lblEditPrice: "Prix (€)", lblEditDescLong: "Description Longue", lblEditTags: "Tags (séparés par une virgule)", btnSave: "✅ Enregistrer le Produit au Catalogue", btnSaving: "Enregistrement...", statusEnriching: "Votre assistant fait des recherches...", statusError: "❌ Erreur, veuillez réessayer.", statusSuccess: "✅ Produit enregistré ! Vous pouvez fermer." },
-            de: { title: "➕ Neuer Dienst", subtitle: "in Kategorie:", lblProductName: "Produkt-/Dienstname", lblProductDesc: "Kurzbeschreibung (Optional)", lblProductFile: "Anhang (Optional)", fileUploadLabelText: "🖼️ Bild oder PDF anhängen", btnEnrich: "✨ Analysieren und Entwurf mit KI erstellen", btnEnriching: "Analysiere...", formTitle: "✏️ Entwurf für:", lblEditItemName: "Produktname", lblEditSku: "SKU / Code", lblEditPrice: "Preis (€)", lblEditDescLong: "Lange Beschreibung", lblEditTags: "Tags (kommagetrennt)", btnSave: "✅ Produkt im Katalog speichern", btnSaving: "Speichern...", statusEnriching: "Ihr Assistent recherchiert...", statusError: "❌ Fehler, bitte erneut versuchen.", statusSuccess: "✅ Produkt gespeichert! Sie können schließen." },
-            es: { title: "➕ Nuevo Servicio", subtitle: "en la categoría:", lblProductName: "Nombre del Producto/Servicio", lblProductDesc: "Descripción Corta (Opcional)", lblProductFile: "Archivo Adjunto (Opcional)", fileUploadLabelText: "🖼️ Adjuntar Imagen o PDF", btnEnrich: "✨ Analizar y Crear Borrador con IA", btnEnriching: "Analizando...", formTitle: "✏️ Borrador para:", lblEditItemName: "Nombre del Producto", lblEditSku: "SKU / Código", lblEditPrice: "Precio (€)", lblEditDescLong: "Descripción Larga", lblEditTags: "Etiquetas (separadas por coma)", btnSave: "✅ Guardar Producto en el Catálogo", btnSaving: "Guardando...", statusEnriching: "Tu asistente está investigando...", statusError: "❌ Error, por favor inténtalo de nuevo.", statusSuccess: "✅ ¡Producto guardado! Ya puedes cerrar." },
-            pt: { title: "➕ Novo Serviço", subtitle: "na categoria:", lblProductName: "Nome do Produto/Serviço", lblProductDesc: "Descrição Curta (Opcional)", lblProductFile: "Anexo (Opcional)", fileUploadLabelText: "🖼️ Anexar Imagem ou PDF", btnEnrich: "✨ Analisar e Criar Rascunho com IA", btnEnriching: "Analisando...", formTitle: "✏️ Rascunho para:", lblEditItemName: "Nome do Produto", lblEditSku: "SKU / Código", lblEditPrice: "Preço (€)", lblEditDescLong: "Descrição Longa", lblEditTags: "Tags (separadas por vírgula)", btnSave: "✅ Salvar Produto no Catálogo", btnSaving: "Salvando...", statusEnriching: "Seu assistente está pesquisando...", statusError: "❌ Erro, por favor tente novamente.", statusSuccess: "✅ Produto salvo! Pode fechar agora." }
+        // TRADUZIONI COMPLETE (RICH DATA)
+        const tr = {
+            it: {
+                title: "Nuovo Prodotto", sub: "Categoria:", 
+                lName: "Nome Richiesta", lDesc: "Istruzioni Base", lFile: "Allegato", lFileBtn: "📷 Carica File",
+                btnEnrich: "✨ Genera Bozza AI", btnSave: "✅ Salva Definitivo",
+                secId: "Identità Prodotto", secPrice: "Prezzi & Operazioni", secMark: "Marketing & Target",
+                outName: "Nome Ufficiale", outSku: "SKU", outType: "Tipo",
+                outShort: "Descrizione Breve (x UI)", outLong: "Descrizione Estesa", outInt: "Note Interne (Staff)",
+                outPrice: "Prezzo (€)", outUnit: "Unità (es. ora)", outDyn: "Prezzo Dinamico?", outBook: "Richiede Prenotazione?",
+                outTags: "Tags (SEO)", outTarget: "Target Audience",
+                dup: "⚠️ Possibile Duplicato!",
+                load: "Lavoro...", err: "Errore", ok: "Salvato!"
+            },
+            en: {
+                title: "New Product", sub: "Category:", 
+                lName: "Request Name", lDesc: "Basic Instructions", lFile: "Attachment", lFileBtn: "📷 Upload File",
+                btnEnrich: "✨ Generate AI Draft", btnSave: "✅ Save Final",
+                secId: "Identity", secPrice: "Pricing & Ops", secMark: "Marketing & Target",
+                outName: "Official Name", outSku: "SKU", outType: "Type",
+                outShort: "Short Desc (UI)", outLong: "Full Description", outInt: "Internal Notes",
+                outPrice: "Price (€)", outUnit: "Unit (e.g. hour)", outDyn: "Dynamic Price?", outBook: "Needs Booking?",
+                outTags: "Tags (SEO)", outTarget: "Target Audience",
+                dup: "⚠️ Possible Duplicate!",
+                load: "Working...", err: "Error", ok: "Saved!"
+            },
+            fr: {
+                title: "Nouveau Produit", sub: "Catégorie:", 
+                lName: "Nom Requête", lDesc: "Instructions", lFile: "Pièce Jointe", lFileBtn: "📷 Charger",
+                btnEnrich: "✨ Générer Ébauche", btnSave: "✅ Enregistrer",
+                secId: "Identité", secPrice: "Prix & Ops", secMark: "Marketing",
+                outName: "Nom Officiel", outSku: "SKU", outType: "Type",
+                outShort: "Desc. Courte", outLong: "Desc. Complète", outInt: "Notes Internes",
+                outPrice: "Prix (€)", outUnit: "Unité", outDyn: "Prix Dynamique?", outBook: "Réservation?",
+                outTags: "Tags", outTarget: "Cible",
+                dup: "⚠️ Doublon Possible!",
+                load: "Chargement...", err: "Erreur", ok: "Enregistré!"
+            },
+            de: { title: "Neues Produkt", sub: "Kategorie:", lName: "Name", lDesc: "Anweisungen", lFile: "Anhang", lFileBtn: "📷 Laden", btnEnrich: "✨ Entwurf", btnSave: "✅ Speichern", secId: "Identität", secPrice: "Preise", secMark: "Marketing", outName: "Name", outSku: "SKU", outType: "Typ", outShort: "Kurz", outLong: "Lang", outInt: "Interne Notizen", outPrice: "Preis", outUnit: "Einheit", outDyn: "Dynamisch?", outBook: "Buchung?", outTags: "Tags", outTarget: "Zielgruppe", dup: "⚠️ Duplikat!", load: "...", err: "Fehler", ok: "OK" },
+            es: { title: "Nuevo Producto", sub: "Categoría:", lName: "Nombre", lDesc: "Instrucciones", lFile: "Adjunto", lFileBtn: "📷 Cargar", btnEnrich: "✨ Borrador", btnSave: "✅ Guardar", secId: "Identidad", secPrice: "Precios", secMark: "Marketing", outName: "Nombre", outSku: "SKU", outType: "Tipo", outShort: "Desc. Corta", outLong: "Desc. Larga", outInt: "Notas Internas", outPrice: "Precio", outUnit: "Unidad", outDyn: "Dinámico?", outBook: "Reserva?", outTags: "Tags", outTarget: "Audiencia", dup: "⚠️ Duplicado!", load: "...", err: "Error", ok: "OK" },
+            pt: { title: "Novo Produto", sub: "Categoria:", lName: "Nome", lDesc: "Instruções", lFile: "Anexo", lFileBtn: "📷 Carregar", btnEnrich: "✨ Rascunho", btnSave: "✅ Salvar", secId: "Identidade", secPrice: "Preços", secMark: "Marketing", outName: "Nome", outSku: "SKU", outType: "Tipo", outShort: "Curta", outLong: "Longa", outInt: "Notas Internas", outPrice: "Preço", outUnit: "Unidade", outDyn: "Dinâmico?", outBook: "Reserva?", outTags: "Tags", outTarget: "Público-alvo", dup: "⚠️ Duplicado!", load: "...", err: "Erro", ok: "OK" }
         };
 
-        const tg = window.Telegram.WebApp;
-        tg.ready(); tg.expand();
+        // INIT
+        const tg = window.Telegram.WebApp; tg.ready(); tg.expand();
+        const p = new URLSearchParams(location.search);
+        const lang = p.get('language') || 'it';
+        const catId = p.get('category_id');
+        const catName = decodeURIComponent(p.get('category_name') || '');
+        const t = tr[lang] || tr.it;
 
-        const urlParams = new URLSearchParams(window.location.search);
-        const chatId = urlParams.get('chat_id');
-        const lang = urlParams.get('language') || 'it';
-        const categoryId = urlParams.get('category_id');
-        const categoryName = decodeURIComponent(urlParams.get('category_name'));
-        const t = translations[lang] || translations.it;
+        // DOM MAPPING
+        const el = (id) => document.getElementById(id);
+        let draftData = null;
+        let fileData = null;
 
-        const dom = {
-            initialSection: document.getElementById('initialInputSection'),
-            productForm: document.getElementById('productForm'),
-            enrichBtn: document.getElementById('enrichBtn'),
-            saveBtn: document.getElementById('saveBtn'),
-            status: document.getElementById('status'),
-            title: document.getElementById('title'),
-            subtitle: document.getElementById('subtitle'),
-            formTitle: document.getElementById('formTitle'),
-            productFile: document.getElementById('productFile'),
-            filePreview: document.getElementById('filePreview')
+        // UI SETUP
+        el('mainTitle').innerText = t.title; el('subTitle').innerText = `${t.sub} ${catName}`;
+        el('lblInName').innerText = t.lName; el('lblInDesc').innerText = t.lDesc; el('lblInFile').innerText = t.lFile; el('lblFileBtn').innerText = t.lFileBtn;
+        el('btnEnrich').innerText = t.btnEnrich; el('btnSave').innerText = t.btnSave;
+        el('secIdentity').innerText = t.secId; el('secPricing').innerText = t.secPrice; el('secMarketing').innerText = t.secMark;
+        el('lblOutName').innerText = t.outName; el('lblOutSku').innerText = t.outSku; el('lblOutType').innerText = t.outType;
+        el('lblOutShortDesc').innerText = t.outShort; el('lblOutLongDesc').innerText = t.outLong; el('lblOutInternal').innerText = t.outInt;
+        el('lblOutPrice').innerText = t.outPrice; el('lblOutUnit').innerText = t.outUnit; el('lblOutDynamic').innerText = t.outDyn; el('lblOutBooking').innerText = t.outBook;
+        el('lblOutTags').innerText = t.outTags; el('lblOutTarget').innerText = t.outTarget;
+        el('dupText').innerText = t.dup;
+
+        // FILE HANDLE
+        el('inFile').onchange = (e) => {
+            const f = e.target.files[0];
+            if(!f) return;
+            const r = new FileReader();
+            r.onload = (ev) => {
+                fileData = { b64: ev.target.result.split(',')[1], mime: f.type };
+                el('filePreview').innerHTML = f.type.startsWith('image/') ? `<img src="${ev.target.result}" width="100">` : `📄 ${f.name}`;
+            };
+            r.readAsDataURL(f);
         };
-        
-        function applyTranslations() {
-            document.title = t.title;
-            dom.title.textContent = t.title;
-            dom.subtitle.textContent = `${t.subtitle} "${categoryName}"`;
-            document.getElementById('lblProductName').textContent = t.lblProductName;
-            document.getElementById('lblProductDesc').textContent = t.lblProductDesc;
-            document.getElementById('lblProductFile').textContent = t.lblProductFile;
-            document.getElementById('fileUploadLabelText').textContent = t.fileUploadLabelText;
-            dom.enrichBtn.textContent = t.btnEnrich;
-            document.getElementById('lblEditItemName').textContent = t.lblEditItemName;
-            document.getElementById('lblEditSku').textContent = t.lblEditSku;
-            document.getElementById('lblEditPrice').textContent = t.lblEditPrice;
-            document.getElementById('lblEditDescLong').textContent = t.lblEditDescLong;
-            document.getElementById('lblEditTags').textContent = t.lblEditTags;
-            dom.saveBtn.textContent = t.btnSave;
-        }
 
-        let productDraftData = null; 
-        let uploadedFileData = { base64: null, mimetype: null };
-
-        dom.productFile.addEventListener('change', (event) => {
-            const file = event.target.files[0];
-            if (!file) {
-                dom.filePreview.classList.add('hidden');
-                uploadedFileData = { base64: null, mimetype: null };
-                return;
-            }
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                const dataUrl = e.target.result;
-                const parts = dataUrl.split(',');
-                uploadedFileData.mimetype = parts[0].split(':')[1].split(';')[0];
-                uploadedFileData.base64 = parts[1];
-                dom.filePreview.innerHTML = ''; 
-                if (file.type.startsWith('image/')) {
-                    const img = document.createElement('img');
-                    img.src = dataUrl;
-                    dom.filePreview.appendChild(img);
-                } else {
-                    const p = document.createElement('p');
-                    p.textContent = `📄 File selezionato: ${file.name}`;
-                    dom.filePreview.appendChild(p);
-                }
-                dom.filePreview.classList.remove('hidden');
-            };
-            reader.readAsDataURL(file);
-        });
-
-        dom.enrichBtn.addEventListener('click', async () => {
-            const productName = document.getElementById('productName').value;
-            if (!productName) { alert(t.lblProductName + ' è obbligatorio!'); return; }
+        // ENRICH ACTION
+        el('btnEnrich').onclick = async () => {
+            if(!el('inName').value) return alert(t.lName);
+            setLoad(true, t.btnEnrich);
             
-            dom.enrichBtn.disabled = true;
-            dom.enrichBtn.textContent = t.btnEnriching;
-            dom.status.innerHTML = `<div class="spinner"></div><p>${t.statusEnriching}</p>`;
-            
-            const payload = {
-                product_name: productName,
-                product_description: document.getElementById('productDescription').value,
-                category_name: categoryName,
-                category_id: categoryId, // <-- CORRETTO
-                chat_id: chatId,
-                language: lang,
-                ...(uploadedFileData.base64 && { 
-                    attachment: {
-                        base64_content: uploadedFileData.base64,
-                        mime_type: uploadedFileData.mimetype
-                    }
-                })
-            };
-
             try {
-                const response = await fetch(ENRICH_WEBHOOK_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
+                const res = await fetch(ENRICH_URL, {
+                    method: 'POST', headers: {'Content-Type':'application/json'},
+                    body: JSON.stringify({
+                        user_request: { 
+                            product_name: el('inName').value, 
+                            product_description: el('inDesc').value, 
+                            category_id: catId, category_name: catName, language: lang, chat_id: p.get('chat_id')
+                        },
+                        attachment: fileData ? { base64_content: fileData.b64, mime_type: fileData.mime } : null
+                    })
                 });
-                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-                const data = await response.json();
-                productDraftData = data; 
+                const data = await res.json();
+                if(!data.identity) throw new Error("No Data");
 
-                dom.formTitle.textContent = `${t.formTitle} ${data.identity.item_name}`;
-                document.getElementById('edit_itemName').value = data.identity.item_name || '';
-                document.getElementById('edit_itemSku').value = data.identity.item_sku || '';
-                document.getElementById('edit_basePrice').value = data.pricing.base_price || '';
-                document.getElementById('edit_descriptionLong').value = data.identity.description.long || '';
-                document.getElementById('edit_tags').value = (data.identity.tags || []).join(', ');
+                draftData = data; // Store for Save
 
-                dom.initialSection.classList.add('hidden');
-                dom.productForm.classList.remove('hidden');
-                dom.status.innerHTML = '';
-            } catch (error) {
-                console.error("Errore arricchimento AI:", error);
-                dom.status.textContent = t.statusError;
-                dom.enrichBtn.disabled = false;
-                dom.enrichBtn.textContent = t.btnEnrich;
+                // POPULATE FIELDS (RICH DATA)
+                el('outName').value = data.identity.item_name || '';
+                el('outSku').value = data.identity.item_sku || '';
+                el('outType').value = data.identity.item_type || 'SERVICE';
+                el('outShortDesc').value = data.identity.description.short || '';
+                el('outLongDesc').value = data.identity.description.long || '';
+                el('outInternal').value = data.identity.description.internal_notes || '';
+                
+                el('outPrice').value = data.pricing.base_price || '';
+                el('outUnit').value = data.pricing.unit_of_measure || '';
+                el('outDynamicPrice').checked = data.pricing.pricing_rules_engine?.is_dynamic_price || false;
+                
+                el('outBooking').checked = data.operations.requires_booking || false;
+                
+                el('outTags').value = (data.identity.tags || []).join(', ');
+                el('outTarget').value = (data.relations?.marketing_info?.target_audience_tags || []).join(', ');
+
+                // DUPLICATE
+                if(data.is_duplicate) {
+                    el('duplicateBanner').classList.remove('hidden');
+                    el('outName').style.borderColor = 'var(--warning-color)';
+                }
+
+                el('inputSection').classList.add('hidden');
+                el('editForm').classList.remove('hidden');
+                setLoad(false);
+
+            } catch(e) {
+                console.error(e);
+                alert(t.err);
+                setLoad(false, t.btnEnrich);
             }
-        });
+        };
 
-        dom.productForm.addEventListener('submit', async (e) => {
+        // SAVE ACTION
+        el('editForm').onsubmit = async (e) => {
             e.preventDefault();
-            dom.saveBtn.disabled = true;
-            dom.saveBtn.textContent = t.btnSaving;
-            dom.status.innerHTML = `<div class="spinner"></div>`;
+            setLoad(true, t.btnSave);
 
-            productDraftData.identity.item_name = document.getElementById('edit_itemName').value;
-            productDraftData.identity.item_sku = document.getElementById('edit_itemSku').value;
-            productDraftData.pricing.base_price = parseFloat(document.getElementById('edit_basePrice').value);
-            productDraftData.identity.description.long = document.getElementById('edit_descriptionLong').value;
-            productDraftData.identity.tags = document.getElementById('edit_tags').value.split(',').map(tag => tag.trim()).filter(Boolean);
-            
-            const finalPayload = {
-                chat_id: chatId,
-                category_id: categoryId, // <-- CORRETTO
-                new_product_block: productDraftData,
-                user_data: tg.initDataUnsafe?.user,
-                language: lang
-            };
+            // UPDATE DRAFT WITH USER EDITS
+            draftData.identity.item_name = el('outName').value;
+            draftData.identity.item_sku = el('outSku').value;
+            draftData.identity.item_type = el('outType').value;
+            draftData.identity.description.short = el('outShortDesc').value;
+            draftData.identity.description.long = el('outLongDesc').value;
+            draftData.identity.description.internal_notes = el('outInternal').value;
+
+            draftData.pricing.base_price = parseFloat(el('outPrice').value) || 0;
+            draftData.pricing.unit_of_measure = el('outUnit').value;
+            if(!draftData.pricing.pricing_rules_engine) draftData.pricing.pricing_rules_engine = {};
+            draftData.pricing.pricing_rules_engine.is_dynamic_price = el('outDynamicPrice').checked;
+
+            if(!draftData.operations) draftData.operations = {};
+            draftData.operations.requires_booking = el('outBooking').checked;
+
+            draftData.identity.tags = el('outTags').value.split(',').map(s=>s.trim()).filter(Boolean);
+            if(!draftData.relations) draftData.relations = {};
+            if(!draftData.relations.marketing_info) draftData.relations.marketing_info = {};
+            draftData.relations.marketing_info.target_audience_tags = el('outTarget').value.split(',').map(s=>s.trim()).filter(Boolean);
 
             try {
-                const response = await fetch(SAVE_WEBHOOK_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(finalPayload)
+                const res = await fetch(SAVE_URL, {
+                    method: 'POST', headers: {'Content-Type':'application/json'},
+                    body: JSON.stringify({
+                        new_product_block: draftData, // RICH DATA
+                        category_id: catId,
+                        chat_id: p.get('chat_id'),
+                        user_data: tg.initDataUnsafe?.user
+                    })
                 });
-                if (response.ok) {
-                    dom.status.innerHTML = `<p>${t.statusSuccess}</p>`;
-                    setTimeout(() => tg.close(), 1500);
-                } else {
-                    throw new Error('Errore salvataggio server.');
-                }
-            } catch (error) {
-                console.error("Errore salvataggio prodotto:", error);
-                dom.status.textContent = t.statusError;
-                dom.saveBtn.disabled = false;
-                dom.saveBtn.textContent = t.btnSave;
+                if(res.ok) {
+                    el('status').innerHTML = `<b style="color:#4cd964">${t.ok}</b>`;
+                    setTimeout(()=>tg.close(), 1000);
+                } else throw new Error();
+            } catch(e) {
+                alert(t.err);
+                setLoad(false, t.btnSave);
             }
-        });
-        
-        applyTranslations();
+        };
+
+        function setLoad(isLoading, txt) {
+            el('status').innerHTML = isLoading ? `<div class="spinner"></div> ${t.load}` : '';
+            if(txt) {
+                if(el('inputSection').classList.contains('hidden')) el('btnSave').disabled = isLoading;
+                else el('btnEnrich').disabled = isLoading;
+            }
+        }
     </script>
 </body>
 </html>
