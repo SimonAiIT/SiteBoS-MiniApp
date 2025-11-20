@@ -1,122 +1,374 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Blueprint Editor</title>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <style>
-        :root { --bg: #0f172a; --card: #1e293b; --input: #334155; --text: #e2e8f0; --accent: #10b981; }
-        body { background: var(--bg); color: var(--text); font-family: monospace; padding: 15px; padding-bottom: 80px; }
-        
-        h1 { font-size: 1.2rem; margin-bottom: 5px; color: var(--accent); }
-        .meta { font-size: 0.8rem; opacity: 0.7; margin-bottom: 20px; }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Modifica Blueprint</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <style>
+    :root {
+      --bg-start: #4a5b8f; --bg-end: #2a3d5f; --text-primary: #ffffff;
+      --text-secondary: rgba(255, 255, 255, 0.7); --border-color: rgba(255, 255, 255, 0.2);
+      --input-bg: rgba(255, 255, 255, 0.08); --accent-color: #5B6FED; --error-color: #ff6b6b;
+      --success-color: #4ade80; --stage-bg: rgba(91, 111, 237, 0.15);
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      background: linear-gradient(135deg, var(--bg-start) 0%, var(--bg-end) 100%);
+      color: var(--text-primary); padding: 20px; min-height: 100vh; padding-bottom: 100px;
+    }
+    .container { max-width: 700px; margin: 0 auto; }
+    h1 { font-size: 24px; margin-bottom: 6px; font-weight: 600; }
+    .subtitle { font-size: 13px; color: var(--text-secondary); margin-bottom: 24px; font-weight: 300; }
+    .section-title { 
+      font-size: 16px; font-weight: 600; margin: 28px 0 16px; 
+      padding-bottom: 8px; border-bottom: 1px solid var(--border-color);
+    }
+    .form-group { margin-bottom: 18px; }
+    label { display: block; margin-bottom: 8px; font-size: 13px; font-weight: 500; }
+    label.disabled { opacity: 0.5; }
+    input, textarea, select {
+      width: 100%; padding: 12px 14px; border: 1px solid var(--border-color);
+      border-radius: 12px; background: var(--input-bg); backdrop-filter: blur(10px);
+      color: var(--text-primary); font-size: 15px; font-family: inherit;
+      transition: border-color 0.3s, box-shadow 0.3s;
+    }
+    input:disabled { opacity: 0.5; cursor: not-allowed; }
+    input:focus, textarea:focus, select:focus { 
+      outline: none; border-color: rgba(255, 255, 255, 0.5); 
+      box-shadow: 0 0 15px rgba(91, 111, 237, 0.3); 
+    }
+    textarea { resize: vertical; min-height: 60px; font-family: inherit; }
+    .row { display: flex; gap: 14px; }
+    .row .form-group { flex: 1; }
+    
+    /* STAGES & STEPS */
+    .stage-card {
+      background: var(--stage-bg); border: 1px solid var(--border-color);
+      border-radius: 16px; padding: 20px; margin-bottom: 20px;
+      backdrop-filter: blur(10px);
+    }
+    .stage-header {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid var(--border-color);
+    }
+    .stage-title-input {
+      font-size: 18px; font-weight: 600; background: transparent;
+      border: none; color: var(--text-primary); width: 70%;
+    }
+    .stage-title-input:focus { outline: none; border-bottom: 1px solid var(--accent-color); }
+    .stage-badge {
+      background: var(--accent-color); color: white; padding: 4px 12px;
+      border-radius: 20px; font-size: 12px; font-weight: 600;
+    }
+    .step-item {
+      background: rgba(0, 0, 0, 0.2); border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px; padding: 16px; margin-bottom: 12px;
+    }
+    .step-header {
+      display: flex; justify-content: space-between; align-items: start;
+      margin-bottom: 10px;
+    }
+    .step-id { 
+      background: rgba(255, 255, 255, 0.15); padding: 3px 10px; 
+      border-radius: 8px; font-size: 11px; font-weight: 600; 
+      font-family: monospace;
+    }
+    .step-name-input {
+      font-size: 15px; font-weight: 600; margin-bottom: 6px;
+      background: transparent; border: none; color: var(--text-primary);
+      width: 100%; padding: 4px;
+    }
+    .step-name-input:focus { outline: none; border-bottom: 1px solid var(--accent-color); }
+    .step-desc { font-size: 13px; color: var(--text-secondary); margin-bottom: 10px; }
+    .step-meta {
+      display: flex; gap: 12px; flex-wrap: wrap; font-size: 12px;
+      color: var(--text-secondary); margin-top: 10px;
+    }
+    .meta-item {
+      background: rgba(255, 255, 255, 0.08); padding: 4px 10px;
+      border-radius: 8px; display: inline-flex; align-items: center; gap: 4px;
+    }
+    .collapsible-content { 
+      max-height: 0; overflow: hidden; 
+      transition: max-height 0.3s ease, padding 0.3s ease; 
+    }
+    .collapsible-content.open { max-height: 1000px; padding-top: 12px; }
+    .toggle-btn {
+      background: transparent; border: 1px solid var(--border-color);
+      color: var(--text-primary); padding: 6px 12px; border-radius: 8px;
+      font-size: 12px; cursor: pointer; transition: all 0.3s;
+    }
+    .toggle-btn:hover { background: rgba(255, 255, 255, 0.1); }
 
-        /* STAGE CARD */
-        .stage { border-left: 4px solid var(--accent); padding-left: 15px; margin-bottom: 30px; }
-        .stage-title { font-size: 1.1rem; font-weight: bold; margin-bottom: 10px; color: #fff; }
-
-        /* STEP CARD */
-        .step { background: var(--card); padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #334155; }
-        .step-header { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 0.9rem; font-weight: bold; }
-        
-        label { display: block; font-size: 0.75rem; opacity: 0.6; margin-top: 10px; margin-bottom: 4px; text-transform: uppercase; }
-        textarea, input { width: 100%; background: var(--input); color: white; border: none; padding: 8px; border-radius: 4px; font-family: inherit; font-size: 0.9rem; }
-        textarea { resize: vertical; }
-
-        .fab { position: fixed; bottom: 20px; left: 20px; right: 20px; background: var(--accent); color: black; padding: 15px; border-radius: 12px; text-align: center; font-weight: bold; cursor: pointer; box-shadow: 0 4px 20px rgba(0,0,0,0.5); }
-    </style>
+    .button-container { 
+      position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+      display: flex; gap: 12px; width: calc(100% - 40px); max-width: 700px;
+      background: linear-gradient(135deg, var(--bg-start) 0%, var(--bg-end) 100%);
+      padding: 16px; border-radius: 16px; box-shadow: 0 -4px 20px rgba(0,0,0,0.3);
+    }
+    button.primary {
+      flex: 1; padding: 14px; border: none; border-radius: 12px;
+      font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.3s;
+      background: var(--accent-color); color: var(--text-primary);
+    }
+    button.primary:disabled { background: #555; cursor: not-allowed; opacity: 0.6; }
+    button.primary.success { background: var(--success-color); }
+    
+    .spinner { 
+      border: 3px solid rgba(255,255,255,0.2); border-top: 3px solid #fff; 
+      border-radius: 50%; width: 18px; height: 18px; 
+      animation: spin 0.8s linear infinite; display: inline-block; margin-right: 8px;
+    }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    
+    .loading-overlay { 
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(42, 61, 95, 0.95); display: flex; flex-direction: column;
+      justify-content: center; align-items: center; z-index: 1000;
+    }
+    .loading-text { margin-top: 20px; font-size: 16px; }
+    .hidden { display: none !important; }
+  </style>
 </head>
 <body>
-    <div id="app">
-        <h1 id="bpName">Caricamento...</h1>
-        <div class="meta" id="bpMeta"></div>
-        <div id="stagesContainer"></div>
-    </div>
+  <div id="loadingOverlay" class="loading-overlay">
+    <div class="spinner" style="width: 40px; height: 40px; border-width: 4px;"></div>
+    <div class="loading-text">Caricamento Blueprint...</div>
+  </div>
 
-    <div class="fab" id="btnSave">💾 SAVE BLUEPRINT</div>
+  <div class="container" id="mainContent" style="display: none;">
+    <h1 id="pageTitle">📋 Blueprint Operativo</h1>
+    <p class="subtitle">Processo di esecuzione del servizio</p>
+    
+    <form id="blueprintForm">
+      <div class="section-title">ℹ️ Informazioni Generali</div>
+      
+      <div class="form-group">
+        <label class="disabled">Service SKU (Immutabile)</label>
+        <input type="text" id="serviceSku" disabled>
+      </div>
 
-    <script>
-        const API_URL = "https://trinai.api.workflow.dcmake.it/webhook/e742c7c8-107e-4328-882e-c13459413424";
-        const tg = window.Telegram.WebApp; tg.ready(); tg.expand();
-        const p = new URLSearchParams(location.search);
+      <div class="form-group">
+        <label>Descrizione Blueprint</label>
+        <textarea id="blueprintDesc" rows="3"></textarea>
+      </div>
+
+      <div class="section-title">🎯 Fasi Operative</div>
+      <div id="stagesContainer"></div>
+
+      <div class="button-container">
+        <button type="submit" class="primary" id="saveBtn">Salva Modifiche</button>
+      </div>
+    </form>
+  </div>
+
+  <script>
+    const WEBHOOK_URL = "https://trinai.api.workflow.dcmake.it/webhook/e742c7c8-107e-4328-882e-c13459413424";
+    
+    const tg = window.Telegram.WebApp;
+    tg.ready();
+    tg.expand();
+    
+    const urlParams = new URLSearchParams(window.location.search);
+    const blueprintId = urlParams.get('id');
+    const ownerId = urlParams.get('owner');
+
+    let currentData = null;
+
+    // RENDER BLUEPRINT STRUCTURE (EDITABLE)
+    function renderStages(stages) {
+      const container = document.getElementById('stagesContainer');
+      container.innerHTML = '';
+
+      stages.forEach((stage, stageIdx) => {
+        const stageCard = document.createElement('div');
+        stageCard.className = 'stage-card';
         
-        let blueprintData = null;
+        const stageHeader = document.createElement('div');
+        stageHeader.className = 'stage-header';
+        stageHeader.innerHTML = `
+          <div style="flex: 1;">
+            <input type="text" class="stage-title-input" value="${stage.stage_name}" 
+                   data-stage-idx="${stageIdx}" data-field="stage_name">
+            <textarea style="width: 100%; margin-top: 8px; min-height: 40px; 
+                            font-size: 13px; color: var(--text-secondary);"
+                      data-stage-idx="${stageIdx}" data-field="stage_description">${stage.stage_description}</textarea>
+          </div>
+          <div class="stage-badge">${stage.steps.length} step${stage.steps.length > 1 ? 's' : ''}</div>
+        `;
+        stageCard.appendChild(stageHeader);
 
-        async function load() {
-            try {
-                const res = await fetch(API_URL, {
-                    method: 'POST',
-                    body: JSON.stringify({ action: "GET", type: "BLUEPRINT", id: p.get('id'), owner_id: p.get('owner') })
-                });
-                blueprintData = await res.json();
-                render();
-            } catch(e) { document.getElementById('bpName').innerText = "Errore Caricamento"; }
+        stage.steps.forEach((step, stepIdx) => {
+          const stepItem = document.createElement('div');
+          stepItem.className = 'step-item';
+          
+          stepItem.innerHTML = `
+            <div class="step-header">
+              <div style="flex: 1;">
+                <div class="step-id">${step.step_id}</div>
+                <input type="text" class="step-name-input" value="${step.step_name}"
+                       data-stage-idx="${stageIdx}" data-step-idx="${stepIdx}" data-field="step_name">
+                <textarea class="step-desc" style="width: 100%; background: transparent; 
+                         border: none; color: var(--text-secondary); padding: 4px;"
+                          data-stage-idx="${stageIdx}" data-step-idx="${stepIdx}" 
+                          data-field="detailed_description">${step.detailed_description}</textarea>
+                <div class="step-meta">
+                  <span class="meta-item">
+                    ⏱️ <input type="number" min="0" style="width: 60px; background: transparent; 
+                             border: none; color: white; padding: 2px;"
+                             value="${step.estimated_time_minutes || 0}"
+                             data-stage-idx="${stageIdx}" data-step-idx="${stepIdx}" 
+                             data-field="estimated_time_minutes"> min
+                  </span>
+                  ${step.required_skill_tags?.length ? 
+                    `<span class="meta-item">👤 ${step.required_skill_tags.join(', ')}</span>` : ''}
+                </div>
+              </div>
+              <button type="button" class="toggle-btn" onclick="toggleStep(${stageIdx}, ${stepIdx})">
+                ${step.quality_check || step.dependencies?.length ? '📋' : '—'}
+              </button>
+            </div>
+            <div class="collapsible-content" id="step-${stageIdx}-${stepIdx}">
+              ${step.quality_check || step.dependencies?.length ? `
+                <div style="border-top: 1px solid rgba(255,255,255,0.1); padding-top: 12px;">
+                  ${step.quality_check ? `
+                    <div style="margin-bottom: 10px;">
+                      <div style="font-size: 12px; font-weight: 600; margin-bottom: 6px;">✅ Quality Check:</div>
+                      <textarea style="width: 100%; min-height: 50px; font-size: 13px;"
+                                data-stage-idx="${stageIdx}" data-step-idx="${stepIdx}" 
+                                data-field="quality_check">${step.quality_check}</textarea>
+                    </div>
+                  ` : ''}
+                  ${step.dependencies?.length ? `
+                    <div>
+                      <div style="font-size: 12px; font-weight: 600; margin-bottom: 6px;">🔗 Dipendenze:</div>
+                      <div style="font-size: 13px; color: var(--text-secondary);">${step.dependencies.join(', ')}</div>
+                    </div>
+                  ` : ''}
+                </div>
+              ` : ''}
+            </div>
+          `;
+          
+          stageCard.appendChild(stepItem);
+        });
+
+        container.appendChild(stageCard);
+      });
+
+      // Attach event listeners for auto-update
+      attachUpdateListeners();
+    }
+
+    // ATTACH LISTENERS TO UPDATE DATA IN REAL-TIME
+    function attachUpdateListeners() {
+      // Stage fields
+      document.querySelectorAll('[data-stage-idx][data-field]:not([data-step-idx])').forEach(input => {
+        input.addEventListener('input', (e) => {
+          const stageIdx = parseInt(e.target.dataset.stageIdx);
+          const field = e.target.dataset.field;
+          currentData.stages[stageIdx][field] = e.target.value;
+        });
+      });
+
+      // Step fields
+      document.querySelectorAll('[data-stage-idx][data-step-idx][data-field]').forEach(input => {
+        input.addEventListener('input', (e) => {
+          const stageIdx = parseInt(e.target.dataset.stageIdx);
+          const stepIdx = parseInt(e.target.dataset.stepIdx);
+          const field = e.target.dataset.field;
+          
+          let value = e.target.value;
+          if (field === 'estimated_time_minutes') {
+            value = parseInt(value) || 0;
+          }
+          
+          currentData.stages[stageIdx].steps[stepIdx][field] = value;
+        });
+      });
+    }
+
+    // TOGGLE STEP DETAILS
+    window.toggleStep = function(stageIdx, stepIdx) {
+      const content = document.getElementById(`step-${stageIdx}-${stepIdx}`);
+      content.classList.toggle('open');
+    };
+
+    // LOAD BLUEPRINT DATA
+    async function loadBlueprint() {
+      try {
+        const response = await fetch(WEBHOOK_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'GET',
+            type: 'BLUEPRINT',
+            id: blueprintId,
+            owner_id: ownerId
+          })
+        });
+
+        let data;
+        const text = await response.text();
+        try {
+          data = JSON.parse(text);
+        } catch (e) {
+          data = JSON.parse(text.replace(/^"|"$/g, '').replace(/\\"/g, '"'));
         }
 
-        function render() {
-            document.getElementById('bpName').innerText = blueprintData.identity.blueprint_name;
-            document.getElementById('bpMeta').innerText = `${blueprintData.identity.blueprint_type} • Costo Tot: ${blueprintData.summary.estimated_total_cost}€`;
-            
-            const container = document.getElementById('stagesContainer');
-            container.innerHTML = '';
+        currentData = data;
 
-            blueprintData.stages.forEach((stage, stageIdx) => {
-                const stageDiv = document.createElement('div');
-                stageDiv.className = 'stage';
-                stageDiv.innerHTML = `<div class="stage-title">FASE ${stage.stage_order}: ${stage.stage_name}</div>`;
+        document.getElementById('serviceSku').value = data.service_sku;
+        document.getElementById('blueprintDesc').value = data.blueprint_description || '';
 
-                stage.steps.forEach((step, stepIdx) => {
-                    const stepDiv = document.createElement('div');
-                    stepDiv.className = 'step';
-                    stepDiv.innerHTML = `
-                        <div class="step-header">
-                            <span>STEP ${step.step_order}</span>
-                            <span>⏱️ <input type="number" value="${step.estimated_time_minutes}" style="width: 50px; display:inline;" onchange="updateTime(${stageIdx}, ${stepIdx}, this.value)"> min</span>
-                        </div>
-                        <label>Nome Step</label>
-                        <input type="text" value="${step.step_name}" onchange="updateName(${stageIdx}, ${stepIdx}, this.value)">
-                        
-                        <label>Istruzioni Operative</label>
-                        <textarea rows="3" onchange="updateInstr(${stageIdx}, ${stepIdx}, this.value)">${step.instructions}</textarea>
-                        
-                        <label>Skill Richieste</label>
-                        <input type="text" value="${step.resources_needed?.labor?.required_skill_tags?.join(', ') || ''}" onchange="updateSkills(${stageIdx}, ${stepIdx}, this.value)">
-                    `;
-                    stageDiv.appendChild(stepDiv);
-                });
-                container.appendChild(stageDiv);
-            });
-        }
+        renderStages(data.stages);
 
-        // UPDARE LOGIC (In-Memory)
-        window.updateTime = (sI, stI, val) => blueprintData.stages[sI].steps[stI].estimated_time_minutes = parseInt(val);
-        window.updateName = (sI, stI, val) => blueprintData.stages[sI].steps[stI].step_name = val;
-        window.updateInstr = (sI, stI, val) => blueprintData.stages[sI].steps[stI].instructions = val;
-        window.updateSkills = (sI, stI, val) => {
-            if(!blueprintData.stages[sI].steps[stI].resources_needed) blueprintData.stages[sI].steps[stI].resources_needed = { labor: {} };
-            blueprintData.stages[sI].steps[stI].resources_needed.labor.required_skill_tags = val.split(',').map(s=>s.trim());
-        };
+        document.getElementById('pageTitle').textContent = `📋 Blueprint: ${data.service_sku}`;
+        document.getElementById('loadingOverlay').classList.add('hidden');
+        document.getElementById('mainContent').style.display = 'block';
 
-        // SAVE
-        document.getElementById('btnSave').onclick = async () => {
-            const btn = document.getElementById('btnSave');
-            btn.innerText = "⏳ SALVATAGGIO...";
-            try {
-                await fetch(API_URL, {
-                    method: 'POST',
-                    body: JSON.stringify({ 
-                        action: "SAVE", type: "BLUEPRINT", 
-                        id: p.get('id'), owner_id: p.get('owner'), 
-                        payload: blueprintData 
-                    })
-                });
-                btn.innerText = "✅ AGGIORNATO";
-                setTimeout(() => tg.close(), 1000);
-            } catch(e) { btn.innerText = "❌ ERRORE"; }
-        };
+      } catch (error) {
+        console.error('Load error:', error);
+        document.getElementById('loadingText').textContent = '❌ Errore caricamento';
+      }
+    }
 
-        load();
-    </script>
+    // SAVE BLUEPRINT DATA
+    document.getElementById('blueprintForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const saveBtn = document.getElementById('saveBtn');
+      saveBtn.innerHTML = '<div class="spinner"></div>Salvataggio...';
+      saveBtn.disabled = true;
+
+      currentData.blueprint_description = document.getElementById('blueprintDesc').value.trim();
+
+      try {
+        await fetch(WEBHOOK_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'SAVE',
+            type: 'BLUEPRINT',
+            id: blueprintId,
+            owner_id: ownerId,
+            payload: currentData
+          })
+        });
+
+        saveBtn.textContent = '✅ Salvato!';
+        saveBtn.classList.add('success');
+        setTimeout(() => tg.close(), 1200);
+
+      } catch (error) {
+        console.error('Save error:', error);
+        saveBtn.textContent = '❌ Errore';
+        saveBtn.disabled = false;
+      }
+    });
+
+    loadBlueprint();
+  </script>
 </body>
 </html>
