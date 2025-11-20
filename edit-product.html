@@ -1,138 +1,380 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Product Editor</title>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <style>
-        :root { --bg: #1e293b; --card: #334155; --text: #f8fafc; --accent: #6366f1; }
-        body { background: var(--bg); color: var(--text); font-family: sans-serif; padding: 20px; }
-        .form-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; font-size: 0.9em; opacity: 0.8; }
-        input, textarea, select { width: 100%; padding: 10px; background: var(--card); border: 1px solid #475569; color: white; border-radius: 8px; }
-        .btn { width: 100%; padding: 12px; background: var(--accent); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; margin-top: 20px; }
-        .spinner { border: 3px solid #ffffff33; border-top: 3px solid #fff; border-radius: 50%; width: 20px; height: 20px; animation: spin 1s linear infinite; margin: 0 auto; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Modifica Prodotto</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <style>
+    :root {
+      --bg-start: #4a5b8f; --bg-end: #2a3d5f; --text-primary: #ffffff;
+      --text-secondary: rgba(255, 255, 255, 0.7); --border-color: rgba(255, 255, 255, 0.2);
+      --input-bg: rgba(255, 255, 255, 0.08); --accent-color: #5B6FED; --error-color: #ff6b6b;
+      --success-color: #4ade80;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      background: linear-gradient(135deg, var(--bg-start) 0%, var(--bg-end) 100%);
+      color: var(--text-primary); padding: 20px; min-height: 100vh;
+    }
+    .container { max-width: 600px; margin: 0 auto; }
+    h1 { font-size: 24px; margin-bottom: 6px; font-weight: 600; }
+    .subtitle { font-size: 13px; color: var(--text-secondary); margin-bottom: 24px; font-weight: 300; }
+    .section-title { 
+      font-size: 16px; font-weight: 600; margin: 28px 0 16px; 
+      padding-bottom: 8px; border-bottom: 1px solid var(--border-color);
+    }
+    .form-group { margin-bottom: 18px; }
+    label { display: block; margin-bottom: 8px; font-size: 13px; font-weight: 500; }
+    label.disabled { opacity: 0.5; }
+    input, textarea, select {
+      width: 100%; padding: 12px 14px; border: 1px solid var(--border-color);
+      border-radius: 12px; background: var(--input-bg); backdrop-filter: blur(10px);
+      color: var(--text-primary); font-size: 15px; font-family: inherit;
+      transition: border-color 0.3s, box-shadow 0.3s;
+    }
+    input:disabled, textarea:disabled { opacity: 0.5; cursor: not-allowed; }
+    input:focus, textarea:focus, select:focus { 
+      outline: none; border-color: rgba(255, 255, 255, 0.5); 
+      box-shadow: 0 0 15px rgba(91, 111, 237, 0.3); 
+    }
+    textarea { resize: vertical; min-height: 80px; font-family: inherit; }
+    .monospace { font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace; font-size: 13px; }
+    .row { display: flex; gap: 14px; }
+    .row .form-group { flex: 1; }
+    .required::after { content: " *"; color: var(--error-color); }
+    
+    .tag-input-container {
+      display: flex; flex-wrap: wrap; gap: 8px; padding: 10px;
+      background: var(--input-bg); border: 1px solid var(--border-color);
+      border-radius: 12px; min-height: 48px; cursor: text;
+    }
+    .tag {
+      background: rgba(91, 111, 237, 0.25); border: 1px solid var(--accent-color);
+      color: var(--text-primary); padding: 4px 10px; border-radius: 20px;
+      font-size: 13px; display: inline-flex; align-items: center; gap: 6px;
+    }
+    .tag-remove { cursor: pointer; font-weight: bold; opacity: 0.7; }
+    .tag-remove:hover { opacity: 1; }
+    .tag-input {
+      border: none; background: transparent; color: var(--text-primary);
+      flex: 1; min-width: 100px; padding: 6px; outline: none; font-size: 14px;
+    }
+    
+    .button-container { display: flex; gap: 12px; margin-top: 32px; }
+    button {
+      flex: 1; padding: 14px; border: none; border-radius: 12px;
+      font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.3s;
+    }
+    #saveBtn { background: var(--accent-color); color: var(--text-primary); }
+    #saveBtn:disabled { background: #555; cursor: not-allowed; opacity: 0.6; }
+    #saveBtn.success { background: var(--success-color); }
+    .cancel-hint { text-align: center; margin-top: 16px; font-size: 13px; color: var(--text-secondary); opacity: 0.8; }
+    
+    .spinner { 
+      border: 3px solid rgba(255,255,255,0.2); border-top: 3px solid #fff; 
+      border-radius: 50%; width: 18px; height: 18px; 
+      animation: spin 0.8s linear infinite; display: inline-block; margin-right: 8px;
+    }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    
+    .loading-overlay { 
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(42, 61, 95, 0.95); display: flex; flex-direction: column;
+      justify-content: center; align-items: center; z-index: 1000;
+    }
+    .loading-text { margin-top: 20px; font-size: 16px; }
+    .hidden { display: none !important; }
+  </style>
 </head>
 <body>
-    <h2 id="title">Caricamento...</h2>
-    <form id="form" style="display:none;">
-        
-        <!-- Identità -->
-        <div class="form-group">
-            <label>Nome Prodotto</label>
-            <input type="text" id="name" required>
-        </div>
-        <div class="form-group">
-            <label>SKU (Immutabile)</label>
-            <input type="text" id="sku" disabled style="opacity: 0.5;">
-        </div>
+  <div id="loadingOverlay" class="loading-overlay">
+    <div class="spinner" style="width: 40px; height: 40px; border-width: 4px;"></div>
+    <div class="loading-text" id="loadingText">Caricamento dati...</div>
+  </div>
 
-        <!-- Descrizioni -->
-        <div class="form-group">
-            <label>Descrizione Breve (UI)</label>
-            <input type="text" id="descShort">
-        </div>
-        <div class="form-group">
-            <label>Descrizione Lunga</label>
-            <textarea id="descLong" rows="4"></textarea>
-        </div>
-        <div class="form-group">
-            <label>Note Interne (Staff)</label>
-            <textarea id="internalNotes" rows="2" style="background: #252e3e; font-family: monospace;"></textarea>
-        </div>
+  <div class="container" id="mainContent" style="display: none;">
+    <h1 id="pageTitle">✏️ Modifica Prodotto</h1>
+    <p class="subtitle" id="pageSubtitle">Modifica i dettagli del prodotto/servizio</p>
+    
+    <form id="productForm">
+      <div class="section-title">📋 Identità Prodotto</div>
+      
+      <div class="form-group">
+        <label for="itemName" class="required">Nome Prodotto/Servizio</label>
+        <input type="text" id="itemName" required>
+      </div>
 
-        <!-- Pricing -->
-        <div style="display: flex; gap: 10px;">
-            <div class="form-group" style="flex:1">
-                <label>Prezzo (€)</label>
-                <input type="number" id="price" step="0.01">
-            </div>
-            <div class="form-group" style="flex:1">
-                <label>Unità</label>
-                <input type="text" id="unit">
-            </div>
+      <div class="row">
+        <div class="form-group">
+          <label for="itemSku" class="disabled">SKU (Immutabile)</label>
+          <input type="text" id="itemSku" disabled>
         </div>
+        <div class="form-group">
+          <label for="itemType">Tipo</label>
+          <select id="itemType">
+            <option value="SERVICE">Servizio</option>
+            <option value="PRODUCT">Prodotto</option>
+          </select>
+        </div>
+      </div>
 
-        <button type="submit" id="btnSave" class="btn">Salva Modifiche</button>
+      <div class="form-group">
+        <label for="descShort" class="required">Descrizione Breve (max 100 caratteri)</label>
+        <input type="text" id="descShort" maxlength="100" required>
+      </div>
+
+      <div class="form-group">
+        <label for="descLong">Descrizione Completa</label>
+        <textarea id="descLong" rows="4"></textarea>
+      </div>
+
+      <div class="form-group">
+        <label for="internalNotes">Note Interne (solo staff)</label>
+        <textarea id="internalNotes" rows="3" class="monospace"></textarea>
+      </div>
+
+      <div class="section-title">💰 Pricing</div>
+
+      <div class="row">
+        <div class="form-group">
+          <label for="basePrice" class="required">Prezzo Base</label>
+          <input type="number" id="basePrice" step="0.01" min="0" required>
+        </div>
+        <div class="form-group">
+          <label for="currency">Valuta</label>
+          <select id="currency">
+            <option value="EUR">EUR (€)</option>
+            <option value="USD">USD ($)</option>
+            <option value="GBP">GBP (£)</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="form-group">
+          <label for="unitOfMeasure" class="required">Unità di Misura</label>
+          <select id="unitOfMeasure" required>
+            <option value="item">Prodotto/Unità</option>
+            <option value="hour">Ora</option>
+            <option value="day">Giorno</option>
+            <option value="project">Progetto</option>
+            <option value="month">Mese</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="taxRate">Aliquota IVA (%)</label>
+          <input type="number" id="taxRate" step="1" min="0" max="100" value="22">
+        </div>
+      </div>
+
+      <div class="section-title">⚙️ Operatività</div>
+
+      <div class="row">
+        <div class="form-group">
+          <label>
+            <input type="checkbox" id="requiresBooking" style="width: auto; margin-right: 8px;">
+            Richiede Prenotazione
+          </label>
+        </div>
+        <div class="form-group">
+          <label>
+            <input type="checkbox" id="requiresInventory" style="width: auto; margin-right: 8px;">
+            Controllo Inventario
+          </label>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="skillTags">Competenze Richieste (premi Invio per aggiungere)</label>
+        <div class="tag-input-container" id="skillTagsContainer">
+          <input type="text" class="tag-input" id="skillTagInput" placeholder="Es: SeniorConsultant">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="keywords">Keywords/Tag (premi Invio per aggiungere)</label>
+        <div class="tag-input-container" id="keywordsContainer">
+          <input type="text" class="tag-input" id="keywordInput" placeholder="Es: consulenza, setup">
+        </div>
+      </div>
+
+      <div class="button-container">
+        <button type="submit" id="saveBtn">Salva Modifiche</button>
+      </div>
+      <p class="cancel-hint">Per annullare, chiudi questa finestra</p>
     </form>
-    <div id="status" style="text-align: center; margin-top: 10px;"></div>
+  </div>
 
-    <script>
-        // CONFIG
-        const API_URL = "https://trinai.api.workflow.dcmake.it/webhook/2c6416b1-32c6-4661-bd8f-b175d24fd035";
-        const tg = window.Telegram.WebApp; tg.ready(); tg.expand();
-        
-        // PARAMS
-        const p = new URLSearchParams(location.search);
-        const ID = p.get('id');
-        const OWNER = p.get('owner');
-        
-        let currentData = null;
+  <script>
+    const WEBHOOK_URL = "https://trinai.api.workflow.dcmake.it/webhook/2c6416b1-32c6-4661-bd8f-b175d24fd035";
+    
+    const tg = window.Telegram.WebApp;
+    tg.ready();
+    tg.expand();
+    
+    const urlParams = new URLSearchParams(window.location.search);
+    const productId = urlParams.get('id');
+    const ownerId = urlParams.get('owner');
+    const lang = urlParams.get('lang') || 'it';
 
-        // LOAD
-        async function load() {
-            try {
-                const res = await fetch(API_URL, {
-                    method: 'POST',
-                    body: JSON.stringify({ action: "GET", type: "PRODUCT", id: ID, owner_id: OWNER })
-                });
-                const json = await res.json();
-                currentData = json; // Il documento intero da Mongo
+    let currentData = null;
+    let skillTags = [];
+    let keywords = [];
 
-                // Map Data
-                const item = currentData.identity;
-                document.getElementById('title').innerText = "✏️ Modifica: " + item.item_name;
-                document.getElementById('name').value = item.item_name;
-                document.getElementById('sku').value = item.item_sku;
-                document.getElementById('descShort').value = item.description.short;
-                document.getElementById('descLong').value = item.description.long;
-                document.getElementById('internalNotes').value = item.description.internal_notes || '';
-                
-                document.getElementById('price').value = currentData.pricing.base_price;
-                document.getElementById('unit').value = currentData.pricing.unit_of_measure;
+    // TAG MANAGEMENT
+    function renderTags(container, tags, onRemove) {
+      const input = container.querySelector('.tag-input');
+      container.querySelectorAll('.tag').forEach(el => el.remove());
+      
+      tags.forEach((tag, idx) => {
+        const tagEl = document.createElement('div');
+        tagEl.className = 'tag';
+        tagEl.innerHTML = `${tag} <span class="tag-remove" data-idx="${idx}">×</span>`;
+        tagEl.querySelector('.tag-remove').onclick = () => onRemove(idx);
+        container.insertBefore(tagEl, input);
+      });
+    }
 
-                document.getElementById('form').style.display = 'block';
-            } catch(e) {
-                document.getElementById('title').innerText = "Errore Caricamento";
-            }
+    function setupTagInput(inputId, containerId, tagsArray) {
+      const input = document.getElementById(inputId);
+      const container = document.getElementById(containerId);
+      
+      input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ',') {
+          e.preventDefault();
+          const val = input.value.trim();
+          if (val && !tagsArray.includes(val)) {
+            tagsArray.push(val);
+            input.value = '';
+            renderTags(container, tagsArray, (idx) => {
+              tagsArray.splice(idx, 1);
+              renderTags(container, tagsArray, arguments.callee);
+            });
+          }
+        }
+      });
+    }
+
+    // LOAD PRODUCT DATA
+    async function loadProduct() {
+      try {
+        const response = await fetch(WEBHOOK_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'GET',
+            type: 'PRODUCT',
+            id: productId,
+            owner_id: ownerId
+          })
+        });
+
+        let data;
+        const text = await response.text();
+        try {
+          data = JSON.parse(text);
+        } catch (e) {
+          // Fix per webhook che restituisce stringa escaped
+          data = JSON.parse(text.replace(/^"|"$/g, '').replace(/\\"/g, '"'));
         }
 
-        // SAVE
-        document.getElementById('form').onsubmit = async (e) => {
-            e.preventDefault();
-            const btn = document.getElementById('btnSave');
-            btn.innerHTML = '<div class="spinner"></div>';
-            
-            // Update Object
-            currentData.identity.item_name = document.getElementById('name').value;
-            currentData.identity.description.short = document.getElementById('descShort').value;
-            currentData.identity.description.long = document.getElementById('descLong').value;
-            currentData.identity.description.internal_notes = document.getElementById('internalNotes').value;
-            currentData.pricing.base_price = parseFloat(document.getElementById('price').value);
-            currentData.pricing.unit_of_measure = document.getElementById('unit').value;
+        currentData = data;
 
-            try {
-                await fetch(API_URL, {
-                    method: 'POST',
-                    body: JSON.stringify({ 
-                        action: "SAVE", 
-                        type: "PRODUCT", 
-                        id: ID, 
-                        owner_id: OWNER, 
-                        payload: currentData 
-                    })
-                });
-                btn.innerHTML = "✅ Salvato!";
-                setTimeout(() => tg.close(), 1000);
-            } catch(e) {
-                btn.innerHTML = "❌ Errore";
-            }
-        };
+        // Popola form
+        document.getElementById('itemName').value = data.identity.item_name;
+        document.getElementById('itemSku').value = data.identity.item_sku;
+        document.getElementById('itemType').value = data.identity.item_type;
+        document.getElementById('descShort').value = data.identity.description.short;
+        document.getElementById('descLong').value = data.identity.description.long || '';
+        document.getElementById('internalNotes').value = data.identity.description.internal_notes || '';
 
-        load();
-    </script>
+        document.getElementById('basePrice').value = data.pricing.base_price;
+        document.getElementById('currency').value = data.pricing.currency;
+        document.getElementById('unitOfMeasure').value = data.pricing.unit_of_measure;
+        document.getElementById('taxRate').value = data.pricing.tax_info.tax_rate_percentage;
+
+        document.getElementById('requiresBooking').checked = data.operations.requires_booking;
+        document.getElementById('requiresInventory').checked = data.operations.requires_inventory_check;
+
+        skillTags = data.operations.provider_info.required_skill_tags || [];
+        keywords = data.identity.keywords || [];
+
+        renderTags(document.getElementById('skillTagsContainer'), skillTags, (idx) => {
+          skillTags.splice(idx, 1);
+          renderTags(document.getElementById('skillTagsContainer'), skillTags, arguments.callee);
+        });
+        
+        renderTags(document.getElementById('keywordsContainer'), keywords, (idx) => {
+          keywords.splice(idx, 1);
+          renderTags(document.getElementById('keywordsContainer'), keywords, arguments.callee);
+        });
+
+        document.getElementById('pageTitle').textContent = `✏️ Modifica: ${data.identity.item_name}`;
+        document.getElementById('loadingOverlay').classList.add('hidden');
+        document.getElementById('mainContent').style.display = 'block';
+
+      } catch (error) {
+        console.error('Load error:', error);
+        document.getElementById('loadingText').textContent = '❌ Errore caricamento';
+      }
+    }
+
+    // SAVE PRODUCT DATA
+    document.getElementById('productForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const saveBtn = document.getElementById('saveBtn');
+      saveBtn.innerHTML = '<div class="spinner"></div>Salvataggio...';
+      saveBtn.disabled = true;
+
+      // Update data object
+      currentData.identity.item_name = document.getElementById('itemName').value.trim();
+      currentData.identity.item_type = document.getElementById('itemType').value;
+      currentData.identity.description.short = document.getElementById('descShort').value.trim();
+      currentData.identity.description.long = document.getElementById('descLong').value.trim();
+      currentData.identity.description.internal_notes = document.getElementById('internalNotes').value.trim();
+      currentData.identity.keywords = keywords;
+
+      currentData.pricing.base_price = parseFloat(document.getElementById('basePrice').value);
+      currentData.pricing.currency = document.getElementById('currency').value;
+      currentData.pricing.unit_of_measure = document.getElementById('unitOfMeasure').value;
+      currentData.pricing.tax_info.tax_rate_percentage = parseInt(document.getElementById('taxRate').value);
+
+      currentData.operations.requires_booking = document.getElementById('requiresBooking').checked;
+      currentData.operations.requires_inventory_check = document.getElementById('requiresInventory').checked;
+      currentData.operations.provider_info.required_skill_tags = skillTags;
+
+      try {
+        await fetch(WEBHOOK_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'SAVE',
+            type: 'PRODUCT',
+            id: productId,
+            owner_id: ownerId,
+            payload: currentData
+          })
+        });
+
+        saveBtn.textContent = '✅ Salvato!';
+        saveBtn.classList.add('success');
+        setTimeout(() => tg.close(), 1200);
+
+      } catch (error) {
+        console.error('Save error:', error);
+        saveBtn.textContent = '❌ Errore';
+        saveBtn.disabled = false;
+      }
+    });
+
+    // Initialize tag inputs
+    setupTagInput('skillTagInput', 'skillTagsContainer', skillTags);
+    setupTagInput('keywordInput', 'keywordsContainer', keywords);
+    
+    // Load data on page load
+    loadProduct();
+  </script>
 </body>
 </html>
