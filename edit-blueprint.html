@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>Modifica Blueprint</title>
+  <title>Blueprint Editor</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <style>
     :root {
@@ -11,12 +11,13 @@
       --text-secondary: rgba(255, 255, 255, 0.7); --border-color: rgba(255, 255, 255, 0.2);
       --input-bg: rgba(255, 255, 255, 0.08); --accent-color: #5B6FED; --error-color: #ff6b6b;
       --success-color: #4ade80; --stage-bg: rgba(91, 111, 237, 0.15);
+      --hover-bg: rgba(255, 255, 255, 0.1);
     }
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
       background: linear-gradient(135deg, var(--bg-start) 0%, var(--bg-end) 100%);
-      color: var(--text-primary); padding: 20px; min-height: 100vh; padding-bottom: 100px;
+      color: var(--text-primary); padding: 20px; min-height: 100vh; padding-bottom: 120px;
     }
     .container { max-width: 700px; margin: 0 auto; }
     h1 { font-size: 24px; margin-bottom: 6px; font-weight: 600; }
@@ -28,65 +29,57 @@
     .form-group { margin-bottom: 18px; }
     label { display: block; margin-bottom: 8px; font-size: 13px; font-weight: 500; }
     label.disabled { opacity: 0.5; }
-    input, textarea, select {
+    input, textarea {
       width: 100%; padding: 12px 14px; border: 1px solid var(--border-color);
       border-radius: 12px; background: var(--input-bg); backdrop-filter: blur(10px);
       color: var(--text-primary); font-size: 15px; font-family: inherit;
       transition: border-color 0.3s, box-shadow 0.3s;
     }
     input:disabled { opacity: 0.5; cursor: not-allowed; }
-    input:focus, textarea:focus, select:focus { 
+    input:focus, textarea:focus { 
       outline: none; border-color: rgba(255, 255, 255, 0.5); 
       box-shadow: 0 0 15px rgba(91, 111, 237, 0.3); 
     }
-    textarea { resize: vertical; min-height: 60px; font-family: inherit; }
-    .row { display: flex; gap: 14px; }
-    .row .form-group { flex: 1; }
     
     /* STAGES & STEPS */
     .stage-card {
       background: var(--stage-bg); border: 1px solid var(--border-color);
-      border-radius: 16px; padding: 20px; margin-bottom: 20px;
-      backdrop-filter: blur(10px);
+      border-radius: 16px; padding: 20px; margin-bottom: 24px;
+      backdrop-filter: blur(10px); position: relative;
     }
     .stage-header {
-      display: flex; justify-content: space-between; align-items: center;
+      display: flex; justify-content: space-between; align-items: flex-start;
       margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid var(--border-color);
     }
+    .stage-title-wrapper { flex: 1; margin-right: 10px; }
     .stage-title-input {
       font-size: 18px; font-weight: 600; background: transparent;
       border: none; color: var(--text-primary); width: 100%;
-      padding: 4px 0;
+      padding: 4px 0; margin-bottom: 4px;
     }
     .stage-title-input:focus { outline: none; border-bottom: 1px solid var(--accent-color); }
-    .stage-badge {
-      background: var(--accent-color); color: white; padding: 4px 12px;
-      border-radius: 20px; font-size: 12px; font-weight: 600; flex-shrink: 0;
-      margin-left: 12px;
-    }
+    
     .step-item {
       background: rgba(0, 0, 0, 0.2); border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 12px; padding: 16px; margin-bottom: 12px;
+      border-radius: 12px; padding: 16px; margin-bottom: 12px; position: relative;
     }
     .step-header {
       display: flex; justify-content: space-between; align-items: start;
       margin-bottom: 10px;
     }
     .step-id { 
-      background: rgba(255, 255, 255, 0.15); padding: 3px 10px; 
-      border-radius: 8px; font-size: 11px; font-weight: 600; 
-      font-family: monospace; margin-bottom: 8px; display: inline-block;
+      background: rgba(255, 255, 255, 0.15); padding: 3px 8px; 
+      border-radius: 6px; font-size: 10px; font-weight: 700; 
+      font-family: monospace; margin-bottom: 6px; display: inline-block;
+      color: var(--accent-color);
     }
     .step-name-input {
       font-size: 15px; font-weight: 600; margin-bottom: 6px;
       background: transparent; border: none; color: var(--text-primary);
-      width: 100%; padding: 4px;
+      width: 100%; padding: 4px 0;
     }
     .step-name-input:focus { outline: none; border-bottom: 1px solid var(--accent-color); }
-    .step-desc { 
-      font-size: 13px; color: var(--text-secondary); margin-bottom: 10px; 
-      line-height: 1.4;
-    }
+    
     .step-meta {
       display: flex; gap: 12px; flex-wrap: wrap; font-size: 12px;
       color: var(--text-secondary); margin-top: 10px;
@@ -95,31 +88,56 @@
       background: rgba(255, 255, 255, 0.08); padding: 4px 10px;
       border-radius: 8px; display: inline-flex; align-items: center; gap: 4px;
     }
+
+    /* BUTTONS & CONTROLS */
+    .btn-icon {
+      background: transparent; border: none; cursor: pointer;
+      font-size: 16px; padding: 8px; border-radius: 8px;
+      transition: background 0.2s; color: var(--text-secondary);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .btn-icon:hover { background: var(--hover-bg); color: var(--text-primary); }
+    .btn-delete { color: var(--error-color); }
+    .btn-delete:hover { background: rgba(255, 107, 107, 0.15); }
+    
+    .btn-add-step {
+      width: 100%; padding: 10px; background: rgba(255, 255, 255, 0.05);
+      border: 1px dashed var(--border-color); border-radius: 10px;
+      color: var(--text-secondary); font-size: 13px; cursor: pointer;
+      transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 6px;
+    }
+    .btn-add-step:hover { background: rgba(255, 255, 255, 0.1); color: var(--text-primary); border-color: var(--text-secondary); }
+
+    .btn-add-stage {
+      width: 100%; padding: 16px; background: rgba(91, 111, 237, 0.1);
+      border: 2px dashed var(--accent-color); border-radius: 16px;
+      color: var(--accent-color); font-size: 15px; font-weight: 600; cursor: pointer;
+      transition: all 0.2s; margin-top: 20px; display: flex; align-items: center; justify-content: center; gap: 8px;
+    }
+    .btn-add-stage:hover { background: rgba(91, 111, 237, 0.2); transform: translateY(-2px); }
+
     .collapsible-content { 
       max-height: 0; overflow: hidden; 
       transition: max-height 0.3s ease, padding 0.3s ease; 
     }
     .collapsible-content.open { max-height: 2000px; padding-top: 12px; }
-    .toggle-btn {
-      background: transparent; border: 1px solid var(--border-color);
-      color: var(--text-primary); padding: 6px 12px; border-radius: 8px;
-      font-size: 12px; cursor: pointer; transition: all 0.3s; flex-shrink: 0;
-    }
-    .toggle-btn:hover { background: rgba(255, 255, 255, 0.1); }
 
+    /* FOOTER ACTIONS */
     .button-container { 
       position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
       display: flex; gap: 12px; width: calc(100% - 40px); max-width: 700px;
-      background: linear-gradient(135deg, var(--bg-start) 0%, var(--bg-end) 100%);
-      padding: 16px; border-radius: 16px; box-shadow: 0 -4px 20px rgba(0,0,0,0.3);
+      background: rgba(42, 61, 95, 0.9); backdrop-filter: blur(15px);
+      padding: 12px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      border: 1px solid var(--border-color); z-index: 100;
     }
     button.primary {
       flex: 1; padding: 14px; border: none; border-radius: 12px;
       font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.3s;
       background: var(--accent-color); color: var(--text-primary);
+      box-shadow: 0 4px 15px rgba(91, 111, 237, 0.3);
     }
-    button.primary:disabled { background: #555; cursor: not-allowed; opacity: 0.6; }
-    button.primary.success { background: var(--success-color); }
+    button.primary:disabled { background: #555; cursor: not-allowed; opacity: 0.6; box-shadow: none; }
+    button.primary.success { background: var(--success-color); box-shadow: 0 4px 15px rgba(74, 222, 128, 0.3); color: #000; }
     
     .spinner { 
       border: 3px solid rgba(255,255,255,0.2); border-top: 3px solid #fff; 
@@ -140,31 +158,35 @@
 <body>
   <div id="loadingOverlay" class="loading-overlay">
     <div class="spinner" style="width: 40px; height: 40px; border-width: 4px;"></div>
-    <div class="loading-text">Caricamento Blueprint...</div>
+    <div class="loading-text" id="txtLoading">Loading...</div>
   </div>
 
   <div class="container" id="mainContent" style="display: none;">
-    <h1 id="pageTitle">📋 Blueprint Operativo</h1>
-    <p class="subtitle">Processo di esecuzione del servizio</p>
+    <h1 id="pageTitle">Blueprint</h1>
+    <p class="subtitle" id="pageSubtitle">Definisci il processo.</p>
     
     <form id="blueprintForm">
-      <div class="section-title">ℹ️ Informazioni Generali</div>
+      <div class="section-title" id="lblInfo">ℹ️ Info</div>
       
       <div class="form-group">
-        <label class="disabled">Service SKU (Immutabile)</label>
+        <label class="disabled">Service SKU</label>
         <input type="text" id="serviceSku" disabled>
       </div>
 
       <div class="form-group">
-        <label>Descrizione Blueprint</label>
-        <textarea id="blueprintDesc" rows="3"></textarea>
+        <label id="lblDesc">Descrizione</label>
+        <textarea id="blueprintDesc" rows="2"></textarea>
       </div>
 
-      <div class="section-title">🎯 Fasi Operative</div>
+      <div class="section-title" id="lblStages">🎯 Fasi</div>
       <div id="stagesContainer"></div>
 
+      <button type="button" class="btn-add-stage" onclick="addStage()">
+        <span id="btnAddStage">➕ Aggiungi Fase</span>
+      </button>
+
       <div class="button-container">
-        <button type="submit" class="primary" id="saveBtn">Salva Modifiche</button>
+        <button type="submit" class="primary" id="saveBtn">💾 Salva</button>
       </div>
     </form>
   </div>
@@ -176,14 +198,207 @@
     tg.ready();
     tg.expand();
     
+    // ═══════════════════════════════════════════════════════════
+    // LOCALIZATION SYSTEM (6 Languages)
+    // ═══════════════════════════════════════════════════════════
+    const translations = {
+      it: {
+        title: "📋 Blueprint Operativo", subtitle: "Definisci il processo esatto di esecuzione.",
+        lblInfo: "ℹ️ Informazioni Generali", lblDesc: "Descrizione Blueprint",
+        lblStages: "🎯 Fasi Operative (Stages)",
+        btnAddStage: "➕ Aggiungi Nuova Fase", btnSave: "💾 Salva Modifiche",
+        loading: "Caricamento Blueprint...", saving: "Salvataggio...", saved: "✅ Salvato!", error: "❌ Errore",
+        phDesc: "A cosa serve questo processo?",
+        phStageDesc: "Descrizione della fase...", phStepInstr: "Istruzioni operative...",
+        lblQC: "Controllo Qualità", phQC: "Cosa verificare?",
+        lblSkills: "Skill Richieste (CSV)", phSkills: "Es: Developer, Legal...",
+        newStageDefault: "Nuova Fase Operativa", newStepDefault: "Nuovo Step",
+        confirmDelStage: "Sei sicuro di voler eliminare questa intera fase e tutti i suoi step?",
+        confirmDelStep: "Eliminare questo step?",
+        btnAddStep: "➕ Aggiungi Step in questa fase",
+        min: "min"
+      },
+      en: {
+        title: "📋 Operational Blueprint", subtitle: "Define the exact execution process.",
+        lblInfo: "ℹ️ General Information", lblDesc: "Blueprint Description",
+        lblStages: "🎯 Operational Stages",
+        btnAddStage: "➕ Add New Stage", btnSave: "💾 Save Changes",
+        loading: "Loading Blueprint...", saving: "Saving...", saved: "✅ Saved!", error: "❌ Error",
+        phDesc: "What is this process for?",
+        phStageDesc: "Stage description...", phStepInstr: "Operating instructions...",
+        lblQC: "Quality Check", phQC: "What to verify?",
+        lblSkills: "Required Skills (CSV)", phSkills: "E.g.: Developer, Legal...",
+        newStageDefault: "New Operational Stage", newStepDefault: "New Step",
+        confirmDelStage: "Are you sure you want to delete this entire stage and all its steps?",
+        confirmDelStep: "Delete this step?",
+        btnAddStep: "➕ Add Step here",
+        min: "min"
+      },
+      fr: {
+        title: "📋 Blueprint Opérationnel", subtitle: "Définir le processus d'exécution exact.",
+        lblInfo: "ℹ️ Informations Générales", lblDesc: "Description du Blueprint",
+        lblStages: "🎯 Phases Opérationnelles",
+        btnAddStage: "➕ Ajouter Nouvelle Phase", btnSave: "💾 Enregistrer",
+        loading: "Chargement...", saving: "Enregistrement...", saved: "✅ Enregistré !", error: "❌ Erreur",
+        phDesc: "À quoi sert ce processus ?",
+        phStageDesc: "Description de la phase...", phStepInstr: "Instructions opérationnelles...",
+        lblQC: "Contrôle Qualité", phQC: "Quoi vérifier ?",
+        lblSkills: "Compétences Requises (CSV)", phSkills: "Ex: Développeur, Juriste...",
+        newStageDefault: "Nouvelle Phase", newStepDefault: "Nouvelle Étape",
+        confirmDelStage: "Voulez-vous vraiment supprimer cette phase entière et toutes ses étapes ?",
+        confirmDelStep: "Supprimer cette étape ?",
+        btnAddStep: "➕ Ajouter Étape",
+        min: "min"
+      },
+      de: {
+        title: "📋 Operativer Blueprint", subtitle: "Definieren Sie den genauen Ausführungsprozess.",
+        lblInfo: "ℹ️ Allgemeine Informationen", lblDesc: "Blueprint-Beschreibung",
+        lblStages: "🎯 Operative Phasen",
+        btnAddStage: "➕ Neue Phase hinzufügen", btnSave: "💾 Änderungen speichern",
+        loading: "Laden...", saving: "Speichern...", saved: "✅ Gespeichert!", error: "❌ Fehler",
+        phDesc: "Wozu dient dieser Prozess?",
+        phStageDesc: "Beschreibung der Phase...", phStepInstr: "Arbeitsanweisungen...",
+        lblQC: "Qualitätsprüfung", phQC: "Was ist zu überprüfen?",
+        lblSkills: "Erforderliche Fähigkeiten (CSV)", phSkills: "Z.B.: Entwickler, Anwalt...",
+        newStageDefault: "Neue Operative Phase", newStepDefault: "Neuer Schritt",
+        confirmDelStage: "Sind Sie sicher, dass Sie diese gesamte Phase und alle Schritte löschen möchten?",
+        confirmDelStep: "Diesen Schritt löschen?",
+        btnAddStep: "➕ Schritt hinzufügen",
+        min: "Min"
+      },
+      es: {
+        title: "📋 Blueprint Operativo", subtitle: "Defina el proceso exacto de ejecución.",
+        lblInfo: "ℹ️ Información General", lblDesc: "Descripción del Blueprint",
+        lblStages: "🎯 Fases Operativas",
+        btnAddStage: "➕ Añadir Nueva Fase", btnSave: "💾 Guardar Cambios",
+        loading: "Cargando...", saving: "Guardando...", saved: "✅ ¡Guardado!", error: "❌ Error",
+        phDesc: "¿Para qué sirve este proceso?",
+        phStageDesc: "Descripción de la fase...", phStepInstr: "Instrucciones operativas...",
+        lblQC: "Control de Calidad", phQC: "¿Qué verificar?",
+        lblSkills: "Habilidades Requeridas (CSV)", phSkills: "Ej: Desarrollador, Legal...",
+        newStageDefault: "Nueva Fase Operativa", newStepDefault: "Nuevo Paso",
+        confirmDelStage: "¿Está seguro de que desea eliminar esta fase entera y todos sus pasos?",
+        confirmDelStep: "¿Eliminar este paso?",
+        btnAddStep: "➕ Añadir Paso aquí",
+        min: "min"
+      },
+      pt: {
+        title: "📋 Blueprint Operacional", subtitle: "Defina o processo exato de execução.",
+        lblInfo: "ℹ️ Informações Gerais", lblDesc: "Descrição do Blueprint",
+        lblStages: "🎯 Fases Operacionais",
+        btnAddStage: "➕ Adicionar Nova Fase", btnSave: "💾 Salvar Alterações",
+        loading: "Carregando...", saving: "Salvando...", saved: "✅ Salvo!", error: "❌ Erro",
+        phDesc: "Para que serve este processo?",
+        phStageDesc: "Descrição da fase...", phStepInstr: "Instruções operacionais...",
+        lblQC: "Controle de Qualidade", phQC: "O que verificar?",
+        lblSkills: "Habilidades Necessárias (CSV)", phSkills: "Ex: Desenvolvedor, Legal...",
+        newStageDefault: "Nova Fase Operacional", newStepDefault: "Novo Passo",
+        confirmDelStage: "Tem certeza que deseja excluir esta fase inteira e todos os seus passos?",
+        confirmDelStep: "Excluir este passo?",
+        btnAddStep: "➕ Adicionar Passo aqui",
+        min: "min"
+      }
+    };
+
     const urlParams = new URLSearchParams(window.location.search);
     const blueprintId = urlParams.get('id');
     const ownerId = urlParams.get('owner');
+    const langParam = urlParams.get('lang') || urlParams.get('language') || 'it';
+    
+    // Select language (fallback to 'it')
+    const t = translations[langParam] || translations['it'];
 
     let currentData = null;
 
+    // Apply static translations
+    function applyTranslations() {
+        document.title = t.title;
+        document.getElementById('pageTitle').textContent = t.title;
+        document.getElementById('pageSubtitle').textContent = t.subtitle;
+        document.getElementById('lblInfo').textContent = t.lblInfo;
+        document.getElementById('lblDesc').textContent = t.lblDesc;
+        document.getElementById('blueprintDesc').placeholder = t.phDesc;
+        document.getElementById('lblStages').textContent = t.lblStages;
+        document.getElementById('btnAddStage').textContent = t.btnAddStage;
+        document.getElementById('saveBtn').textContent = t.btnSave;
+        document.getElementById('txtLoading').textContent = t.loading;
+    }
+    applyTranslations();
+
     // ═══════════════════════════════════════════════════════════
-    // RENDER BLUEPRINT STRUCTURE (EDITABLE)
+    // LOGIC: RE-INDEXING & UPDATES
+    // ═══════════════════════════════════════════════════════════
+    function updateIndexes() {
+      if (!currentData || !currentData.stages) return;
+      
+      let totalMinutes = 0;
+
+      currentData.stages.forEach((stage, sIdx) => {
+        stage.stage_order = sIdx + 1;
+        stage.stage_id = `STAGE_${String(sIdx + 1).padStart(2, '0')}`;
+        if (!stage.steps) stage.steps = [];
+
+        stage.steps.forEach((step, stIdx) => {
+          step.step_order = stIdx + 1;
+          step.step_id = `STEP_${String(sIdx + 1).padStart(2, '0')}_${String(stIdx + 1).padStart(2, '0')}`;
+          totalMinutes += parseInt(step.estimated_time_minutes || 0);
+        });
+      });
+
+      if (!currentData.summary) currentData.summary = {};
+      currentData.summary.estimated_total_time_minutes = totalMinutes;
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // ACTIONS
+    // ═══════════════════════════════════════════════════════════
+    window.addStage = function() {
+      const newStage = {
+        stage_id: "", 
+        stage_order: 0,
+        stage_name: t.newStageDefault,
+        description: "",
+        steps: []
+      };
+      currentData.stages.push(newStage);
+      updateIndexes();
+      renderStages(currentData.stages);
+      setTimeout(() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }), 100);
+    };
+
+    window.removeStage = function(index) {
+      if(confirm(t.confirmDelStage)) {
+        currentData.stages.splice(index, 1);
+        updateIndexes();
+        renderStages(currentData.stages);
+      }
+    };
+
+    window.addStep = function(stageIndex) {
+      const newStep = {
+        step_id: "",
+        step_order: 0,
+        step_name: t.newStepDefault,
+        instructions: "",
+        estimated_time_minutes: 15,
+        resources_needed: { labor: { required_skill_tags: [] }, materials: [], assets: [] },
+        quality_check: null
+      };
+      currentData.stages[stageIndex].steps.push(newStep);
+      updateIndexes();
+      renderStages(currentData.stages);
+    };
+
+    window.removeStep = function(stageIndex, stepIndex) {
+      if(confirm(t.confirmDelStep)) {
+        currentData.stages[stageIndex].steps.splice(stepIndex, 1);
+        updateIndexes();
+        renderStages(currentData.stages);
+      }
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // UI RENDERER
     // ═══════════════════════════════════════════════════════════
     function renderStages(stages) {
       const container = document.getElementById('stagesContainer');
@@ -193,206 +408,182 @@
         const stageCard = document.createElement('div');
         stageCard.className = 'stage-card';
         
+        // STAGE HEADER
         const stageHeader = document.createElement('div');
         stageHeader.className = 'stage-header';
         stageHeader.innerHTML = `
-          <div style="flex: 1;">
+          <div class="stage-title-wrapper">
+            <div style="font-size: 10px; color: var(--accent-color); font-weight:bold; margin-bottom:4px;">${stage.stage_id}</div>
             <input type="text" class="stage-title-input" value="${stage.stage_name}" 
-                   data-stage-idx="${stageIdx}" data-field="stage_name">
-            <textarea style="width: 100%; margin-top: 8px; min-height: 50px; 
-                            font-size: 13px; color: var(--text-secondary); 
-                            background: transparent; border: 1px solid var(--border-color);
-                            border-radius: 8px; padding: 8px;"
-                      data-stage-idx="${stageIdx}" data-field="description">${stage.description || ''}</textarea>
+                   onchange="updateData('stages[${stageIdx}].stage_name', this.value)">
+            <textarea style="width: 100%; margin-top: 4px; min-height: 40px; font-size: 13px; color: var(--text-secondary); background: transparent; border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 8px;"
+                      onchange="updateData('stages[${stageIdx}].description', this.value)" placeholder="${t.phStageDesc}">${stage.description || ''}</textarea>
           </div>
-          <div class="stage-badge">${stage.steps.length} step${stage.steps.length > 1 ? 's' : ''}</div>
+          <button type="button" class="btn-icon btn-delete" onclick="removeStage(${stageIdx})">
+            🗑️
+          </button>
         `;
         stageCard.appendChild(stageHeader);
 
-        stage.steps.forEach((step, stepIdx) => {
-          const stepItem = document.createElement('div');
-          stepItem.className = 'step-item';
-          
-          stepItem.innerHTML = `
-            <div class="step-header">
-              <div style="flex: 1;">
-                <div class="step-id">${step.step_id}</div>
-                <input type="text" class="step-name-input" value="${step.step_name}"
-                       data-stage-idx="${stageIdx}" data-step-idx="${stepIdx}" data-field="step_name">
-                <textarea class="step-desc" style="width: 100%; background: transparent; 
-                         border: none; color: var(--text-secondary); padding: 4px; min-height: 60px;"
-                          data-stage-idx="${stageIdx}" data-step-idx="${stepIdx}" 
-                          data-field="instructions">${step.instructions || ''}</textarea>
-                <div class="step-meta">
-                  <span class="meta-item">
-                    ⏱️ <input type="number" min="0" style="width: 60px; background: transparent; 
-                             border: none; color: white; padding: 2px;"
-                             value="${step.estimated_time_minutes || 0}"
-                             data-stage-idx="${stageIdx}" data-step-idx="${stepIdx}" 
-                             data-field="estimated_time_minutes"> min
-                  </span>
-                  ${step.resources_needed?.labor?.required_skill_tags?.length ? 
-                    `<span class="meta-item">👤 ${step.resources_needed.labor.required_skill_tags.join(', ')}</span>` : ''}
-                </div>
-              </div>
-              <button type="button" class="toggle-btn" onclick="toggleStep(${stageIdx}, ${stepIdx})">
-                ${step.quality_check ? '📋' : '—'}
-              </button>
-            </div>
-            <div class="collapsible-content" id="step-${stageIdx}-${stepIdx}">
-              ${step.quality_check ? `
-                <div style="border-top: 1px solid rgba(255,255,255,0.1); padding-top: 12px;">
-                  <div style="margin-bottom: 12px;">
-                    <div style="font-size: 12px; font-weight: 600; margin-bottom: 4px;">✅ Quality Check</div>
-                    <div style="font-size: 11px; color: var(--text-secondary); margin-bottom: 6px; opacity: 0.8;">Descrizione verifica:</div>
-                    <textarea style="width: 100%; min-height: 60px; font-size: 13px; margin-bottom: 10px;
-                                     background: var(--input-bg); border: 1px solid var(--border-color);
-                                     border-radius: 8px; padding: 10px; color: var(--text-primary);"
-                              data-stage-idx="${stageIdx}" data-step-idx="${stepIdx}" 
-                              data-field="quality_check.check_description">${step.quality_check.check_description || ''}</textarea>
-                    
-                    <div style="font-size: 11px; color: var(--text-secondary); margin-bottom: 6px; opacity: 0.8;">Criteri di accettazione:</div>
-                    <textarea style="width: 100%; min-height: 50px; font-size: 13px;
-                                     background: var(--input-bg); border: 1px solid var(--border-color);
-                                     border-radius: 8px; padding: 10px; color: var(--text-primary);"
-                              data-stage-idx="${stageIdx}" data-step-idx="${stepIdx}" 
-                              data-field="quality_check.acceptance_criteria">${step.quality_check.acceptance_criteria || ''}</textarea>
+        // STEPS LIST
+        if (stage.steps && stage.steps.length > 0) {
+          stage.steps.forEach((step, stepIdx) => {
+            const stepItem = document.createElement('div');
+            stepItem.className = 'step-item';
+            
+            stepItem.innerHTML = `
+              <div class="step-header">
+                <div style="flex: 1; padding-right: 10px;">
+                  <div class="step-id">${step.step_id}</div>
+                  <input type="text" class="step-name-input" value="${step.step_name}"
+                         onchange="updateData('stages[${stageIdx}].steps[${stepIdx}].step_name', this.value)">
+                  
+                  <textarea style="width: 100%; background: transparent; border: none; color: var(--text-secondary); padding: 4px 0; min-height: 50px; font-size: 13px; line-height: 1.4;"
+                            onchange="updateData('stages[${stageIdx}].steps[${stepIdx}].instructions', this.value)" placeholder="${t.phStepInstr}">${step.instructions || ''}</textarea>
+                  
+                  <div class="step-meta">
+                    <span class="meta-item">
+                      ⏱️ <input type="number" min="0" style="width: 40px; background: transparent; border: none; color: white; padding: 0; text-align: center;"
+                               value="${step.estimated_time_minutes || 0}"
+                               onchange="updateData('stages[${stageIdx}].steps[${stepIdx}].estimated_time_minutes', this.value)"> ${t.min}
+                    </span>
                   </div>
                 </div>
-              ` : ''}
-            </div>
-          `;
-          
-          stageCard.appendChild(stepItem);
-        });
+                <div style="display:flex; flex-direction:column; gap:8px;">
+                  <button type="button" class="btn-icon btn-delete" onclick="removeStep(${stageIdx}, ${stepIdx})">🗑️</button>
+                  <button type="button" class="btn-icon" onclick="toggleStep(${stageIdx}, ${stepIdx})">
+                    ${step.quality_check ? '📋' : '⚙️'}
+                  </button>
+                </div>
+              </div>
+
+              <div class="collapsible-content" id="step-${stageIdx}-${stepIdx}">
+                <div style="border-top: 1px solid rgba(255,255,255,0.1); padding-top: 12px; margin-top:8px;">
+                  <div style="margin-bottom: 12px;">
+                    <div style="font-size: 11px; font-weight: 700; color: var(--text-secondary); margin-bottom: 4px; text-transform: uppercase;">${t.lblQC}</div>
+                    <textarea style="width: 100%; min-height: 50px; font-size: 12px; background: var(--input-bg); border: 1px solid var(--border-color); border-radius: 8px; padding: 8px; color: var(--text-primary);"
+                              onchange="updateNestedData(${stageIdx}, ${stepIdx}, 'quality_check.check_description', this.value)"
+                              placeholder="${t.phQC}">${step.quality_check?.check_description || ''}</textarea>
+                  </div>
+                  <div>
+                    <div style="font-size: 11px; font-weight: 700; color: var(--text-secondary); margin-bottom: 4px; text-transform: uppercase;">${t.lblSkills}</div>
+                    <input type="text" style="font-size: 12px; padding: 8px;" 
+                           value="${(step.resources_needed?.labor?.required_skill_tags || []).join(', ')}"
+                           onchange="updateSkills(${stageIdx}, ${stepIdx}, this.value)"
+                           placeholder="${t.phSkills}">
+                  </div>
+                </div>
+              </div>
+            `;
+            stageCard.appendChild(stepItem);
+          });
+        }
+
+        // ADD STEP BUTTON
+        const addStepBtn = document.createElement('button');
+        addStepBtn.type = 'button';
+        addStepBtn.className = 'btn-add-step';
+        addStepBtn.innerHTML = `<span>${t.btnAddStep}</span>`;
+        addStepBtn.onclick = () => addStep(stageIdx);
+        stageCard.appendChild(addStepBtn);
 
         container.appendChild(stageCard);
       });
-
-      attachUpdateListeners();
     }
 
     // ═══════════════════════════════════════════════════════════
-    // ATTACH LISTENERS TO UPDATE DATA IN REAL-TIME
+    // DATA UPDATERS
     // ═══════════════════════════════════════════════════════════
-    function attachUpdateListeners() {
-      // Stage fields
-      document.querySelectorAll('[data-stage-idx][data-field]:not([data-step-idx])').forEach(input => {
-        input.addEventListener('input', (e) => {
-          const stageIdx = parseInt(e.target.dataset.stageIdx);
-          const field = e.target.dataset.field;
-          currentData.stages[stageIdx][field] = e.target.value;
-        });
-      });
-
-      // Step fields
-      document.querySelectorAll('[data-stage-idx][data-step-idx][data-field]').forEach(input => {
-        input.addEventListener('input', (e) => {
-          const stageIdx = parseInt(e.target.dataset.stageIdx);
-          const stepIdx = parseInt(e.target.dataset.stepIdx);
-          const field = e.target.dataset.field;
-          
-          let value = e.target.value;
-          if (field === 'estimated_time_minutes') {
-            value = parseInt(value) || 0;
-          }
-          
-          // Gestisci path nidificati come "quality_check.check_description"
-          if (field.includes('.')) {
-            const parts = field.split('.');
-            let target = currentData.stages[stageIdx].steps[stepIdx];
-            for (let i = 0; i < parts.length - 1; i++) {
-              if (!target[parts[i]]) target[parts[i]] = {};
-              target = target[parts[i]];
+    window.updateData = function(path, value) {
+        let obj = currentData;
+        const keys = path.replace(/\]/g, '').split(/[\[\.]/); 
+        
+        keys.forEach((key, index) => {
+            if (index === keys.length - 1) {
+                if (key === 'estimated_time_minutes') value = parseInt(value) || 0;
+                obj[key] = value;
+            } else {
+                obj = obj[key];
             }
-            target[parts[parts.length - 1]] = value;
-          } else {
-            currentData.stages[stageIdx].steps[stepIdx][field] = value;
-          }
         });
-      });
-    }
+        if(path.includes('estimated_time_minutes')) updateIndexes(); 
+    };
 
-    // ═══════════════════════════════════════════════════════════
-    // TOGGLE STEP DETAILS
-    // ═══════════════════════════════════════════════════════════
+    window.updateNestedData = function(sIdx, stIdx, keyPath, value) {
+        let target = currentData.stages[sIdx].steps[stIdx];
+        const keys = keyPath.split('.');
+        if (keys[0] === 'quality_check' && !target.quality_check) target.quality_check = {};
+        keys.forEach((key, index) => {
+            if (index === keys.length - 1) target[key] = value;
+            else target = target[key];
+        });
+    };
+
+    window.updateSkills = function(sIdx, stIdx, value) {
+        const tags = value.split(',').map(t => t.trim()).filter(t => t);
+        if (!currentData.stages[sIdx].steps[stIdx].resources_needed) currentData.stages[sIdx].steps[stIdx].resources_needed = { labor: {} };
+        if (!currentData.stages[sIdx].steps[stIdx].resources_needed.labor) currentData.stages[sIdx].steps[stIdx].resources_needed.labor = {};
+        currentData.stages[sIdx].steps[stIdx].resources_needed.labor.required_skill_tags = tags;
+    };
+
     window.toggleStep = function(stageIdx, stepIdx) {
-      const content = document.getElementById(`step-${stageIdx}-${stepIdx}`);
-      content.classList.toggle('open');
+      const el = document.getElementById(`step-${stageIdx}-${stepIdx}`);
+      el.classList.toggle('open');
     };
 
     // ═══════════════════════════════════════════════════════════
-    // LOAD BLUEPRINT DATA
+    // LOAD & SAVE
     // ═══════════════════════════════════════════════════════════
     async function loadBlueprint() {
       try {
         const response = await fetch(WEBHOOK_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            action: 'GET',
-            type: 'BLUEPRINT',
-            id: blueprintId,
-            owner_id: ownerId
-          })
+          body: JSON.stringify({ action: 'GET', type: 'BLUEPRINT', id: blueprintId, owner_id: ownerId })
         });
 
         let data;
         const text = await response.text();
-        try {
-          data = JSON.parse(text);
-        } catch (e) {
-          data = JSON.parse(text.replace(/^"|"$/g, '').replace(/\\"/g, '"'));
-        }
+        try { data = JSON.parse(text); } catch (e) { data = JSON.parse(text.replace(/^"|"$/g, '').replace(/\\"/g, '"')); }
 
         currentData = data;
-
         document.getElementById('serviceSku').value = data.service_sku || '';
         document.getElementById('blueprintDesc').value = data.blueprint_description || '';
-
+        
+        updateIndexes();
         renderStages(data.stages);
 
-        document.getElementById('pageTitle').textContent = `📋 Blueprint: ${data.service_sku}`;
+        document.getElementById('pageTitle').textContent = `📋 ${data.service_sku}`;
         document.getElementById('loadingOverlay').classList.add('hidden');
         document.getElementById('mainContent').style.display = 'block';
 
       } catch (error) {
-        console.error('Load error:', error);
-        document.getElementById('loadingText').textContent = '❌ Errore caricamento';
+        console.error(error);
+        document.getElementById('txtLoading').textContent = t.error;
       }
     }
 
-    // ═══════════════════════════════════════════════════════════
-    // SAVE BLUEPRINT DATA
-    // ═══════════════════════════════════════════════════════════
     document.getElementById('blueprintForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       const saveBtn = document.getElementById('saveBtn');
-      saveBtn.innerHTML = '<div class="spinner"></div>Salvataggio...';
+      saveBtn.innerHTML = `<div class="spinner"></div> ${t.saving}`;
       saveBtn.disabled = true;
 
       currentData.blueprint_description = document.getElementById('blueprintDesc').value.trim();
+      updateIndexes();
 
       try {
         await fetch(WEBHOOK_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            action: 'SAVE',
-            type: 'BLUEPRINT',
-            id: blueprintId,
-            owner_id: ownerId,
-            payload: currentData
-          })
+          body: JSON.stringify({ action: 'SAVE', type: 'BLUEPRINT', id: blueprintId, owner_id: ownerId, payload: currentData })
         });
 
-        saveBtn.textContent = '✅ Salvato!';
+        saveBtn.textContent = t.saved;
         saveBtn.classList.add('success');
-        setTimeout(() => tg.close(), 1200);
-
+        setTimeout(() => tg.close(), 1000);
       } catch (error) {
-        console.error('Save error:', error);
-        saveBtn.textContent = '❌ Errore';
+        saveBtn.textContent = t.error;
         saveBtn.disabled = false;
       }
     });
