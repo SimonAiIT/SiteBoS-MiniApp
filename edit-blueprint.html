@@ -4,9 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>Blueprint Editor</title>
-  <!-- Telegram WebApp -->
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <!-- SortableJS per il Drag & Drop -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
   
   <style>
@@ -33,7 +31,7 @@
     .form-group { margin-bottom: 18px; }
     label { display: block; margin-bottom: 8px; font-size: 13px; font-weight: 500; }
     label.disabled { opacity: 0.5; }
-    input, textarea {
+    input[type="text"], input[type="number"], textarea {
       width: 100%; padding: 12px 14px; border: 1px solid var(--border-color);
       border-radius: 12px; background: var(--input-bg); backdrop-filter: blur(10px);
       color: var(--text-primary); font-size: 15px; font-family: inherit;
@@ -45,7 +43,7 @@
       box-shadow: 0 0 15px rgba(91, 111, 237, 0.3); 
     }
     
-    /* DRAG & DROP STYLES */
+    /* DRAG & DROP */
     .drag-handle {
       cursor: grab; color: var(--text-secondary); padding: 8px; 
       font-size: 20px; line-height: 1; display: flex; align-items: center;
@@ -53,21 +51,18 @@
     }
     .drag-handle:hover { opacity: 1; color: var(--text-primary); }
     .sortable-ghost { opacity: 0.4; background: var(--accent-color); }
-    .sortable-drag { cursor: grabbing; }
 
     /* STAGES & STEPS */
     .stage-card {
       background: var(--stage-bg); border: 1px solid var(--border-color);
       border-radius: 16px; padding: 16px; margin-bottom: 24px;
-      backdrop-filter: blur(10px); position: relative;
-      display: flex; flex-direction: column;
+      backdrop-filter: blur(10px); display: flex; flex-direction: column;
     }
     .stage-header {
       display: flex; align-items: flex-start; gap: 10px;
       margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid var(--border-color);
     }
     .stage-content { flex: 1; }
-    
     .stage-title-input {
       font-size: 18px; font-weight: 600; background: transparent;
       border: none; color: var(--text-primary); width: 100%;
@@ -75,15 +70,14 @@
     }
     .stage-title-input:focus { outline: none; border-bottom: 1px solid var(--accent-color); }
     
-    .step-list-container { min-height: 10px; } /* Area drop target */
+    .step-list-container { min-height: 10px; }
 
     .step-item {
       background: rgba(0, 0, 0, 0.2); border: 1px solid rgba(255, 255, 255, 0.1);
       border-radius: 12px; padding: 12px; margin-bottom: 12px; position: relative;
     }
     .step-header {
-      display: flex; align-items: flex-start; gap: 10px;
-      margin-bottom: 8px;
+      display: flex; align-items: flex-start; gap: 10px; margin-bottom: 8px;
     }
     .step-id { 
       background: rgba(255, 255, 255, 0.15); padding: 3px 8px; 
@@ -97,7 +91,6 @@
       width: 100%; padding: 4px 0;
     }
     .step-name-input:focus { outline: none; border-bottom: 1px solid var(--accent-color); }
-    
     .step-meta {
       display: flex; gap: 12px; flex-wrap: wrap; font-size: 12px;
       color: var(--text-secondary); margin-top: 10px;
@@ -127,12 +120,25 @@
       transition: all 0.2s; margin-top: 20px; display: flex; align-items: center; justify-content: center; gap: 8px;
     }
 
+    /* COLLAPSIBLE & FLAGS */
     .collapsible-content { 
       max-height: 0; overflow: hidden; 
       transition: max-height 0.3s ease, padding 0.3s ease; 
     }
     .collapsible-content.open { max-height: 2000px; padding-top: 12px; }
 
+    /* NEW: FLAG CONTAINER */
+    .flag-container {
+      display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 12px;
+      padding-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+    .flag-item {
+      display: flex; align-items: center; gap: 8px; font-size: 12px;
+      background: rgba(255,255,255,0.05); padding: 6px 10px; border-radius: 8px;
+      border: 1px solid var(--border-color); cursor: pointer;
+    }
+    .flag-item input[type="checkbox"] { width: 16px; height: 16px; margin: 0; cursor: pointer; }
+    
     .button-container { 
       position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
       display: flex; gap: 12px; width: calc(100% - 40px); max-width: 700px;
@@ -153,12 +159,6 @@
       border-radius: 50%; width: 18px; height: 18px; animation: spin 0.8s linear infinite; display: inline-block;
     }
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-    
-    .loading-overlay { 
-      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(42, 61, 95, 0.95); display: flex; flex-direction: column;
-      justify-content: center; align-items: center; z-index: 1000;
-    }
     .hidden { display: none !important; }
   </style>
 </head>
@@ -184,8 +184,6 @@
       </div>
 
       <div class="section-title" id="lblStages">Stages</div>
-      
-      <!-- CONTAINER PER LE FASI (Sortable) -->
       <div id="stagesContainer"></div>
 
       <button type="button" class="btn-add-stage" onclick="addStage()">
@@ -203,13 +201,95 @@
     const tg = window.Telegram.WebApp;
     tg.ready(); tg.expand();
 
+    // ═══════════════════════════════════════════════════════════
+    // TRANSLATIONS (6 Langs + New Flags)
+    // ═══════════════════════════════════════════════════════════
     const translations = {
-      it: { title: "📋 Blueprint Operativo", subtitle: "Trascina per riordinare fasi e step.", lblInfo: "ℹ️ Info", lblDesc: "Descrizione", lblStages: "🎯 Fasi Operative", btnAddStage: "➕ Aggiungi Fase", btnSave: "💾 Salva", loading: "Caricamento...", saving: "Salvataggio...", saved: "✅ Salvato!", error: "❌ Errore", phDesc: "Scopo del processo...", phStageDesc: "Descrizione fase...", phStepInstr: "Istruzioni...", lblQC: "Controllo Qualità", phQC: "Cosa verificare?", lblSkills: "Skill (CSV)", phSkills: "Es: Dev, Legal...", newStage: "Nuova Fase", newStep: "Nuovo Step", confirmDelStage: "Eliminare fase?", confirmDelStep: "Eliminare step?", btnAddStep: "➕ Aggiungi Step", min: "min" },
-      en: { title: "📋 Operational Blueprint", subtitle: "Drag to reorder stages and steps.", lblInfo: "ℹ️ Info", lblDesc: "Description", lblStages: "🎯 Operational Stages", btnAddStage: "➕ Add Stage", btnSave: "💾 Save", loading: "Loading...", saving: "Saving...", saved: "✅ Saved!", error: "❌ Error", phDesc: "Process purpose...", phStageDesc: "Stage description...", phStepInstr: "Instructions...", lblQC: "Quality Check", phQC: "Verify what?", lblSkills: "Skills (CSV)", phSkills: "E.g.: Dev, Legal...", newStage: "New Stage", newStep: "New Step", confirmDelStage: "Delete stage?", confirmDelStep: "Delete step?", btnAddStep: "➕ Add Step", min: "min" },
-      fr: { title: "📋 Blueprint", subtitle: "Glisser pour réorganiser.", lblInfo: "ℹ️ Info", lblDesc: "Description", lblStages: "🎯 Phases", btnAddStage: "➕ Ajouter Phase", btnSave: "💾 Enregistrer", loading: "Chargement...", saving: "Enregistrement...", saved: "✅ Enregistré !", error: "❌ Erreur", phDesc: "But du processus...", phStageDesc: "Desc. phase...", phStepInstr: "Instructions...", lblQC: "Contrôle Qualité", phQC: "Quoi vérifier ?", lblSkills: "Compétences", phSkills: "Ex: Dev...", newStage: "Nouvelle Phase", newStep: "Nouvelle Étape", confirmDelStage: "Supprimer phase ?", confirmDelStep: "Supprimer étape ?", btnAddStep: "➕ Ajouter Étape", min: "min" },
-      de: { title: "📋 Blueprint", subtitle: "Ziehen zum Neuordnen.", lblInfo: "ℹ️ Info", lblDesc: "Beschreibung", lblStages: "🎯 Phasen", btnAddStage: "➕ Phase hinzufügen", btnSave: "💾 Speichern", loading: "Laden...", saving: "Speichern...", saved: "✅ Gespeichert!", error: "❌ Fehler", phDesc: "Zweck...", phStageDesc: "Beschreibung...", phStepInstr: "Anweisungen...", lblQC: "Qualität", phQC: "Prüfen?", lblSkills: "Skills", phSkills: "z.B. Dev...", newStage: "Neue Phase", newStep: "Neuer Schritt", confirmDelStage: "Phase löschen?", confirmDelStep: "Schritt löschen?", btnAddStep: "➕ Schritt hinzufügen", min: "Min" },
-      es: { title: "📋 Blueprint", subtitle: "Arrastrar para reordenar.", lblInfo: "ℹ️ Info", lblDesc: "Descripción", lblStages: "🎯 Fases", btnAddStage: "➕ Añadir Fase", btnSave: "💾 Guardar", loading: "Cargando...", saving: "Guardando...", saved: "✅ Guardado", error: "❌ Error", phDesc: "Propósito...", phStageDesc: "Desc. fase...", phStepInstr: "Instrucciones...", lblQC: "Calidad", phQC: "¿Verificar qué?", lblSkills: "Habilidades", phSkills: "Ej: Dev...", newStage: "Nueva Fase", newStep: "Nuevo Paso", confirmDelStage: "¿Borrar fase?", confirmDelStep: "¿Borrar paso?", btnAddStep: "➕ Añadir Paso", min: "min" },
-      pt: { title: "📋 Blueprint", subtitle: "Arraste para reordenar.", lblInfo: "ℹ️ Info", lblDesc: "Descrição", lblStages: "🎯 Fases", btnAddStage: "➕ Adicionar Fase", btnSave: "💾 Salvar", loading: "Carregando...", saving: "Salvando...", saved: "✅ Salvo!", error: "❌ Erro", phDesc: "Propósito...", phStageDesc: "Desc. fase...", phStepInstr: "Instruções...", lblQC: "Qualidade", phQC: "Verificar o quê?", lblSkills: "Habilidades", phSkills: "Ex: Dev...", newStage: "Nova Fase", newStep: "Novo Passo", confirmDelStage: "Excluir fase?", confirmDelStep: "Excluir passo?", btnAddStep: "➕ Adicionar Passo", min: "min" }
+      it: {
+        title: "📋 Blueprint Operativo", subtitle: "Trascina per riordinare fasi e step.",
+        lblInfo: "ℹ️ Info Generali", lblDesc: "Descrizione", lblStages: "🎯 Fasi Operative",
+        btnAddStage: "➕ Aggiungi Fase", btnSave: "💾 Salva", loading: "Caricamento...", saving: "Salvataggio...", saved: "✅ Salvato!", error: "❌ Errore",
+        phDesc: "Scopo del processo...", phStageDesc: "Descrizione fase...", phStepInstr: "Istruzioni...",
+        lblQC: "Controllo Qualità", phQC: "Cosa verificare?",
+        lblSkills: "Skill (CSV)", phSkills: "Es: Dev, Legal...",
+        newStage: "Nuova Fase", newStep: "Nuovo Step",
+        confirmDelStage: "Eliminare fase?", confirmDelStep: "Eliminare step?",
+        btnAddStep: "➕ Aggiungi Step", min: "min",
+        // FLAG TRANSLATIONS
+        lblLogistics: "Logistica & Risorse",
+        flagWIP: "Richiede Semilavorato",
+        flagFinished: "Richiede Prodotto Finito"
+      },
+      en: {
+        title: "📋 Operational Blueprint", subtitle: "Drag to reorder stages and steps.",
+        lblInfo: "ℹ️ General Info", lblDesc: "Description", lblStages: "🎯 Operational Stages",
+        btnAddStage: "➕ Add Stage", btnSave: "💾 Save", loading: "Loading...", saving: "Saving...", saved: "✅ Saved!", error: "❌ Error",
+        phDesc: "Process purpose...", phStageDesc: "Stage description...", phStepInstr: "Instructions...",
+        lblQC: "Quality Check", phQC: "Verify what?",
+        lblSkills: "Skills (CSV)", phSkills: "E.g.: Dev, Legal...",
+        newStage: "New Stage", newStep: "New Step",
+        confirmDelStage: "Delete stage?", confirmDelStep: "Delete step?",
+        btnAddStep: "➕ Add Step", min: "min",
+        lblLogistics: "Logistics & Resources",
+        flagWIP: "Requires Semi-finished (WIP)",
+        flagFinished: "Requires Finished Product"
+      },
+      fr: {
+        title: "📋 Blueprint", subtitle: "Glisser pour réorganiser.",
+        lblInfo: "ℹ️ Info", lblDesc: "Description", lblStages: "🎯 Phases",
+        btnAddStage: "➕ Ajouter Phase", btnSave: "💾 Enregistrer", loading: "Chargement...", saving: "Enregistrement...", saved: "✅ Enregistré !", error: "❌ Erreur",
+        phDesc: "But du processus...", phStageDesc: "Desc. phase...", phStepInstr: "Instructions...",
+        lblQC: "Contrôle Qualité", phQC: "Quoi vérifier ?",
+        lblSkills: "Compétences", phSkills: "Ex: Dev...",
+        newStage: "Nouvelle Phase", newStep: "Nouvelle Étape",
+        confirmDelStage: "Supprimer phase ?", confirmDelStep: "Supprimer étape ?",
+        btnAddStep: "➕ Ajouter Étape", min: "min",
+        lblLogistics: "Logistique & Ressources",
+        flagWIP: "Nécessite Produit Semi-fini",
+        flagFinished: "Nécessite Produit Fini"
+      },
+      de: {
+        title: "📋 Blueprint", subtitle: "Ziehen zum Neuordnen.",
+        lblInfo: "ℹ️ Info", lblDesc: "Beschreibung", lblStages: "🎯 Phasen",
+        btnAddStage: "➕ Phase hinzufügen", btnSave: "💾 Speichern", loading: "Laden...", saving: "Speichern...", saved: "✅ Gespeichert!", error: "❌ Fehler",
+        phDesc: "Zweck...", phStageDesc: "Beschreibung...", phStepInstr: "Anweisungen...",
+        lblQC: "Qualität", phQC: "Prüfen?",
+        lblSkills: "Skills", phSkills: "z.B. Dev...",
+        newStage: "Neue Phase", newStep: "Neuer Schritt",
+        confirmDelStage: "Phase löschen?", confirmDelStep: "Schritt löschen?",
+        btnAddStep: "➕ Schritt hinzufügen", min: "Min",
+        lblLogistics: "Logistik & Ressourcen",
+        flagWIP: "Benötigt Halbzeug",
+        flagFinished: "Benötigt Fertigprodukt"
+      },
+      es: {
+        title: "📋 Blueprint", subtitle: "Arrastrar para reordenar.",
+        lblInfo: "ℹ️ Info", lblDesc: "Descripción", lblStages: "🎯 Fases",
+        btnAddStage: "➕ Añadir Fase", btnSave: "💾 Guardar", loading: "Cargando...", saving: "Guardando...", saved: "✅ Guardado", error: "❌ Error",
+        phDesc: "Propósito...", phStageDesc: "Desc. fase...", phStepInstr: "Instrucciones...",
+        lblQC: "Calidad", phQC: "¿Verificar qué?",
+        lblSkills: "Habilidades", phSkills: "Ej: Dev...",
+        newStage: "Nueva Fase", newStep: "Nuevo Paso",
+        confirmDelStage: "¿Borrar fase?", confirmDelStep: "¿Borrar paso?",
+        btnAddStep: "➕ Añadir Paso", min: "min",
+        lblLogistics: "Logística & Recursos",
+        flagWIP: "Requiere Semielaborado",
+        flagFinished: "Requiere Producto Terminado"
+      },
+      pt: {
+        title: "📋 Blueprint", subtitle: "Arraste para reordenar.",
+        lblInfo: "ℹ️ Info", lblDesc: "Descrição", lblStages: "🎯 Fases",
+        btnAddStage: "➕ Adicionar Fase", btnSave: "💾 Salvar", loading: "Carregando...", saving: "Salvando...", saved: "✅ Salvo!", error: "❌ Erro",
+        phDesc: "Propósito...", phStageDesc: "Desc. fase...", phStepInstr: "Instruções...",
+        lblQC: "Qualidade", phQC: "Verificar o quê?",
+        lblSkills: "Habilidades", phSkills: "Ex: Dev...",
+        newStage: "Nova Fase", newStep: "Novo Passo",
+        confirmDelStage: "Excluir fase?", confirmDelStep: "Excluir passo?",
+        btnAddStep: "➕ Adicionar Passo", min: "min",
+        lblLogistics: "Logística & Recursos",
+        flagWIP: "Requer Semiacabado",
+        flagFinished: "Requer Produto Acabado"
+      }
     };
 
     const p = new URLSearchParams(location.search);
@@ -219,7 +299,7 @@
     
     let currentData = null;
 
-    // Init UI Text
+    // Apply Static Translations
     document.getElementById('pageTitle').textContent = t.title;
     document.getElementById('pageSubtitle').textContent = t.subtitle;
     document.getElementById('lblInfo').textContent = t.lblInfo;
@@ -231,7 +311,7 @@
     document.getElementById('txtLoading').textContent = t.loading;
 
     // ═══════════════════════════════════════════════════════════
-    // RE-INDEXING LOGIC (Cruciale per il DnD)
+    // LOGIC & RENDER
     // ═══════════════════════════════════════════════════════════
     function updateIndexes() {
       if (!currentData || !currentData.stages) return;
@@ -250,9 +330,6 @@
       currentData.summary.estimated_total_time_minutes = totalMinutes;
     }
 
-    // ═══════════════════════════════════════════════════════════
-    // RENDER & SORTABLE
-    // ═══════════════════════════════════════════════════════════
     function renderStages() {
       const container = document.getElementById('stagesContainer');
       container.innerHTML = '';
@@ -260,9 +337,8 @@
       currentData.stages.forEach((stage, sIdx) => {
         const stageCard = document.createElement('div');
         stageCard.className = 'stage-card';
-        stageCard.dataset.idx = sIdx; // Per Sortable
+        stageCard.dataset.idx = sIdx;
 
-        // Stage Content
         stageCard.innerHTML = `
           <div class="stage-header">
             <div class="drag-handle">⋮⋮</div>
@@ -275,13 +351,8 @@
             </div>
             <button type="button" class="btn-icon btn-delete" onclick="removeStage(${sIdx})">🗑️</button>
           </div>
-          
-          <!-- Step List Container -->
           <div class="step-list-container" id="stepList-${sIdx}"></div>
-          
-          <button type="button" class="btn-add-step" onclick="addStep(${sIdx})">
-            <span>${t.btnAddStep}</span>
-          </button>
+          <button type="button" class="btn-add-step" onclick="addStep(${sIdx})"><span>${t.btnAddStep}</span></button>
         `;
 
         const stepListContainer = stageCard.querySelector(`#stepList-${sIdx}`);
@@ -290,7 +361,10 @@
           stage.steps.forEach((step, stIdx) => {
             const stepItem = document.createElement('div');
             stepItem.className = 'step-item';
-            stepItem.dataset.idx = stIdx; // Per Sortable
+            stepItem.dataset.idx = stIdx;
+
+            // Ensure flags object exists
+            const flags = step.logistics_flags || { requires_wip: false, requires_finished: false };
 
             stepItem.innerHTML = `
               <div class="step-header">
@@ -314,8 +388,24 @@
                   <button type="button" class="btn-icon" onclick="toggleStep(${sIdx}, ${stIdx})">${step.quality_check ? '📋' : '⚙️'}</button>
                 </div>
               </div>
+              
               <div class="collapsible-content" id="step-${sIdx}-${stIdx}">
                 <div style="border-top: 1px solid rgba(255,255,255,0.1); padding-top: 12px; margin-top:8px;">
+                  
+                  <!-- NEW: LOGISTICS FLAGS -->
+                  <div class="flag-container">
+                    <label class="flag-item">
+                      <input type="checkbox" ${flags.requires_wip ? 'checked' : ''} 
+                             onchange="updateFlag(${sIdx}, ${stIdx}, 'requires_wip', this.checked)">
+                      🏭 ${t.flagWIP}
+                    </label>
+                    <label class="flag-item">
+                      <input type="checkbox" ${flags.requires_finished ? 'checked' : ''} 
+                             onchange="updateFlag(${sIdx}, ${stIdx}, 'requires_finished', this.checked)">
+                      📦 ${t.flagFinished}
+                    </label>
+                  </div>
+
                   <div style="margin-bottom: 12px;">
                     <div style="font-size: 11px; font-weight: 700; color: var(--text-secondary); margin-bottom: 4px; text-transform: uppercase;">${t.lblQC}</div>
                     <textarea style="width: 100%; min-height: 50px; font-size: 12px; background: var(--input-bg); border: 1px solid var(--border-color); border-radius: 8px; padding: 8px; color: var(--text-primary);"
@@ -336,41 +426,25 @@
           });
         }
         
-        // INIT SORTABLE PER STEPS (Nested)
         new Sortable(stepListContainer, {
-          group: 'steps', // Permette di spostare step tra fasi diverse (opzionale, qui enabled)
-          handle: '.drag-handle',
-          animation: 150,
-          ghostClass: 'sortable-ghost',
+          group: 'steps', handle: '.drag-handle', animation: 150, ghostClass: 'sortable-ghost',
           onEnd: function (evt) {
-            // Logica complessa per lo spostamento tra liste
             const fromStageIdx = parseInt(evt.from.closest('.stage-card').dataset.idx);
             const toStageIdx = parseInt(evt.to.closest('.stage-card').dataset.idx);
-            const oldIndex = evt.oldIndex;
-            const newIndex = evt.newIndex;
-
-            // Muovi dati nell'array
-            const movedItem = currentData.stages[fromStageIdx].steps.splice(oldIndex, 1)[0];
-            currentData.stages[toStageIdx].steps.splice(newIndex, 0, movedItem);
-
-            updateIndexes(); // Ricalcola ID
-            renderStages(); // Rirenderizza tutto per aggiornare etichette visuali
+            const movedItem = currentData.stages[fromStageIdx].steps.splice(evt.oldIndex, 1)[0];
+            currentData.stages[toStageIdx].steps.splice(evt.newIndex, 0, movedItem);
+            updateIndexes(); renderStages();
           }
         });
-
         container.appendChild(stageCard);
       });
 
-      // INIT SORTABLE PER STAGES (Main)
       new Sortable(container, {
-        handle: '.drag-handle',
-        animation: 150,
-        ghostClass: 'sortable-ghost',
+        handle: '.drag-handle', animation: 150, ghostClass: 'sortable-ghost',
         onEnd: function (evt) {
           const movedItem = currentData.stages.splice(evt.oldIndex, 1)[0];
           currentData.stages.splice(evt.newIndex, 0, movedItem);
-          updateIndexes();
-          renderStages();
+          updateIndexes(); renderStages();
         }
       });
     }
@@ -399,6 +473,13 @@
         });
     };
 
+    // NEW: FLAG UPDATER
+    window.updateFlag = function(sIdx, stIdx, flagName, isChecked) {
+        let target = currentData.stages[sIdx].steps[stIdx];
+        if (!target.logistics_flags) target.logistics_flags = {};
+        target.logistics_flags[flagName] = isChecked;
+    };
+
     window.updateSkills = function(sIdx, stIdx, value) {
         const tags = value.split(',').map(t => t.trim()).filter(t => t);
         if (!currentData.stages[sIdx].steps[stIdx].resources_needed) currentData.stages[sIdx].steps[stIdx].resources_needed = { labor: {} };
@@ -419,7 +500,9 @@
     window.addStep = function(stageIndex) {
       currentData.stages[stageIndex].steps.push({ 
         step_id: "", step_order: 0, step_name: t.newStep, instructions: "", estimated_time_minutes: 15, 
-        resources_needed: { labor: { required_skill_tags: [] }, materials: [], assets: [] }, quality_check: null 
+        resources_needed: { labor: { required_skill_tags: [] }, materials: [], assets: [] }, 
+        quality_check: null,
+        logistics_flags: { requires_wip: false, requires_finished: false } // Init flags
       });
       updateIndexes(); renderStages();
     };
