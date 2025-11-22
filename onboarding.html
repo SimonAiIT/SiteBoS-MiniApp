@@ -404,4 +404,75 @@
                 dom.fileBox.classList.remove('analyzing'); dom.fileBox.classList.add('success');
                 dom.fileIcon.innerText = "✅"; dom.fileText.innerText = "OK!";
                 
-                if(data.name) dom.fName.value = data.
+                if(data.name) dom.fName.value = data.name;
+                if(data.surname) dom.fSurname.value = data.surname;
+                if(data.fiscal_code) dom.fFiscal.value = data.fiscal_code;
+                
+                dom.fName.removeAttribute('readonly'); dom.fSurname.removeAttribute('readonly'); dom.fFiscal.removeAttribute('readonly');
+                dom.fName.classList.add('flash-success'); dom.fSurname.classList.add('flash-success');
+                dom.btnStep1.disabled = false;
+            } catch(err) {
+                dom.fileBox.classList.remove('analyzing'); dom.fileText.innerText = "Error. Manual input.";
+                dom.fName.removeAttribute('readonly'); dom.fSurname.removeAttribute('readonly'); dom.fFiscal.removeAttribute('readonly');
+                dom.btnStep1.disabled = false;
+            }
+        }
+    });
+
+    window.nextStep = function(step) {
+      if(step > currentStep) {
+          const inps = dom.steps[currentStep-1].querySelectorAll('input[required]');
+          for(let i of inps) if(!i.value) { i.focus(); return; }
+      }
+      currentStep = step;
+      dom.steps.forEach(s => s.classList.add('hidden')); dom.steps[step-1].classList.remove('hidden');
+      dom.progressFill.style.width = ((step-1)/2)*100 + "%";
+      dom.dots.forEach((d, i) => { 
+        d.parentElement.classList.remove('active','completed'); 
+        if(i < step-1) d.parentElement.classList.add('completed'); 
+        if(i === step-1) d.parentElement.classList.add('active');
+      });
+    }
+
+    window.selectPlan = function(type, el) {
+      document.querySelectorAll('.plan-card').forEach(c => c.classList.remove('selected')); el.classList.add('selected');
+      document.getElementById('selected_plan').value = type;
+      document.getElementById('summary-price').innerText = type === 'monthly' ? "€99.00" : "€950.00";
+    }
+
+    document.getElementById('wizardForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById('submitBtn'); btn.disabled = true; btn.innerText = "Processing...";
+      const addr = `${document.getElementById('addr_route').value} ${document.getElementById('addr_num').value}, ${document.getElementById('addr_zip').value} ${document.getElementById('addr_city').value} (${document.getElementById('addr_prov').value})`;
+      let fileD = { base64: null, mime: null }; if(dom.fileInput.files.length > 0) fileD = await getFileData(dom.fileInput.files[0]);
+
+      const payload = {
+        action: 'payment_checkout', user_id: GLOBAL_CHAT_ID, chat_id: GLOBAL_CHAT_ID, thread_id: GLOBAL_THREAD_ID,
+        owner_data: {
+            user_id: GLOBAL_CHAT_ID, name: dom.fName.value, surname: dom.fSurname.value, fiscal_code: dom.fFiscal.value,
+            email: document.getElementById('email').value, phone: document.getElementById('phone').value,
+            gemini_key: document.getElementById('gemini_key').value,
+            ragione_sociale: document.getElementById('ragione_sociale').value, vat_number: document.getElementById('vat_number').value,
+            sdi_pec: document.getElementById('sdi_pec').value, indirizzo: addr, site: document.getElementById('site').value,
+            plan: document.getElementById('selected_plan').value, kyc_document: fileD.base64, kyc_mime_type: fileD.mime,
+            terms_accepted: true
+        }
+      };
+
+      try {
+        const res = await fetch(WEBHOOK_URL, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload)});
+        const data = await res.json();
+        if(data.checkout_url) window.location.href = data.checkout_url; else { alert("Error."); btn.disabled = false; }
+      } catch(err) { alert("Conn Error."); btn.disabled = false; }
+    });
+
+    const getFileData = file => new Promise((res, rej) => {
+        const r = new FileReader(); r.readAsDataURL(file);
+        r.onload = () => {
+            const rs = r.result;
+            res({ base64: rs.split(',')[1], mime: rs.match(/data:([a-zA-Z0-9]+\/[a-zA-Z0-9-.+]+).*,.*/)[1] });
+        }; r.onerror = rej;
+    });
+  </script>
+</body>
+</html>
