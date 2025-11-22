@@ -3,29 +3,30 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>Attivazione SiteBoS</title>
+  <title>Setup SiteBoS</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <style>
     :root {
       --bg-start: #4a5b8f; --bg-end: #2a3d5f; --text-primary: #ffffff;
       --text-secondary: rgba(255, 255, 255, 0.7); --border-color: rgba(255, 255, 255, 0.2);
       --input-bg: rgba(255, 255, 255, 0.08); --accent-color: #5B6FED; --error-color: #ff6b6b;
-      --success-color: #4cd964;
+      --success-color: #4cd964; --card-bg: rgba(0, 0, 0, 0.2);
     }
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
       background: linear-gradient(135deg, var(--bg-start) 0%, var(--bg-end) 100%);
       color: var(--text-primary); padding: 20px; min-height: 100vh;
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
     }
-    .container { width: 100%; max-width: 500px; }
+    .container { max-width: 600px; margin: 0 auto; padding-bottom: 40px; }
     
-    /* UTILITY CLASSES */
+    /* UTILITY */
     .hidden { display: none !important; }
 
-    /* ERROR SCREEN (NO CHAT_ID) */
-    #access-denied { text-align: center; animation: fadeIn 0.5s; }
+    /* ERROR SCREEN (WALL) */
+    #access-denied { 
+      text-align: center; margin-top: 30vh; animation: fadeIn 0.5s; 
+    }
     .icon-large { font-size: 60px; margin-bottom: 20px; display: block; }
     .btn-main { 
         display: inline-block; width: 100%; padding: 16px; 
@@ -34,188 +35,335 @@
         margin-top: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); 
     }
 
-    /* FORM SCREEN */
-    #app-content { width: 100%; animation: slideUp 0.5s; }
-    h1 { font-size: 24px; margin-bottom: 8px; font-weight: 600; }
-    .subtitle { font-size: 14px; color: var(--text-secondary); margin-bottom: 32px; font-weight: 300; }
+    /* APP HEADER */
+    header { text-align: center; margin-bottom: 24px; }
+    h1 { font-size: 24px; font-weight: 700; margin-bottom: 4px; }
+    p.subtitle { font-size: 14px; color: var(--text-secondary); }
+
+    /* SECTIONS */
+    .section-card {
+      background: var(--card-bg); border-radius: 16px; padding: 20px;
+      margin-bottom: 20px; border: 1px solid var(--border-color);
+    }
+    .section-title {
+      font-size: 16px; font-weight: 600; color: var(--accent-color);
+      margin-bottom: 16px; display: flex; align-items: center; gap: 8px;
+      text-transform: uppercase; letter-spacing: 0.5px;
+    }
+
+    /* FORMS */
+    .form-row { display: flex; gap: 12px; }
+    .col { flex: 1; }
+    .form-group { margin-bottom: 16px; }
+    .form-group:last-child { margin-bottom: 0; }
     
-    .form-group { margin-bottom: 20px; }
-    label { display: block; margin-bottom: 8px; font-size: 14px; font-weight: 500; }
-    input {
-      width: 100%; padding: 14px 16px; border: 1px solid var(--border-color);
-      border-radius: 12px; background: var(--input-bg); backdrop-filter: blur(10px);
+    label { display: block; margin-bottom: 6px; font-size: 13px; font-weight: 500; color: var(--text-secondary); }
+    input, select {
+      width: 100%; padding: 12px; border: 1px solid var(--border-color);
+      border-radius: 10px; background: var(--input-bg);
       color: var(--text-primary); font-size: 15px; font-family: inherit;
-      transition: border-color 0.3s;
+      transition: all 0.2s;
     }
-    input:focus { outline: none; border-color: rgba(255, 255, 255, 0.5); }
-    .required::after { content: " *"; color: var(--error-color); }
+    input:focus { outline: none; border-color: var(--accent-color); background: rgba(255,255,255,0.1); }
     
-    button[type="submit"] {
-      width: 100%; padding: 16px; background: var(--accent-color); color: white; border: none; border-radius: 12px; font-size: 16px; font-weight: 600; cursor: pointer; margin-top: 10px;
+    .required::after { content: " *"; color: var(--error-color); }
+
+    /* BUTTONS */
+    .btn-submit {
+      width: 100%; padding: 16px; background: var(--accent-color); 
+      color: white; border: none; border-radius: 12px; 
+      font-size: 16px; font-weight: 600; cursor: pointer;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2); transition: transform 0.1s;
     }
-    button:disabled { opacity: 0.7; cursor: not-allowed; }
+    .btn-submit:active { transform: scale(0.98); }
+    .btn-submit:disabled { background: #555; opacity: 0.7; cursor: not-allowed; }
 
-    /* FILE UPLOAD */
-    .file-upload { position: relative; display: flex; align-items: center; justify-content: center; padding: 20px; border: 2px dashed var(--border-color); border-radius: 12px; cursor: pointer; transition: all 0.3s; }
-    .file-upload input { position: absolute; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
-    .file-label { text-align: center; font-size: 14px; color: var(--text-secondary); pointer-events: none; }
-    .file-selected { color: var(--success-color); font-weight: 600; }
-
+    /* LOADER */
+    #loader-overlay {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: var(--bg-end); z-index: 999; display: flex;
+      justify-content: center; align-items: center; flex-direction: column;
+    }
+    .spinner { width: 40px; height: 40px; border: 4px solid rgba(255,255,255,0.1); border-top-color: var(--accent-color); border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 15px;}
+    @keyframes spin { to { transform: rotate(360deg); } }
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-    @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
   </style>
 </head>
 <body>
 
-  <div class="container">
-    
-    <!-- SCHERMATA BLOCCO (Se manca chat_id) -->
-    <div id="access-denied" class="hidden">
-      <span class="icon-large">⛔</span>
-      <h1>Link non valido</h1>
-      <p class="subtitle">Per configurare la tua istanza devi passare dal Bot Telegram ufficiale.</p>
-      <a href="https://t.me/TrinAi_SiteBoS_bot" class="btn-main">🤖 VAI AL BOT</a>
-    </div>
+  <!-- LOADER INIZIALE -->
+  <div id="loader-overlay">
+    <div class="spinner"></div>
+    <div id="loader-text">Verifica Accesso...</div>
+  </div>
 
-    <!-- SCHERMATA FORM (Se c'è chat_id) -->
-    <div id="app-content" class="hidden">
-      <form id="onboarding-form">
-        <h1>Attiva SiteBoS</h1>
-        <p class="subtitle">Configurazione per ID: <span id="display-chat-id" style="font-family:monospace; background:rgba(0,0,0,0.2); padding:2px 6px; border-radius:4px;"></span></p>
-        
-        <div class="form-group">
-          <label for="vat" class="required">Partita IVA</label>
-          <input type="text" id="vat" placeholder="IT12345678901" required>
-        </div>
+  <!-- BLOCCO ACCESSO NEGATO (IL MURO) -->
+  <div id="access-denied" class="hidden">
+    <span class="icon-large">🔒</span>
+    <h1>Link non valido</h1>
+    <p class="subtitle" style="margin-bottom: 20px;">Per configurare la tua istanza devi passare dal Bot Telegram ufficiale.</p>
+    <a href="https://t.me/TrinAi_SiteBoS_bot" class="btn-main">🤖 APRI IL BOT</a>
+  </div>
 
-        <div class="form-group">
-          <label for="company" class="required">Ragione Sociale</label>
-          <input type="text" id="company" placeholder="La Tua Azienda SRL" required>
-        </div>
+  <!-- CONTENUTO APP (IL FORM) -->
+  <div class="container hidden" id="main-content">
+    <header>
+      <h1>Configurazione SiteBoS</h1>
+      <p class="subtitle">Compila i dati per generare la tua istanza AI.</p>
+    </header>
 
-        <div class="form-group">
-          <label for="website">Sito Web (Opzionale)</label>
-          <input type="url" id="website" placeholder="https://www.tuosito.it">
-        </div>
-
-        <div class="form-group">
-          <label>Company Profile (PDF)</label>
-          <div class="file-upload">
-              <input type="file" id="pdf-file" accept="application/pdf">
-              <div class="file-label" id="file-label">
-                  📄 Carica PDF (Consigliato)<br>
-                  <span style="font-size:11px; opacity:0.7">Per istanze di alta qualità</span>
-              </div>
+    <form id="setupForm">
+      
+      <!-- SEZIONE 1: CHI SEI -->
+      <div class="section-card">
+        <div class="section-title">👤 Dati Referente</div>
+        <div class="form-row">
+          <div class="col form-group">
+            <label class="required">Nome</label>
+            <input type="text" id="name" required>
+          </div>
+          <div class="col form-group">
+            <label class="required">Cognome</label>
+            <input type="text" id="surname" required>
           </div>
         </div>
+        <div class="form-group">
+          <label class="required">Email (Login Admin)</label>
+          <input type="email" id="email" required>
+        </div>
+        <div class="form-group">
+          <label class="required">Cellulare</label>
+          <input type="tel" id="phone" required>
+        </div>
+      </div>
 
-        <button type="submit" id="submitBtn">AVVIA ORA ⚡</button>
-      </form>
-    </div>
+      <!-- SEZIONE 2: AZIENDA -->
+      <div class="section-card">
+        <div class="section-title">🏢 Dati Aziendali</div>
+        <div class="form-group">
+          <label class="required">Ragione Sociale (Nome Commerciale)</label>
+          <input type="text" id="ragione_sociale" placeholder="Es. TrinAI Srl" required>
+        </div>
+        <div class="form-group">
+          <label class="required">Partita IVA</label>
+          <input type="text" id="vat_number" placeholder="IT..." required>
+        </div>
+        <div class="form-group">
+          <label class="required">Indirizzo Completo</label>
+          <input type="text" id="indirizzo" placeholder="Via Roma 1, Milano" required>
+        </div>
+        <div class="form-group">
+          <label class="required">Sito Web</label>
+          <input type="url" id="site" placeholder="https://..." required>
+        </div>
+      </div>
 
+      <!-- SEZIONE 3: INTELLIGENCE & SOCIAL -->
+      <div class="section-card">
+        <div class="section-title">🌐 Digital Footprint</div>
+        <div class="form-group">
+          <label>Profilo LinkedIn (Personale o Azienda)</label>
+          <input type="url" id="linkedin_page" placeholder="https://linkedin.com/in/...">
+        </div>
+        <div class="form-group">
+          <label>Pagina Facebook</label>
+          <input type="url" id="facebook_page" placeholder="https://facebook.com/...">
+        </div>
+      </div>
+
+      <!-- SEZIONE 4: MOTORE AI -->
+      <div class="section-card">
+        <div class="section-title">🧠 Configurazione AI</div>
+        <div class="form-group">
+          <label class="required">Google Gemini API Key</label>
+          <input type="text" id="gemini_key" placeholder="AIzaSy..." required>
+          <div style="font-size: 11px; margin-top: 4px; opacity: 0.6;">
+            Necessaria per il funzionamento del cervello neurale.
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Lingua Preferita</label>
+          <select id="lenguage">
+            <option value="Italiano">Italiano 🇮🇹</option>
+            <option value="English">English 🇬🇧</option>
+            <option value="Français">Français 🇫🇷</option>
+            <option value="Deutsch">Deutsch 🇩🇪</option>
+            <option value="Español">Español 🇪🇸</option>
+            <option value="Português">Português 🇵🇹</option>
+          </select>
+        </div>
+      </div>
+
+      <button type="submit" id="submitBtn" class="btn-submit">SALVA E AVVIA ISTANZA 🚀</button>
+      <p style="text-align:center; font-size:12px; margin-top:15px; opacity:0.6">I dati saranno salvati nel MemoryManager crittografato.</p>
+    </form>
   </div>
 
   <script>
-    // URL DEL TUO WEBHOOK (Provvisioning)
-    const N8N_WEBHOOK = "https://trinai.api.workflow.dcmake.it/webhook/83acc670-15ae-4da0-ae0e-3587c85bd5f4";
+    // CONFIGURAZIONE
+    const WEBHOOK_URL = "https://trinai.api.workflow.dcmake.it/webhook/83acc670-15ae-4da0-ae0e-3587c85bd5f4";
+    
+    // Inizializza Telegram
+    const tg = window.Telegram.WebApp;
+    tg.ready();
+    tg.expand();
 
-    // 1. GESTIONE URL E CONTROLLO ACCESSO
+    // Recupera parametri URL
     const urlParams = new URLSearchParams(window.location.search);
-    const chatId = urlParams.get('chat_id');
-    const threadId = urlParams.get('thread_id'); // Opzionale
+    const urlChatId = urlParams.get('chat_id');
+    const urlThreadId = urlParams.get('thread_id');
 
+    // Elementi DOM
     const dom = {
-        denied: document.getElementById('access-denied'),
-        content: document.getElementById('app-content'),
-        displayId: document.getElementById('display-chat-id'),
-        form: document.getElementById('onboarding-form'),
-        submitBtn: document.getElementById('submitBtn'),
-        fileInput: document.getElementById('pdf-file'),
-        fileLabel: document.getElementById('file-label')
+      loader: document.getElementById('loader-overlay'),
+      loaderText: document.getElementById('loader-text'),
+      denied: document.getElementById('access-denied'),
+      content: document.getElementById('main-content'),
+      form: document.getElementById('setupForm'),
+      submitBtn: document.getElementById('submitBtn'),
+      fields: {
+        name: document.getElementById('name'),
+        surname: document.getElementById('surname'),
+        email: document.getElementById('email'),
+        phone: document.getElementById('phone'),
+        ragione_sociale: document.getElementById('ragione_sociale'),
+        vat_number: document.getElementById('vat_number'),
+        indirizzo: document.getElementById('indirizzo'),
+        site: document.getElementById('site'),
+        linkedin_page: document.getElementById('linkedin_page'),
+        facebook_page: document.getElementById('facebook_page'),
+        gemini_key: document.getElementById('gemini_key'),
+        lenguage: document.getElementById('lenguage')
+      }
     };
 
-    // LOGICA DI CONTROLLO (AIRLOCK)
-    if (!chatId) {
-        // Nessun parametro -> Muro
-        dom.denied.classList.remove('hidden');
-    } else {
-        // Parametro presente -> Mostra App
-        dom.content.classList.remove('hidden');
-        dom.displayId.textContent = chatId;
-    }
+    // 1. ACTION: CHECK ACCESS & GET (Handshake)
+    async function init() {
+      
+      const user = tg.initDataUnsafe?.user;
+      
+      // IL MURO: Se non c'è user Telegram E non c'è chat_id nell'URL -> BLOCCA
+      if (!user && !urlChatId) {
+          dom.loader.style.display = 'none';
+          dom.denied.classList.remove('hidden');
+          return; // FERMATI QUI
+      }
 
-    // 2. UX FILE UPLOAD
-    dom.fileInput.addEventListener('change', (e) => {
-        if (e.target.files.length > 0) {
-            dom.fileLabel.innerHTML = `✅ ${e.target.files[0].name}`;
-            dom.fileLabel.classList.add('file-selected');
-        }
-    });
+      // Se passa il controllo, usiamo l'ID disponibile
+      const effectiveChatId = user?.id || urlChatId;
 
-    // 3. INVIO FORM
-    dom.form.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        dom.submitBtn.disabled = true;
-        dom.submitBtn.textContent = "Elaborazione in corso...";
-
-        // Conversione PDF a Base64
-        let pdfBase64 = null;
-        if (dom.fileInput.files.length > 0) {
-            try {
-                pdfBase64 = await toBase64(dom.fileInput.files[0]);
-            } catch (err) {
-                console.error("Errore lettura file", err);
-            }
-        }
-
-        const payload = {
-            action: "start_provisioning",
-            chat_id: chatId, // FONDAMENTALE: Lo passiamo al backend
-            thread_id: threadId,
-            formData: {
-                vat_number: document.getElementById('vat').value.trim(),
-                company_name: document.getElementById('company').value.trim(),
-                website: document.getElementById('website').value.trim(),
-                pdf_doc: pdfBase64
-            }
-        };
-
-        // Chiamata a N8N
-        fetch(N8N_WEBHOOK, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-        })
-        .then(res => res.json())
-        .then(data => {
-             // SUCCESSO
-             dom.submitBtn.style.background = "#4cd964";
-             dom.submitBtn.textContent = "✅ INVIATO AL BOT";
-             // Chiudi MiniApp
-             if (window.Telegram && window.Telegram.WebApp) {
-                 setTimeout(() => window.Telegram.WebApp.close(), 1500);
-             }
-        })
-        .catch(err => {
-            dom.submitBtn.disabled = false;
-            dom.submitBtn.textContent = "Errore. Riprova.";
-            alert("Errore di connessione con il server.");
+      try {
+        // Chiamata al Webhook per "get"
+        const response = await fetch(WEBHOOK_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'get',
+            chat_id: effectiveChatId,
+            telegram_user: user
+          })
         });
-    });
 
-    const toBase64 = file => new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.readAsDataURL(file);
-        reader.onload = () => resolve(reader.result.split(',')[1]);
-        reader.onerror = error => reject(error);
-    });
+        const data = await response.json();
 
-    // Inizializza Telegram WebApp
-    if (window.Telegram && window.Telegram.WebApp) {
-        window.Telegram.WebApp.ready();
-        window.Telegram.WebApp.expand();
+        // Pre-compilazione da Telegram (se disp.)
+        if (user) {
+            if (user.first_name) dom.fields.name.value = user.first_name;
+            if (user.last_name) dom.fields.surname.value = user.last_name;
+        }
+
+        // Pre-compilazione da DB (se disp.)
+        if (data.existing_data) {
+           Object.keys(data.existing_data).forEach(key => {
+             if (dom.fields[key]) dom.fields[key].value = data.existing_data[key];
+           });
+        }
+
+        // Mostra il Form
+        dom.loader.style.display = 'none';
+        dom.content.classList.remove('hidden');
+
+      } catch (e) {
+        console.error("Init Error", e);
+        // Fallback: Se la GET fallisce, mostriamo comunque il form per permettere inserimento manuale
+        // (Purché il check iniziale del muro sia passato)
+        dom.loaderText.innerText = "Nessun dato precedente. Caricamento...";
+        setTimeout(() => {
+            dom.loader.style.display = 'none';
+            dom.content.classList.remove('hidden');
+        }, 800);
+      }
     }
+
+    // 2. ACTION: SAVE (Invio Dati)
+    dom.form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      dom.submitBtn.disabled = true;
+      dom.submitBtn.innerText = "Generazione Istanza in corso...";
+
+      const user = tg.initDataUnsafe?.user;
+      const effectiveChatId = user?.id || urlChatId;
+      const effectiveUsername = user?.username || 'unknown';
+
+      // Costruzione Payload "owner_data"
+      const ownerData = {
+        // ID Fondamentale
+        chat_id: effectiveChatId,
+        user_id: effectiveChatId,
+        user_name: effectiveUsername,
+        
+        // Dati Form
+        name: dom.fields.name.value.trim(),
+        surname: dom.fields.surname.value.trim(),
+        email: dom.fields.email.value.trim(),
+        phone: dom.fields.phone.value.trim(), 
+        cellulare: dom.fields.phone.value.trim(), // Ridondanza
+        
+        ragione_sociale: dom.fields.ragione_sociale.value.trim(),
+        vat_number: dom.fields.vat_number.value.trim(),
+        indirizzo: dom.fields.indirizzo.value.trim(),
+        site: dom.fields.site.value.trim(),
+        
+        linkedin_page: dom.fields.linkedin_page.value.trim(),
+        facebook_page: dom.fields.facebook_page.value.trim(),
+        
+        gemini_key: dom.fields.gemini_key.value.trim(),
+        lenguage: dom.fields.lenguage.value,
+        
+        // Default System fields
+        subscription_plan: "Admin",
+        subscription_status: "Active",
+        model_choice: "https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-lite-latest:generateContent"
+      };
+
+      try {
+        await fetch(WEBHOOK_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'save',
+            owner_data: ownerData
+          })
+        });
+
+        // Successo
+        dom.submitBtn.style.background = "var(--success-color)";
+        dom.submitBtn.innerText = "✅ ISTANZA ATTIVATA";
+        
+        setTimeout(() => {
+          tg.close();
+        }, 1500);
+
+      } catch (error) {
+        dom.submitBtn.disabled = false;
+        dom.submitBtn.innerText = "Errore. Riprova.";
+        alert("Errore durante il salvataggio.");
+      }
+    });
+
+    // Avvio
+    init();
 
   </script>
 </body>
