@@ -273,7 +273,8 @@
         <div class="input-group"><label class="required" data-i18n="lbl_phone">Cellulare</label><input type="tel" id="phone" required></div>
 
         <div class="btn-container">
-          <button type="button" class="btn btn-primary" id="btn-step1" onclick="nextStep(2)" disabled>
+          <!-- IL BOTTONE CHE SALVA E PASSA AVANTI -->
+          <button type="button" class="btn btn-primary" id="btn-step1" onclick="submitStep1()" disabled>
             <span data-i18n="btn_next">Avanti</span> <i class="fas fa-arrow-right"></i>
           </button>
         </div>
@@ -305,10 +306,10 @@
         <div class="input-group"><label data-i18n="lbl_site">Sito Web</label><input type="url" id="site" placeholder="https://..."></div>
 
         <div class="btn-container">
-          <button type="button" class="btn btn-secondary" onclick="nextStep(1)">
+          <button type="button" class="btn btn-secondary" onclick="goToStep(1)">
             <i class="fas fa-arrow-left"></i> <span data-i18n="btn_back">Indietro</span>
           </button>
-          <button type="button" class="btn btn-primary" onclick="nextStep(3)">
+          <button type="button" class="btn btn-primary" onclick="goToStep(3)">
             <span data-i18n="btn_next">Avanti</span> <i class="fas fa-arrow-right"></i>
           </button>
         </div>
@@ -336,7 +337,7 @@
         </div>
 
         <div class="btn-container">
-          <button type="button" class="btn btn-secondary" onclick="nextStep(2)">
+          <button type="button" class="btn btn-secondary" onclick="goToStep(2)">
             <i class="fas fa-arrow-left"></i> <span data-i18n="btn_back">Indietro</span>
           </button>
           <button type="submit" class="btn btn-primary" id="submitBtn">
@@ -426,6 +427,7 @@
         dom.btnStep1.disabled = !ok;
     }
 
+    // 1. ACTION: ANALYZE_ID
     dom.fileInput.addEventListener('change', async (e) => {
         if(e.target.files.length > 0) {
             const file = e.target.files[0];
@@ -450,18 +452,67 @@
                 dom.btnStep1.disabled = false;
             } catch(err) {
                 dom.fileBox.classList.remove('analyzing'); dom.fileText.innerText = "Error. Manual input.";
-                dom.fileIcon.innerHTML = '<i class="fas fa-exclamation-triangle"></i>';
                 dom.fName.removeAttribute('readonly'); dom.fSurname.removeAttribute('readonly'); dom.fFiscal.removeAttribute('readonly');
                 dom.btnStep1.disabled = false;
             }
         }
     });
 
-    window.nextStep = function(step) {
-      if(step > currentStep) {
-          const inps = dom.steps[currentStep-1].querySelectorAll('input[required]');
-          for(let i of inps) if(!i.value) { i.focus(); return; }
+    // 2. ACTION: SAVE_STEP_1 (New Logic!)
+    window.submitStep1 = async function() {
+        // Check required fields
+        if(!dom.fName.value || !dom.fSurname.value || !document.getElementById('email').value) {
+            alert("Completa i campi obbligatori"); return;
+        }
+
+        const btn = dom.btnStep1;
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Salvataggio...';
+
+        let idFile = { base64: null, mime: null };
+        if(dom.fileInput.files.length > 0) idFile = await getFileData(dom.fileInput.files[0]);
+
+        const payload = {
+            action: 'save_step_1',
+            user_id: GLOBAL_CHAT_ID,
+            owner_data: {
+                name: dom.fName.value,
+                surname: dom.fSurname.value,
+                fiscal_code: dom.fFiscal.value,
+                email: document.getElementById('email').value,
+                phone: document.getElementById('phone').value,
+                gemini_key: dom.geminiKey.value, // INCLUDE GEMINI KEY
+                kyc_document: idFile.base64,
+                kyc_mime_type: idFile.mime,
+                terms_accepted: true
+            }
+        };
+
+        try {
+            // Send to Webhook
+            const res = await fetch(WEBHOOK_URL, {
+                method: 'POST', headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(payload)
+            });
+            
+            // If OK, move to Step 2
+            goToStep(2);
+        } catch (e) {
+            alert("Errore salvataggio. Riprova.");
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = 'Avanti <i class="fas fa-arrow-right"></i>';
+        }
+    };
+
+    // UI NAVIGATION ONLY (Step 2->3, 3->2)
+    window.goToStep = function(step) {
+      // Validation for Step 2
+      if(currentStep === 2 && step === 3) {
+          const req = dom.steps[1].querySelectorAll('input[required]');
+          for(let i of req) if(!i.value) { i.focus(); return; }
       }
+      
       currentStep = step;
       dom.steps.forEach(s => s.classList.add('hidden')); dom.steps[step-1].classList.remove('hidden');
       dom.progressFill.style.width = ((step-1)/2)*100 + "%";
@@ -478,22 +529,26 @@
       document.getElementById('summary-price').innerText = type === 'monthly' ? "€99.00" : "€950.00";
     }
 
+    // 3. ACTION: PAYMENT_CHECKOUT (Final)
     document.getElementById('wizardForm').addEventListener('submit', async (e) => {
       e.preventDefault();
-      const btn = document.getElementById('submitBtn'); btn.disabled = true; 
-      btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Processing...';
+      const btn = document.getElementById('submitBtn'); btn.disabled = true; btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Processing...';
       const addr = `${document.getElementById('addr_route').value} ${document.getElementById('addr_num').value}, ${document.getElementById('addr_zip').value} ${document.getElementById('addr_city').value} (${document.getElementById('addr_prov').value})`;
-      let fileD = { base64: null, mime: null }; if(dom.fileInput.files.length > 0) fileD = await getFileData(dom.fileInput.files[0]);
-
+      
+      // Re-collect everything to be safe (full package)
       const payload = {
         action: 'payment_checkout', user_id: GLOBAL_CHAT_ID, chat_id: GLOBAL_CHAT_ID, thread_id: GLOBAL_THREAD_ID,
         owner_data: {
-            user_id: GLOBAL_CHAT_ID, name: dom.fName.value, surname: dom.fSurname.value, fiscal_code: dom.fFiscal.value,
-            email: document.getElementById('email').value, phone: document.getElementById('phone').value,
-            gemini_key: document.getElementById('gemini_key').value, // <--- PASSA LA CHIAVE QUI
-            ragione_sociale: document.getElementById('ragione_sociale').value, vat_number: document.getElementById('vat_number').value,
-            sdi_pec: document.getElementById('sdi_pec').value, indirizzo: addr, site: document.getElementById('site').value,
-            plan: document.getElementById('selected_plan').value, kyc_document: fileD.base64, kyc_mime_type: fileD.mime,
+            // Identity & Security (Already sent in step 1 but re-confirming)
+            gemini_key: dom.geminiKey.value, 
+            name: dom.fName.value, surname: dom.fSurname.value,
+            // Company Data
+            ragione_sociale: document.getElementById('ragione_sociale').value, 
+            vat_number: document.getElementById('vat_number').value,
+            sdi_pec: document.getElementById('sdi_pec').value, 
+            indirizzo: addr, site: document.getElementById('site').value,
+            // Plan
+            plan: document.getElementById('selected_plan').value,
             terms_accepted: true
         }
       };
