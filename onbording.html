@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Attivazione SiteBoS</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <style>
+    :root {
+      --bg-start: #4a5b8f; --bg-end: #2a3d5f; --text-primary: #ffffff;
+      --text-secondary: rgba(255, 255, 255, 0.7); --border-color: rgba(255, 255, 255, 0.2);
+      --input-bg: rgba(255, 255, 255, 0.08); --accent-color: #5B6FED; --error-color: #ff6b6b;
+      --success-color: #4cd964;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      background: linear-gradient(135deg, var(--bg-start) 0%, var(--bg-end) 100%);
+      color: var(--text-primary); padding: 20px; min-height: 100vh;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+    }
+    .container { width: 100%; max-width: 500px; }
+    
+    /* UTILITY CLASSES */
+    .hidden { display: none !important; }
+
+    /* ERROR SCREEN (NO CHAT_ID) */
+    #access-denied { text-align: center; animation: fadeIn 0.5s; }
+    .icon-large { font-size: 60px; margin-bottom: 20px; display: block; }
+    .btn-main { 
+        display: inline-block; width: 100%; padding: 16px; 
+        background: var(--accent-color); color: white; text-decoration: none; 
+        border-radius: 12px; font-weight: 600; font-size: 16px; 
+        margin-top: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); 
+    }
+
+    /* FORM SCREEN */
+    #app-content { width: 100%; animation: slideUp 0.5s; }
+    h1 { font-size: 24px; margin-bottom: 8px; font-weight: 600; }
+    .subtitle { font-size: 14px; color: var(--text-secondary); margin-bottom: 32px; font-weight: 300; }
+    
+    .form-group { margin-bottom: 20px; }
+    label { display: block; margin-bottom: 8px; font-size: 14px; font-weight: 500; }
+    input {
+      width: 100%; padding: 14px 16px; border: 1px solid var(--border-color);
+      border-radius: 12px; background: var(--input-bg); backdrop-filter: blur(10px);
+      color: var(--text-primary); font-size: 15px; font-family: inherit;
+      transition: border-color 0.3s;
+    }
+    input:focus { outline: none; border-color: rgba(255, 255, 255, 0.5); }
+    .required::after { content: " *"; color: var(--error-color); }
+    
+    button[type="submit"] {
+      width: 100%; padding: 16px; background: var(--accent-color); color: white; border: none; border-radius: 12px; font-size: 16px; font-weight: 600; cursor: pointer; margin-top: 10px;
+    }
+    button:disabled { opacity: 0.7; cursor: not-allowed; }
+
+    /* FILE UPLOAD */
+    .file-upload { position: relative; display: flex; align-items: center; justify-content: center; padding: 20px; border: 2px dashed var(--border-color); border-radius: 12px; cursor: pointer; transition: all 0.3s; }
+    .file-upload input { position: absolute; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
+    .file-label { text-align: center; font-size: 14px; color: var(--text-secondary); pointer-events: none; }
+    .file-selected { color: var(--success-color); font-weight: 600; }
+
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    
+    <!-- SCHERMATA BLOCCO (Se manca chat_id) -->
+    <div id="access-denied" class="hidden">
+      <span class="icon-large">⛔</span>
+      <h1>Link non valido</h1>
+      <p class="subtitle">Per configurare la tua istanza devi passare dal Bot Telegram ufficiale.</p>
+      <a href="https://t.me/TrinAi_SiteBoS_bot" class="btn-main">🤖 VAI AL BOT</a>
+    </div>
+
+    <!-- SCHERMATA FORM (Se c'è chat_id) -->
+    <div id="app-content" class="hidden">
+      <form id="onboarding-form">
+        <h1>Attiva SiteBoS</h1>
+        <p class="subtitle">Configurazione per ID: <span id="display-chat-id" style="font-family:monospace; background:rgba(0,0,0,0.2); padding:2px 6px; border-radius:4px;"></span></p>
+        
+        <div class="form-group">
+          <label for="vat" class="required">Partita IVA</label>
+          <input type="text" id="vat" placeholder="IT12345678901" required>
+        </div>
+
+        <div class="form-group">
+          <label for="company" class="required">Ragione Sociale</label>
+          <input type="text" id="company" placeholder="La Tua Azienda SRL" required>
+        </div>
+
+        <div class="form-group">
+          <label for="website">Sito Web (Opzionale)</label>
+          <input type="url" id="website" placeholder="https://www.tuosito.it">
+        </div>
+
+        <div class="form-group">
+          <label>Company Profile (PDF)</label>
+          <div class="file-upload">
+              <input type="file" id="pdf-file" accept="application/pdf">
+              <div class="file-label" id="file-label">
+                  📄 Carica PDF (Consigliato)<br>
+                  <span style="font-size:11px; opacity:0.7">Per istanze di alta qualità</span>
+              </div>
+          </div>
+        </div>
+
+        <button type="submit" id="submitBtn">AVVIA ORA ⚡</button>
+      </form>
+    </div>
+
+  </div>
+
+  <script>
+    // URL DEL TUO WEBHOOK (Provvisioning)
+    const N8N_WEBHOOK = "https://trinai.api.workflow.dcmake.it/webhook/83acc670-15ae-4da0-ae0e-3587c85bd5f4";
+
+    // 1. GESTIONE URL E CONTROLLO ACCESSO
+    const urlParams = new URLSearchParams(window.location.search);
+    const chatId = urlParams.get('chat_id');
+    const threadId = urlParams.get('thread_id'); // Opzionale
+
+    const dom = {
+        denied: document.getElementById('access-denied'),
+        content: document.getElementById('app-content'),
+        displayId: document.getElementById('display-chat-id'),
+        form: document.getElementById('onboarding-form'),
+        submitBtn: document.getElementById('submitBtn'),
+        fileInput: document.getElementById('pdf-file'),
+        fileLabel: document.getElementById('file-label')
+    };
+
+    // LOGICA DI CONTROLLO (AIRLOCK)
+    if (!chatId) {
+        // Nessun parametro -> Muro
+        dom.denied.classList.remove('hidden');
+    } else {
+        // Parametro presente -> Mostra App
+        dom.content.classList.remove('hidden');
+        dom.displayId.textContent = chatId;
+    }
+
+    // 2. UX FILE UPLOAD
+    dom.fileInput.addEventListener('change', (e) => {
+        if (e.target.files.length > 0) {
+            dom.fileLabel.innerHTML = `✅ ${e.target.files[0].name}`;
+            dom.fileLabel.classList.add('file-selected');
+        }
+    });
+
+    // 3. INVIO FORM
+    dom.form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        dom.submitBtn.disabled = true;
+        dom.submitBtn.textContent = "Elaborazione in corso...";
+
+        // Conversione PDF a Base64
+        let pdfBase64 = null;
+        if (dom.fileInput.files.length > 0) {
+            try {
+                pdfBase64 = await toBase64(dom.fileInput.files[0]);
+            } catch (err) {
+                console.error("Errore lettura file", err);
+            }
+        }
+
+        const payload = {
+            action: "start_provisioning",
+            chat_id: chatId, // FONDAMENTALE: Lo passiamo al backend
+            thread_id: threadId,
+            formData: {
+                vat_number: document.getElementById('vat').value.trim(),
+                company_name: document.getElementById('company').value.trim(),
+                website: document.getElementById('website').value.trim(),
+                pdf_doc: pdfBase64
+            }
+        };
+
+        // Chiamata a N8N
+        fetch(N8N_WEBHOOK, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        })
+        .then(res => res.json())
+        .then(data => {
+             // SUCCESSO
+             dom.submitBtn.style.background = "#4cd964";
+             dom.submitBtn.textContent = "✅ INVIATO AL BOT";
+             // Chiudi MiniApp
+             if (window.Telegram && window.Telegram.WebApp) {
+                 setTimeout(() => window.Telegram.WebApp.close(), 1500);
+             }
+        })
+        .catch(err => {
+            dom.submitBtn.disabled = false;
+            dom.submitBtn.textContent = "Errore. Riprova.";
+            alert("Errore di connessione con il server.");
+        });
+    });
+
+    const toBase64 = file => new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => resolve(reader.result.split(',')[1]);
+        reader.onerror = error => reject(error);
+    });
+
+    // Inizializza Telegram WebApp
+    if (window.Telegram && window.Telegram.WebApp) {
+        window.Telegram.WebApp.ready();
+        window.Telegram.WebApp.expand();
+    }
+
+  </script>
+</body>
+</html>
