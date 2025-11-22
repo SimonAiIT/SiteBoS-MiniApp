@@ -3,12 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>SiteBoS Activation</title>
+  <title>SiteBoS Enterprise Activation</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <!-- Font Inter per look professionale -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   
   <style>
-    /* THEME: DEEP BLUE/PURPLE (Agenda Style) */
+    /* --- THEME VARIABLES (Agenda Style) --- */
     :root {
       --bg-start: #4a5b8f; --bg-end: #2a3d5f; 
       --text-main: #ffffff; --text-muted: rgba(255, 255, 255, 0.7);
@@ -36,23 +37,29 @@
     /* ANIMATIONS */
     .fade-in { animation: fadeIn 0.5s ease-out; }
     .flash-success { animation: flashSuccess 1.5s ease-out; border-color: var(--success) !important; }
-    
     @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     @keyframes flashSuccess { 0% { background: rgba(76, 217, 100, 0.4); } 100% { background: var(--input-bg); } }
 
-    /* WIZARD HEADER */
+    /* HEADER & LANG */
+    .wizard-header { display: flex; justify-content: flex-end; margin-bottom: 20px; }
+    .lang-select { background: rgba(0,0,0,0.3); border: 1px solid var(--border); color: white; padding: 6px 10px; border-radius: 8px; font-size: 12px; outline: none; }
+
+    /* PROGRESS BAR */
     .progress-bar { display: flex; justify-content: space-between; position: relative; margin-bottom: 30px; padding: 0 10px; }
     .progress-line { position: absolute; top: 14px; left: 0; right: 0; height: 2px; background: var(--border); z-index: 0; }
     .progress-fill { position: absolute; top: 14px; left: 0; height: 2px; background: var(--primary); z-index: 0; transition: width 0.4s; width: 0%; }
     
     .step-item { z-index: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; width: 60px; }
     .step-circle { width: 30px; height: 30px; border-radius: 50%; background: var(--bg-end); border: 2px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; transition: all 0.3s; color: var(--text-muted); }
+    .step-label { font-size: 10px; color: var(--text-muted); text-transform: uppercase; font-weight: 600; letter-spacing: 0.5px; }
+    
     .step-item.active .step-circle { border-color: var(--primary); background: var(--primary); color: white; box-shadow: 0 0 15px rgba(91, 111, 237, 0.4); }
     .step-item.completed .step-circle { border-color: var(--success); background: var(--success); color: white; }
+    .step-item.active .step-label { color: white; }
 
     /* FORMS */
     h2 { font-size: 22px; font-weight: 600; margin-bottom: 6px; color: white; }
-    p.subtitle { font-size: 13px; color: var(--text-muted); margin-bottom: 20px; font-weight: 300; line-height: 1.5; }
+    p.subtitle { font-size: 13px; color: var(--text-muted); margin-bottom: 24px; font-weight: 300; line-height: 1.5; }
 
     .input-group { margin-bottom: 16px; }
     label { display: block; font-size: 12px; font-weight: 500; color: var(--text-muted); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
@@ -64,11 +71,11 @@
       color: white; font-family: inherit; font-size: 15px;
       transition: border 0.3s, box-shadow 0.3s; backdrop-filter: blur(5px);
     }
-    input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 10px rgba(91, 111, 237, 0.2); }
-    input:disabled { opacity: 0.6; cursor: not-allowed; }
+    input:focus, select:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 10px rgba(91, 111, 237, 0.2); }
+    input:disabled, input[readonly] { opacity: 0.6; cursor: not-allowed; background: rgba(0,0,0,0.2); }
     
     .row { display: flex; gap: 12px; }
-    .col { flex: 1; } .col-2 { flex: 2; }
+    .col { flex: 1; } .col-2 { flex: 2; } .col-3 { flex: 3; }
 
     /* LEGAL BOX (PARACULO MODE) */
     .legal-box {
@@ -81,30 +88,30 @@
     .checkbox-label { font-size: 12px; line-height: 1.4; color: var(--text-muted); cursor: pointer; text-transform: none; margin: 0; }
     .checkbox-label a { color: var(--primary); text-decoration: none; font-weight: 600; }
 
-    /* API KEY CARD (NEW) */
+    /* API KEY CARD */
     .api-key-card {
         background: linear-gradient(180deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 100%);
-        border: 1px solid var(--primary); border-radius: 12px; padding: 16px; margin-bottom: 25px;
+        border: 1px solid var(--primary); border-radius: 12px; padding: 16px; margin-bottom: 20px;
         position: relative; overflow: hidden;
     }
     .api-key-card::before { content:""; position:absolute; top:0; left:0; width:4px; height:100%; background:var(--primary); }
     .api-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
-    .api-title { font-weight:600; font-size:14px; color:white; display:flex; align-items:center; gap:8px; }
+    .api-title { font-weight:600; font-size:14px; color:white; }
     .btn-get-key { 
         background: rgba(91, 111, 237, 0.2); color: var(--primary); 
         text-decoration: none; font-size: 11px; padding: 6px 12px; 
         border-radius: 20px; font-weight: 600; border: 1px solid var(--primary);
-        transition: all 0.2s;
+        transition: all 0.2s; display: inline-block;
     }
     .btn-get-key:hover { background: var(--primary); color: white; }
-    .byok-note { font-size: 11px; color: var(--text-muted); margin-top: 8px; line-height: 1.4; }
+    .byok-note { font-size: 11px; color: var(--text-muted); margin-top: 8px; line-height: 1.4; font-style: italic; }
 
     /* UPLOAD BOX (AI TRIGGER) */
     .upload-box {
       border: 2px dashed var(--border); border-radius: 12px;
       padding: 25px; text-align: center; cursor: pointer;
       background: rgba(255,255,255,0.03); transition: all 0.3s; position: relative;
-      margin-bottom: 20px; opacity: 0.5; pointer-events: none; /* Disabled by default */
+      margin-bottom: 20px; opacity: 0.5; pointer-events: none;
     }
     .upload-box.enabled { opacity: 1; pointer-events: all; border-color: var(--primary); }
     .upload-box.analyzing { border-color: var(--warning); background: rgba(245, 158, 11, 0.1); animation: pulse 1.5s infinite; }
@@ -115,6 +122,17 @@
     input[type="file"] { position: absolute; top:0; left:0; width:100%; height:100%; opacity:0; cursor:pointer; }
 
     @keyframes pulse { 0% { border-color: var(--warning); } 50% { border-color: transparent; } 100% { border-color: var(--warning); } }
+
+    /* PLAN CARDS */
+    .plan-card {
+      background: var(--input-bg); border: 1px solid var(--border);
+      border-radius: 16px; padding: 20px; margin-bottom: 12px;
+      cursor: pointer; display: flex; justify-content: space-between; align-items: center;
+      transition: all 0.3s; position: relative;
+    }
+    .plan-card.selected { border-color: var(--primary); background: rgba(91, 111, 237, 0.15); }
+    .plan-price { font-size: 20px; font-weight: 700; }
+    .badge { position: absolute; top: -1px; right: -1px; background: var(--success); color: white; font-size: 10px; padding: 4px 8px; border-radius: 0 12px 0 8px; font-weight: bold; }
 
     /* BUTTONS */
     .btn-container { margin-top: 30px; display: flex; gap: 15px; }
@@ -130,151 +148,163 @@
     .btn-block { width: 100%; display: block; text-align: center; text-decoration: none; }
     #access-denied { text-align: center; margin-top: 25vh; }
 
-    /* PLAN CARDS */
-    .plan-card { background: var(--input-bg); border: 1px solid var(--border); border-radius: 16px; padding: 20px; margin-bottom: 12px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; transition: all 0.3s; }
-    .plan-card.selected { border-color: var(--primary); background: rgba(91, 111, 237, 0.15); }
-    .plan-price { font-size: 20px; font-weight: 700; }
-
   </style>
 </head>
 <body>
 
-  <!-- ACCESS DENIED -->
+  <!-- LOADER -->
+  <div id="loader" style="position:fixed; inset:0; background:var(--bg-end); z-index:99; display:flex; justify-content:center; align-items:center; flex-direction:column;">
+    <div style="width:40px; height:40px; border:4px solid rgba(255,255,255,0.1); border-top-color:var(--primary); border-radius:50%; animation:spin 0.8s linear infinite;"></div>
+    <div style="margin-top:15px; font-size:12px; color:var(--text-muted);">Security Check...</div>
+  </div>
+  <style>@keyframes spin { to { transform: rotate(360deg); } }</style>
+
+  <!-- ACCESS DENIED (WALL) -->
   <div id="access-denied" class="hidden">
     <div style="font-size:50px; margin-bottom:20px;">🔒</div>
-    <h2>Accesso Riservato</h2>
-    <p class="subtitle">Per configurare SiteBoS devi passare dal Bot.</p>
-    <a href="https://t.me/TrinAi_SiteBoS_bot" class="btn btn-primary btn-block" style="padding:14px;">🤖 Apri Bot Telegram</a>
+    <h2 data-i18n="access_denied_title">Accesso Riservato</h2>
+    <p class="subtitle" data-i18n="access_denied_desc">Configurazione disponibile solo tramite Bot.</p>
+    <a href="https://t.me/TrinAi_SiteBoS_bot" class="btn btn-primary btn-block" style="padding:14px;" data-i18n="open_bot">Apri Bot Telegram</a>
   </div>
 
-  <!-- MAIN APP -->
+  <!-- APP CONTAINER -->
   <div id="app-content" class="container hidden">
     
+    <!-- HEADER LANG -->
+    <div class="wizard-header">
+      <select id="lang-selector" onchange="changeLanguage(this.value)" class="lang-select">
+        <option value="it">🇮🇹 IT</option>
+        <option value="en">🇬🇧 EN</option>
+        <option value="fr">🇫🇷 FR</option>
+        <option value="de">🇩🇪 DE</option>
+        <option value="es">🇪🇸 ES</option>
+        <option value="pt">🇵🇹 PT</option>
+      </select>
+    </div>
+
+    <!-- PROGRESS -->
     <div class="progress-bar">
       <div class="progress-line"></div>
       <div class="progress-fill" id="progress-fill"></div>
-      <div class="step-item active" id="si-1"><div class="step-circle">1</div></div>
-      <div class="step-item" id="si-2"><div class="step-circle">2</div></div>
-      <div class="step-item" id="si-3"><div class="step-circle">3</div></div>
+      <div class="step-item active" id="si-1"><div class="step-circle">1</div><div class="step-label" data-i18n="step_identity">Start</div></div>
+      <div class="step-item" id="si-2"><div class="step-circle">2</div><div class="step-label" data-i18n="step_company">Dati</div></div>
+      <div class="step-item" id="si-3"><div class="step-circle">3</div><div class="step-label" data-i18n="step_plan">SaaS</div></div>
     </div>
 
     <form id="wizardForm">
       
-      <!-- STEP 1: LEGAL, API & IDENTITY -->
+      <!-- STEP 1: LEGAL, KEY, KYC -->
       <div class="step-content fade-in" id="step-1">
-        <h2>Setup Iniziale</h2>
-        <p class="subtitle">Accetta, Configura il Motore e Identificati.</p>
+        <h2 data-i18n="h_identity">Setup & Sicurezza</h2>
+        <p class="subtitle" data-i18n="sub_identity">Consensi, Chiave API e Verifica Identità.</p>
 
-        <!-- LEGAL GATE -->
+        <!-- LEGAL -->
         <div class="legal-box">
             <div class="checkbox-group">
                 <input type="checkbox" id="chk_privacy" onchange="checkLegalGate()">
-                <label for="chk_privacy" class="checkbox-label">Dichiaro di aver letto e accettato la <a href="https://trinai.it/compliance/privacy">Privacy Policy</a>.</label>
+                <label for="chk_privacy" class="checkbox-label" data-i18n="legal_privacy">Dichiaro di aver letto e accettato la <a href="https://trinai.it/compliance/privacy">Privacy Policy</a>.</label>
             </div>
             <div class="checkbox-group">
                 <input type="checkbox" id="chk_terms" onchange="checkLegalGate()">
-                <label for="chk_terms" class="checkbox-label">Accetto i <a href="https://trinai.it/compliance/policy">Termini e Condizioni</a> di SiteBoS.</label>
+                <label for="chk_terms" class="checkbox-label" data-i18n="legal_terms">Accetto i <a href="https://trinai.it/compliance/policy">Termini e Condizioni</a>.</label>
             </div>
             <div class="checkbox-group">
                 <input type="checkbox" id="chk_ai" onchange="checkLegalGate()">
-                <label for="chk_ai" class="checkbox-label">Autorizzo analisi AI per KYC.</label>
+                <label for="chk_ai" class="checkbox-label" data-i18n="legal_ai">Autorizzo analisi AI per KYC.</label>
             </div>
         </div>
 
-        <!-- API KEY CARD (BYOK) -->
+        <!-- GEMINI KEY -->
         <div class="api-key-card">
             <div class="api-header">
-                <div class="api-title">🧠 Il Tuo Motore Neurale</div>
-                <a href="https://aistudio.google.com/api-keys" target="_blank" class="btn-get-key">Genera Chiave ↗</a>
+                <div class="api-title">🧠 Gemini API Key</div>
+                <a href="https://aistudio.google.com/api-keys" target="_blank" class="btn-get-key" data-i18n="btn_get_key">Genera Gratis ↗</a>
             </div>
-            <input type="text" id="gemini_key" placeholder="Incolla qui la tua Google API Key (AIzaSy...)" disabled required>
-            <div class="byok-note">
-                ⚠️ <b>Bring Your Own Key:</b> Usando la tua chiave, garantisci che i dati elaborati rimangano sotto il tuo controllo diretto.
-            </div>
+            <input type="text" id="gemini_key" placeholder="AIzaSy..." disabled required>
+            <div class="byok-note" data-i18n="byok_note">⚠️ BYOK: I dati rimangono tuoi.</div>
         </div>
 
-        <!-- AI UPLOAD -->
+        <!-- UPLOAD AI -->
         <div class="input-group">
-          <label>Documento d'Identità (Fronte)</label>
+          <label data-i18n="lbl_id_card">Documento d'Identità (Fronte)</label>
           <div class="upload-box" id="upload-box">
             <input type="file" id="id_document" accept="image/*,application/pdf">
             <span class="upload-icon" id="upload-icon">🪪</span>
-            <span class="upload-text" id="upload-text">Completa sopra per sbloccare</span>
+            <span class="upload-text" id="upload-text" data-i18n="upload_lock">Accetta termini per sbloccare</span>
           </div>
         </div>
 
-        <!-- AUTO-FILLED FIELDS -->
+        <!-- AUTO FIELDS -->
         <div class="row">
-          <div class="col"><label>Nome</label><input type="text" id="name" readonly placeholder="..."></div>
-          <div class="col"><label>Cognome</label><input type="text" id="surname" readonly placeholder="..."></div>
+          <div class="col"><label data-i18n="lbl_name">Nome</label><input type="text" id="name" readonly placeholder="..."></div>
+          <div class="col"><label data-i18n="lbl_surname">Cognome</label><input type="text" id="surname" readonly placeholder="..."></div>
         </div>
-        <div class="input-group" style="margin-top:12px;">
-            <label>Codice Fiscale</label><input type="text" id="fiscal_code" readonly placeholder="...">
-        </div>
+        <div class="input-group" style="margin-top:12px;"><label data-i18n="lbl_fiscal">Codice Fiscale</label><input type="text" id="fiscal_code" readonly placeholder="..."></div>
 
         <!-- MANUAL FIELDS -->
-        <div class="input-group"><label class="required">Email (Admin)</label><input type="email" id="email" required></div>
-        <div class="input-group"><label class="required">Cellulare</label><input type="tel" id="phone" required></div>
+        <div class="input-group"><label class="required" data-i18n="lbl_email">Email (Admin)</label><input type="email" id="email" required></div>
+        <div class="input-group"><label class="required" data-i18n="lbl_phone">Cellulare</label><input type="tel" id="phone" required></div>
 
         <div class="btn-container">
-          <button type="button" class="btn btn-primary" id="btn-step1" onclick="nextStep(2)" disabled>Avanti ➝</button>
+          <button type="button" class="btn btn-primary" id="btn-step1" onclick="nextStep(2)" disabled data-i18n="btn_next">Avanti ➝</button>
         </div>
       </div>
 
       <!-- STEP 2: COMPANY -->
       <div class="step-content hidden fade-in" id="step-2">
-        <h2>Dati Aziendali</h2>
-        <p class="subtitle">Configurazione fiscale e operativa.</p>
+        <h2 data-i18n="h_company">Profilo Aziendale</h2>
+        <p class="subtitle" data-i18n="sub_company">Configurazione fiscale.</p>
 
-        <div class="input-group"><label class="required">Ragione Sociale</label><input type="text" id="ragione_sociale" required></div>
+        <div class="input-group"><label class="required" data-i18n="lbl_company_name">Ragione Sociale</label><input type="text" id="ragione_sociale" required></div>
         <div class="row">
-          <div class="col"><label class="required">P.IVA</label><input type="text" id="vat_number" required></div>
-          <div class="col"><label>SDI / PEC</label><input type="text" id="sdi_pec"></div>
+          <div class="col"><label class="required" data-i18n="lbl_vat">P.IVA</label><input type="text" id="vat_number" required></div>
+          <div class="col"><label data-i18n="lbl_sdi">SDI / PEC</label><input type="text" id="sdi_pec"></div>
         </div>
         
         <div class="input-group" style="margin-top:15px;">
-           <label class="required">Sede Legale</label>
+           <label class="required" data-i18n="lbl_address">Sede Legale</label>
            <div class="row" style="margin-bottom:8px;">
-             <div class="col-2"><input type="text" id="addr_route" placeholder="Via" required></div>
+             <div class="col-2"><input type="text" id="addr_route" placeholder="Via/Piazza" required></div>
              <div class="col"><input type="text" id="addr_num" placeholder="N°" required></div>
            </div>
            <div class="row">
              <div class="col"><input type="text" id="addr_zip" placeholder="CAP" required></div>
-             <div class="col"><input type="text" id="addr_city" placeholder="Città" required></div>
+             <div class="col-2"><input type="text" id="addr_city" placeholder="Città" required></div>
              <div class="col"><input type="text" id="addr_prov" placeholder="PR" maxlength="2" style="text-transform:uppercase" required></div>
            </div>
         </div>
-        <div class="input-group"><label>Sito Web</label><input type="url" id="site" placeholder="https://..."></div>
+        <div class="input-group"><label data-i18n="lbl_site">Sito Web</label><input type="url" id="site" placeholder="https://..."></div>
 
         <div class="btn-container">
-          <button type="button" class="btn btn-secondary" onclick="nextStep(1)">← Indietro</button>
-          <button type="button" class="btn btn-primary" onclick="nextStep(3)">Avanti ➝</button>
+          <button type="button" class="btn btn-secondary" onclick="nextStep(1)" data-i18n="btn_back">← Indietro</button>
+          <button type="button" class="btn btn-primary" onclick="nextStep(3)" data-i18n="btn_next">Avanti ➝</button>
         </div>
       </div>
 
-      <!-- STEP 3: PLAN & PAY -->
+      <!-- STEP 3: PLAN & CHECKOUT -->
       <div class="step-content hidden fade-in" id="step-3">
-        <h2>Attivazione SaaS</h2>
-        <p class="subtitle">Scegli il piano per attivare l'istanza.</p>
+        <h2 data-i18n="h_plan">Attivazione SaaS</h2>
+        <p class="subtitle" data-i18n="sub_plan">Seleziona il piano.</p>
 
         <div class="plan-card selected" onclick="selectPlan('monthly', this)" id="plan-m">
-           <div><div style="font-weight:600">SiteBoS Pro Mensile</div><div style="font-size:12px; opacity:0.7">Fatturazione mensile ricorrente</div></div>
+           <div><div style="font-weight:600">SiteBoS Pro Mensile</div><div style="font-size:12px; opacity:0.7" data-i18n="plan_monthly_desc">Fatturazione mensile</div></div>
            <div class="plan-price">€99<span style="font-size:12px; opacity:0.7">/mo</span></div>
         </div>
         <div class="plan-card" onclick="selectPlan('yearly', this)" id="plan-y">
-           <div><div style="font-weight:600">SiteBoS Pro Annuale</div><div style="font-size:12px; color:var(--success)">Risparmi €238 all'anno</div></div>
+           <div class="badge">-20%</div>
+           <div><div style="font-weight:600">SiteBoS Pro Annuale</div><div style="font-size:12px; color:var(--success)" data-i18n="plan_yearly_desc">Risparmio Annuale</div></div>
            <div class="plan-price">€950<span style="font-size:12px; opacity:0.7">/yr</span></div>
         </div>
         <input type="hidden" id="selected_plan" value="monthly">
 
         <div style="margin-top:30px; padding:15px; border:1px solid var(--border); border-radius:12px; background:rgba(255,255,255,0.05); text-align:center;">
-            <div style="font-size:12px; opacity:0.7; margin-bottom:5px;">TOTALE DA PAGARE ORA</div>
+            <div style="font-size:12px; opacity:0.7; margin-bottom:5px;" data-i18n="total_pay">TOTALE DA PAGARE ORA</div>
             <div style="font-size:24px; font-weight:700;" id="summary-price">€99.00</div>
         </div>
 
         <div class="btn-container">
-          <button type="button" class="btn btn-secondary" onclick="nextStep(2)">← Indietro</button>
-          <button type="submit" class="btn btn-primary" id="submitBtn">🔒 Paga e Attiva</button>
+          <button type="button" class="btn btn-secondary" onclick="nextStep(2)" data-i18n="btn_back">← Indietro</button>
+          <button type="submit" class="btn btn-primary" id="submitBtn" data-i18n="btn_pay">🔒 Paga e Attiva</button>
         </div>
       </div>
 
@@ -285,128 +315,93 @@
     const WEBHOOK_URL = "https://trinai.api.workflow.dcmake.it/webhook/83acc670-15ae-4da0-ae0e-3587c85bd5f4";
     const tg = window.Telegram.WebApp; tg.ready(); tg.expand();
 
+    // I18N
+    const i18n = {
+      it: {
+        access_denied_title:"Accesso Negato", access_denied_desc:"Accesso consentito solo via Bot.", open_bot:"Apri Bot",
+        step_identity:"Start", step_company:"Azienda", step_plan:"SaaS",
+        h_identity:"Setup & Sicurezza", sub_identity:"Consensi, Chiave API e KYC.",
+        legal_privacy:"Accetto <a href='#'>Privacy Policy</a>.", legal_terms:"Accetto <a href='#'>Termini</a>.", legal_ai:"Autorizzo analisi AI.",
+        btn_get_key:"Genera Gratis ↗", byok_note:"⚠️ BYOK: Dati sotto il tuo controllo.",
+        lbl_id_card:"Documento (Fronte)", upload_lock:"Accetta termini per sbloccare", upload_hint:"Carica Foto/PDF",
+        lbl_name:"Nome", lbl_surname:"Cognome", lbl_fiscal:"Codice Fiscale", lbl_email:"Email (Admin)", lbl_phone:"Cellulare",
+        btn_next:"Avanti ➝", btn_back:"← Indietro",
+        h_company:"Profilo Aziendale", sub_company:"Dati fatturazione.",
+        lbl_company_name:"Ragione Sociale", lbl_vat:"P.IVA", lbl_sdi:"SDI / PEC", lbl_address:"Sede Legale", lbl_site:"Sito Web",
+        h_plan:"Attivazione SaaS", sub_plan:"Scegli il piano.", plan_monthly_desc:"Mensile", plan_yearly_desc:"Risparmio",
+        total_pay:"TOTALE DA PAGARE", btn_pay:"🔒 Paga e Attiva"
+      },
+      en: {
+        access_denied_title:"Access Denied", access_denied_desc:"Bot access only.", open_bot:"Open Bot",
+        step_identity:"Start", step_company:"Company", step_plan:"SaaS",
+        h_identity:"Setup & Security", sub_identity:"Consents, API Key & KYC.",
+        legal_privacy:"Accept <a href='#'>Privacy</a>.", legal_terms:"Accept <a href='#'>Terms</a>.", legal_ai:"Auth AI check.",
+        btn_get_key:"Get Key Free ↗", byok_note:"⚠️ BYOK: You control data.",
+        lbl_id_card:"ID Document", upload_lock:"Accept terms to unlock", upload_hint:"Upload Photo/PDF",
+        lbl_name:"Name", lbl_surname:"Surname", lbl_fiscal:"Tax ID", lbl_email:"Email", lbl_phone:"Mobile",
+        btn_next:"Next ➝", btn_back:"← Back",
+        h_company:"Company Profile", sub_company:"Billing details.",
+        lbl_company_name:"Company Name", lbl_vat:"VAT ID", lbl_sdi:"SDI / Tax Code", lbl_address:"Address", lbl_site:"Website",
+        h_plan:"SaaS Activation", sub_plan:"Select plan.", plan_monthly_desc:"Monthly", plan_yearly_desc:"Savings",
+        total_pay:"TOTAL DUE", btn_pay:"🔒 Pay & Activate"
+      }
+    };
+
     const dom = {
       denied: document.getElementById('access-denied'), app: document.getElementById('app-content'),
       steps: [document.getElementById('step-1'), document.getElementById('step-2'), document.getElementById('step-3')],
       dots: [document.getElementById('si-1'), document.getElementById('si-2'), document.getElementById('si-3')],
       progressFill: document.getElementById('progress-fill'), 
-      // Upload & Inputs
       fileInput: document.getElementById('id_document'), fileBox: document.getElementById('upload-box'),
       fileText: document.getElementById('upload-text'), fileIcon: document.getElementById('upload-icon'),
       chkPrivacy: document.getElementById('chk_privacy'), chkTerms: document.getElementById('chk_terms'), chkAi: document.getElementById('chk_ai'),
-      geminiKey: document.getElementById('gemini_key'),
-      fName: document.getElementById('name'), fSurname: document.getElementById('surname'), fFiscal: document.getElementById('fiscal_code'),
-      btnStep1: document.getElementById('btn-step1')
+      geminiKey: document.getElementById('gemini_key'), btnStep1: document.getElementById('btn-step1'),
+      fName: document.getElementById('name'), fSurname: document.getElementById('surname'), fFiscal: document.getElementById('fiscal_code')
     };
 
-    let currentStep = 1;
+    let currentStep = 1; let currentLang = 'it';
     const urlParams = new URLSearchParams(window.location.search);
-    const chatId = urlParams.get('chat_id') || tg.initDataUnsafe?.user?.id;
-    const threadId = urlParams.get('thread_id');
+    const GLOBAL_CHAT_ID = urlParams.get('chat_id') || tg.initDataUnsafe?.user?.id;
+    const GLOBAL_THREAD_ID = urlParams.get('thread_id');
 
     // INIT
-    if (!chatId) { dom.denied.classList.remove('hidden'); } 
-    else { dom.app.classList.remove('hidden'); }
-
-    // --- LOGIC: UNLOCK UI ON LEGAL CHECK ---
-    window.checkLegalGate = function() {
-        const allChecked = dom.chkPrivacy.checked && dom.chkTerms.checked && dom.chkAi.checked;
-        if (allChecked) {
-            dom.fileBox.classList.add('enabled');
-            dom.geminiKey.disabled = false; // Unlock API Key Input
-            dom.fileText.innerText = "Tocca per caricare Documento (Fronte)";
-            dom.btnStep1.disabled = false;
-        } else {
-            dom.fileBox.classList.remove('enabled');
-            dom.geminiKey.disabled = true; // Lock API Key Input
-            dom.fileText.innerText = "Completa sopra per sbloccare";
-            dom.btnStep1.disabled = true;
+    if (!GLOBAL_CHAT_ID) { dom.denied.classList.remove('hidden'); dom.app.classList.add('hidden'); document.getElementById('loader').style.display='none'; } 
+    else { 
+        dom.app.classList.remove('hidden'); 
+        document.getElementById('loader').style.display='none';
+        const user = tg.initDataUnsafe?.user;
+        if(user && user.language_code && i18n[user.language_code]) { 
+            document.getElementById('lang-selector').value = user.language_code; 
+            changeLanguage(user.language_code); 
         }
     }
 
-    // --- WOW EFFECT: AI DOCUMENT ANALYSIS ---
+    function changeLanguage(lang) {
+      currentLang = lang; const dict = i18n[lang] || i18n['en'];
+      document.querySelectorAll('[data-i18n]').forEach(el => { const k = el.getAttribute('data-i18n'); if(dict[k]) el.innerHTML = dict[k]; });
+    }
+
+    window.checkLegalGate = function() {
+        const ok = dom.chkPrivacy.checked && dom.chkTerms.checked && dom.chkAi.checked;
+        dom.fileBox.classList.toggle('enabled', ok);
+        dom.geminiKey.disabled = !ok;
+        dom.fileText.innerText = ok ? (i18n[currentLang]||i18n.it).upload_hint : (i18n[currentLang]||i18n.it).upload_lock;
+        dom.btnStep1.disabled = !ok;
+    }
+
     dom.fileInput.addEventListener('change', async (e) => {
         if(e.target.files.length > 0) {
             const file = e.target.files[0];
-            dom.fileBox.classList.add('analyzing');
-            dom.fileIcon.innerText = "🤖";
-            dom.fileText.innerText = "Analisi AI in corso...";
-            dom.btnStep1.disabled = true; 
-
+            dom.fileBox.classList.add('analyzing'); dom.fileIcon.innerText = "🤖";
+            dom.fileText.innerText = "AI Analysis..."; dom.btnStep1.disabled = true; 
             try {
-                const base64 = await toBase64(file);
-                const response = await fetch(WEBHOOK_URL, {
+                const fileData = await getFileData(file);
+                const res = await fetch(WEBHOOK_URL, {
                     method: 'POST', headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ action: 'analyze_id', file_data: base64, file_name: file.name })
+                    body: JSON.stringify({ action: 'analyze_id', user_id: GLOBAL_CHAT_ID, file_data: fileData.base64, mime_type: fileData.mime, file_name: file.name })
                 });
-                const data = await response.json();
+                const data = await res.json();
+                dom.fileBox.classList.remove('analyzing'); dom.fileBox.classList.add('success');
+                dom.fileIcon.innerText = "✅"; dom.fileText.innerText = "OK!";
                 
-                dom.fileBox.classList.remove('analyzing');
-                dom.fileBox.classList.add('success');
-                dom.fileIcon.innerText = "✅";
-                dom.fileText.innerText = "Dati Estratti con Successo!";
-                
-                if(data.name) { dom.fName.value = data.name; dom.fName.classList.add('flash-success'); }
-                if(data.surname) { dom.fSurname.value = data.surname; dom.fSurname.classList.add('flash-success'); }
-                if(data.fiscal_code) { dom.fFiscal.value = data.fiscal_code; dom.fFiscal.classList.add('flash-success'); }
-                dom.btnStep1.disabled = false;
-
-            } catch (error) {
-                console.error(error);
-                dom.fileBox.classList.remove('analyzing');
-                dom.fileText.innerText = "Errore Analisi. Inserisci manualmente.";
-                dom.btnStep1.disabled = false;
-            }
-        }
-    });
-
-    // NAVIGATION
-    window.nextStep = function(step) {
-      currentStep = step;
-      dom.steps.forEach(s => s.classList.add('hidden')); dom.steps[step-1].classList.remove('hidden');
-      dom.progressFill.style.width = ((step-1)/2)*100 + "%";
-      dom.dots.forEach((d, i) => { 
-        d.parentElement.classList.remove('active','completed'); 
-        if(i < step-1) d.parentElement.classList.add('completed'); 
-        if(i === step-1) d.parentElement.classList.add('active');
-      });
-    }
-
-    window.selectPlan = function(type, el) {
-      document.querySelectorAll('.plan-card').forEach(c => c.classList.remove('selected')); el.classList.add('selected');
-      document.getElementById('selected_plan').value = type;
-      document.getElementById('summary-price').innerText = type === 'monthly' ? "€99.00" : "€950.00";
-    }
-
-    // SUBMIT
-    document.getElementById('wizardForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const btn = document.getElementById('submitBtn'); btn.disabled = true; btn.innerText = "Creazione Istanza...";
-      
-      const address = `${document.getElementById('addr_route').value} ${document.getElementById('addr_num').value}, ${document.getElementById('addr_zip').value} ${document.getElementById('addr_city').value} (${document.getElementById('addr_prov').value})`;
-      
-      let idFile = null; if(dom.fileInput.files.length > 0) idFile = await toBase64(dom.fileInput.files[0]);
-
-      const payload = {
-        action: 'payment_checkout', chat_id: chatId, thread_id: threadId,
-        owner_data: {
-            user_id: chatId, name: dom.fName.value, surname: dom.fSurname.value,
-            fiscal_code: dom.fFiscal.value, email: document.getElementById('email').value, phone: document.getElementById('phone').value,
-            gemini_key: document.getElementById('gemini_key').value,
-            ragione_sociale: document.getElementById('ragione_sociale').value, vat_number: document.getElementById('vat_number').value,
-            sdi_pec: document.getElementById('sdi_pec').value, indirizzo: address, site: document.getElementById('site').value,
-            plan: document.getElementById('selected_plan').value, kyc_document: idFile
-        }
-      };
-
-      try {
-        const res = await fetch(WEBHOOK_URL, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload)});
-        const data = await res.json();
-        if(data.checkout_url) window.location.href = data.checkout_url; else { alert("Errore checkout."); btn.disabled = false; }
-      } catch(err) { alert("Errore connessione."); btn.disabled = false; }
-    });
-
-    const toBase64 = file => new Promise((resolve, reject) => { const r = new FileReader(); r.readAsDataURL(file); r.onload = () => resolve(r.result.split(',')[1]); r.onerror = error => reject(error); });
-  </script>
-</body>
-</html>
+                if(data.name) dom.fName.value = data.
