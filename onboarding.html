@@ -288,7 +288,6 @@
         <div class="input-group"><label class="required" data-i18n="lbl_phone">Cellulare</label><input type="tel" id="phone" required></div>
 
         <div class="btn-container">
-          <!-- ACTION: SAVE STEP 1 -->
           <button type="button" class="btn btn-primary" id="btn-step1" onclick="submitStep1()" disabled>
             <span data-i18n="btn_next">Avanti</span> <i class="fas fa-arrow-right"></i>
           </button>
@@ -542,13 +541,24 @@
     dom.fileInput.addEventListener('change', async (e) => {
         if(e.target.files.length > 0) {
             const file = e.target.files[0];
+            
+            const key = dom.geminiKey.value;
+            if(!key) { alert("Inserisci Gemini API Key"); return; }
+
             dom.fileBox.classList.add('analyzing'); dom.fileIcon.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i>';
             dom.fileText.innerText = "AI Analysis..."; dom.btnStep1.disabled = true; 
             try {
                 const fileData = await getFileData(file);
                 const res = await fetch(WEBHOOK_URL, {
                     method: 'POST', headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ action: 'analyze_id', user_id: GLOBAL_CHAT_ID, file_data: fileData.base64, mime_type: fileData.mime, file_name: file.name })
+                    body: JSON.stringify({ 
+                        action: 'analyze_id', 
+                        user_id: GLOBAL_CHAT_ID, 
+                        file_data: fileData.base64, 
+                        mime_type: fileData.mime, 
+                        file_name: file.name,
+                        gemini_key: key 
+                    })
                 });
                 const data = await res.json();
                 dom.fileBox.classList.remove('analyzing'); dom.fileBox.classList.add('success');
@@ -569,18 +579,7 @@
         }
     });
 
-    // 1. UPDATE PROGRESS BAR (FIXED)
-    window.updateUI = function(step) {
-        dom.progressFill.style.width = ((step - 1) / 2) * 100 + "%";
-        dom.dots.forEach((dot, index) => {
-            const stepItem = dot; 
-            stepItem.classList.remove('active', 'completed');
-            if (index < step - 1) stepItem.classList.add('completed');
-            else if (index === step - 1) stepItem.classList.add('active');
-        });
-    }
-
-    // 2. SAVE STEP 1 (SENDS KEY)
+    // 2. ACTION: SAVE STEP 1
     window.submitStep1 = async function() {
         if(!dom.fName.value || !dom.fSurname.value || !document.getElementById('email').value) { alert("Dati mancanti"); return; }
         const btn = dom.btnStep1; btn.disabled = true; btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Saving...';
@@ -598,13 +597,21 @@
         catch (e) { alert("Error saving."); } finally { btn.disabled = false; btn.innerHTML = 'Avanti <i class="fas fa-arrow-right"></i>'; }
     };
 
+    // NAVIGATION
     window.goToStep = function(step) {
       if(currentStep === 2 && step === 3) {
           const req = dom.steps[1].querySelectorAll('input[required]'); for(let i of req) if(!i.value) { i.focus(); return; }
       }
       currentStep = step;
       dom.steps.forEach(s => s.classList.add('hidden')); dom.steps[step-1].classList.remove('hidden');
-      updateUI(step);
+      
+      dom.progressFill.style.width = ((step - 1) / 2) * 100 + "%";
+      dom.dots.forEach((dot, index) => {
+          const stepItem = dot; 
+          stepItem.classList.remove('active', 'completed');
+          if (index < step - 1) stepItem.classList.add('completed');
+          else if (index === step - 1) stepItem.classList.add('active');
+      });
     }
 
     window.selectPayment = function(type, el) {
