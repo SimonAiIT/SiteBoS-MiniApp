@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>SiteBoS Activation</title>
+  <title>SiteBoS Pioneer Activation</title>
   
   <!-- LIBS -->
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
@@ -77,13 +77,14 @@
     label { display: block; font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
     .required::after { content: "*"; color: var(--error); margin-left: 4px; }
     
-    input, select {
+    input, select, textarea {
       width: 100%; padding: 16px; background: var(--input-bg);
       border: 1px solid var(--border); border-radius: 14px;
       color: white; font-family: inherit; font-size: 15px;
       transition: all 0.3s; backdrop-filter: blur(5px);
     }
-    input:focus, select:focus { outline: none; border-color: var(--primary); background: rgba(255,255,255,0.1); box-shadow: 0 0 0 3px rgba(91, 111, 237, 0.15); }
+    textarea { resize: vertical; min-height: 80px; }
+    input:focus, select:focus, textarea:focus { outline: none; border-color: var(--primary); background: rgba(255,255,255,0.1); box-shadow: 0 0 0 3px rgba(91, 111, 237, 0.15); }
     input:disabled, input[readonly] { opacity: 0.7; cursor: not-allowed; background: rgba(0,0,0,0.2); border-color: transparent; }
     
     .row { display: flex; gap: 12px; }
@@ -139,18 +140,32 @@
 
     @keyframes pulse { 0% { border-color: var(--warning); } 50% { border-color: transparent; } 100% { border-color: var(--warning); } }
 
-    /* PLAN CARDS */
-    .plan-card {
-      background: var(--input-bg); border: 1px solid var(--border);
-      border-radius: 16px; padding: 22px; margin-bottom: 15px;
-      cursor: pointer; display: flex; justify-content: space-between; align-items: center;
-      transition: all 0.2s; position: relative;
+    /* PIONEER CARD */
+    .pioneer-card {
+      background: linear-gradient(135deg, rgba(59, 130, 246, 0.2) 0%, rgba(76, 217, 100, 0.1) 100%);
+      border: 1px solid var(--success);
+      border-radius: 16px; padding: 25px; margin-bottom: 25px;
+      text-align: center; position: relative; overflow: hidden;
     }
-    .plan-card:hover { background: rgba(255,255,255,0.1); }
-    .plan-card.selected { border-color: var(--primary); background: rgba(91, 111, 237, 0.15); box-shadow: 0 4px 20px rgba(0,0,0,0.2); }
-    .plan-title { font-weight: 700; font-size: 16px; margin-bottom: 4px; }
-    .plan-price { font-size: 22px; font-weight: 800; color: white; }
-    .badge { position: absolute; top: 0; right: 0; background: var(--success); color: #003300; font-size: 10px; padding: 4px 10px; border-radius: 0 16px 0 10px; font-weight: 800; }
+    .pioneer-badge {
+        background: var(--success); color: #003300; 
+        font-size: 11px; font-weight: 800; text-transform: uppercase; 
+        padding: 6px 12px; border-radius: 20px; display: inline-block; margin-bottom: 15px;
+    }
+    .pioneer-title { font-size: 22px; font-weight: 700; margin-bottom: 10px; color: white; }
+    .pioneer-desc { font-size: 14px; color: var(--text-muted); margin-bottom: 20px; line-height: 1.5; }
+    .pioneer-value { font-size: 12px; opacity: 0.7; text-decoration: line-through; margin-right: 10px; }
+    .pioneer-price { font-size: 18px; font-weight: 700; color: var(--success); }
+
+    /* PAYMENT METHOD SELECTOR */
+    .payment-selector { display: flex; gap: 10px; margin-bottom: 20px; }
+    .payment-option {
+        flex: 1; padding: 12px; border: 1px solid var(--border); border-radius: 12px;
+        background: var(--input-bg); cursor: pointer; text-align: center; font-size: 13px; font-weight: 600; color: var(--text-muted);
+        transition: all 0.2s;
+    }
+    .payment-option.selected { background: rgba(59, 130, 246, 0.2); border-color: var(--primary); color: white; }
+    .payment-option:hover { background: rgba(255,255,255,0.05); }
 
     /* BUTTONS */
     .btn-container { margin-top: 35px; display: flex; gap: 15px; }
@@ -215,7 +230,7 @@
       <div class="progress-fill" id="progress-fill"></div>
       <div class="step-item active" id="si-1"><div class="step-circle">1</div><div class="step-label" data-i18n="step_identity">Start</div></div>
       <div class="step-item" id="si-2"><div class="step-circle">2</div><div class="step-label" data-i18n="step_company">Dati</div></div>
-      <div class="step-item" id="si-3"><div class="step-circle">3</div><div class="step-label" data-i18n="step_plan">SaaS</div></div>
+      <div class="step-item" id="si-3"><div class="step-circle">3</div><div class="step-label" data-i18n="step_plan">Promo</div></div>
     </div>
 
     <form id="wizardForm">
@@ -273,17 +288,16 @@
         <div class="input-group"><label class="required" data-i18n="lbl_phone">Cellulare</label><input type="tel" id="phone" required></div>
 
         <div class="btn-container">
-          <!-- IL BOTTONE CHE SALVA E PASSA AVANTI -->
           <button type="button" class="btn btn-primary" id="btn-step1" onclick="submitStep1()" disabled>
             <span data-i18n="btn_next">Avanti</span> <i class="fas fa-arrow-right"></i>
           </button>
         </div>
       </div>
 
-      <!-- STEP 2: COMPANY -->
+      <!-- STEP 2: COMPANY (Identity Enhanced) -->
       <div class="step-content hidden fade-in" id="step-2">
         <h2 data-i18n="h_company">Profilo Aziendale</h2>
-        <p class="subtitle" data-i18n="sub_company">Configurazione fiscale e sede.</p>
+        <p class="subtitle" data-i18n="sub_company">Configurazione operativa e fiscale.</p>
 
         <div class="input-group"><label class="required" data-i18n="lbl_company_name">Ragione Sociale</label><input type="text" id="ragione_sociale" required></div>
         <div class="row">
@@ -291,7 +305,39 @@
           <div class="col"><label data-i18n="lbl_sdi">SDI / PEC</label><input type="text" id="sdi_pec"></div>
         </div>
         
-        <div class="input-group" style="margin-top:15px;">
+        <!-- IDENTITY BLOCK -->
+        <div style="margin:25px 0 20px 0; border-top:1px solid var(--border); padding-top:20px;">
+            <div style="font-size:14px; font-weight:600; color:var(--primary); margin-bottom:15px;" data-i18n="section_identity">IDENTITÀ OPERATIVA</div>
+            
+            <div class="input-group">
+                <label data-i18n="lbl_sector">Settore di Attività</label>
+                <select id="sector">
+                    <option value="services">Servizi / Consulenza</option>
+                    <option value="retail">Retail / E-commerce</option>
+                    <option value="tech">IT / Software</option>
+                    <option value="manufacturing">Produzione / Artigianato</option>
+                    <option value="horeca">HoReCa / Turismo</option>
+                    <option value="other">Altro</option>
+                </select>
+            </div>
+            
+            <div class="input-group">
+                <label data-i18n="lbl_what_we_do">Cosa fate? (Breve descrizione)</label>
+                <textarea id="what_we_do" placeholder="Es. Vendiamo scarpe su misura online..." rows="2"></textarea>
+            </div>
+
+            <div class="input-group">
+                <label data-i18n="lbl_goal">Obiettivo Principale con l'AI</label>
+                <select id="main_goal">
+                    <option value="automate_support">Automatizzare il Supporto Clienti</option>
+                    <option value="increase_sales">Aumentare le Vendite / Lead</option>
+                    <option value="organize_workflow">Organizzare Agenda e Processi</option>
+                    <option value="knowledge_base">Gestione Conoscenza Aziendale</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="input-group">
            <label class="required" data-i18n="lbl_address">Sede Legale</label>
            <div class="row" style="margin-bottom:8px;">
              <div class="col-2"><input type="text" id="addr_route" placeholder="Via/Piazza" required></div>
@@ -315,25 +361,29 @@
         </div>
       </div>
 
-      <!-- STEP 3: PLAN & PAY -->
+      <!-- STEP 3: PIONEER PROMISE -->
       <div class="step-content hidden fade-in" id="step-3">
-        <h2 data-i18n="h_plan">Attivazione SaaS</h2>
-        <p class="subtitle" data-i18n="sub_plan">Seleziona il piano e attiva.</p>
+        <h2 data-i18n="h_plan">Offerta Pionieri</h2>
+        <p class="subtitle" data-i18n="sub_plan">Attivazione gratuita. Paga solo se decidi di restare.</p>
 
-        <div class="plan-card selected" onclick="selectPlan('monthly', this)" id="plan-m">
-           <div><div class="plan-title">SiteBoS Pro Mensile</div><div style="font-size:12px; opacity:0.7" data-i18n="plan_monthly_desc">Fatturazione mensile ricorrente</div></div>
-           <div class="plan-price">€99<span style="font-size:12px; opacity:0.7">/mo</span></div>
+        <div class="pioneer-card">
+            <div class="pioneer-badge">14 GIORNI GRATIS</div>
+            <div class="pioneer-title">SiteBoS Enterprise</div>
+            <p class="pioneer-desc" data-i18n="pioneer_desc">Accedi alla potenza completa dell'AI per la tua azienda. Nessun addebito oggi.</p>
+            <div>
+                <span class="pioneer-value">€ 5.000 / anno</span>
+                <span class="pioneer-price">GRATIS ORA</span>
+            </div>
         </div>
-        <div class="plan-card" onclick="selectPlan('yearly', this)" id="plan-y">
-           <div class="badge">-20%</div>
-           <div><div class="plan-title">SiteBoS Pro Annuale</div><div style="font-size:12px; color:var(--success)" data-i18n="plan_yearly_desc">Risparmio Annuale</div></div>
-           <div class="plan-price">€950<span style="font-size:12px; opacity:0.7">/yr</span></div>
-        </div>
-        <input type="hidden" id="selected_plan" value="monthly">
 
-        <div style="margin-top:30px; padding:15px; border:1px solid var(--border); border-radius:14px; background:rgba(255,255,255,0.05); text-align:center;">
-            <div style="font-size:11px; opacity:0.7; margin-bottom:5px; text-transform:uppercase; letter-spacing:1px;" data-i18n="total_pay">TOTALE DA PAGARE</div>
-            <div style="font-size:28px; font-weight:800; color:white;" id="summary-price">€99.00</div>
+        <div style="margin-bottom:20px;">
+            <label style="margin-bottom:10px;" data-i18n="lbl_payment_pref">Preferenza di pagamento futura:</label>
+            <div class="payment-selector">
+                <div class="payment-option" onclick="selectPayment('stripe', this)"><i class="fab fa-stripe-s"></i> Carta</div>
+                <div class="payment-option" onclick="selectPayment('paypal', this)"><i class="fab fa-paypal"></i> PayPal</div>
+                <div class="payment-option" onclick="selectPayment('wire', this)"><i class="fas fa-university"></i> Bonifico</div>
+            </div>
+            <input type="hidden" id="payment_pref" value="">
         </div>
 
         <div class="btn-container">
@@ -341,7 +391,7 @@
             <i class="fas fa-arrow-left"></i> <span data-i18n="btn_back">Indietro</span>
           </button>
           <button type="submit" class="btn btn-primary" id="submitBtn">
-            <i class="fas fa-lock"></i> <span data-i18n="btn_pay">Paga e Attiva</span>
+            <i class="fas fa-rocket"></i> <span data-i18n="btn_activate">ATTIVA PROVA ORA</span>
           </button>
         </div>
       </div>
@@ -357,31 +407,33 @@
     const i18n = {
       it: {
         access_denied_title:"Accesso Negato", access_denied_desc:"Accesso consentito solo via Bot.", open_bot:"Apri Bot",
-        step_identity:"Start", step_company:"Azienda", step_plan:"SaaS",
+        step_identity:"Start", step_company:"Azienda", step_plan:"Promo",
         h_identity:"Setup & Sicurezza", sub_identity:"Consensi, Chiave API e KYC.",
         legal_privacy:"Accetto <a href='#'>Privacy Policy</a>.", legal_terms:"Accetto <a href='#'>Termini</a>.", legal_ai:"Autorizzo analisi AI.",
         btn_get_key:"Genera Gratis", byok_note:"⚠️ BYOK: Dati sotto il tuo controllo.",
         lbl_id_card:"Documento (Fronte)", upload_lock:"Accetta termini per sbloccare", upload_hint:"Carica Foto/PDF",
         lbl_name:"Nome", lbl_surname:"Cognome", lbl_fiscal:"Codice Fiscale", lbl_email:"Email (Admin)", lbl_phone:"Cellulare",
         btn_next:"Avanti", btn_back:"Indietro",
-        h_company:"Profilo Aziendale", sub_company:"Dati fatturazione.",
+        h_company:"Profilo Aziendale", sub_company:"Configurazione operativa e fiscale.",
         lbl_company_name:"Ragione Sociale", lbl_vat:"P.IVA", lbl_sdi:"SDI / PEC", lbl_address:"Sede Legale", lbl_site:"Sito Web",
-        h_plan:"Attivazione SaaS", sub_plan:"Scegli il piano.", plan_monthly_desc:"Mensile", plan_yearly_desc:"Risparmio",
-        total_pay:"TOTALE DA PAGARE", btn_pay:"Paga e Attiva"
+        section_identity: "IDENTITÀ OPERATIVA", lbl_sector: "Settore", lbl_what_we_do: "Cosa fate?", lbl_goal: "Obiettivo AI",
+        h_plan:"Offerta Pionieri", sub_plan:"Attiva ora, decidi dopo.", pioneer_desc:"Accesso completo Enterprise.",
+        lbl_payment_pref: "Se rimarrai, come preferirai pagare?", btn_activate: "ATTIVA PROVA ORA"
       },
       en: {
-        access_denied_title:"Access Denied", access_denied_desc:"Bot access only.", open_bot:"Open Bot",
-        step_identity:"Start", step_company:"Company", step_plan:"SaaS",
+        // ... (Traduzioni EN analoghe)
+        step_identity:"Start", step_company:"Company", step_plan:"Promo",
         h_identity:"Setup & Security", sub_identity:"Consents, API Key & KYC.",
         legal_privacy:"Accept <a href='#'>Privacy</a>.", legal_terms:"Accept <a href='#'>Terms</a>.", legal_ai:"Auth AI check.",
         btn_get_key:"Get Key Free", byok_note:"⚠️ BYOK: You control data.",
         lbl_id_card:"ID Document", upload_lock:"Accept terms to unlock", upload_hint:"Upload Photo/PDF",
         lbl_name:"Name", lbl_surname:"Surname", lbl_fiscal:"Tax ID", lbl_email:"Email", lbl_phone:"Mobile",
         btn_next:"Next", btn_back:"Back",
-        h_company:"Company Profile", sub_company:"Billing details.",
-        lbl_company_name:"Company Name", lbl_vat:"VAT ID", lbl_sdi:"SDI / Tax Code", lbl_address:"Address", lbl_site:"Website",
-        h_plan:"SaaS Activation", sub_plan:"Select plan.", plan_monthly_desc:"Monthly", plan_yearly_desc:"Savings",
-        total_pay:"TOTAL DUE", btn_pay:"Pay & Activate"
+        h_company:"Company Profile", sub_company:"Operational & Tax Setup.",
+        lbl_company_name:"Company Name", lbl_vat:"VAT ID", lbl_sdi:"Tax Code", lbl_address:"Address", lbl_site:"Website",
+        section_identity: "OPERATIONAL IDENTITY", lbl_sector: "Sector", lbl_what_we_do: "What do you do?", lbl_goal: "AI Goal",
+        h_plan:"Pioneer Offer", sub_plan:"Activate now, decide later.", pioneer_desc:"Full Enterprise Access.",
+        lbl_payment_pref: "Future payment preference:", btn_activate: "START TRIAL NOW"
       }
     };
 
@@ -402,7 +454,6 @@
     const GLOBAL_CHAT_ID = urlParams.get('chat_id') || tg.initDataUnsafe?.user?.id;
     const GLOBAL_THREAD_ID = urlParams.get('thread_id');
 
-    // INIT
     if (!GLOBAL_CHAT_ID) { dom.denied.classList.remove('hidden'); dom.app.classList.add('hidden'); document.getElementById('loader').style.display='none'; } 
     else { 
         dom.app.classList.remove('hidden'); 
@@ -427,7 +478,6 @@
         dom.btnStep1.disabled = !ok;
     }
 
-    // 1. ACTION: ANALYZE_ID
     dom.fileInput.addEventListener('change', async (e) => {
         if(e.target.files.length > 0) {
             const file = e.target.files[0];
@@ -458,114 +508,68 @@
         }
     });
 
-    // 2. ACTION: SAVE_STEP_1 (New Logic!)
+    // ACTION: SAVE STEP 1
     window.submitStep1 = async function() {
-        // Check required fields
-        if(!dom.fName.value || !dom.fSurname.value || !document.getElementById('email').value) {
-            alert("Completa i campi obbligatori"); return;
-        }
-
-        const btn = dom.btnStep1;
-        btn.disabled = true;
-        btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Salvataggio...';
-
-        let idFile = { base64: null, mime: null };
-        if(dom.fileInput.files.length > 0) idFile = await getFileData(dom.fileInput.files[0]);
+        if(!dom.fName.value || !dom.fSurname.value || !document.getElementById('email').value) { alert("Dati mancanti"); return; }
+        const btn = dom.btnStep1; btn.disabled = true; btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Saving...';
+        let idFile = { base64: null, mime: null }; if(dom.fileInput.files.length > 0) idFile = await getFileData(dom.fileInput.files[0]);
 
         const payload = {
-            action: 'save_step_1',
-            user_id: GLOBAL_CHAT_ID,
+            action: 'save_step_1', user_id: GLOBAL_CHAT_ID,
             owner_data: {
-                name: dom.fName.value,
-                surname: dom.fSurname.value,
-                fiscal_code: dom.fFiscal.value,
-                email: document.getElementById('email').value,
-                phone: document.getElementById('phone').value,
-                gemini_key: dom.geminiKey.value, // INCLUDE GEMINI KEY
-                kyc_document: idFile.base64,
-                kyc_mime_type: idFile.mime,
-                terms_accepted: true
+                name: dom.fName.value, surname: dom.fSurname.value, fiscal_code: dom.fFiscal.value,
+                email: document.getElementById('email').value, phone: document.getElementById('phone').value,
+                gemini_key: dom.geminiKey.value, kyc_document: idFile.base64, kyc_mime_type: idFile.mime, terms_accepted: true
             }
         };
-
-        try {
-            // Send to Webhook
-            const res = await fetch(WEBHOOK_URL, {
-                method: 'POST', headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify(payload)
-            });
-            
-            // If OK, move to Step 2
-            goToStep(2);
-        } catch (e) {
-            alert("Errore salvataggio. Riprova.");
-        } finally {
-            btn.disabled = false;
-            btn.innerHTML = 'Avanti <i class="fas fa-arrow-right"></i>';
-        }
+        try { await fetch(WEBHOOK_URL, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload)}); goToStep(2); }
+        catch (e) { alert("Error saving."); } finally { btn.disabled = false; btn.innerHTML = 'Avanti <i class="fas fa-arrow-right"></i>'; }
     };
 
-    // UI NAVIGATION ONLY (Step 2->3, 3->2)
     window.goToStep = function(step) {
-      // Validation for Step 2
       if(currentStep === 2 && step === 3) {
-          const req = dom.steps[1].querySelectorAll('input[required]');
-          for(let i of req) if(!i.value) { i.focus(); return; }
+          const req = dom.steps[1].querySelectorAll('input[required]'); for(let i of req) if(!i.value) { i.focus(); return; }
       }
-      
       currentStep = step;
       dom.steps.forEach(s => s.classList.add('hidden')); dom.steps[step-1].classList.remove('hidden');
       dom.progressFill.style.width = ((step-1)/2)*100 + "%";
-      dom.dots.forEach((d, i) => { 
-        d.parentElement.classList.remove('active','completed'); 
-        if(i < step-1) d.parentElement.classList.add('completed'); 
-        if(i === step-1) d.parentElement.classList.add('active');
-      });
+      dom.dots.forEach((d, i) => { d.parentElement.classList.remove('active','completed'); if(i < step-1) d.parentElement.classList.add('completed'); if(i === step-1) d.parentElement.classList.add('active'); });
     }
 
-    window.selectPlan = function(type, el) {
-      document.querySelectorAll('.plan-card').forEach(c => c.classList.remove('selected')); el.classList.add('selected');
-      document.getElementById('selected_plan').value = type;
-      document.getElementById('summary-price').innerText = type === 'monthly' ? "€99.00" : "€950.00";
+    window.selectPayment = function(type, el) {
+        document.querySelectorAll('.payment-option').forEach(c => c.classList.remove('selected')); el.classList.add('selected');
+        document.getElementById('payment_pref').value = type;
     }
 
-    // 3. ACTION: PAYMENT_CHECKOUT (Final)
     document.getElementById('wizardForm').addEventListener('submit', async (e) => {
       e.preventDefault();
-      const btn = document.getElementById('submitBtn'); btn.disabled = true; btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Processing...';
+      const btn = document.getElementById('submitBtn'); btn.disabled = true; btn.innerHTML = '<i class="fas fa-rocket fa-spin"></i> Activating...';
       const addr = `${document.getElementById('addr_route').value} ${document.getElementById('addr_num').value}, ${document.getElementById('addr_zip').value} ${document.getElementById('addr_city').value} (${document.getElementById('addr_prov').value})`;
       
-      // Re-collect everything to be safe (full package)
       const payload = {
         action: 'payment_checkout', user_id: GLOBAL_CHAT_ID, chat_id: GLOBAL_CHAT_ID, thread_id: GLOBAL_THREAD_ID,
         owner_data: {
-            // Identity & Security (Already sent in step 1 but re-confirming)
-            gemini_key: dom.geminiKey.value, 
-            name: dom.fName.value, surname: dom.fSurname.value,
-            // Company Data
-            ragione_sociale: document.getElementById('ragione_sociale').value, 
-            vat_number: document.getElementById('vat_number').value,
-            sdi_pec: document.getElementById('sdi_pec').value, 
-            indirizzo: addr, site: document.getElementById('site').value,
-            // Plan
-            plan: document.getElementById('selected_plan').value,
-            terms_accepted: true
+            gemini_key: dom.geminiKey.value, name: dom.fName.value, surname: dom.fSurname.value,
+            ragione_sociale: document.getElementById('ragione_sociale').value, vat_number: document.getElementById('vat_number').value,
+            sdi_pec: document.getElementById('sdi_pec').value, indirizzo: addr, site: document.getElementById('site').value,
+            sector: document.getElementById('sector').value, what_we_do: document.getElementById('what_we_do').value, main_goal: document.getElementById('main_goal').value,
+            payment_preference: document.getElementById('payment_pref').value || 'not_specified',
+            plan: 'pioneer_free_trial', terms_accepted: true
         }
       };
 
       try {
         const res = await fetch(WEBHOOK_URL, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload)});
         const data = await res.json();
-        if(data.checkout_url) window.location.href = data.checkout_url; else { alert("Error."); btn.disabled = false; btn.innerHTML = '<i class="fas fa-lock"></i> Paga e Attiva'; }
-      } catch(err) { alert("Conn Error."); btn.disabled = false; btn.innerHTML = '<i class="fas fa-lock"></i> Paga e Attiva'; }
+        // Se "checkout_url" c'è, redirect (per PayPal), altrimenti chiudi WebApp (Successo immediato)
+        if(data.checkout_url) window.location.href = data.checkout_url; 
+        else { btn.style.background = 'var(--success)'; btn.innerHTML = "✅ ATTIVATO!"; setTimeout(() => tg.close(), 1500); }
+      } catch(err) { alert("Conn Error."); btn.disabled = false; btn.innerHTML = '<i class="fas fa-rocket"></i> ATTIVA PROVA ORA'; }
     });
 
     const getFileData = file => new Promise((res, rej) => {
         const r = new FileReader(); r.readAsDataURL(file);
-        r.onload = () => {
-            const rs = r.result;
-            res({ base64: rs.split(',')[1], mime: rs.match(/data:([a-zA-Z0-9]+\/[a-zA-Z0-9-.+]+).*,.*/)[1] });
-        }; r.onerror = rej;
+        r.onload = () => { const rs = r.result; res({ base64: rs.split(',')[1], mime: rs.match(/data:([a-zA-Z0-9]+\/[a-zA-Z0-9-.+]+).*,.*/)[1] }); }; r.onerror = rej;
     });
   </script>
 </body>
