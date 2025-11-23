@@ -40,158 +40,78 @@
     /* ANIMATIONS */
     .fade-in { animation: fadeIn 0.4s cubic-bezier(0.25, 0.8, 0.25, 1); }
     .flash-success { animation: flashSuccess 1s ease-out; border-color: var(--success) !important; color: var(--success); font-weight: 600; }
-    
     @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
     @keyframes flashSuccess { 0% { background: rgba(76, 217, 100, 0.2); } 100% { background: var(--input-bg); } }
 
     /* HEADER & LANG */
     .wizard-header { display: flex; justify-content: flex-end; margin-bottom: 20px; }
-    .lang-select { 
-        background: rgba(0,0,0,0.3); border: 1px solid var(--border); 
-        color: white; padding: 8px 12px; border-radius: 20px; 
-        font-size: 13px; outline: none; cursor: pointer;
-    }
+    .lang-select { background: rgba(0,0,0,0.3); border: 1px solid var(--border); color: white; padding: 8px 12px; border-radius: 20px; font-size: 13px; outline: none; cursor: pointer; }
 
     /* PROGRESS BAR */
     .progress-bar { display: flex; justify-content: space-between; position: relative; margin-bottom: 35px; padding: 0 15px; }
     .progress-line { position: absolute; top: 15px; left: 0; right: 0; height: 3px; background: var(--border); z-index: 0; border-radius: 2px; }
     .progress-fill { position: absolute; top: 15px; left: 0; height: 3px; background: var(--primary); z-index: 0; transition: width 0.4s ease; width: 0%; border-radius: 2px; }
-    
     .step-item { z-index: 1; display: flex; flex-direction: column; align-items: center; gap: 8px; width: 70px; }
-    .step-circle { 
-        width: 34px; height: 34px; border-radius: 50%; background: var(--bg-end); 
-        border: 2px solid var(--border); display: flex; align-items: center; justify-content: center; 
-        font-size: 14px; font-weight: 700; transition: all 0.3s; color: var(--text-muted); 
-    }
+    .step-circle { width: 34px; height: 34px; border-radius: 50%; background: var(--bg-end); border: 2px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; transition: all 0.3s; color: var(--text-muted); }
     .step-label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 600; letter-spacing: 0.5px; }
-    
     .step-item.active .step-circle { border-color: var(--primary); background: var(--primary); color: white; box-shadow: 0 0 15px rgba(91, 111, 237, 0.5); transform: scale(1.1); }
     .step-item.completed .step-circle { border-color: var(--success); background: var(--success); color: white; }
     .step-item.active .step-label { color: white; }
 
-    /* FORMS & TYPOGRAPHY */
+    /* FORMS */
     h2 { font-size: 24px; font-weight: 700; margin-bottom: 8px; color: white; letter-spacing: -0.5px; }
     p.subtitle { font-size: 14px; color: var(--text-muted); margin-bottom: 28px; font-weight: 400; line-height: 1.6; }
-
     .input-group { margin-bottom: 18px; }
     label { display: block; font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
     .required::after { content: "*"; color: var(--error); margin-left: 4px; }
-    
-    input, select, textarea {
-      width: 100%; padding: 16px; background: var(--input-bg);
-      border: 1px solid var(--border); border-radius: 14px;
-      color: white; font-family: inherit; font-size: 15px;
-      transition: all 0.3s; backdrop-filter: blur(5px);
-    }
-    textarea { resize: vertical; min-height: 80px; }
+    input, select, textarea { width: 100%; padding: 16px; background: var(--input-bg); border: 1px solid var(--border); border-radius: 14px; color: white; font-family: inherit; font-size: 15px; transition: all 0.3s; backdrop-filter: blur(5px); }
     input:focus, select:focus, textarea:focus { outline: none; border-color: var(--primary); background: rgba(255,255,255,0.1); box-shadow: 0 0 0 3px rgba(91, 111, 237, 0.15); }
     input:disabled, input[readonly] { opacity: 0.7; cursor: not-allowed; background: rgba(0,0,0,0.2); border-color: transparent; }
-    
-    .row { display: flex; gap: 12px; }
-    .col { flex: 1; } .col-2 { flex: 2; } .col-3 { flex: 3; }
+    textarea { resize: vertical; min-height: 80px; }
+    .row { display: flex; gap: 12px; } .col { flex: 1; } .col-2 { flex: 2; } .col-3 { flex: 3; }
 
-    /* LEGAL BOX (FIXED) */
-    .legal-box {
-      background: var(--card-bg); border: 1px solid var(--border);
-      border-radius: 16px; padding: 16px; margin-bottom: 25px;
-    }
-    .checkbox-group { 
-      display: grid; grid-template-columns: 24px 1fr; gap: 10px; 
-      align-items: start; margin-bottom: 12px; padding-bottom: 12px;
-      border-bottom: 1px solid rgba(255,255,255,0.05);
-    }
+    /* LEGAL BOX */
+    .legal-box { background: var(--card-bg); border: 1px solid var(--border); border-radius: 16px; padding: 20px; margin-bottom: 25px; }
+    .checkbox-group { display: grid; grid-template-columns: 24px 1fr; gap: 10px; align-items: start; margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.05); }
     .checkbox-group:last-child { margin-bottom: 0; border-bottom: none; padding-bottom: 0; }
-    
-    .checkbox-group input { 
-      width: 20px; height: 20px; margin-top: 2px; cursor: pointer; accent-color: var(--primary); 
-    }
-    .checkbox-label { 
-      font-size: 13px; line-height: 1.5; color: var(--text-muted); cursor: pointer; 
-      text-transform: none; margin: 0; font-weight: 400; text-align: left;
-    }
+    .checkbox-group input { width: 20px; height: 20px; margin-top: 2px; cursor: pointer; accent-color: var(--primary); }
+    .checkbox-label { font-size: 13px; line-height: 1.5; color: var(--text-muted); cursor: pointer; text-transform: none; margin: 0; font-weight: 400; text-align: left; }
     .checkbox-label a { color: var(--primary); text-decoration: none; font-weight: 600; transition: color 0.2s; }
-    .checkbox-label a:hover { color: #fff; text-decoration: underline; }
 
     /* API KEY CARD */
-    .api-key-card {
-        background: linear-gradient(180deg, rgba(255,255,255,0.07) 0%, rgba(255,255,255,0.02) 100%);
-        border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 20px; margin-bottom: 25px;
-        position: relative; overflow: hidden;
-    }
+    .api-key-card { background: linear-gradient(180deg, rgba(255,255,255,0.07) 0%, rgba(255,255,255,0.02) 100%); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 20px; margin-bottom: 25px; position: relative; overflow: hidden; }
     .api-key-card::before { content:""; position:absolute; top:0; left:0; width:4px; height:100%; background:var(--primary); }
     .api-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; }
     .api-title { font-weight:700; font-size: 15px; color:white; display: flex; align-items: center; gap: 8px; }
-    .btn-get-key { 
-        background: rgba(91, 111, 237, 0.2); color: #8ba1ff; 
-        text-decoration: none; font-size: 12px; padding: 8px 14px; 
-        border-radius: 20px; font-weight: 600; border: 1px solid rgba(91, 111, 237, 0.3);
-        transition: all 0.2s; display: flex; align-items: center; gap: 5px;
-    }
-    .btn-get-key:hover { background: var(--primary); color: white; transform: translateY(-1px); }
+    .btn-get-key { background: rgba(91, 111, 237, 0.2); color: #8ba1ff; text-decoration: none; font-size: 12px; padding: 8px 14px; border-radius: 20px; font-weight: 600; border: 1px solid rgba(91, 111, 237, 0.3); transition: all 0.2s; }
     .byok-note { font-size: 11px; color: var(--warning); margin-top: 10px; display: flex; align-items: center; gap: 6px; opacity: 0.9; }
 
     /* UPLOAD BOX */
-    .upload-box {
-      border: 2px dashed var(--border); border-radius: 16px;
-      padding: 30px; text-align: center; cursor: pointer;
-      background: var(--glass); transition: all 0.3s; position: relative;
-      margin-bottom: 20px; opacity: 0.4; pointer-events: none; filter: grayscale(1);
-    }
+    .upload-box { border: 2px dashed var(--border); border-radius: 16px; padding: 30px; text-align: center; cursor: pointer; background: var(--glass); transition: all 0.3s; position: relative; margin-bottom: 20px; opacity: 0.4; pointer-events: none; filter: grayscale(1); }
     .upload-box.enabled { opacity: 1; pointer-events: all; border-color: var(--primary); filter: grayscale(0); background: rgba(91, 111, 237, 0.05); }
-    .upload-box:hover.enabled { transform: translateY(-2px); border-color: #fff; }
-    
     .upload-box.analyzing { border-color: var(--warning); background: rgba(245, 158, 11, 0.1); animation: pulse 1.5s infinite; }
     .upload-box.success { border-color: var(--success); background: rgba(76, 217, 100, 0.1); }
-    
     .upload-icon { font-size: 32px; margin-bottom: 10px; display: block; color: var(--text-muted); transition: color 0.3s; }
-    .upload-box.enabled .upload-icon { color: var(--primary); }
     .upload-text { font-size: 13px; color: var(--text-muted); font-weight: 500; }
     input[type="file"] { position: absolute; top:0; left:0; width:100%; height:100%; opacity:0; cursor:pointer; }
-
     @keyframes pulse { 0% { border-color: var(--warning); } 50% { border-color: transparent; } 100% { border-color: var(--warning); } }
 
     /* PIONEER CARD */
-    .pioneer-card {
-      background: linear-gradient(135deg, rgba(59, 130, 246, 0.2) 0%, rgba(76, 217, 100, 0.1) 100%);
-      border: 1px solid var(--success);
-      border-radius: 16px; padding: 25px; margin-bottom: 25px;
-      text-align: center; position: relative; overflow: hidden;
-    }
-    .pioneer-badge {
-        background: var(--success); color: #003300; 
-        font-size: 11px; font-weight: 800; text-transform: uppercase; 
-        padding: 6px 12px; border-radius: 20px; display: inline-block; margin-bottom: 15px;
-    }
+    .pioneer-card { background: linear-gradient(135deg, rgba(59, 130, 246, 0.2) 0%, rgba(76, 217, 100, 0.1) 100%); border: 1px solid var(--success); border-radius: 16px; padding: 25px; margin-bottom: 25px; text-align: center; }
+    .pioneer-badge { background: var(--success); color: #003300; font-size: 11px; font-weight: 800; text-transform: uppercase; padding: 6px 12px; border-radius: 20px; display: inline-block; margin-bottom: 15px; }
     .pioneer-title { font-size: 22px; font-weight: 700; margin-bottom: 10px; color: white; }
-    .pioneer-desc { font-size: 14px; color: var(--text-muted); margin-bottom: 20px; line-height: 1.5; }
-    .pioneer-value { font-size: 12px; opacity: 0.7; text-decoration: line-through; margin-right: 10px; }
     .pioneer-price { font-size: 18px; font-weight: 700; color: var(--success); }
-
-    /* PAYMENT METHOD SELECTOR */
     .payment-selector { display: flex; gap: 10px; margin-bottom: 20px; }
-    .payment-option {
-        flex: 1; padding: 12px; border: 1px solid var(--border); border-radius: 12px;
-        background: var(--input-bg); cursor: pointer; text-align: center; font-size: 13px; font-weight: 600; color: var(--text-muted);
-        transition: all 0.2s;
-    }
+    .payment-option { flex: 1; padding: 12px; border: 1px solid var(--border); border-radius: 12px; background: var(--input-bg); cursor: pointer; text-align: center; font-size: 13px; font-weight: 600; color: var(--text-muted); transition: all 0.2s; }
     .payment-option.selected { background: rgba(59, 130, 246, 0.2); border-color: var(--primary); color: white; }
-    .payment-option:hover { background: rgba(255,255,255,0.05); }
 
     /* BUTTONS */
     .btn-container { margin-top: 35px; display: flex; gap: 15px; }
-    .btn {
-      flex: 1; padding: 16px; border-radius: 14px; font-weight: 600; font-size: 15px;
-      cursor: pointer; border: none; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px;
-    }
+    .btn { flex: 1; padding: 16px; border-radius: 14px; font-weight: 600; font-size: 15px; cursor: pointer; border: none; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; }
     .btn:active { transform: scale(0.97); }
-    .btn:disabled { background: #4a4a4a; opacity: 0.5; cursor: not-allowed; color: #aaa; transform: none; box-shadow: none; }
-    
+    .btn:disabled { background: #4a4a4a; opacity: 0.5; cursor: not-allowed; color: #aaa; }
     .btn-primary { background: var(--primary); color: white; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
-    .btn-primary:hover:not(:disabled) { background: var(--primary-hover); box-shadow: 0 6px 20px rgba(0,0,0,0.4); }
-    
     .btn-secondary { background: transparent; border: 1px solid var(--border); color: var(--text-muted); }
-    .btn-secondary:hover { border-color: white; color: white; background: rgba(255,255,255,0.05); }
-    
     .btn-block { width: 100%; text-decoration: none; text-align: center; }
     
     #access-denied { text-align: center; margin-top: 30vh; }
@@ -202,27 +122,19 @@
 </head>
 <body>
 
-  <!-- LOADING SCREEN -->
   <div id="loader" style="position:fixed; inset:0; background:var(--bg-end); z-index:99; display:flex; justify-content:center; align-items:center; flex-direction:column;">
     <div style="width:40px; height:40px; border:4px solid rgba(255,255,255,0.1); border-top-color:var(--primary); border-radius:50%; animation:spin 0.8s linear infinite;"></div>
     <div style="margin-top:15px; font-size:12px; color:var(--text-muted); font-weight:500; letter-spacing:1px;">SECURE HANDSHAKE</div>
   </div>
-  <style>@keyframes spin { to { transform: rotate(360deg); } }</style>
 
-  <!-- ACCESS DENIED (WALL) -->
   <div id="access-denied" class="hidden">
     <div class="lock-icon">🔒</div>
     <h2 data-i18n="access_denied_title">Accesso Riservato</h2>
     <p class="subtitle" data-i18n="access_denied_desc">Configurazione disponibile solo tramite Bot.</p>
-    <a href="https://t.me/TrinAi_SiteBoS_bot" class="btn btn-primary btn-block" data-i18n="open_bot">
-      <i class="fab fa-telegram-plane"></i> Apri Bot Telegram
-    </a>
+    <a href="https://t.me/TrinAi_SiteBoS_bot" class="btn btn-primary btn-block" data-i18n="open_bot">Apri Bot Telegram</a>
   </div>
 
-  <!-- MAIN APP -->
   <div id="app-content" class="container hidden">
-    
-    <!-- HEADER LANG -->
     <div class="wizard-header">
       <select id="lang-selector" onchange="changeLanguage(this.value)" class="lang-select">
         <option value="it">🇮🇹 IT</option>
@@ -234,7 +146,6 @@
       </select>
     </div>
 
-    <!-- PROGRESS BAR -->
     <div class="progress-bar">
       <div class="progress-line"></div>
       <div class="progress-fill" id="progress-fill"></div>
@@ -245,12 +156,11 @@
 
     <form id="wizardForm">
       
-      <!-- STEP 1: LEGAL, API KEY, KYC -->
+      <!-- STEP 1 -->
       <div class="step-content fade-in" id="step-1">
         <h2 data-i18n="h_identity">Setup & Sicurezza</h2>
         <p class="subtitle" data-i18n="sub_identity">Consensi, Chiave API e Verifica Identità.</p>
 
-        <!-- LEGAL GATE -->
         <div class="legal-box">
             <div class="checkbox-group">
                 <input type="checkbox" id="chk_privacy" onchange="checkLegalGate()">
@@ -266,7 +176,6 @@
             </div>
         </div>
 
-        <!-- GEMINI KEY (BYOK) -->
         <div class="api-key-card">
             <div class="api-header">
                 <div class="api-title"><i class="fas fa-brain"></i> Gemini API Key</div>
@@ -276,7 +185,6 @@
             <div class="byok-note" data-i18n="byok_note">⚠️ BYOK: I dati rimangono sotto il tuo controllo.</div>
         </div>
 
-        <!-- AI UPLOAD -->
         <div class="input-group">
           <label data-i18n="lbl_id_card">Documento d'Identità (Fronte)</label>
           <div class="upload-box" id="upload-box">
@@ -286,26 +194,22 @@
           </div>
         </div>
 
-        <!-- AUTO FIELDS -->
         <div class="row">
           <div class="col"><label data-i18n="lbl_name">Nome</label><input type="text" id="name" readonly placeholder="..."></div>
           <div class="col"><label data-i18n="lbl_surname">Cognome</label><input type="text" id="surname" readonly placeholder="..."></div>
         </div>
         <div class="input-group" style="margin-top:12px;"><label data-i18n="lbl_fiscal">Codice Fiscale</label><input type="text" id="fiscal_code" readonly placeholder="..."></div>
-
-        <!-- MANUAL FIELDS -->
         <div class="input-group"><label class="required" data-i18n="lbl_email">Email (Admin)</label><input type="email" id="email" required></div>
         <div class="input-group"><label class="required" data-i18n="lbl_phone">Cellulare</label><input type="tel" id="phone" required></div>
 
         <div class="btn-container">
-          <!-- ACTION: SAVE STEP 1 -->
           <button type="button" class="btn btn-primary" id="btn-step1" onclick="submitStep1()" disabled>
             <span data-i18n="btn_next">Avanti</span> <i class="fas fa-arrow-right"></i>
           </button>
         </div>
       </div>
 
-      <!-- STEP 2: COMPANY (Identity Enhanced) -->
+      <!-- STEP 2 -->
       <div class="step-content hidden fade-in" id="step-2">
         <h2 data-i18n="h_company">Profilo Aziendale</h2>
         <p class="subtitle" data-i18n="sub_company">Configurazione operativa e fiscale.</p>
@@ -316,10 +220,8 @@
           <div class="col"><label data-i18n="lbl_sdi">SDI / PEC</label><input type="text" id="sdi_pec"></div>
         </div>
         
-        <!-- IDENTITY BLOCK -->
         <div style="margin:25px 0 20px 0; border-top:1px solid var(--border); padding-top:20px;">
             <div style="font-size:14px; font-weight:600; color:var(--primary); margin-bottom:15px; text-transform: uppercase; letter-spacing: 1px;" data-i18n="section_identity">IDENTITÀ OPERATIVA</div>
-            
             <div class="input-group">
                 <label data-i18n="lbl_sector">Settore di Attività</label>
                 <select id="sector">
@@ -331,12 +233,10 @@
                     <option value="other">Altro</option>
                 </select>
             </div>
-            
             <div class="input-group">
                 <label data-i18n="lbl_what_we_do">Cosa fate? (Breve descrizione)</label>
                 <textarea id="what_we_do" placeholder="..." rows="2"></textarea>
             </div>
-
             <div class="input-group">
                 <label data-i18n="lbl_goal">Obiettivo Principale con l'AI</label>
                 <select id="main_goal">
@@ -361,18 +261,16 @@
            </div>
         </div>
         <div class="input-group"><label data-i18n="lbl_site">Sito Web</label><input type="url" id="site" placeholder="https://..."></div>
+        <div class="input-group"><label>LinkedIn</label><input type="url" id="linkedin_page" placeholder="https://linkedin.com/..."></div>
+        <div class="input-group"><label>Facebook</label><input type="url" id="facebook_page" placeholder="https://facebook.com/..."></div>
 
         <div class="btn-container">
-          <button type="button" class="btn btn-secondary" onclick="goToStep(1)">
-            <i class="fas fa-arrow-left"></i> <span data-i18n="btn_back">Indietro</span>
-          </button>
-          <button type="button" class="btn btn-primary" onclick="goToStep(3)">
-            <span data-i18n="btn_next">Avanti</span> <i class="fas fa-arrow-right"></i>
-          </button>
+          <button type="button" class="btn btn-secondary" onclick="goToStep(1)"><i class="fas fa-arrow-left"></i> <span data-i18n="btn_back">Indietro</span></button>
+          <button type="button" class="btn btn-primary" onclick="goToStep(3)"><span data-i18n="btn_next">Avanti</span> <i class="fas fa-arrow-right"></i></button>
         </div>
       </div>
 
-      <!-- STEP 3: PIONEER PROMISE -->
+      <!-- STEP 3 -->
       <div class="step-content hidden fade-in" id="step-3">
         <h2 data-i18n="h_plan">Offerta Pionieri</h2>
         <p class="subtitle" data-i18n="sub_plan">Attivazione gratuita. Paga solo se decidi di restare.</p>
@@ -381,10 +279,7 @@
             <div class="pioneer-badge" data-i18n="pioneer_badge">14 GIORNI GRATIS</div>
             <div class="pioneer-title">SiteBoS Enterprise</div>
             <p class="pioneer-desc" data-i18n="pioneer_desc">Accedi alla potenza completa dell'AI per la tua azienda. Nessun addebito oggi.</p>
-            <div>
-                <span class="pioneer-value">€ 5.000 / anno</span>
-                <span class="pioneer-price" data-i18n="pioneer_free">GRATIS ORA</span>
-            </div>
+            <div><span class="pioneer-value">€ 5.000 / anno</span><span class="pioneer-price" data-i18n="pioneer_free">GRATIS ORA</span></div>
         </div>
 
         <div style="margin-bottom:20px;">
@@ -398,12 +293,8 @@
         </div>
 
         <div class="btn-container">
-          <button type="button" class="btn btn-secondary" onclick="goToStep(2)">
-            <i class="fas fa-arrow-left"></i> <span data-i18n="btn_back">Indietro</span>
-          </button>
-          <button type="submit" class="btn btn-primary" id="submitBtn">
-            <i class="fas fa-rocket"></i> <span data-i18n="btn_activate">ATTIVA PROVA ORA</span>
-          </button>
+          <button type="button" class="btn btn-secondary" onclick="goToStep(2)"><i class="fas fa-arrow-left"></i> <span data-i18n="btn_back">Indietro</span></button>
+          <button type="submit" class="btn btn-primary" id="submitBtn"><i class="fas fa-rocket"></i> <span data-i18n="btn_activate">ATTIVA PROVA ORA</span></button>
         </div>
       </div>
 
@@ -414,7 +305,7 @@
     const WEBHOOK_URL = "https://trinai.api.workflow.dcmake.it/webhook/83acc670-15ae-4da0-ae0e-3587c85bd5f4";
     const tg = window.Telegram.WebApp; tg.ready(); tg.expand();
 
-    // I18N DICTIONARY (6 LANGUAGES)
+    // I18N
     const i18n = {
       it: {
         access_denied_title:"Accesso Negato", access_denied_desc:"Accesso consentito solo via Bot.", open_bot:"Apri Bot",
@@ -552,24 +443,24 @@
     dom.fileInput.addEventListener('change', async (e) => {
         if(e.target.files.length > 0) {
             const file = e.target.files[0];
+            const key = dom.geminiKey.value;
+            if(!key) { alert("Inserisci Gemini Key prima dell'upload"); return; }
             dom.fileBox.classList.add('analyzing'); dom.fileIcon.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i>';
             dom.fileText.innerText = "AI Analysis..."; dom.btnStep1.disabled = true; 
             try {
                 const fileData = await getFileData(file);
                 const res = await fetch(WEBHOOK_URL, {
                     method: 'POST', headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ action: 'analyze_id', user_id: GLOBAL_CHAT_ID, file_data: fileData.base64, mime_type: fileData.mime, file_name: file.name, gemini_key: dom.geminiKey.value })
+                    body: JSON.stringify({ action: 'analyze_id', user_id: GLOBAL_CHAT_ID, file_data: fileData.base64, mime_type: fileData.mime, file_name: file.name, gemini_key: key })
                 });
                 const data = await res.json();
+                if(data.status === 'error') throw new Error(data.code);
                 dom.fileBox.classList.remove('analyzing'); dom.fileBox.classList.add('success');
                 dom.fileIcon.innerHTML = '<i class="fas fa-check-circle"></i>'; dom.fileText.innerText = "OK!";
-                
-                if(data.data && data.data.name) dom.fName.value = data.data.name;
-                if(data.data && data.data.surname) dom.fSurname.value = data.data.surname;
-                if(data.data && data.data.fiscal_code) dom.fFiscal.value = data.data.fiscal_code;
-                
+                if(data.data.name) dom.fName.value = data.data.name;
+                if(data.data.surname) dom.fSurname.value = data.data.surname;
+                if(data.data.fiscal_code) dom.fFiscal.value = data.data.fiscal_code;
                 dom.fName.removeAttribute('readonly'); dom.fSurname.removeAttribute('readonly'); dom.fFiscal.removeAttribute('readonly');
-                dom.fName.classList.add('flash-success'); dom.fSurname.classList.add('flash-success');
                 dom.btnStep1.disabled = false;
             } catch(err) {
                 dom.fileBox.classList.remove('analyzing'); dom.fileText.innerText = "Error. Manual input.";
@@ -583,7 +474,6 @@
         if(!dom.fName.value || !dom.fSurname.value || !document.getElementById('email').value) { alert("Dati mancanti"); return; }
         const btn = dom.btnStep1; btn.disabled = true; btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Saving...';
         let idFile = { base64: null, mime: null }; if(dom.fileInput.files.length > 0) idFile = await getFileData(dom.fileInput.files[0]);
-
         const payload = {
             action: 'save_step_1', user_id: GLOBAL_CHAT_ID,
             owner_data: {
@@ -602,14 +492,8 @@
       }
       currentStep = step;
       dom.steps.forEach(s => s.classList.add('hidden')); dom.steps[step-1].classList.remove('hidden');
-      
       dom.progressFill.style.width = ((step - 1) / 2) * 100 + "%";
-      dom.dots.forEach((dot, index) => {
-          const stepItem = dot; 
-          stepItem.classList.remove('active', 'completed');
-          if (index < step - 1) stepItem.classList.add('completed');
-          else if (index === step - 1) stepItem.classList.add('active');
-      });
+      dom.dots.forEach((d, i) => { d.parentElement.classList.remove('active','completed'); if(i < step-1) d.parentElement.classList.add('completed'); if(i === step-1) d.parentElement.classList.add('active'); });
     }
 
     window.selectPayment = function(type, el) {
@@ -625,9 +509,11 @@
       const payload = {
         action: 'payment_checkout', user_id: GLOBAL_CHAT_ID, chat_id: GLOBAL_CHAT_ID, thread_id: GLOBAL_THREAD_ID,
         owner_data: {
-            gemini_key: dom.geminiKey.value, name: dom.fName.value, surname: dom.fSurname.value,
+            gemini_key: dom.geminiKey.value, name: dom.fName.value, surname: dom.fSurname.value, fiscal_code: dom.fFiscal.value,
+            email: document.getElementById('email').value, phone: document.getElementById('phone').value,
             ragione_sociale: document.getElementById('ragione_sociale').value, vat_number: document.getElementById('vat_number').value,
             sdi_pec: document.getElementById('sdi_pec').value, indirizzo: addr, site: document.getElementById('site').value,
+            linkedin_page: document.getElementById('linkedin_page').value, facebook_page: document.getElementById('facebook_page').value,
             sector: document.getElementById('sector').value, what_we_do: document.getElementById('what_we_do').value, main_goal: document.getElementById('main_goal').value,
             payment_preference: document.getElementById('payment_pref').value || 'not_specified',
             plan: 'pioneer_free_trial', terms_accepted: true
@@ -637,7 +523,6 @@
       try {
         const res = await fetch(WEBHOOK_URL, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload)});
         const data = await res.json();
-        // Redirect or Close
         if(data.checkout_url) window.location.href = data.checkout_url; 
         else { btn.style.background = 'var(--success)'; btn.innerHTML = "✅ ATTIVATO!"; setTimeout(() => tg.close(), 1500); }
       } catch(err) { alert("Conn Error."); btn.disabled = false; btn.innerHTML = '<i class="fas fa-rocket"></i> ATTIVA PROVA ORA'; }
