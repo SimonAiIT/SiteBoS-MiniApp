@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Gestione Dati Azienda</title>
+  
+  <!-- LIBS -->
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <style>
+    /* --- STILE BASE (Identico a onboarding.html) --- */
+    :root {
+      --bg-start: #4a5b8f; --bg-end: #2a3d5f; 
+      --text-main: #ffffff; --text-muted: rgba(255, 255, 255, 0.75);
+      --primary: #5B6FED; --primary-hover: #4a5ecf;
+      --success: #4cd964; --error: #ff6b6b; --warning: #f59e0b;
+      --border: rgba(255, 255, 255, 0.15);
+      --input-bg: rgba(255, 255, 255, 0.08);
+      --card-bg: rgba(0, 0, 0, 0.25);
+      --glass: rgba(255, 255, 255, 0.05);
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(135deg, var(--bg-start) 0%, var(--bg-end) 100%);
+      color: var(--text-main); min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 20px;
+    }
+    .container { width: 100%; max-width: 600px; padding-bottom: 80px; }
+    .hidden { display: none !important; }
+    h2 { font-size: 24px; font-weight: 700; margin-bottom: 8px; }
+    p.subtitle { font-size: 14px; color: var(--text-muted); margin-bottom: 28px; line-height: 1.6; }
+    .input-group { margin-bottom: 18px; }
+    label { display: block; font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+    input { width: 100%; padding: 16px; background: var(--input-bg); border: 1px solid var(--border); border-radius: 14px; color: white; font-family: inherit; font-size: 15px; transition: all 0.3s; }
+    input:focus { outline: none; border-color: var(--primary); }
+    input:disabled { opacity: 0.7; cursor: not-allowed; }
+    .btn { padding: 16px; border-radius: 14px; font-weight: 600; font-size: 15px; cursor: pointer; border: none; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; }
+    .btn-primary { background: var(--primary); color: white; }
+    .btn-secondary { background: transparent; border: 1px solid var(--border); color: var(--text-muted); }
+    .btn-block { width: 100%; }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    #loader { position:fixed; inset:0; background:var(--bg-end); z-index:99; display:flex; justify-content:center; align-items:center; flex-direction:column; }
+    .spinner { width:40px; height:40px; border:4px solid rgba(255,255,255,0.1); border-top-color:var(--primary); border-radius:50%; animation:spin 0.8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* --- STILE SPECIFICO PER GESTIONE OPERATORI --- */
+    .operators-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 16px; padding: 20px; margin-top: 30px; }
+    .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid var(--border); padding-bottom: 15px; }
+    .card-header h3 { font-size: 16px; margin: 0; display: flex; align-items: center; gap: 10px; }
+    .slot-counter { font-size: 12px; font-weight: 600; background: rgba(255,255,255,0.1); padding: 5px 10px; border-radius: 20px; }
+    .operator-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 5px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+    .operator-item:last-child { border-bottom: none; }
+    .op-name { font-weight: 600; font-size: 14px; }
+    .op-id { font-size: 11px; color: var(--text-muted); display: block; }
+    .op-actions button { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 14px; padding: 8px; transition: color 0.2s; }
+    .op-actions button:hover { color: var(--primary); }
+    .upgrade-prompt { text-align: center; font-size: 13px; color: var(--warning); margin-top: 15px; padding-top: 15px; border-top: 1px solid var(--border); }
+    .upgrade-prompt a { color: var(--primary); font-weight: 600; text-decoration: none; }
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 100; display: flex; justify-content: center; align-items: center; backdrop-filter: blur(5px); }
+    .modal-content { background: var(--bg-end); padding: 25px; border-radius: 16px; border: 1px solid var(--border); width: 90%; max-width: 400px; animation: fadeInModal 0.3s; }
+    .modal-content h4 { margin-bottom: 20px; }
+    .btn-container { display: flex; gap: 10px; margin-top: 20px; }
+    @keyframes fadeInModal { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+  </style>
+</head>
+<body>
+
+  <div id="loader">
+    <div class="spinner"></div>
+  </div>
+
+  <div id="app-content" class="container hidden">
+    <h2>Gestione Dati Azienda</h2>
+    <p class="subtitle">Modifica le informazioni e salva per aggiornare il sistema.</p>
+
+    <form id="editForm">
+      <div class="input-group">
+        <label>P.IVA (Non modificabile)</label>
+        <input type="text" id="vat_number" readonly>
+      </div>
+      <div class="input-group">
+        <label>Ragione Sociale</label>
+        <input type="text" id="ragione_sociale" required>
+      </div>
+      <div class="input-group">
+        <label>Email</label>
+        <input type="email" id="email" required>
+      </div>
+      <div class="input-group">
+        <label>Sito Web</label>
+        <input type="url" id="site">
+      </div>
+      <!-- Aggiungi qui altri campi editabili se necessario -->
+
+      <!-- SEZIONE GESTIONE OPERATORI -->
+      <div class="operators-card">
+        <div class="card-header">
+          <h3><i class="fas fa-users"></i> Gestione Operatori</h3>
+          <span class="slot-counter" id="slot-counter">0 / 3</span>
+        </div>
+        <div id="operators-list"></div>
+        <button type="button" class="btn btn-secondary btn-block" id="add-operator-btn" style="margin-top: 15px;">
+          <i class="fas fa-plus-circle"></i> Aggiungi Operatore
+        </button>
+        <div class="upgrade-prompt hidden" id="upgrade-prompt">
+          <p>Hai raggiunto il limite di 3 operatori.</p>
+          <a href="https://t.me/TrinAi_OperativeChief">Contatta TrinAi per sbloccare più slot!</a>
+        </div>
+      </div>
+
+      <button type="submit" id="saveBtn" class="btn btn-primary" style="margin-top: 30px;">
+        <i class="fas fa-save"></i> Salva Tutte le Modifiche
+      </button>
+    </form>
+  </div>
+
+  <!-- MODAL AGGIUNTA/MODIFICA OPERATORE -->
+  <div id="operator-modal" class="modal-overlay hidden">
+    <div class="modal-content">
+      <h4 id="modal-title">Aggiungi Nuovo Operatore</h4>
+      <input type="hidden" id="operator-index">
+      <div class="input-group"><label>Nome Operatore</label><input type="text" id="op-name" placeholder="Mario Rossi"></div>
+      <div class="input-group"><label>Telegram Chat ID</label><input type="number" id="op-chat-id" placeholder="123456789"></div>
+      <div class="input-group"><label>Gemini API Key</label><input type="text" id="op-gemini-key" placeholder="AIzaSy..."></div>
+      <div class="btn-container">
+        <button type="button" class="btn btn-secondary" onclick="closeModal()">Annulla</button>
+        <button type="button" class="btn btn-primary" onclick="saveOperator()">Salva</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const WEBHOOK_URL = "https://trinai.api.workflow.dcmake.it/webhook/83acc670-15ae-4da0-ae0e-3587c85bd5f4"; // USA LO STESSO WEBHOOK
+    const tg = window.Telegram.WebApp; tg.ready(); tg.expand();
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const vatNumber = urlParams.get('vat');
+
+    const dom = {
+      loader: document.getElementById('loader'), app: document.getElementById('app-content'),
+      form: document.getElementById('editForm'), saveBtn: document.getElementById('saveBtn'),
+      operatorsList: document.getElementById('operators-list'), slotCounter: document.getElementById('slot-counter'),
+      addOperatorBtn: document.getElementById('add-operator-btn'), upgradePrompt: document.getElementById('upgrade-prompt'),
+      modal: document.getElementById('operator-modal'), modalTitle: document.getElementById('modal-title'),
+      opIndex: document.getElementById('operator-index'), opName: document.getElementById('op-name'),
+      opChatId: document.getElementById('op-chat-id'), opGeminiKey: document.getElementById('op-gemini-key')
+    };
+
+    let operators = [];
+
+    async function loadData() {
+      if (!vatNumber) { tg.showAlert('ID Azienda non trovato!'); return; }
+      try {
+        const res = await fetch(WEBHOOK_URL, {
+          method: 'POST', headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ action: 'get_owner_data', vat_number: vatNumber })
+        });
+        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+        const data = await res.json();
+        populateForm(data.owner_data);
+        dom.loader.classList.add('hidden');
+        dom.app.classList.remove('hidden');
+      } catch (err) {
+        tg.showAlert("Errore nel caricamento dei dati. Riprova.");
+        tg.close();
+      }
+    }
+
+    function populateForm(data) {
+      document.getElementById('vat_number').value = data.vat_number;
+      document.getElementById('ragione_sociale').value = data.ragione_sociale;
+      document.getElementById('email').value = data.email;
+      document.getElementById('site').value = data.site;
+      operators = data.operators || [];
+      renderOperators();
+    }
+
+    function renderOperators() {
+      dom.operatorsList.innerHTML = '';
+      operators.forEach((op, index) => {
+        const isOwner = op.Role === 'Owner';
+        const operatorHTML = `
+          <div class="operator-item">
+            <div class="op-info">
+              <span class="op-name">${op.OperatorName} ${isOwner ? '👑 (Owner)' : ''}</span>
+              <span class="op-id">ID: ${op.OperatorChatID}</span>
+            </div>
+            <div class="op-actions">
+              <button type="button" onclick="openModal(${index})"><i class="fas fa-pencil-alt"></i></button>
+              ${!isOwner ? `<button type="button" onclick="deleteOperator(${index})"><i class="fas fa-trash-alt"></i></button>` : ''}
+            </div>
+          </div>
+        `;
+        dom.operatorsList.innerHTML += operatorHTML;
+      });
+      updateOperatorControls();
+    }
+    
+    function updateOperatorControls() {
+        const count = operators.length;
+        dom.slotCounter.textContent = `${count} / 3`;
+        const canAdd = count < 3;
+        dom.addOperatorBtn.classList.toggle('hidden', !canAdd);
+        dom.upgradePrompt.classList.toggle('hidden', canAdd);
+    }
+
+    window.openModal = (index = -1) => {
+      dom.opIndex.value = index;
+      if (index > -1) {
+        const op = operators[index];
+        dom.modalTitle.textContent = 'Modifica Operatore';
+        dom.opName.value = op.OperatorName;
+        dom.opChatId.value = op.OperatorChatID;
+        dom.opGeminiKey.value = op.GeminiKey;
+      } else {
+        dom.modalTitle.textContent = 'Aggiungi Nuovo Operatore';
+        dom.form.reset(); // Svuota i campi del modal
+      }
+      dom.modal.classList.remove('hidden');
+    };
+    
+    window.closeModal = () => dom.modal.classList.add('hidden');
+
+    window.deleteOperator = (index) => {
+      tg.showConfirm(`Sei sicuro di voler eliminare l'operatore ${operators[index].OperatorName}?`, (ok) => {
+        if (ok) {
+          operators.splice(index, 1);
+          renderOperators();
+          tg.HapticFeedback.notificationOccurred('success');
+        }
+      });
+    };
+
+    window.saveOperator = () => {
+      const index = parseInt(dom.opIndex.value);
+      const newOpData = {
+        OperatorName: dom.opName.value,
+        OperatorChatID: parseInt(dom.opChatId.value),
+        GeminiKey: dom.opGeminiKey.value,
+        OperatorLenguage: operators[0]?.OperatorLenguage || 'Italiano', // Eredita la lingua
+        FreeHandOperator: true,
+        Role: (index > -1 && operators[index].Role === 'Owner') ? 'Owner' : 'Operator'
+      };
+      if (!newOpData.OperatorName || !newOpData.OperatorChatID) { tg.showAlert("Nome e Chat ID sono obbligatori."); return; }
+
+      if (index > -1) {
+        operators[index] = newOpData;
+      } else {
+        operators.push(newOpData);
+      }
+      renderOperators();
+      closeModal();
+      tg.HapticFeedback.notificationOccurred('success');
+    };
+
+    dom.addOperatorBtn.addEventListener('click', () => openModal());
+
+    dom.form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      dom.saveBtn.disabled = true; dom.saveBtn.innerHTML = 'Salvataggio in corso...';
+      const updatedData = {
+        ragione_sociale: document.getElementById('ragione_sociale').value,
+        email: document.getElementById('email').value,
+        site: document.getElementById('site').value,
+        operators: operators // Includi l'array aggiornato
+      };
+      try {
+        await fetch(WEBHOOK_URL, {
+          method: 'POST', headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ action: 'save_owner_data', vat_number: vatNumber, data_update: updatedData })
+        });
+        tg.HapticFeedback.notificationOccurred('success');
+        dom.saveBtn.style.background = 'var(--success)';
+        dom.saveBtn.innerHTML = '✅ Salvato con Successo!';
+        setTimeout(() => tg.close(), 1500);
+      } catch (err) {
+        tg.showAlert("Errore nel salvataggio. Riprova.");
+        dom.saveBtn.disabled = false; dom.saveBtn.innerHTML = 'Salva Tutte le Modifiche';
+      }
+    });
+
+    loadData();
+  </script>
+</body>
+</html>
