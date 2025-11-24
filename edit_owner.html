@@ -123,7 +123,7 @@
         </div>
       </div>
 
-      <button type="submit" id="saveBtn" class="btn btn-primary" style="margin-top: 40px;">
+      <button type="submit" id="saveBtn" class="btn btn-primary" style="margin-top: 40px;" disabled>
         <i class="fas fa-save"></i> <span data-i18n="btn_save"></span>
       </button>
     </form>
@@ -252,11 +252,32 @@
       }
     };
     
-    let ownerData = {}, ownerAsOperator = null, operators = [], currentLang = 'it', isDirty = false;
+    let initialDataString = '';
+    let ownerAsOperator = null;
+    let operators = []; 
+    let currentLang = 'it';
     const dict = () => i18n[currentLang] || i18n.it;
     
-    function setDirty() { isDirty = true; updateSaveButtonState(); }
-    function updateSaveButtonState() { dom.saveBtn.disabled = !isDirty; }
+    function getCurrentStateAsObject() {
+        const finalOperatorsArray = [];
+        if (ownerAsOperator) finalOperatorsArray.push(ownerAsOperator);
+        finalOperatorsArray.push(...operators);
+
+        return {
+            name: dom.name.value, surname: dom.surname.value, email: dom.email.value, phone: dom.phone.value,
+            ragione_sociale: dom.ragioneSociale.value, indirizzo: dom.indirizzo.value,
+            site: dom.site.value, linkedin_page: dom.linkedin_page.value, facebook_page: dom.facebook_page.value,
+            gemini_key: dom.gemini_key.value,
+            owner_unavailable_time: `${dom.ownerUnavFrom.value}-${dom.ownerUnavTo.value}`,
+            operator_unavailable_time: `${dom.operatorUnavFrom.value}-${dom.operatorUnavTo.value}`,
+            operators: finalOperatorsArray
+        };
+    }
+
+    function checkIfDirty() {
+        const currentStateString = JSON.stringify(getCurrentStateAsObject());
+        dom.saveBtn.disabled = (currentStateString === initialDataString);
+    }
     
     function changeLanguage(lang) {
         currentLang = lang;
@@ -285,11 +306,10 @@
             const res = await fetch(WEBHOOK_URL, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ action: 'get_owner_data', vat_number: vatNumber }) });
             if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
             const data = await res.json();
-            ownerData = data.owner_data;
             const allOperators = data.owner_data.operators || [];
             ownerAsOperator = allOperators.find(op => op.Role === 'Owner');
             operators = allOperators.filter(op => op.Role !== 'Owner');
-            populateForm(ownerData);
+            populateForm(data.owner_data);
             changeLanguage(urlParams.get('lang') || 'it');
             dom.loader.classList.add('hidden');
             dom.app.classList.remove('hidden');
@@ -308,7 +328,8 @@
         const [opFrom, opTo] = (data.operator_unavailable_time || '19-9').split('-');
         dom.operatorUnavFrom.value = opFrom; dom.operatorUnavTo.value = opTo;
         renderOperators();
-        isDirty = false; updateSaveButtonState();
+        initialDataString = JSON.stringify(getCurrentStateAsObject());
+        checkIfDirty();
     }
     
     function renderOperators() {
@@ -351,7 +372,7 @@
         const isPending = !op.OperatorChatID;
         let confirmText = isPending ? `${dict().alert_revoke_invite} ${op.OperatorName}?` : `${dict().alert_confirm_delete} ${op.OperatorName}?`;
         tg.showConfirm(confirmText, (ok) => {
-            if (ok) { operators.splice(index, 1); renderOperators(); setDirty(); tg.HapticFeedback.notificationOccurred('warning'); }
+            if (ok) { operators.splice(index, 1); renderOperators(); checkIfDirty(); tg.HapticFeedback.notificationOccurred('warning'); }
         });
     };
     
@@ -359,41 +380,31 @@
         const name = dom.opName.value.trim();
         if (!name) { tg.showAlert(dict().alert_name_required); return; }
         const uniquePart = Math.random().toString(36).substring(2, 8).toUpperCase();
-        const invitationCode = `INV-${vatNumber}-${ownerData.chat_id}-${uniquePart}`;
-        const newOperator = { OperatorName: name, invitation_code: invitationCode, OperatorChatID: null, GeminiKey: null, OperatorLenguage: ownerData.lenguage, FreeHandOperator: true, Role: 'Operator' };
+        const invitationCode = `INV-${vatNumber}-${ownerAsOperator.OperatorChatID}-${uniquePart}`;
+        const newOperator = { OperatorName: name, invitation_code: invitationCode, OperatorChatID: null, GeminiKey: null, OperatorLenguage: ownerAsOperator.OperatorLenguage, FreeHandOperator: true, Role: 'Operator' };
         operators.push(newOperator);
         renderOperators();
         closeModal();
-        setDirty();
+        checkIfDirty();
         tg.HapticFeedback.notificationOccurred('success');
     };
     
-    document.querySelectorAll('#editForm input, #editForm select').forEach(el => el.addEventListener('input', setDirty));
+    document.querySelectorAll('#editForm input, #editForm select').forEach(el => el.addEventListener('input', checkIfDirty));
     dom.addOperatorBtn.addEventListener('click', () => openModal());
 
     dom.form.addEventListener('submit', async (e) => {
         e.preventDefault();
         dom.saveBtn.disabled = true; dom.saveBtn.querySelector('span').textContent = dict().saving_progress;
         
-        const finalOperatorsArray = [];
-        if(ownerAsOperator) finalOperatorsArray.push(ownerAsOperator);
-        finalOperatorsArray.push(...operators);
+        const updatedData = getCurrentStateAsObject();
 
-        const updatedData = {
-            name: dom.name.value, surname: dom.surname.value, email: dom.email.value, phone: dom.phone.value,
-            ragione_sociale: dom.ragioneSociale.value, indirizzo: dom.indirizzo.value,
-            site: dom.site.value, linkedin_page: dom.linkedin_page.value, facebook_page: dom.facebook_page.value,
-            gemini_key: dom.gemini_key.value,
-            owner_unavailable_time: `${dom.ownerUnavFrom.value}-${dom.ownerUnavTo.value}`,
-            operator_unavailable_time: `${dom.operatorUnavFrom.value}-${dom.operatorUnavTo.value}`,
-            operators: finalOperatorsArray
-        };
         try {
             await fetch(WEBHOOK_URL, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ action: 'save_owner_data', vat_number: vatNumber, data_update: updatedData }) });
             tg.HapticFeedback.notificationOccurred('success');
             dom.saveBtn.style.background = 'var(--success)';
             dom.saveBtn.querySelector('span').innerHTML = dict().saving_success;
-            isDirty = false; updateSaveButtonState();
+            initialDataString = JSON.stringify(updatedData);
+            checkIfDirty();
             setTimeout(() => tg.close(), 1500);
         } catch (err) {
             tg.showAlert(dict().alert_saving_error);
