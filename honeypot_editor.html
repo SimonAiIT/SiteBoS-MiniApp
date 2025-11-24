@@ -84,8 +84,7 @@
   <div id="app-content" class="container hidden">
     <h2 data-i18n="title"></h2>
     <p class="subtitle" data-i18n="subtitle"></p>
-
-    <!-- CARD DI CONFIGURAZIONE BOT (IN CIMA) -->
+    
     <div class="knowledge-card highlight open">
       <div class="card-header" onclick="toggleCard(this)">
         <h3><i class="fas fa-rocket"></i> <span data-i18n="section_bot_title"></span></h3>
@@ -106,23 +105,7 @@
       </div>
     </div>
 
-    <div id="honeypot-container"></div>
-
-    <div class="knowledge-card">
-      <div class="card-header" onclick="toggleCard(this)">
-        <h3><i class="fas fa-clock"></i> <span data-i18n="section_assets_title"></span></h3>
-        <i class="fas fa-chevron-down chevron"></i>
-      </div>
-      <div class="card-content">
-        <div class="hours-grid" id="hours-container"></div>
-        <div class="row" style="margin-top: 30px; gap: 20px;">
-          <div class="col"><label data-i18n="lbl_logo"></label><div class="asset-upload-box" id="logo-upload-box"><input type="file" onchange="handleAssetUpload('logo', this.files[0])"><div class="upload-icon"><i class="fas fa-image"></i></div><span class="upload-text" data-i18n="upload_logo"></span><div id="logo-preview" class="asset-preview"></div></div></div>
-          <div class="col"><label data-i18n="lbl_photo"></label><div class="asset-upload-box" id="photo-upload-box"><input type="file" onchange="handleAssetUpload('photo', this.files[0])"><div class="upload-icon"><i class="fas fa-camera"></i></div><span class="upload-text" data-i18n="upload_photo"></span><div id="photo-preview" class="asset-preview"></div></div></div>
-        </div>
-      </div>
-    </div>
-    
-    <div class="knowledge-card">
+    <div class="knowledge-card highlight open">
       <div class="card-header" onclick="toggleCard(this)">
         <h3><i class="fas fa-users"></i> <span data-i18n="section_group_title"></span></h3>
         <i class="fas fa-chevron-down chevron"></i>
@@ -135,6 +118,31 @@
           <div class="guide-step"><i class="fas fa-video"></i> <span data-i18n="guide_group_video"></span></div>
         </div>
       </div>
+    </div>
+
+    <div id="honeypot-container"></div>
+
+    <div class="knowledge-card">
+        <div class="card-header" onclick="toggleCard(this)">
+            <h3><i class="fas fa-clock"></i> <span data-i18n="section_hours_title"></span></h3>
+            <i class="fas fa-chevron-down chevron"></i>
+        </div>
+        <div class="card-content">
+            <div class="hours-grid" id="hours-container"></div>
+        </div>
+    </div>
+
+    <div class="knowledge-card">
+        <div class="card-header" onclick="toggleCard(this)">
+            <h3><i class="fas fa-photo-video"></i> <span data-i18n="section_assets_title"></span></h3>
+            <i class="fas fa-chevron-down chevron"></i>
+        </div>
+        <div class="card-content">
+            <div class="row" style="gap: 20px;">
+                <div class="col"><label data-i18n="lbl_logo"></label><div class="asset-upload-box" id="logo-upload-box"><input type="file" onchange="handleAssetUpload('logo', this.files[0])"><div class="upload-icon"><i class="fas fa-image"></i></div><span class="upload-text" data-i18n="upload_logo"></span><div id="logo-preview" class="asset-preview"></div></div></div>
+                <div class="col"><label data-i18n="lbl_photo"></label><div class="asset-upload-box" id="photo-upload-box"><input type="file" onchange="handleAssetUpload('photo', this.files[0])"><div class="upload-icon"><i class="fas fa-camera"></i></div><span class="upload-text" data-i18n="upload_photo"></span><div id="photo-preview" class="asset-preview"></div></div></div>
+            </div>
+        </div>
     </div>
   </div>
 
@@ -207,35 +215,37 @@
 
     function renderAll() {
         dom.container.innerHTML = '';
-        honeypotData.knowledge_fragments.forEach((fragment, index) => {
-            const card = document.createElement('div');
-            card.className = 'knowledge-card';
-            const fragmentTitle = fragment.fragment_id.replace(/_V\d+$/, '').replace(/_/g, ' ');
-            card.innerHTML = `
-                <div class="card-header" onclick="toggleCard(this)">
-                    <h3><i class="fas fa-book-open"></i> ${fragmentTitle}</h3>
-                    <i class="fas fa-chevron-down chevron"></i>
-                </div>
-                <div class="card-content">
-                    <div class="input-group">
-                        <label data-i18n="lbl_utterances"></label>
-                        <div class="utterance-tags">${fragment.user_utterances.map(u => `<span class="tag">${u}</span>`).join('')}</div>
+        if (honeypotData.knowledge_fragments) {
+            honeypotData.knowledge_fragments.forEach((fragment, index) => {
+                const card = document.createElement('div');
+                card.className = 'knowledge-card';
+                const fragmentTitle = fragment.fragment_id.replace(/_V\d+$/, '').replace(/_/g, ' ');
+                card.innerHTML = `
+                    <div class="card-header" onclick="toggleCard(this)">
+                        <h3><i class="fas fa-book-open"></i> ${fragmentTitle}</h3>
+                        <i class="fas fa-chevron-down chevron"></i>
                     </div>
-                    <div class="input-group">
-                        <label data-i18n="lbl_answer"></label>
-                        <textarea data-path="knowledge_fragments.${index}.answer_fragment" rows="5">${fragment.answer_fragment || ''}</textarea>
-                    </div>
-                    <div class="input-group">
-                        <label data-i18n="lbl_summary"></label>
-                        <input type="text" data-path="knowledge_fragments.${index}.summary" value="${fragment.summary || ''}">
-                    </div>
-                    <h4 data-i18n="lbl_deepdive"></h4>
-                    <div id="deep-dive-${index}"></div>
-                    <button type="button" class="btn btn-secondary btn-sm" onclick="addDeepDive(${index})"><i class="fas fa-plus"></i> <span data-i18n="btn_add_qa"></span></button>
-                </div>`;
-            dom.container.appendChild(card);
-            renderDeepDives(index);
-        });
+                    <div class="card-content">
+                        <div class="input-group">
+                            <label data-i18n="lbl_utterances"></label>
+                            <div class="utterance-tags">${(fragment.user_utterances || []).map(u => `<span class="tag">${u}</span>`).join('')}</div>
+                        </div>
+                        <div class="input-group">
+                            <label data-i18n="lbl_answer"></label>
+                            <textarea data-path="knowledge_fragments.${index}.answer_fragment" rows="5">${fragment.answer_fragment || ''}</textarea>
+                        </div>
+                        <div class="input-group">
+                            <label data-i18n="lbl_summary"></label>
+                            <input type="text" data-path="knowledge_fragments.${index}.summary" value="${fragment.summary || ''}">
+                        </div>
+                        <h4 data-i18n="lbl_deepdive"></h4>
+                        <div id="deep-dive-${index}"></div>
+                        <button type="button" class="btn btn-secondary btn-sm" onclick="addDeepDive(${index})"><i class="fas fa-plus"></i> <span data-i18n="btn_add_qa"></span></button>
+                    </div>`;
+                dom.container.appendChild(card);
+                renderDeepDives(index);
+            });
+        }
 
         dom.hoursContainer.innerHTML = '';
         const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
@@ -260,16 +270,18 @@
     function renderDeepDives(fragmentIndex) {
         const container = document.getElementById(`deep-dive-${fragmentIndex}`);
         container.innerHTML = '';
-        honeypotData.knowledge_fragments[fragmentIndex].sections.forEach((section, s_index) => {
-            const item = document.createElement('div');
-            item.className = 'deep-dive-item';
-            item.innerHTML = `
-                <div class="input-group"><label data-i18n="lbl_question"></label><input type="text" data-path="knowledge_fragments.${fragmentIndex}.sections.${s_index}.question" value="${section.question || ''}"></div>
-                <div class="input-group"><label data-i18n="lbl_answer"></label><textarea data-path="knowledge_fragments.${fragmentIndex}.sections.${s_index}.answer">${section.answer || ''}</textarea></div>
-                <button type="button" class="btn btn-secondary btn-sm" onclick="removeDeepDive(${fragmentIndex}, ${s_index})"><i class="fas fa-trash"></i></button>
-            `;
-            container.appendChild(item);
-        });
+        if (honeypotData.knowledge_fragments[fragmentIndex].sections) {
+            honeypotData.knowledge_fragments[fragmentIndex].sections.forEach((section, s_index) => {
+                const item = document.createElement('div');
+                item.className = 'deep-dive-item';
+                item.innerHTML = `
+                    <div class="input-group"><label data-i18n="lbl_question"></label><input type="text" data-path="knowledge_fragments.${fragmentIndex}.sections.${s_index}.question" value="${section.question || ''}"></div>
+                    <div class="input-group"><label data-i18n="lbl_answer"></label><textarea data-path="knowledge_fragments.${fragmentIndex}.sections.${s_index}.answer">${section.answer || ''}</textarea></div>
+                    <button type="button" class="btn btn-secondary btn-sm" onclick="removeDeepDive(${fragmentIndex}, ${s_index})"><i class="fas fa-trash"></i></button>
+                `;
+                container.appendChild(item);
+            });
+        }
         changeLanguage(currentLang);
     }
     
@@ -296,7 +308,11 @@
         const keys = path.split('.');
         const lastKey = keys.pop();
         const lastObj = keys.reduce((o, key) => {
-            if (o[key] === undefined) o[key] = {};
+            if (o[key] === undefined || o[key] === null) {
+              // Heuristically decide if we need an array or object
+              const nextKey = keys[keys.indexOf(key) + 1] || lastKey;
+              o[key] = isNaN(parseInt(nextKey, 10)) ? {} : [];
+            }
             return o[key];
         }, obj);
         lastObj[lastKey] = value;
@@ -336,9 +352,9 @@
     const i18n = {
       it: {
         title: "Editor Base di Conoscenza", subtitle: "Modella l'anima AI della tua azienda. Ogni modifica qui plasma le future risposte del tuo assistente.",
-        section_assets_title: "Orari & Asset Visivi", lbl_logo: "Logo Aziendale", upload_logo: "Carica il tuo logo", lbl_photo: "Foto Rappresentativa", upload_photo: "Carica una foto",
-        section_bot_title: "Azione Richiesta: Configura il Tuo Bot", guide_bot_1: "Apri <a href='https://t.me/BotFather' target='_blank'>@BotFather</a> su Telegram.", guide_bot_2: "Invia <code>/newbot</code> e segui le istruzioni.", guide_bot_3: "Scegli un nome (es. Assistente Rossi SRL) e uno username che finisca in 'bot'.", guide_bot_4: "<b>Copia il token API</b> che ti viene fornito e incollalo nel campo qui sotto.", guide_bot_video: "Serve aiuto? <a href='{botVideoUrl}' target='_blank'>Guarda il video tutorial (3 min)</a>.",
-        section_group_title: "Guida: Crea Gruppo di Lavoro", guide_group_1: "Crea un nuovo gruppo privato su Telegram.", guide_group_2: "Aggiungi sia il tuo bot appena creato, sia <code>@TrinAi_SiteBoS_bot</code> come membri.", guide_group_3: "Promuovi entrambi i bot ad Amministratori con tutti i permessi.", guide_group_video: "Serve aiuto? <a href='{groupVideoUrl}' target='_blank'>Guarda il video tutorial</a>.",
+        section_hours_title: "Orari di Apertura", section_assets_title: "Asset Visivi", lbl_logo: "Logo Aziendale", upload_logo: "Carica il tuo logo", lbl_photo: "Foto Rappresentativa", upload_photo: "Carica una foto",
+        section_bot_title: "Azione Richiesta: Configura il Tuo Bot", guide_bot_1: "Apri <a href='{botFatherUrl}' target='_blank'>@BotFather</a> su Telegram.", guide_bot_2: "Invia <code>/newbot</code> e segui le istruzioni.", guide_bot_3: "Scegli un nome (es. Assistente Rossi SRL) e uno username che finisca in 'bot'.", guide_bot_4: "<b>Copia il token API</b> che ti viene fornito e incollalo nel campo qui sotto.", guide_bot_video: "Serve aiuto? <a href='{botVideoUrl}' target='_blank'>Guarda il video tutorial (3 min)</a>.",
+        section_group_title: "Azione Richiesta: Crea Gruppo di Lavoro", guide_group_1: "Crea un nuovo gruppo privato su Telegram.", guide_group_2: "Aggiungi sia il tuo bot appena creato, sia <code>@TrinAi_SiteBoS_bot</code> come membri.", guide_group_3: "Promuovi entrambi i bot ad Amministratori con tutti i permessi.", guide_group_video: "Serve aiuto? <a href='{groupVideoUrl}' target='_blank'>Guarda il video tutorial</a>.",
         lbl_utterances: "Domande Esempio", lbl_answer: "Risposta", lbl_summary: "Sintesi (1 frase)", lbl_deepdive: "Approfondimenti", lbl_question: "Domanda", btn_add_qa: "Aggiungi Domanda/Risposta",
         day_monday: "Lunedì", day_tuesday: "Martedì", day_wednesday: "Mercoledì", day_thursday: "Giovedì", day_friday: "Venerdì", day_saturday: "Sabato", day_sunday: "Domenica",
         btn_save: "Salva Modifiche", saving_progress: "Salvataggio...", saving_success: "Salvato!",
@@ -346,50 +362,50 @@
       },
       en: {
         title: "Knowledge Base Editor", subtitle: "Shape the AI soul of your business. Every change here crafts your assistant's future answers.",
-        section_assets_title: "Hours & Visual Assets", lbl_logo: "Company Logo", upload_logo: "Upload your logo", lbl_photo: "Representative Photo", upload_photo: "Upload a photo",
-        section_bot_title: "Action Required: Configure Your Bot", guide_bot_1: "Open <a href='https://t.me/BotFather' target='_blank'>@BotFather</a> on Telegram.", guide_bot_2: "Send <code>/newbot</code> and follow the instructions.", guide_bot_3: "Choose a name (e.g., Smith LLC Assistant) and a username ending in 'bot'.", guide_bot_4: "<b>Copy the API token</b> provided and paste it in the field below.", guide_bot_video: "Need help? <a href='{botVideoUrl}' target='_blank'>Watch the video tutorial (3 min)</a>.",
-        section_group_title: "Guide: Create Work Group", guide_group_1: "Create a new private group on Telegram.", guide_group_2: "Add both your newly created bot and <code>@TrinAi_SiteBoS_bot</code> as members.", guide_group_3: "Promote both bots to Administrators with all permissions.", guide_group_video: "Need help? <a href='{groupVideoUrl}' target='_blank'>Watch the video tutorial</a>.",
+        section_hours_title: "Opening Hours", section_assets_title: "Visual Assets", lbl_logo: "Company Logo", upload_logo: "Upload your logo", lbl_photo: "Representative Photo", upload_photo: "Upload a photo",
+        section_bot_title: "Action Required: Configure Your Bot", guide_bot_1: "Open <a href='{botFatherUrl}' target='_blank'>@BotFather</a> on Telegram.", guide_bot_2: "Send <code>/newbot</code> and follow the instructions.", guide_bot_3: "Choose a name (e.g., Smith LLC Assistant) and a username ending in 'bot'.", guide_bot_4: "<b>Copy the API token</b> provided and paste it in the field below.", guide_bot_video: "Need help? <a href='{botVideoUrl}' target='_blank'>Watch the video tutorial (3 min)</a>.",
+        section_group_title: "Action Required: Create Work Group", guide_group_1: "Create a new private group on Telegram.", guide_group_2: "Add both your newly created bot and <code>@TrinAi_SiteBoS_bot</code> as members.", guide_group_3: "Promote both bots to Administrators with all permissions.", guide_group_video: "Need help? <a href='{groupVideoUrl}' target='_blank'>Watch the video tutorial</a>.",
         lbl_utterances: "Sample Questions", lbl_answer: "Answer", lbl_summary: "Summary (1 sentence)", lbl_deepdive: "Deep Dives", lbl_question: "Question", btn_add_qa: "Add Q&A",
         day_monday: "Monday", day_tuesday: "Tuesday", day_wednesday: "Wednesday", day_thursday: "Thursday", day_friday: "Friday", day_saturday: "Saturday", day_sunday: "Sunday",
         btn_save: "Save Changes", saving_progress: "Saving...", saving_success: "Saved!",
         alert_loading_error: "Error loading data."
       },
       fr: {
-        title: "Éditeur de Base de Connaissances", subtitle: "Façonnez l'âme IA de votre entreprise. Chaque modification ici façonne les futures réponses de votre assistant.",
-        section_assets_title: "Horaires & Actifs Visuels", lbl_logo: "Logo de l'entreprise", upload_logo: "Téléchargez votre logo", lbl_photo: "Photo Représentative", upload_photo: "Téléchargez une photo",
-        section_bot_title: "Action Requise: Configurez Votre Bot", guide_bot_1: "Ouvrez <a href='https://t.me/BotFather' target='_blank'>@BotFather</a> sur Telegram.", guide_bot_2: "Envoyez <code>/newbot</code> et suivez les instructions.", guide_bot_3: "Choisissez un nom (ex: Assistant Dubois SAS) et un nom d'utilisateur terminant par 'bot'.", guide_bot_4: "<b>Copiez le jeton API</b> fourni et collez-le dans le champ ci-dessous.", guide_bot_video: "Besoin d'aide ? <a href='{botVideoUrl}' target='_blank'>Regardez le tutoriel vidéo (3 min)</a>.",
-        section_group_title: "Guide : Créer un Groupe de Travail", guide_group_1: "Créez un nouveau groupe privé sur Telegram.", guide_group_2: "Ajoutez votre nouveau bot ainsi que <code>@TrinAi_SiteBoS_bot</code> comme membres.", guide_group_3: "Promouvez les deux bots au rang d'Administrateurs avec toutes les permissions.", guide_group_video: "Besoin d'aide ? <a href='{groupVideoUrl}' target='_blank'>Regardez le tutoriel vidéo</a>.",
-        lbl_utterances: "Exemples de Questions", lbl_answer: "Réponse", lbl_summary: "Résumé (1 phrase)", lbl_deepdive: "Détails", lbl_question: "Question", btn_add_qa: "Ajouter Q&R",
+        title: "Éditeur de Base de Connaissances", subtitle: "Façonnez l'âme IA de votre entreprise.",
+        section_hours_title: "Heures d'Ouverture", section_assets_title: "Actifs Visuels", lbl_logo: "Logo de l'entreprise", upload_logo: "Téléchargez votre logo", lbl_photo: "Photo Représentative", upload_photo: "Téléchargez une photo",
+        section_bot_title: "Action Requise: Configurez Votre Bot", guide_bot_1: "Ouvrez <a href='{botFatherUrl}' target='_blank'>@BotFather</a>.", guide_bot_2: "Envoyez <code>/newbot</code>.", guide_bot_3: "Choisissez un nom et un nom d'utilisateur.", guide_bot_4: "<b>Copiez le jeton API</b> et collez-le ci-dessous.", guide_bot_video: "Besoin d'aide? <a href='{botVideoUrl}' target='_blank'>Voir le tutoriel</a>.",
+        section_group_title: "Action Requise: Créer Groupe", guide_group_1: "Créez un groupe privé.", guide_group_2: "Ajoutez votre bot et <code>@TrinAi_SiteBoS_bot</code>.", guide_group_3: "Promouvez les deux bots Administrateurs.", guide_group_video: "Besoin d'aide? <a href='{groupVideoUrl}' target='_blank'>Voir le tutoriel</a>.",
+        lbl_utterances: "Exemples", lbl_answer: "Réponse", lbl_summary: "Résumé", lbl_deepdive: "Détails", lbl_question: "Question", btn_add_qa: "Ajouter Q&R",
         day_monday: "Lundi", day_tuesday: "Mardi", day_wednesday: "Mercredi", day_thursday: "Jeudi", day_friday: "Vendredi", day_saturday: "Samedi", day_sunday: "Dimanche",
         btn_save: "Enregistrer", saving_progress: "Enregistrement...", saving_success: "Enregistré !",
         alert_loading_error: "Erreur de chargement."
       },
       de: {
-        title: "Wissensdatenbank-Editor", subtitle: "Gestalten Sie die KI-Seele Ihres Unternehmens. Jede Änderung hier formt die zukünftigen Antworten Ihres Assistenten.",
-        section_assets_title: "Öffnungszeiten & Visuelle Assets", lbl_logo: "Firmenlogo", upload_logo: "Logo hochladen", lbl_photo: "Repräsentatives Foto", upload_photo: "Foto hochladen",
-        section_bot_title: "Aktion Erforderlich: Bot Konfigurieren", guide_bot_1: "Öffnen Sie <a href='https://t.me/BotFather' target='_blank'>@BotFather</a> auf Telegram.", guide_bot_2: "Senden Sie <code>/newbot</code> und folgen Sie den Anweisungen.", guide_bot_3: "Wählen Sie einen Namen (z.B. Schmidt GmbH Assistent) und einen Benutzernamen, der auf 'bot' endet.", guide_bot_4: "<b>Kopieren Sie das API-Token</b> und fügen Sie es unten ein.", guide_bot_video: "Hilfe benötigt? <a href='{botVideoUrl}' target='_blank'>Video-Tutorial ansehen (3 Min)</a>.",
-        section_group_title: "Anleitung: Arbeitsgruppe Erstellen", guide_group_1: "Erstellen Sie eine neue private Gruppe auf Telegram.", guide_group_2: "Fügen Sie sowohl Ihren neuen Bot als auch <code>@TrinAi_SiteBoS_bot</code> als Mitglieder hinzu.", guide_group_3: "Befördern Sie beide Bots zu Administratoren mit allen Berechtigungen.", guide_group_video: "Hilfe benötigt? <a href='{groupVideoUrl}' target='_blank'>Video-Tutorial ansehen</a>.",
+        title: "Wissensdatenbank-Editor", subtitle: "Gestalten Sie die KI-Seele Ihres Unternehmens.",
+        section_hours_title: "Öffnungszeiten", section_assets_title: "Visuelle Assets", lbl_logo: "Firmenlogo", upload_logo: "Logo hochladen", lbl_photo: "Repräsentatives Foto", upload_photo: "Foto hochladen",
+        section_bot_title: "Aktion Erforderlich: Bot Konfigurieren", guide_bot_1: "<a href='{botFatherUrl}' target='_blank'>@BotFather</a> öffnen.", guide_bot_2: "<code>/newbot</code> senden.", guide_bot_3: "Namen wählen.", guide_bot_4: "<b>API-Token kopieren</b> und unten einfügen.", guide_bot_video: "Hilfe? <a href='{botVideoUrl}' target='_blank'>Video-Tutorial ansehen</a>.",
+        section_group_title: "Aktion Erforderlich: Arbeitsgruppe Erstellen", guide_group_1: "Private Gruppe erstellen.", guide_group_2: "Ihren Bot und <code>@TrinAi_SiteBoS_bot</code> hinzufügen.", guide_group_3: "Beide Bots zu Admins befördern.", guide_group_video: "Hilfe? <a href='{groupVideoUrl}' target='_blank'>Video-Tutorial ansehen</a>.",
         lbl_utterances: "Beispielfragen", lbl_answer: "Antwort", lbl_summary: "Zusammenfassung", lbl_deepdive: "Details", lbl_question: "Frage", btn_add_qa: "F&A hinzufügen",
         day_monday: "Montag", day_tuesday: "Dienstag", day_wednesday: "Mittwoch", day_thursday: "Donnerstag", day_friday: "Freitag", day_saturday: "Samstag", day_sunday: "Sonntag",
         btn_save: "Speichern", saving_progress: "Speichern...", saving_success: "Gespeichert!",
         alert_loading_error: "Daten-Ladefehler."
       },
       es: {
-        title: "Editor de Base de Conocimiento", subtitle: "Modela el alma de IA de tu negocio. Cada cambio aquí da forma a las futuras respuestas de tu asistente.",
-        section_assets_title: "Horarios y Activos Visuales", lbl_logo: "Logo de la Empresa", upload_logo: "Sube tu logo", lbl_photo: "Foto Representativa", upload_photo: "Sube una foto",
-        section_bot_title: "Acción Requerida: Configura tu Bot", guide_bot_1: "Abre <a href='https://t.me/BotFather' target='_blank'>@BotFather</a> en Telegram.", guide_bot_2: "Envía <code>/newbot</code> y sigue las instrucciones.", guide_bot_3: "Elige un nombre (ej. Asistente García SL) y un nombre de usuario que termine en 'bot'.", guide_bot_4: "<b>Copia el token de la API</b> y pégalo en el campo de abajo.", guide_bot_video: "¿Necesitas ayuda? <a href='{botVideoUrl}' target='_blank'>Mira el video tutorial (3 min)</a>.",
-        section_group_title: "Guía: Crear Grupo de Trabajo", guide_group_1: "Crea un nuevo grupo privado en Telegram.", guide_group_2: "Añade tanto tu nuevo bot como a <code>@TrinAi_SiteBoS_bot</code> como miembros.", guide_group_3: "Promociona ambos bots a Administradores con todos los permisos.", guide_group_video: "¿Necesitas ayuda? <a href='{groupVideoUrl}' target='_blank'>Mira el video tutorial</a>.",
-        lbl_utterances: "Preguntas de Muestra", lbl_answer: "Respuesta", lbl_summary: "Resumen", lbl_deepdive: "Detalles", lbl_question: "Pregunta", btn_add_qa: "Añadir P&R",
+        title: "Editor de Base de Conocimiento", subtitle: "Modela el alma de IA de tu negocio.",
+        section_hours_title: "Horarios", section_assets_title: "Activos Visuales", lbl_logo: "Logo", upload_logo: "Sube tu logo", lbl_photo: "Foto", upload_photo: "Sube una foto",
+        section_bot_title: "Acción Requerida: Configura tu Bot", guide_bot_1: "Abre <a href='{botFatherUrl}' target='_blank'>@BotFather</a>.", guide_bot_2: "Envía <code>/newbot</code>.", guide_bot_3: "Elige un nombre.", guide_bot_4: "<b>Copia el token API</b> y pégalo abajo.", guide_bot_video: "¿Ayuda? <a href='{botVideoUrl}' target='_blank'>Ver el video</a>.",
+        section_group_title: "Acción Requerida: Crear Grupo", guide_group_1: "Crea un grupo privado.", guide_group_2: "Añade tu bot y <code>@TrinAi_SiteBoS_bot</code>.", guide_group_3: "Promociona ambos a Admin.", guide_group_video: "¿Ayuda? <a href='{groupVideoUrl}' target='_blank'>Ver el video</a>.",
+        lbl_utterances: "Preguntas", lbl_answer: "Respuesta", lbl_summary: "Resumen", lbl_deepdive: "Detalles", lbl_question: "Pregunta", btn_add_qa: "Añadir P&R",
         day_monday: "Lunes", day_tuesday: "Martes", day_wednesday: "Miércoles", day_thursday: "Jueves", day_friday: "Viernes", day_saturday: "Sábado", day_sunday: "Domingo",
         btn_save: "Guardar", saving_progress: "Guardando...", saving_success: "¡Guardado!",
         alert_loading_error: "Error al cargar."
       },
       pt: {
-        title: "Editor da Base de Conhecimento", subtitle: "Molde a alma de IA do seu negócio. Cada alteração aqui molda as futuras respostas do seu assistente.",
-        section_assets_title: "Horários e Ativos Visuais", lbl_logo: "Logo da Empresa", upload_logo: "Carregue seu logo", lbl_photo: "Foto Representativa", upload_photo: "Carregue uma foto",
-        section_bot_title: "Ação Necessária: Configure seu Bot", guide_bot_1: "Abra o <a href='https://t.me/BotFather' target='_blank'>@BotFather</a> no Telegram.", guide_bot_2: "Envie <code>/newbot</code> e siga as instruções.", guide_bot_3: "Escolha um nome (ex: Assistente Silva Ltda) e um nome de usuário que termine em 'bot'.", guide_bot_4: "<b>Copie o token da API</b> fornecido e cole no campo abaixo.", guide_bot_video: "Precisa de ajuda? <a href='{botVideoUrl}' target='_blank'>Assista ao vídeo tutorial (3 min)</a>.",
-        section_group_title: "Guia: Criar Grupo de Trabalho", guide_group_1: "Crie um novo grupo privado no Telegram.", guide_group_2: "Adicione tanto o seu novo bot quanto o <code>@TrinAi_SiteBoS_bot</code> como membros.", guide_group_3: "Promova ambos os bots a Administradores com todas as permissões.", guide_group_video: "Precisa de ajuda? <a href='{groupVideoUrl}' target='_blank'>Assista ao vídeo tutorial</a>.",
-        lbl_utterances: "Perguntas de Exemplo", lbl_answer: "Resposta", lbl_summary: "Resumo", lbl_deepdive: "Detalhes", lbl_question: "Pergunta", btn_add_qa: "Adicionar P&R",
+        title: "Editor da Base de Conhecimento", subtitle: "Molde a alma de IA do seu negócio.",
+        section_hours_title: "Horários", section_assets_title: "Ativos Visuais", lbl_logo: "Logo", upload_logo: "Carregue seu logo", lbl_photo: "Foto", upload_photo: "Carregue uma foto",
+        section_bot_title: "Ação Necessária: Configure seu Bot", guide_bot_1: "Abra o <a href='{botFatherUrl}' target='_blank'>@BotFather</a>.", guide_bot_2: "Envie <code>/newbot</code>.", guide_bot_3: "Escolha um nome.", guide_bot_4: "<b>Copie o token da API</b> e cole abaixo.", guide_bot_video: "Ajuda? <a href='{botVideoUrl}' target='_blank'>Ver o vídeo</a>.",
+        section_group_title: "Ação Necessária: Criar Grupo", guide_group_1: "Crie um grupo privado.", guide_group_2: "Adicione seu bot e <code>@TrinAi_SiteBoS_bot</code>.", guide_group_3: "Promova ambos a Admin.", guide_group_video: "Ajuda? <a href='{groupVideoUrl}' target='_blank'>Ver o vídeo</a>.",
+        lbl_utterances: "Perguntas", lbl_answer: "Resposta", lbl_summary: "Resumo", lbl_deepdive: "Detalhes", lbl_question: "Pergunta", btn_add_qa: "Adicionar P&R",
         day_monday: "Segunda", day_tuesday: "Terça", day_wednesday: "Quarta", day_thursday: "Quinta", day_friday: "Sexta", day_saturday: "Sábado", day_sunday: "Domingo",
         btn_save: "Salvar", saving_progress: "Salvando...", saving_success: "Salvo!",
         alert_loading_error: "Erro ao carregar."
