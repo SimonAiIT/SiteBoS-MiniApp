@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>SiteBos Assistant</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-start: #2a3d5f; --bg-end: #1a2a4a; --text-main: #ffffff; --text-muted: rgba(255, 255, 255, 0.7);
+            --primary: #5B6FED; --primary-hover: #4a5ecf; --success: #4cd964; --error: #ff6b6b; --warning: #f59e0b;
+            --border: rgba(255, 255, 255, 0.15); --input-bg: rgba(255, 255, 255, 0.08); --card-bg: rgba(0, 0, 0, 0.2);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; scroll-behavior: smooth; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg-end); color: var(--text-main); height: 100vh; overflow: hidden; }
+        .hidden { display: none !important; }
+        #loader { position:fixed; inset:0; background:var(--bg-end); z-index:99; display:flex; align-items:center; justify-content:center; }
+        .spinner { width:40px; height:40px; border:4px solid rgba(255,255,255,0.1); border-top-color:var(--primary); border-radius:50%; animation:spin 0.8s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        #app-container { display: flex; flex-direction: column; height: 100vh; }
+        #brand-header { display: flex; align-items: center; padding: 10px 15px; background: var(--card-bg); border-bottom: 1px solid var(--border); flex-shrink: 0; }
+        #brand-logo { height: 32px; width: 32px; border-radius: 50%; object-fit: cover; background-color: var(--input-bg); margin-right: 12px; }
+        #brand-name { font-size: 16px; font-weight: 600; margin-right: auto; }
+        #lang-selector { background: transparent; border: 1px solid var(--border); color: white; padding: 6px 10px; border-radius: 8px; font-size: 13px; }
+
+        #main-layout { display: flex; flex-grow: 1; overflow: hidden; }
+        #chat-panel { flex: 2; display: flex; flex-direction: column; background: linear-gradient(135deg, var(--bg-start) 0%, var(--bg-end) 100%); }
+        #message-list { flex-grow: 1; overflow-y: auto; padding: 20px; }
+        .message { max-width: 85%; margin-bottom: 15px; padding: 12px 16px; border-radius: 18px; line-height: 1.5; word-wrap: break-word; }
+        .message.user { background: var(--primary); color: white; border-bottom-right-radius: 4px; margin-left: auto; }
+        .message.ai { background: var(--card-bg); color: var(--text-main); border-bottom-left-radius: 4px; }
+        .message.system { background: var(--input-bg); color: var(--text-muted); font-size: 12px; text-align: center; max-width: 100%; width: 100%; }
+        .message p { margin: 0 0 10px 0; } .message p:last-child { margin-bottom: 0; } .message a { color: var(--primary); font-weight: 600; }
+
+        #input-area { display: flex; padding: 15px; border-top: 1px solid var(--border); background: var(--card-bg); align-items: flex-end; }
+        #agent-indicator { font-size: 11px; color: var(--text-muted); position: absolute; top: -18px; left: 15px; background: var(--card-bg); padding: 2px 6px; border-radius: 4px; }
+        #user-input { flex-grow: 1; resize: none; max-height: 120px; background: var(--input-bg); border: 1px solid var(--border); border-radius: 20px; padding: 12px 18px; font-size: 15px; color: white; }
+        #send-btn { background: var(--primary); color: white; border: none; border-radius: 50%; width: 44px; height: 44px; margin-left: 10px; cursor: pointer; flex-shrink: 0; }
+        #send-btn:disabled { background: var(--input-bg); color: var(--text-muted); }
+
+        #context-panel { flex: 1; background: var(--bg-end); border-left: 1px solid var(--border); padding: 25px; overflow-y: auto; transition: transform 0.3s; }
+        .context-card { background: var(--card-bg); padding: 20px; border-radius: 14px; margin-bottom: 20px; }
+        .context-card h3 { font-size: 16px; margin-bottom: 10px; border-bottom: 1px solid var(--border); padding-bottom: 10px; }
+        .context-card p { font-size: 14px; line-height: 1.6; color: var(--text-muted); }
+        .context-card input { width: 100%; margin-bottom: 10px; } .context-card button { width: 100%; }
+        .context-card .consent-group { display: flex; align-items: start; gap: 10px; font-size: 12px; margin-top: 15px; }
+
+        #widget-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 50; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(10px); }
+        #widget-content { background: var(--bg-end); border: 1px solid var(--border); border-radius: 16px; padding: 30px; max-width: 90%; width: 500px; }
+
+        @media (max-width: 768px) {
+            #context-panel { position: fixed; top: 0; right: 0; bottom: 0; width: 80%; max-width: 320px; transform: translateX(100%); z-index: 20; box-shadow: -5px 0 15px rgba(0,0,0,0.3); }
+            #context-panel.visible { transform: translateX(0); }
+            #brand-header { position: relative; }
+            #context-toggle-btn { display: block; background: none; border: none; color: white; font-size: 20px; cursor: pointer; }
+        }
+        @media (min-width: 769px) { #context-toggle-btn { display: none; } }
+    </style>
+</head>
+<body>
+    <div id="loader"><div class="spinner"></div></div>
+
+    <div id="app-container" class="hidden">
+        <div id="brand-header">
+            <img id="brand-logo" src="https://placehold.co/64x64/2a3d5f/ffffff?text=B" alt="Logo">
+            <h1 id="brand-name">Business Name</h1>
+            <select id="lang-selector">
+                <option value="it">🇮🇹 IT</option><option value="en">🇬🇧 EN</option><option value="fr">🇫🇷 FR</option>
+                <option value="de">🇩🇪 DE</option><option value="es">🇪🇸 ES</option><option value="pt">🇵🇹 PT</option>
+            </select>
+            <button id="context-toggle-btn"><i class="fas fa-info-circle"></i></button>
+        </div>
+
+        <div id="main-layout">
+            <div id="chat-panel">
+                <div id="message-list"></div>
+                <div id="input-area" style="position:relative;">
+                    <span id="agent-indicator"></span>
+                    <textarea id="user-input" rows="1" placeholder="Scrivi un messaggio..."></textarea>
+                    <button id="send-btn" disabled><i class="fas fa-paper-plane"></i></button>
+                </div>
+            </div>
+            <div id="context-panel"></div>
+        </div>
+
+        <div id="widget-overlay" class="hidden">
+            <div id="widget-content"></div>
+        </div>
+    </div>
+
+    <script>
+        const WEBHOOK_URL = "https://trinai.api.workflow.dcmake.it/webhook/020a353d-9275-414c-9837-70018e4f72d6";
+        const tg = window.Telegram?.WebApp || {};
+        
+        const dom = {
+            loader: document.getElementById('loader'), app: document.getElementById('app-container'),
+            brandLogo: document.getElementById('brand-logo'), brandName: document.getElementById('brand-name'),
+            langSelector: document.getElementById('lang-selector'), messageList: document.getElementById('message-list'),
+            agentIndicator: document.getElementById('agent-indicator'), userInput: document.getElementById('user-input'),
+            sendBtn: document.getElementById('send-btn'), contextPanel: document.getElementById('context-panel'),
+            widgetOverlay: document.getElementById('widget-overlay'), widgetContent: document.getElementById('widget-content'),
+            contextToggleBtn: document.getElementById('context-toggle-btn')
+        };
+        
+        let sessionId = localStorage.getItem('siteBosSessionId');
+        if (!sessionId) {
+            sessionId = `web_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+            localStorage.setItem('siteBosSessionId', sessionId);
+        }
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const vatNumber = urlParams.get('vat');
+
+        function appendMessage(html, speaker) {
+            const msgDiv = document.createElement('div');
+            msgDiv.className = `message ${speaker}`;
+            msgDiv.innerHTML = html;
+            dom.messageList.appendChild(msgDiv);
+            dom.messageList.scrollTop = dom.messageList.scrollHeight;
+        }
+
+        async function handleApiResponse(data) {
+            if (data.responses && Array.isArray(data.responses)) {
+                for (const response of data.responses) {
+                    if (response.response_type === 'CHAT_MESSAGE') {
+                        appendMessage(response.content, 'ai');
+                        dom.agentIndicator.textContent = `Parlando con: ${response.responding_agent_name || 'Assistente'}`;
+                    } else if (response.response_type === 'UPDATE_CONTEXT_PANEL') {
+                        updateContextPanel(response.context);
+                    } else if (response.response_type === 'LOAD_WIDGET') {
+                        loadWidget(response.widget_type, response.data);
+                    }
+                }
+            } else if (data.output) { // Fallback per il tuo workflow attuale
+                appendMessage(data.output, 'ai');
+                updateContextPanel({ view_type: 'RAW_DATA', data: data });
+            }
+        }
+
+        function updateContextPanel(context) {
+            dom.contextPanel.innerHTML = '';
+            if (!context) return;
+            
+            if (context.view_type === 'WELCOME') {
+                dom.contextPanel.innerHTML = `<div class="context-card"><h3>${context.data.title}</h3><div>${context.data.content}</div></div>`;
+            } else if (context.view_type === 'REGISTRATION_FORM') {
+                dom.contextPanel.innerHTML = `
+                    <div class="context-card" id="reg-wizard">
+                        <div id="reg-step-1">
+                            <h3>${context.data.title}</h3>
+                            <p>${context.data.subtitle}</p>
+                            <input type="text" id="reg-name" placeholder="Nome">
+                            <input type="text" id="reg-surname" placeholder="Cognome">
+                            <input type="email" id="reg-email" placeholder="Email">
+                            <button class="btn btn-primary" onclick="goToRegStep(2)">Avanti</button>
+                        </div>
+                        <div id="reg-step-2" class="hidden">
+                            <h3>Consensi</h3>
+                            <div class="consent-group"><input type="checkbox" id="privacy-consent"><label for="privacy-consent">Accetto la <a href="#" target="_blank">Privacy Policy</a>.</label></div>
+                            <div class="consent-group"><input type="checkbox" id="terms-consent"><label for="terms-consent">Accetto i <a href="#" target="_blank">Termini di Servizio</a>.</label></div>
+                            <button class="btn btn-primary" onclick="submitRegistration()">Registrati e Continua</button>
+                        </div>
+                    </div>`;
+            } else if (context.view_type === 'KNOWLEDGE_FRAGMENT') {
+                // Logica per renderizzare il frammento
+            }
+        }
+        
+        window.goToRegStep = (step) => {
+            if (step === 2) {
+                if (!document.getElementById('reg-name').value || !document.getElementById('reg-email').value) {
+                    alert('Nome ed Email sono obbligatori.'); return;
+                }
+                document.getElementById('reg-step-1').classList.add('hidden');
+                document.getElementById('reg-step-2').classList.remove('hidden');
+            }
+        }
+        
+        window.submitRegistration = async () => {
+            if (!document.getElementById('privacy-consent').checked || !document.getElementById('terms-consent').checked) {
+                alert('Devi accettare i termini per procedere.'); return;
+            }
+            const payload = {
+                action: 'register_user', sessionId: sessionId,
+                user_data: {
+                    name: document.getElementById('reg-name').value,
+                    surname: document.getElementById('reg-surname').value,
+                    email: document.getElementById('reg-email').value
+                },
+                consents: { privacy_policy_accepted: true, terms_of_service_accepted: true, timestamp_utc: new Date().toISOString() },
+                vat_number: vatNumber, forced_language: dom.langSelector.value
+            };
+            // Invia payload al backend...
+        }
+
+        function loadWidget(widgetType, data) {
+            dom.widgetOverlay.classList.remove('hidden');
+            if (widgetType === 'APPOINTMENT_SCHEDULER') {
+                dom.widgetContent.innerHTML = `<h2>Seleziona uno slot</h2><p>(Interfaccia Agenda qui)</p><button onclick="closeWidget()">Chiudi</button>`;
+            }
+        }
+        window.closeWidget = () => dom.widgetOverlay.classList.add('hidden');
+
+        async function sendMessage(text) {
+            if (!text.trim()) return;
+            appendMessage(text, 'user');
+            dom.userInput.value = '';
+            dom.userInput.style.height = 'auto';
+            dom.sendBtn.disabled = true;
+
+            const payload = {
+                userId: sessionId, message: text,
+                token: '', username: '', password: '',
+                forced_language: dom.langSelector.value, vat_number: vatNumber
+            };
+
+            try {
+                const res = await fetch(WEBHOOK_URL, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const responseData = await res.json();
+                handleApiResponse(responseData);
+            } catch (error) {
+                appendMessage('Si è verificato un errore di connessione.', 'system');
+            } finally {
+                dom.sendBtn.disabled = false;
+            }
+        }
+
+        async function initialize() {
+            if (!vatNumber) {
+                document.body.innerHTML = '<h1>Errore</h1><p>Parametro Tenant mancante.</p>';
+                return;
+            }
+            const initPayload = {
+                userId: sessionId, message: '__INIT_SESSION__',
+                token: '', username: '', password: '',
+                forced_language: dom.langSelector.value, vat_number: vatNumber
+            };
+            try {
+                const res = await fetch(WEBHOOK_URL, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(initPayload)
+                });
+                const data = await res.json();
+                
+                const ownerData = data.owner_data;
+                const honeyPot = data.HoneyPot;
+                dom.brandName.textContent = ownerData.ragione_sociale;
+                
+                updateContextPanel({ view_type: 'WELCOME', data: { title: 'Benvenuto!', content: honeyPot.offer_text } });
+                appendMessage(honeyPot.offer_text, 'ai');
+
+                dom.loader.classList.add('hidden');
+                dom.app.classList.remove('hidden');
+                dom.sendBtn.disabled = false;
+            } catch (error) {
+                document.body.innerHTML = '<h1>Errore di configurazione</h1><p>Impossibile caricare i dati per questo tenant.</p>';
+            }
+        }
+        
+        dom.sendBtn.addEventListener('click', () => sendMessage(dom.userInput.value));
+        dom.userInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage(dom.userInput.value);
+            }
+        });
+        dom.userInput.addEventListener('input', () => {
+            dom.userInput.style.height = 'auto';
+            dom.userInput.style.height = `${dom.userInput.scrollHeight}px`;
+        });
+        dom.contextToggleBtn.addEventListener('click', () => dom.contextPanel.classList.toggle('visible'));
+
+        initialize();
+    </script>
+</body>
+</html>
