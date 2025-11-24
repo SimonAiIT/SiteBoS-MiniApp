@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>HoneyPot Editor</title>
+  
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <style>
+    :root {
+      --bg-start: #2a3d5f; --bg-end: #1a2a4a; --text-main: #ffffff; --text-muted: rgba(255, 255, 255, 0.7);
+      --primary: #5B6FED; --primary-hover: #4a5ecf; --success: #4cd964; --error: #ff6b6b; --warning: #f59e0b;
+      --border: rgba(255, 255, 255, 0.15); --input-bg: rgba(255, 255, 255, 0.08); --card-bg: rgba(0, 0, 0, 0.2);
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    body { font-family: 'Inter', sans-serif; background: linear-gradient(135deg, var(--bg-start) 0%, var(--bg-end) 100%); color: var(--text-main); min-height: 100vh; }
+    .container { width: 100%; max-width: 700px; margin: 0 auto; padding: 20px 20px 100px 20px; }
+    .hidden { display: none !important; }
+    h2 { font-size: 26px; font-weight: 700; margin-bottom: 8px; }
+    p.subtitle { font-size: 15px; color: var(--text-muted); margin-bottom: 30px; line-height: 1.6; }
+    label { display: block; font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+    input, textarea, select { width: 100%; padding: 14px; background: var(--input-bg); border: 1px solid var(--border); border-radius: 12px; color: white; font-family: inherit; font-size: 15px; transition: all 0.3s; }
+    textarea { resize: vertical; min-height: 100px; }
+    select { background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%239ca3af' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e"); background-position: right 0.7rem center; background-repeat: no-repeat; background-size: 1.2em 1.2em; padding-right: 2.5rem; }
+    input:focus, textarea:focus, select:focus { outline: none; border-color: var(--primary); }
+    .btn { padding: 16px; border-radius: 14px; font-weight: 600; font-size: 15px; cursor: pointer; border: none; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; }
+    .btn-primary { background: var(--primary); color: white; }
+    .btn-secondary { background: transparent; border: 1px solid var(--border); color: var(--text-muted); }
+    .btn-sm { padding: 8px 14px; font-size: 13px; border-radius: 10px; }
+    .btn:disabled { background: var(--input-bg) !important; color: var(--text-muted) !important; opacity: 0.5; cursor: not-allowed; border-color: var(--border) !important; }
+    .row { display: flex; gap: 12px; } .col { flex: 1; }
+    #loader { position:fixed; inset:0; background:var(--bg-end); z-index:99; display:flex; align-items:center; justify-content:center; }
+    .spinner { width:40px; height:40px; border:4px solid rgba(255,255,255,0.1); border-top-color:var(--primary); border-radius:50%; animation:spin 0.8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    
+    .knowledge-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 16px; margin-bottom: 20px; overflow: hidden; }
+    .card-header { padding: 18px 20px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; background: rgba(255,255,255,0.03); }
+    .card-header h3 { font-size: 16px; margin: 0; display: flex; align-items: center; gap: 12px; }
+    .card-header .chevron { transition: transform 0.3s; }
+    .card-content { padding: 20px; border-top: 1px solid var(--border); display: none; }
+    .knowledge-card.open .card-content { display: block; }
+    .knowledge-card.open .chevron { transform: rotate(180deg); }
+    .input-group { margin-bottom: 20px; }
+    
+    .utterance-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 8px; }
+    .tag { background: rgba(255,255,255,0.1); padding: 5px 10px; font-size: 12px; border-radius: 20px; }
+    
+    .deep-dive-item { background: rgba(0,0,0,0.2); padding: 15px; border-radius: 12px; margin-bottom: 15px; }
+    .deep-dive-item .input-group { margin-bottom: 10px; }
+    
+    .hours-grid { display: grid; grid-template-columns: 80px 1fr; gap: 10px 15px; align-items: center; }
+    .hours-grid label { margin: 0; text-transform: none; font-weight: 500; }
+    .time-selector { display: flex; align-items: center; gap: 8px; }
+    .time-selector select { width: auto; flex: 1; }
+    
+    .asset-upload-box { border: 2px dashed var(--border); border-radius: 16px; padding: 20px; text-align: center; cursor: pointer; background: rgba(255,255,255,0.03); transition: all 0.3s; position: relative; }
+    .asset-upload-box .upload-icon { font-size: 28px; margin-bottom: 10px; }
+    .asset-upload-box .upload-text { font-size: 13px; color: var(--text-muted); }
+    .asset-preview { margin-top: 15px; }
+    .asset-preview img { max-width: 100px; max-height: 100px; border-radius: 8px; border: 1px solid var(--border); }
+    .asset-description { font-size: 12px; font-style: italic; color: var(--text-muted); margin-top: 8px; }
+    
+    .guide-box { background: rgba(0,0,0,0.2); border-radius: 12px; padding: 20px; }
+    .guide-step { display: flex; align-items: center; gap: 15px; margin-bottom: 15px; font-size: 14px; }
+    .guide-step i { font-size: 18px; color: var(--primary); width: 20px; text-align: center; }
+    .guide-box .input-group { margin-top: 20px; }
+
+    .save-bar { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(10px); padding: 15px; border-top: 1px solid var(--border); z-index: 10; transform: translateY(100%); transition: transform 0.3s; }
+    .save-bar.visible { transform: translateY(0); }
+  </style>
+</head>
+<body>
+
+  <div id="loader"><div class="spinner"></div></div>
+
+  <div id="app-content" class="container hidden">
+    <h2 data-i18n="title"></h2>
+    <p class="subtitle" data-i18n="subtitle"></p>
+
+    <div id="honeypot-container"></div>
+
+    <div class="knowledge-card">
+      <div class="card-header" onclick="toggleCard(this)">
+        <h3><i class="fas fa-clock"></i> <span data-i18n="section_assets_title"></span></h3>
+        <i class="fas fa-chevron-down chevron"></i>
+      </div>
+      <div class="card-content">
+        <div class="hours-grid" id="hours-container"></div>
+        <div class="row" style="margin-top: 30px; gap: 20px;">
+          <div class="col">
+            <label data-i18n="lbl_logo"></label>
+            <div class="asset-upload-box" id="logo-upload-box">
+              <input type="file" onchange="handleAssetUpload('logo', this.files[0])">
+              <div class="upload-icon"><i class="fas fa-image"></i></div>
+              <span class="upload-text" data-i18n="upload_logo"></span>
+              <div id="logo-preview" class="asset-preview"></div>
+            </div>
+          </div>
+          <div class="col">
+            <label data-i18n="lbl_photo"></label>
+            <div class="asset-upload-box" id="photo-upload-box">
+              <input type="file" onchange="handleAssetUpload('photo', this.files[0])">
+              <div class="upload-icon"><i class="fas fa-camera"></i></div>
+              <span class="upload-text" data-i18n="upload_photo"></span>
+              <div id="photo-preview" class="asset-preview"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="knowledge-card">
+      <div class="card-header" onclick="toggleCard(this)">
+        <h3><i class="fab fa-telegram-plane"></i> <span data-i18n="section_bot_title"></span></h3>
+        <i class="fas fa-chevron-down chevron"></i>
+      </div>
+      <div class="card-content">
+        <div class="guide-box">
+          <div class="guide-step"><i class="fab fa-telegram"></i> <span data-i18n="guide_bot_1"></span></div>
+          <div class="guide-step"><i class="fas fa-plus-circle"></i> <span data-i18n="guide_bot_2"></span></div>
+          <div class="guide-step"><i class="fas fa-pen"></i> <span data-i18n="guide_bot_3"></span></div>
+          <div class="guide-step"><i class="fas fa-key"></i> <span data-i18n="guide_bot_4"></span></div>
+          <div class="input-group">
+            <label>Telegram Bot Token</label>
+            <input type="text" id="bot-token-input" placeholder="12345:ABC-...">
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="knowledge-card">
+      <div class="card-header" onclick="toggleCard(this)">
+        <h3><i class="fas fa-users"></i> <span data-i18n="section_group_title"></span></h3>
+        <i class="fas fa-chevron-down chevron"></i>
+      </div>
+      <div class="card-content">
+        <div class="guide-box">
+          <div class="guide-step"><i class="fas fa-plus-circle"></i> <span data-i18n="guide_group_1"></span></div>
+          <div class="guide-step"><i class="fas fa-user-plus"></i> <span data-i18n="guide_group_2"></span></div>
+          <div class="guide-step"><i class="fas fa-user-shield"></i> <span data-i18n="guide_group_3"></span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="save-bar" class="save-bar">
+    <button id="saveBtn" class="btn btn-primary" disabled><i class="fas fa-save"></i> <span data-i18n="btn_save"></span></button>
+  </div>
+
+  <script>
+    const WEBHOOK_URL = "https://trinai.api.workflow.dcmake.it/webhook/83acc670-15ae-4da0-ae0e-3587c85bd5f4";
+    const tg = window.Telegram.WebApp;
+    tg.ready();
+    tg.expand();
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const vatNumber = urlParams.get('vat');
+    
+    let honeypotData = {};
+    let initialDataString = '';
+    let currentLang = 'it';
+    const dict = () => i18n[currentLang] || i18n.it;
+
+    const dom = {
+        loader: document.getElementById('loader'),
+        app: document.getElementById('app-content'),
+        container: document.getElementById('honeypot-container'),
+        hoursContainer: document.getElementById('hours-container'),
+        saveBar: document.getElementById('save-bar'),
+        saveBtn: document.getElementById('saveBtn')
+    };
+
+    function changeLanguage(lang) {
+        currentLang = lang;
+        document.querySelectorAll('[data-i18n]').forEach(el => {
+            const key = el.getAttribute('data-i18n');
+            if (dict()[key]) el.innerHTML = dict()[key];
+        });
+    }
+    
+    function checkIfDirty() {
+        const currentStateString = JSON.stringify(honeypotData);
+        const isDirty = currentStateString !== initialDataString;
+        dom.saveBar.classList.toggle('visible', isDirty);
+        dom.saveBtn.disabled = !isDirty;
+    }
+
+    async function loadData() {
+        if (!vatNumber) {
+            tg.showAlert('ID not found');
+            return;
+        }
+        try {
+            const res = await fetch(WEBHOOK_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'get_honeypot_data', vat_number: vatNumber })
+            });
+            if (!res.ok) throw new Error('Network response was not ok');
+            const data = await res.json();
+            honeypotData = data.oHONEYPOT.HoneyPot;
+            renderAll();
+            initialDataString = JSON.stringify(honeypotData);
+            changeLanguage(urlParams.get('lang') || 'it');
+            checkIfDirty();
+            dom.loader.classList.add('hidden');
+            dom.app.classList.remove('hidden');
+        } catch (error) {
+            tg.showAlert(dict().alert_loading_error);
+        }
+    }
+
+    function renderAll() {
+        dom.container.innerHTML = '';
+        honeypotData.knowledge_fragments.forEach((fragment, index) => {
+            const card = document.createElement('div');
+            card.className = 'knowledge-card';
+            const fragmentTitle = fragment.fragment_id.replace(/_V\d+$/, '').replace(/_/g, ' ');
+            card.innerHTML = `
+                <div class="card-header" onclick="toggleCard(this)">
+                    <h3><i class="fas fa-book-open"></i> ${fragmentTitle}</h3>
+                    <i class="fas fa-chevron-down chevron"></i>
+                </div>
+                <div class="card-content">
+                    <div class="input-group">
+                        <label data-i18n="lbl_utterances"></label>
+                        <div class="utterance-tags">${fragment.user_utterances.map(u => `<span class="tag">${u}</span>`).join('')}</div>
+                    </div>
+                    <div class="input-group">
+                        <label data-i18n="lbl_answer"></label>
+                        <textarea data-path="knowledge_fragments.${index}.answer_fragment" rows="5">${fragment.answer_fragment || ''}</textarea>
+                    </div>
+                    <div class="input-group">
+                        <label data-i18n="lbl_summary"></label>
+                        <input type="text" data-path="knowledge_fragments.${index}.summary" value="${fragment.summary || ''}">
+                    </div>
+                    <h4 data-i18n="lbl_deepdive"></h4>
+                    <div id="deep-dive-${index}"></div>
+                    <button type="button" class="btn btn-secondary btn-sm" onclick="addDeepDive(${index})"><i class="fas fa-plus"></i> <span data-i18n="btn_add_qa"></span></button>
+                </div>`;
+            dom.container.appendChild(card);
+            renderDeepDives(index);
+        });
+
+        dom.hoursContainer.innerHTML = '';
+        const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+        days.forEach(day => {
+            dom.hoursContainer.innerHTML += `
+                <label data-i18n="day_${day}"></label>
+                <div class="time-selector">
+                    <select data-path="availability_schedule.hours.${day}.from"></select>
+                    <span>-</span>
+                    <select data-path="availability_schedule.hours.${day}.to"></select>
+                </div>`;
+        });
+        
+        const selectors = dom.hoursContainer.querySelectorAll('select');
+        selectors.forEach(selector => {
+            for (let i = 0; i < 24; i++) {
+                selector.innerHTML += `<option value="${i}">${i.toString().padStart(2, '0')}:00</option>`;
+            }
+        });
+    }
+    
+    function renderDeepDives(fragmentIndex) {
+        const container = document.getElementById(`deep-dive-${fragmentIndex}`);
+        container.innerHTML = '';
+        honeypotData.knowledge_fragments[fragmentIndex].sections.forEach((section, s_index) => {
+            const item = document.createElement('div');
+            item.className = 'deep-dive-item';
+            item.innerHTML = `
+                <div class="input-group"><label data-i18n="lbl_question"></label><input type="text" data-path="knowledge_fragments.${fragmentIndex}.sections.${s_index}.question" value="${section.question || ''}"></div>
+                <div class="input-group"><label data-i18n="lbl_answer"></label><textarea data-path="knowledge_fragments.${fragmentIndex}.sections.${s_index}.answer">${section.answer || ''}</textarea></div>
+                <button type="button" class="btn btn-secondary btn-sm" onclick="removeDeepDive(${fragmentIndex}, ${s_index})"><i class="fas fa-trash"></i></button>
+            `;
+            container.appendChild(item);
+        });
+        changeLanguage(currentLang);
+    }
+    
+    window.addDeepDive = (fragmentIndex) => {
+        honeypotData.knowledge_fragments[fragmentIndex].sections.push({ question: '', answer: '' });
+        renderDeepDives(fragmentIndex);
+        checkIfDirty();
+    };
+    
+    window.removeDeepDive = (fragmentIndex, sectionIndex) => {
+        honeypotData.knowledge_fragments[fragmentIndex].sections.splice(sectionIndex, 1);
+        renderDeepDives(fragmentIndex);
+        checkIfDirty();
+    };
+
+    window.toggleCard = (header) => {
+        header.parentElement.classList.toggle('open');
+    };
+    
+    function getObjectValue(obj, path) {
+        return path.split('.').reduce((acc, part) => acc && acc[part], obj);
+    }
+
+    function setObjectValue(obj, path, value) {
+        const keys = path.split('.');
+        const lastKey = keys.pop();
+        const lastObj = keys.reduce((o, key) => o[key] = o[key] || {}, obj);
+        lastObj[lastKey] = value;
+    }
+
+    document.body.addEventListener('input', (e) => {
+        if (e.target.dataset.path) {
+            setObjectValue(honeypotData, e.target.dataset.path, e.target.value);
+            checkIfDirty();
+        }
+    });
+
+    dom.saveBtn.addEventListener('click', async () => {
+        dom.saveBtn.disabled = true;
+        dom.saveBtn.innerHTML = `<i class="fas fa-circle-notch fa-spin"></i> <span data-i18n="saving_progress">${dict().saving_progress}</span>`;
+        try {
+            await fetch(WEBHOOK_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'save_honeypot_data', vat_number: vatNumber, honeypot_update: honeypotData })
+            });
+            tg.HapticFeedback.notificationOccurred('success');
+            initialDataString = JSON.stringify(honeypotData);
+            dom.saveBtn.innerHTML = `<i class="fas fa-check"></i> <span data-i18n="saving_success">${dict().saving_success}</span>`;
+            setTimeout(() => {
+                dom.saveBtn.innerHTML = `<i class="fas fa-save"></i> <span data-i18n="btn_save">${dict().btn_save}</span>`;
+                checkIfDirty();
+            }, 2000);
+        } catch (error) {
+            tg.showAlert(dict().alert_saving_error);
+            dom.saveBtn.disabled = false;
+            dom.saveBtn.innerHTML = `<i class="fas fa-save"></i> <span data-i18n="btn_save">${dict().btn_save}</span>`;
+        }
+    });
+
+    loadData();
+
+    const i18n = {
+      it: {
+        title: "Editor Base di Conoscenza", subtitle: "Modella l'anima AI della tua azienda.",
+        section_assets_title: "Orari & Asset Visivi", lbl_logo: "Logo Aziendale", upload_logo: "Carica il tuo logo", lbl_photo: "Foto Rappresentativa", upload_photo: "Carica una foto",
+        section_bot_title: "Configura il Tuo Bot", guide_bot_1: "Apri @BotFather su Telegram.", guide_bot_2: "Invia /newbot e segui le istruzioni.", guide_bot_3: "Scegli un nome e uno username.", guide_bot_4: "Copia il token API e incollalo qui sotto.",
+        section_group_title: "Crea Gruppo di Lavoro", guide_group_1: "Crea un nuovo gruppo privato.", guide_group_2: "Aggiungi il tuo nuovo bot come membro.", guide_group_3: "Promuovi il bot ad Amministratore.",
+        lbl_utterances: "Domande Esempio (non modificabili)", lbl_answer: "Risposta", lbl_summary: "Sintesi (1 frase)", lbl_deepdive: "Approfondimenti", lbl_question: "Domanda", btn_add_qa: "Aggiungi D&R",
+        day_monday: "Lunedì", day_tuesday: "Martedì", day_wednesday: "Mercoledì", day_thursday: "Giovedì", day_friday: "Venerdì", day_saturday: "Sabato", day_sunday: "Domenica",
+        btn_save: "Salva Modifiche", saving_progress: "Salvataggio...", saving_success: "Salvato!",
+        alert_loading_error: "Errore nel caricamento dei dati."
+      },
+      en: {
+        title: "Knowledge Base Editor", subtitle: "Shape the AI soul of your business.",
+        section_assets_title: "Hours & Visual Assets", lbl_logo: "Company Logo", upload_logo: "Upload your logo", lbl_photo: "Representative Photo", upload_photo: "Upload a photo",
+        section_bot_title: "Configure Your Bot", guide_bot_1: "Open @BotFather on Telegram.", guide_bot_2: "Send /newbot and follow the instructions.", guide_bot_3: "Choose a name and a username.", guide_bot_4: "Copy the API token and paste it below.",
+        section_group_title: "Create Work Group", guide_group_1: "Create a new private group.", guide_group_2: "Add your new bot as a member.", guide_group_3: "Promote the bot to Administrator.",
+        lbl_utterances: "Sample Questions (read-only)", lbl_answer: "Answer", lbl_summary: "Summary (1 sentence)", lbl_deepdive: "Deep Dives", lbl_question: "Question", btn_add_qa: "Add Q&A",
+        day_monday: "Monday", day_tuesday: "Tuesday", day_wednesday: "Wednesday", day_thursday: "Thursday", day_friday: "Friday", day_saturday: "Saturday", day_sunday: "Sunday",
+        btn_save: "Save Changes", saving_progress: "Saving...", saving_success: "Saved!",
+        alert_loading_error: "Error loading data."
+      },
+      fr: {
+        title: "Éditeur de Base de Connaissances", subtitle: "Façonnez l'âme IA de votre entreprise.",
+        section_assets_title: "Horaires & Actifs Visuels", lbl_logo: "Logo de l'entreprise", upload_logo: "Téléchargez votre logo", lbl_photo: "Photo Représentative", upload_photo: "Téléchargez une photo",
+        section_bot_title: "Configurez Votre Bot", guide_bot_1: "Ouvrez @BotFather sur Telegram.", guide_bot_2: "Envoyez /newbot et suivez les instructions.", guide_bot_3: "Choisissez un nom et un nom d'utilisateur.", guide_bot_4: "Copiez le jeton API et collez-le ci-dessous.",
+        section_group_title: "Créer un Groupe de Travail", guide_group_1: "Créez un nouveau groupe privé.", guide_group_2: "Ajoutez votre nouveau bot comme membre.", guide_group_3: "Promouvez le bot au rang d'Administrateur.",
+        lbl_utterances: "Exemples de Questions", lbl_answer: "Réponse", lbl_summary: "Résumé (1 phrase)", lbl_deepdive: "Détails", lbl_question: "Question", btn_add_qa: "Ajouter Q&R",
+        day_monday: "Lundi", day_tuesday: "Mardi", day_wednesday: "Mercredi", day_thursday: "Jeudi", day_friday: "Vendredi", day_saturday: "Samedi", day_sunday: "Dimanche",
+        btn_save: "Enregistrer", saving_progress: "Enregistrement...", saving_success: "Enregistré !",
+        alert_loading_error: "Erreur de chargement."
+      },
+      de: {
+        title: "Wissensdatenbank-Editor", subtitle: "Gestalten Sie die KI-Seele Ihres Unternehmens.",
+        section_assets_title: "Öffnungszeiten & Visuelle Assets", lbl_logo: "Firmenlogo", upload_logo: "Logo hochladen", lbl_photo: "Repräsentatives Foto", upload_photo: "Foto hochladen",
+        section_bot_title: "Bot Konfigurieren", guide_bot_1: "Öffnen Sie @BotFather.", guide_bot_2: "/newbot senden.", guide_bot_3: "Namen wählen.", guide_bot_4: "API-Token kopieren.",
+        section_group_title: "Arbeitsgruppe Erstellen", guide_group_1: "Neue private Gruppe erstellen.", guide_group_2: "Bot als Mitglied hinzufügen.", guide_group_3: "Bot zum Admin befördern.",
+        lbl_utterances: "Beispielfragen", lbl_answer: "Antwort", lbl_summary: "Zusammenfassung", lbl_deepdive: "Details", lbl_question: "Frage", btn_add_qa: "F&A hinzufügen",
+        day_monday: "Montag", day_tuesday: "Dienstag", day_wednesday: "Mittwoch", day_thursday: "Donnerstag", day_friday: "Freitag", day_saturday: "Samstag", day_sunday: "Sonntag",
+        btn_save: "Speichern", saving_progress: "Speichern...", saving_success: "Gespeichert!",
+        alert_loading_error: "Daten-Ladefehler."
+      },
+      es: {
+        title: "Editor de Base de Conocimiento", subtitle: "Modela el alma de IA de tu negocio.",
+        section_assets_title: "Horarios y Activos Visuales", lbl_logo: "Logo de la Empresa", upload_logo: "Sube tu logo", lbl_photo: "Foto Representativa", upload_photo: "Sube una foto",
+        section_bot_title: "Configura tu Bot", guide_bot_1: "Abre @BotFather.", guide_bot_2: "Envía /newbot.", guide_bot_3: "Elige un nombre.", guide_bot_4: "Copia el token API.",
+        section_group_title: "Crear Grupo de Trabajo", guide_group_1: "Crea un grupo privado.", guide_group_2: "Añade tu bot.", guide_group_3: "Promociona a Admin.",
+        lbl_utterances: "Preguntas de Muestra", lbl_answer: "Respuesta", lbl_summary: "Resumen", lbl_deepdive: "Detalles", lbl_question: "Pregunta", btn_add_qa: "Añadir P&R",
+        day_monday: "Lunes", day_tuesday: "Martes", day_wednesday: "Miércoles", day_thursday: "Jueves", day_friday: "Viernes", day_saturday: "Sábado", day_sunday: "Domingo",
+        btn_save: "Guardar", saving_progress: "Guardando...", saving_success: "¡Guardado!",
+        alert_loading_error: "Error al cargar."
+      },
+      pt: {
+        title: "Editor da Base de Conhecimento", subtitle: "Molde a alma de IA do seu negócio.",
+        section_assets_title: "Horários e Ativos Visuais", lbl_logo: "Logo da Empresa", upload_logo: "Carregue seu logo", lbl_photo: "Foto Representativa", upload_photo: "Carregue uma foto",
+        section_bot_title: "Configure seu Bot", guide_bot_1: "Abra @BotFather.", guide_bot_2: "Envie /newbot.", guide_bot_3: "Escolha um nome.", guide_bot_4: "Copie o token da API.",
+        section_group_title: "Criar Grupo de Trabalho", guide_group_1: "Crie um grupo privado.", guide_group_2: "Adicione seu bot.", guide_group_3: "Promova a Admin.",
+        lbl_utterances: "Perguntas de Exemplo", lbl_answer: "Resposta", lbl_summary: "Resumo", lbl_deepdive: "Detalhes", lbl_question: "Pergunta", btn_add_qa: "Adicionar P&R",
+        day_monday: "Segunda", day_tuesday: "Terça", day_wednesday: "Quarta", day_thursday: "Quinta", day_friday: "Sexta", day_saturday: "Sábado", day_sunday: "Domingo",
+        btn_save: "Salvar", saving_progress: "Salvando...", saving_success: "Salvo!",
+        alert_loading_error: "Erro ao carregar."
+      }
+    };
+  </script>
+</body>
+</html>
