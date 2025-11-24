@@ -150,7 +150,7 @@
     <button id="saveBtn" class="btn btn-primary" disabled><i class="fas fa-save"></i> <span data-i18n="btn_save"></span></button>
   </div>
 
-  <script>
+<script>
     const WEBHOOK_URL = "https://trinai.api.workflow.dcmake.it/webhook/48ee3cba-99dc-407a-98af-624e97b1e888";
     const BOTFATHER_VIDEO_URL = "https://www.youtube.com/watch?v=7a8UWhJWurs";
     const GROUP_VIDEO_URL = "https://www.youtube.com/watch?v=UunrYuBkQaw";
@@ -172,7 +172,8 @@
         container: document.getElementById('honeypot-container'),
         hoursContainer: document.getElementById('hours-container'),
         saveBar: document.getElementById('save-bar'),
-        saveBtn: document.getElementById('saveBtn')
+        saveBtn: document.getElementById('saveBtn'),
+        botTokenInput: document.getElementById('bot-token-input')
     };
 
     function changeLanguage(lang) {
@@ -193,6 +194,51 @@
         const isDirty = currentStateString !== initialDataString;
         dom.saveBar.classList.toggle('visible', isDirty);
         dom.saveBtn.disabled = !isDirty;
+    }
+    
+    function getFileData(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = () => {
+                const result = reader.result;
+                const base64 = result.split(',')[1];
+                const mime = result.match(/:(.*?);/)[1];
+                resolve({ base64, mime, dataUrl: result });
+            };
+            reader.onerror = error => reject(error);
+        });
+    }
+
+    async function handleAssetUpload(assetType, file) {
+        if (!file) return;
+        const box = document.getElementById(`${assetType}-upload-box`);
+        const previewContainer = document.getElementById(`${assetType}-preview`);
+        previewContainer.innerHTML = `<div class="spinner" style="width:20px; height:20px; border-width:2px;"></div>`;
+        try {
+            const fileData = await getFileData(file);
+            const res = await fetch(WEBHOOK_URL, {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'analyze_image_asset', vat_number: vatNumber, asset_type: assetType, file_data: fileData.base64, mime_type: fileData.mime })
+            });
+            if (!res.ok) throw new Error('Analysis failed');
+            const analysisResult = await res.json();
+            
+            if (!honeypotData.assets) honeypotData.assets = {};
+            honeypotData.assets[assetType] = {
+                description: analysisResult.description,
+                base64: fileData.base64,
+                mime: fileData.mime
+            };
+            
+            previewContainer.innerHTML = `
+                <img src="${fileData.dataUrl}" alt="${assetType}">
+                <p class="asset-description">${analysisResult.description}</p>`;
+            checkIfDirty();
+        } catch (error) {
+            tg.showAlert('Error analyzing image.');
+            previewContainer.innerHTML = '';
+        }
     }
 
     async function loadData() {
@@ -221,25 +267,12 @@
                 card.className = 'knowledge-card';
                 const fragmentTitle = fragment.fragment_id.replace(/_V\d+$/, '').replace(/_/g, ' ');
                 card.innerHTML = `
-                    <div class="card-header" onclick="toggleCard(this)">
-                        <h3><i class="fas fa-book-open"></i> ${fragmentTitle}</h3>
-                        <i class="fas fa-chevron-down chevron"></i>
-                    </div>
+                    <div class="card-header" onclick="toggleCard(this)"><h3><i class="fas fa-book-open"></i> ${fragmentTitle}</h3><i class="fas fa-chevron-down chevron"></i></div>
                     <div class="card-content">
-                        <div class="input-group">
-                            <label data-i18n="lbl_utterances"></label>
-                            <div class="utterance-tags">${(fragment.user_utterances || []).map(u => `<span class="tag">${u}</span>`).join('')}</div>
-                        </div>
-                        <div class="input-group">
-                            <label data-i18n="lbl_answer"></label>
-                            <textarea data-path="knowledge_fragments.${index}.answer_fragment" rows="5">${fragment.answer_fragment || ''}</textarea>
-                        </div>
-                        <div class="input-group">
-                            <label data-i18n="lbl_summary"></label>
-                            <input type="text" data-path="knowledge_fragments.${index}.summary" value="${fragment.summary || ''}">
-                        </div>
-                        <h4 data-i18n="lbl_deepdive"></h4>
-                        <div id="deep-dive-${index}"></div>
+                        <div class="input-group"><label data-i18n="lbl_utterances"></label><div class="utterance-tags">${(fragment.user_utterances || []).map(u => `<span class="tag">${u}</span>`).join('')}</div></div>
+                        <div class="input-group"><label data-i18n="lbl_answer"></label><textarea data-path="knowledge_fragments.${index}.answer_fragment" rows="5">${fragment.answer_fragment || ''}</textarea></div>
+                        <div class="input-group"><label data-i18n="lbl_summary"></label><input type="text" data-path="knowledge_fragments.${index}.summary" value="${fragment.summary || ''}"></div>
+                        <h4 data-i18n="lbl_deepdive"></h4><div id="deep-dive-${index}"></div>
                         <button type="button" class="btn btn-secondary btn-sm" onclick="addDeepDive(${index})"><i class="fas fa-plus"></i> <span data-i18n="btn_add_qa"></span></button>
                     </div>`;
                 dom.container.appendChild(card);
@@ -250,13 +283,7 @@
         dom.hoursContainer.innerHTML = '';
         const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
         days.forEach(day => {
-            dom.hoursContainer.innerHTML += `
-                <label data-i18n="day_${day}"></label>
-                <div class="time-selector">
-                    <select data-path="availability_schedule.hours.${day}.from"></select>
-                    <span>-</span>
-                    <select data-path="availability_schedule.hours.${day}.to"></select>
-                </div>`;
+            dom.hoursContainer.innerHTML += `<label data-i18n="day_${day}"></label><div class="time-selector"><select data-path="availability_schedule.hours.${day}.from"></select><span>-</span><select data-path="availability_schedule.hours.${day}.to"></select></div>`;
         });
         
         const selectors = dom.hoursContainer.querySelectorAll('select');
@@ -265,6 +292,27 @@
                 selector.innerHTML += `<option value="${i}">${i.toString().padStart(2, '0')}:00</option>`;
             }
         });
+        
+        if (honeypotData.availability_schedule && honeypotData.availability_schedule.hours) {
+            days.forEach(day => {
+                const hours = honeypotData.availability_schedule.hours[day];
+                if(hours) {
+                    dom.hoursContainer.querySelector(`[data-path="availability_schedule.hours.${day}.from"]`).value = hours.from;
+                    dom.hoursContainer.querySelector(`[data-path="availability_schedule.hours.${day}.to"]`).value = hours.to;
+                }
+            });
+        }
+        
+        if (honeypotData.assets) {
+            if (honeypotData.assets.logo) {
+                document.getElementById('logo-preview').innerHTML = `<img src="data:${honeypotData.assets.logo.mime};base64,${honeypotData.assets.logo.base64}" alt="logo"><p class="asset-description">${honeypotData.assets.logo.description}</p>`;
+            }
+            if (honeypotData.assets.photo) {
+                document.getElementById('photo-preview').innerHTML = `<img src="data:${honeypotData.assets.photo.mime};base64,${honeypotData.assets.photo.base64}" alt="photo"><p class="asset-description">${honeypotData.assets.photo.description}</p>`;
+            }
+        }
+        
+        dom.botTokenInput.value = honeypotData.bot_token || '';
     }
     
     function renderDeepDives(fragmentIndex) {
@@ -277,8 +325,7 @@
                 item.innerHTML = `
                     <div class="input-group"><label data-i18n="lbl_question"></label><input type="text" data-path="knowledge_fragments.${fragmentIndex}.sections.${s_index}.question" value="${section.question || ''}"></div>
                     <div class="input-group"><label data-i18n="lbl_answer"></label><textarea data-path="knowledge_fragments.${fragmentIndex}.sections.${s_index}.answer">${section.answer || ''}</textarea></div>
-                    <button type="button" class="btn btn-secondary btn-sm" onclick="removeDeepDive(${fragmentIndex}, ${s_index})"><i class="fas fa-trash"></i></button>
-                `;
+                    <button type="button" class="btn btn-secondary btn-sm" onclick="removeDeepDive(${fragmentIndex}, ${s_index})"><i class="fas fa-trash"></i></button>`;
                 container.appendChild(item);
             });
         }
@@ -286,9 +333,7 @@
     }
     
     window.addDeepDive = (fragmentIndex) => {
-        if (!honeypotData.knowledge_fragments[fragmentIndex].sections) {
-            honeypotData.knowledge_fragments[fragmentIndex].sections = [];
-        }
+        if (!honeypotData.knowledge_fragments[fragmentIndex].sections) honeypotData.knowledge_fragments[fragmentIndex].sections = [];
         honeypotData.knowledge_fragments[fragmentIndex].sections.push({ question: '', answer: '' });
         renderDeepDives(fragmentIndex);
         checkIfDirty();
@@ -300,27 +345,22 @@
         checkIfDirty();
     };
 
-    window.toggleCard = (header) => {
-        header.parentElement.classList.toggle('open');
-    };
+    window.toggleCard = (header) => header.parentElement.classList.toggle('open');
     
     function setObjectValue(obj, path, value) {
         const keys = path.split('.');
         const lastKey = keys.pop();
-        const lastObj = keys.reduce((o, key) => {
-            if (o[key] === undefined || o[key] === null) {
-              // Heuristically decide if we need an array or object
-              const nextKey = keys[keys.indexOf(key) + 1] || lastKey;
-              o[key] = isNaN(parseInt(nextKey, 10)) ? {} : [];
-            }
-            return o[key];
-        }, obj);
+        const lastObj = keys.reduce((o, key) => o[key] = o[key] || {}, obj);
         lastObj[lastKey] = value;
     }
 
     document.body.addEventListener('input', (e) => {
         if (e.target.dataset.path) {
             setObjectValue(honeypotData, e.target.dataset.path, e.target.value);
+            checkIfDirty();
+        } else if (e.target.id === 'bot-token-input') {
+            if (!honeypotData.config) honeypotData.config = {};
+            honeypotData.config.bot_token = e.target.value;
             checkIfDirty();
         }
     });
@@ -373,8 +413,8 @@
       fr: {
         title: "Éditeur de Base de Connaissances", subtitle: "Façonnez l'âme IA de votre entreprise.",
         section_hours_title: "Heures d'Ouverture", section_assets_title: "Actifs Visuels", lbl_logo: "Logo de l'entreprise", upload_logo: "Téléchargez votre logo", lbl_photo: "Photo Représentative", upload_photo: "Téléchargez une photo",
-        section_bot_title: "Action Requise: Configurez Votre Bot", guide_bot_1: "Ouvrez <a href='{botFatherUrl}' target='_blank'>@BotFather</a>.", guide_bot_2: "Envoyez <code>/newbot</code>.", guide_bot_3: "Choisissez un nom et un nom d'utilisateur.", guide_bot_4: "<b>Copiez le jeton API</b> et collez-le ci-dessous.", guide_bot_video: "Besoin d'aide? <a href='{botVideoUrl}' target='_blank'>Voir le tutoriel</a>.",
-        section_group_title: "Action Requise: Créer Groupe", guide_group_1: "Créez un groupe privé.", guide_group_2: "Ajoutez votre bot et <code>@TrinAi_SiteBoS_bot</code>.", guide_group_3: "Promouvez les deux bots Administrateurs.", guide_group_video: "Besoin d'aide? <a href='{groupVideoUrl}' target='_blank'>Voir le tutoriel</a>.",
+        section_bot_title: "Action Requise: Configurez Votre Bot", guide_bot_1: "Ouvrez <a href='{botFatherUrl}' target='_blank'>@BotFather</a>.", guide_bot_2: "Envoyez <code>/newbot</code>.", guide_bot_3: "Choisissez un nom et un nom d'utilisateur.", guide_bot_4: "<b>Copiez le jeton API</b> et collez-le ci-dessous.", guide_bot_video: "Besoin d'aide ? <a href='{botVideoUrl}' target='_blank'>Voir le tutoriel</a>.",
+        section_group_title: "Action Requise: Créer Groupe", guide_group_1: "Créez un groupe privé.", guide_group_2: "Ajoutez votre bot et <code>@TrinAi_SiteBoS_bot</code>.", guide_group_3: "Promouvez les deux bots Administrateurs.", guide_group_video: "Besoin d'aide ? <a href='{groupVideoUrl}' target='_blank'>Voir le tutoriel</a>.",
         lbl_utterances: "Exemples", lbl_answer: "Réponse", lbl_summary: "Résumé", lbl_deepdive: "Détails", lbl_question: "Question", btn_add_qa: "Ajouter Q&R",
         day_monday: "Lundi", day_tuesday: "Mardi", day_wednesday: "Mercredi", day_thursday: "Jeudi", day_friday: "Vendredi", day_saturday: "Samedi", day_sunday: "Dimanche",
         btn_save: "Enregistrer", saving_progress: "Enregistrement...", saving_success: "Enregistré !",
@@ -404,7 +444,7 @@
         title: "Editor da Base de Conhecimento", subtitle: "Molde a alma de IA do seu negócio.",
         section_hours_title: "Horários", section_assets_title: "Ativos Visuais", lbl_logo: "Logo", upload_logo: "Carregue seu logo", lbl_photo: "Foto", upload_photo: "Carregue uma foto",
         section_bot_title: "Ação Necessária: Configure seu Bot", guide_bot_1: "Abra o <a href='{botFatherUrl}' target='_blank'>@BotFather</a>.", guide_bot_2: "Envie <code>/newbot</code>.", guide_bot_3: "Escolha um nome.", guide_bot_4: "<b>Copie o token da API</b> e cole abaixo.", guide_bot_video: "Ajuda? <a href='{botVideoUrl}' target='_blank'>Ver o vídeo</a>.",
-        section_group_title: "Ação Necessária: Criar Grupo", guide_group_1: "Crie um grupo privado.", guide_group_2: "Adicione seu bot e <code>@TrinAi_SiteBoS_bot</code>.", guide_group_3: "Promova ambos a Admin.", guide_group_video: "Ajuda? <a href='{groupVideoUrl}' target='_blank'>Ver o vídeo</a>.",
+        section_group_title: "Ação Necessária: Criar Grupo", guide_group_1: "Crie um grupo privado.", guide_group_2: "Adicione seu bot e <code>@TrinAi_SiteBoS_bot</code>.", guide_group_3: "Promova a Admin.",
         lbl_utterances: "Perguntas", lbl_answer: "Resposta", lbl_summary: "Resumo", lbl_deepdive: "Detalhes", lbl_question: "Pergunta", btn_add_qa: "Adicionar P&R",
         day_monday: "Segunda", day_tuesday: "Terça", day_wednesday: "Quarta", day_thursday: "Quinta", day_friday: "Sexta", day_saturday: "Sábado", day_sunday: "Domingo",
         btn_save: "Salvar", saving_progress: "Salvando...", saving_success: "Salvo!",
