@@ -32,7 +32,7 @@
     .btn { padding: 16px; border-radius: 14px; font-weight: 600; font-size: 15px; cursor: pointer; border: none; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; }
     .btn-primary { background: var(--primary); color: white; }
     .btn-secondary { background: transparent; border: 1px solid var(--border); color: var(--text-muted); }
-    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn:disabled { background: var(--input-bg); color: var(--text-muted); opacity: 0.5; cursor: not-allowed; border-color: var(--border); }
     #loader { position:fixed; inset:0; background:var(--bg-end); z-index:99; display:flex; justify-content:center; align-items:center; flex-direction:column; }
     .spinner { width:40px; height:40px; border:4px solid rgba(255,255,255,0.1); border-top-color:var(--primary); border-radius:50%; animation:spin 0.8s linear infinite; }
     @keyframes spin { to { transform: rotate(360deg); } }
@@ -68,79 +68,75 @@
   <div id="loader"><div class="spinner"></div></div>
 
   <div id="app-content" class="container hidden">
-    <h2 data-i18n="title">Gestione Dati Azienda</h2>
-    <p class="subtitle" data-i18n="subtitle">Modifica le informazioni per aggiornare il sistema.</p>
+    <h2 data-i18n="title"></h2>
+    <p class="subtitle" data-i18n="subtitle"></p>
 
     <form id="editForm">
       
       <div class="form-section">
-        <div class="form-section-title" data-i18n="section_core">Dati Anagrafici</div>
+        <div class="form-section-title" data-i18n="section_core"></div>
         <div class="row">
-          <div class="col"><div class="input-group"><label data-i18n="lbl_name">Nome</label><input type="text" id="name"></div></div>
-          <div class="col"><div class="input-group"><label data-i18n="lbl_surname">Cognome</label><input type="text" id="surname"></div></div>
+          <div class="col"><div class="input-group"><label data-i18n="lbl_name"></label><input type="text" id="name"></div></div>
+          <div class="col"><div class="input-group"><label data-i18n="lbl_surname"></label><input type="text" id="surname"></div></div>
         </div>
-        <div class="input-group"><label data-i18n="lbl_email">Email</label><input type="email" id="email" required></div>
-        <div class="input-group"><label data-i18n="lbl_phone">Telefono</label><input type="tel" id="phone"></div>
+        <div class="input-group"><label data-i18n="lbl_email"></label><input type="email" id="email" required></div>
+        <div class="input-group"><label data-i18n="lbl_phone"></label><input type="tel" id="phone"></div>
       </div>
 
       <div class="form-section">
-        <div class="form-section-title" data-i18n="section_company">Dati Aziendali</div>
-        <div class="input-group"><label data-i18n="lbl_company_name">Ragione Sociale</label><input type="text" id="ragione_sociale" required></div>
-        <div class="input-group"><label data-i18n="lbl_vat">P.IVA</label><input type="text" id="vat_number" readonly></div>
-        <div class="input-group"><label data-i18n="lbl_address">Indirizzo</label><input type="text" id="indirizzo"></div>
-        <div class="input-group"><label data-i18n="lbl_site">Sito Web</label><input type="url" id="site"></div>
+        <div class="form-section-title" data-i18n="section_company"></div>
+        <div class="input-group"><label data-i18n="lbl_company_name"></label><input type="text" id="ragione_sociale" required></div>
+        <div class="input-group"><label data-i18n="lbl_vat"></label><input type="text" id="vat_number" readonly></div>
+        <div class="input-group"><label data-i18n="lbl_address"></label><input type="text" id="indirizzo"></div>
+        <div class="input-group"><label data-i18n="lbl_site"></label><input type="url" id="site"></div>
         <div class="input-group"><label>LinkedIn</label><input type="url" id="linkedin_page"></div>
         <div class="input-group"><label>Facebook</label><input type="url" id="facebook_page"></div>
       </div>
 
       <div class="form-section">
-        <div class="form-section-title" data-i18n="section_config">Configurazione Operativa</div>
+        <div class="form-section-title" data-i18n="section_config"></div>
         <div class="input-group">
-            <label data-i18n="lbl_owner_avail">Orari NON reperibilità (Owner)</label>
-            <div class="time-range-selector">
-                <select id="owner_unav_from"></select> <span>-</span> <select id="owner_unav_to"></select>
-            </div>
+            <label data-i18n="lbl_owner_avail"></label>
+            <div class="time-range-selector"><select id="owner_unav_from"></select> <span>-</span> <select id="owner_unav_to"></select></div>
         </div>
         <div class="input-group">
-            <label data-i18n="lbl_op_avail">Orari NON reperibilità (Operatori)</label>
-            <div class="time-range-selector">
-                <select id="operator_unav_from"></select> <span>-</span> <select id="operator_unav_to"></select>
-            </div>
+            <label data-i18n="lbl_op_avail"></label>
+            <div class="time-range-selector"><select id="operator_unav_from"></select> <span>-</span> <select id="operator_unav_to"></select></div>
         </div>
-        <div class="input-group"><label>Gemini API Key</label><input type="password" id="gemini_key"></div>
+        <div class="input-group"><label>Gemini API Key</label><input type="text" id="gemini_key"></div>
       </div>
       
       <div class="form-section">
         <div class="operators-card">
           <div class="card-header">
-            <h3><i class="fas fa-users"></i> <span data-i18n="op_title">Gestione Operatori</span></h3>
+            <h3><i class="fas fa-users"></i> <span data-i18n="op_title"></span></h3>
             <span class="slot-counter" id="slot-counter">0 / 3</span>
           </div>
           <div id="operators-list"></div>
           <button type="button" class="btn btn-secondary" id="add-operator-btn" style="margin-top: 15px;">
-            <i class="fas fa-plus-circle"></i> <span data-i18n="op_btn_invite">Invita Nuovo Operatore</span>
+            <i class="fas fa-plus-circle"></i> <span data-i18n="op_btn_invite"></span>
           </button>
           <div class="upgrade-prompt hidden" id="upgrade-prompt">
-            <p data-i18n="op_limit_reached">Hai raggiunto il limite di 3 operatori.</p>
-            <a href="https://t.me/TrinAi_OperativeChief" data-i18n="op_contact_support">Contatta TrinAi per sbloccare più slot!</a>
+            <p data-i18n="op_limit_reached"></p>
+            <a href="https://t.me/TrinAi_OperativeChief" data-i18n="op_contact_support"></a>
           </div>
         </div>
       </div>
 
       <button type="submit" id="saveBtn" class="btn btn-primary" style="margin-top: 40px;">
-        <i class="fas fa-save"></i> <span data-i18n="btn_save">Salva Tutte le Modifiche</span>
+        <i class="fas fa-save"></i> <span data-i18n="btn_save"></span>
       </button>
     </form>
   </div>
   
   <div id="operator-modal" class="modal-overlay hidden">
     <div class="modal-content">
-      <h4 id="modal-title" data-i18n="modal_title">Invita Nuovo Operatore</h4>
-      <p data-i18n="modal_subtitle">Inserisci il nome. Verrà generato un link di invito univoco da condividere.</p>
-      <div class="input-group"><label data-i18n="modal_lbl_name">Nome Operatore</label><input type="text" id="op-name" placeholder="Mario Rossi"></div>
+      <h4 id="modal-title" data-i18n="modal_title"></h4>
+      <p data-i18n="modal_subtitle"></p>
+      <div class="input-group"><label data-i18n="modal_lbl_name"></label><input type="text" id="op-name" placeholder="Mario Rossi"></div>
       <div class="btn-container">
-        <button type="button" class="btn btn-secondary" onclick="closeModal()"><span data-i18n="btn_cancel">Annulla</span></button>
-        <button type="button" class="btn btn-primary" onclick="generateInvitation()"><span data-i18n="btn_generate">Genera Invito</span></button>
+        <button type="button" class="btn btn-secondary" onclick="closeModal()"><span data-i18n="btn_cancel"></span></button>
+        <button type="button" class="btn btn-primary" onclick="generateInvitation()"><span data-i18n="btn_generate"></span></button>
       </div>
     </div>
   </div>
@@ -180,8 +176,8 @@
         op_status_pending: "In attesa", op_invite_text: "Invia questo link per l'attivazione:", op_btn_copy: "Copia", op_copied: "Copiato!",
         modal_title: "Invita Operatore", modal_subtitle: "Inserisci il nome. Verrà generato un link di invito.", modal_lbl_name: "Nome Operatore",
         btn_cancel: "Annulla", btn_generate: "Genera Invito", btn_save: "Salva Modifiche",
-        alert_confirm_delete: "Sei sicuro di voler revocare l'invito per", alert_name_required: "Il nome dell'operatore è obbligatorio.",
-        alert_loading_error: "Errore caricamento dati.", alert_saving_error: "Errore salvataggio dati.",
+        alert_confirm_delete: "Sei sicuro di voler eliminare l'operatore", alert_revoke_invite: "Sei sicuro di voler revocare l'invito per",
+        alert_name_required: "Il nome dell'operatore è obbligatorio.", alert_loading_error: "Errore caricamento dati.", alert_saving_error: "Errore salvataggio dati.",
         saving_progress: "Salvataggio...", saving_success: "✅ Salvato!"
       },
       en: {
@@ -194,8 +190,8 @@
         op_status_pending: "Pending", op_invite_text: "Send this link for activation:", op_btn_copy: "Copy", op_copied: "Copied!",
         modal_title: "Invite Operator", modal_subtitle: "Enter the name. An invitation link will be generated.", modal_lbl_name: "Operator Name",
         btn_cancel: "Cancel", btn_generate: "Generate Invite", btn_save: "Save Changes",
-        alert_confirm_delete: "Are you sure you want to revoke the invitation for", alert_name_required: "Operator name is required.",
-        alert_loading_error: "Error loading data.", alert_saving_error: "Error saving data.",
+        alert_confirm_delete: "Are you sure you want to delete the operator", alert_revoke_invite: "Are you sure you want to revoke the invitation for",
+        alert_name_required: "Operator name is required.", alert_loading_error: "Error loading data.", alert_saving_error: "Error saving data.",
         saving_progress: "Saving...", saving_success: "✅ Saved!"
       },
       fr: {
@@ -208,8 +204,8 @@
         op_status_pending: "En attente", op_invite_text: "Envoyez ce lien pour l'activation :", op_btn_copy: "Copier", op_copied: "Copié !",
         modal_title: "Inviter un Opérateur", modal_subtitle: "Entrez le nom. Un lien d'invitation sera généré.", modal_lbl_name: "Nom de l'Opérateur",
         btn_cancel: "Annuler", btn_generate: "Générer l'invitation", btn_save: "Enregistrer",
-        alert_confirm_delete: "Êtes-vous sûr de vouloir révoquer l'invitation pour", alert_name_required: "Le nom de l'opérateur est requis.",
-        alert_loading_error: "Erreur de chargement.", alert_saving_error: "Erreur d'enregistrement.",
+        alert_confirm_delete: "Êtes-vous sûr de vouloir supprimer l'opérateur", alert_revoke_invite: "Êtes-vous sûr de vouloir révoquer l'invitation pour",
+        alert_name_required: "Le nom de l'opérateur est requis.", alert_loading_error: "Erreur de chargement.", alert_saving_error: "Erreur d'enregistrement.",
         saving_progress: "Enregistrement...", saving_success: "✅ Enregistré !"
       },
       de: {
@@ -222,8 +218,8 @@
         op_status_pending: "Ausstehend", op_invite_text: "Senden Sie diesen Link zur Aktivierung:", op_btn_copy: "Kopieren", op_copied: "Kopiert!",
         modal_title: "Bediener Einladen", modal_subtitle: "Namen eingeben. Ein Einladungslink wird erstellt.", modal_lbl_name: "Bedienername",
         btn_cancel: "Abbrechen", btn_generate: "Einladung Erstellen", btn_save: "Speichern",
-        alert_confirm_delete: "Einladung für", alert_name_required: "Bedienername erforderlich.",
-        alert_loading_error: "Fehler beim Laden.", alert_saving_error: "Fehler beim Speichern.",
+        alert_confirm_delete: "Möchten Sie den Bediener wirklich löschen", alert_revoke_invite: "Möchten Sie die Einladung für",
+        alert_name_required: "Bedienername erforderlich.", alert_loading_error: "Fehler beim Laden.", alert_saving_error: "Fehler beim Speichern.",
         saving_progress: "Speichern...", saving_success: "✅ Gespeichert!"
       },
       es: {
@@ -236,8 +232,8 @@
         op_status_pending: "Pendiente", op_invite_text: "Envía este enlace para activar:", op_btn_copy: "Copiar", op_copied: "¡Copiado!",
         modal_title: "Invitar Operador", modal_subtitle: "Introduce el nombre. Se generará un enlace de invitación.", modal_lbl_name: "Nombre del Operador",
         btn_cancel: "Cancelar", btn_generate: "Generar Invitación", btn_save: "Guardar",
-        alert_confirm_delete: "¿Seguro que quieres revocar la invitación para", alert_name_required: "El nombre del operador es obligatorio.",
-        alert_loading_error: "Error al cargar.", alert_saving_error: "Error al guardar.",
+        alert_confirm_delete: "¿Seguro que quieres eliminar al operador", alert_revoke_invite: "¿Seguro que quieres revocar la invitación para",
+        alert_name_required: "El nombre del operador es obligatorio.", alert_loading_error: "Error al cargar.", alert_saving_error: "Error al guardar.",
         saving_progress: "Guardando...", saving_success: "✅ ¡Guardado!"
       },
       pt: {
@@ -250,14 +246,17 @@
         op_status_pending: "Pendente", op_invite_text: "Envie este link para ativar:", op_btn_copy: "Copiar", op_copied: "Copiado!",
         modal_title: "Convidar Operador", modal_subtitle: "Insira o nome. Um link de convite será gerado.", modal_lbl_name: "Nome do Operador",
         btn_cancel: "Cancelar", btn_generate: "Gerar Convite", btn_save: "Salvar",
-        alert_confirm_delete: "Tem certeza que deseja revogar o convite para", alert_name_required: "O nome do operador é obrigatório.",
-        alert_loading_error: "Erro ao carregar.", alert_saving_error: "Erro ao salvar.",
+        alert_confirm_delete: "Tem certeza de que deseja excluir o operador", alert_revoke_invite: "Tem certeza de que deseja revogar o convite para",
+        alert_name_required: "O nome do operador é obrigatório.", alert_loading_error: "Erro ao carregar.", alert_saving_error: "Erro ao salvar.",
         saving_progress: "Salvando...", saving_success: "✅ Salvo!"
       }
     };
     
-    let ownerData = {}, operators = [], currentLang = 'it';
+    let ownerData = {}, ownerAsOperator = null, operators = [], currentLang = 'it', isDirty = false;
     const dict = () => i18n[currentLang] || i18n.it;
+    
+    function setDirty() { isDirty = true; updateSaveButtonState(); }
+    function updateSaveButtonState() { dom.saveBtn.disabled = !isDirty; }
     
     function changeLanguage(lang) {
         currentLang = lang;
@@ -270,7 +269,7 @@
     function populateTimeSelectors() {
         const selectors = [dom.ownerUnavFrom, dom.ownerUnavTo, dom.operatorUnavFrom, dom.operatorUnavTo];
         selectors.forEach(selector => {
-            if (selector.options.length > 0) return; // Popola solo una volta
+            if (selector.options.length > 0) return;
             for (let i = 0; i < 24; i++) {
                 const option = document.createElement('option');
                 option.value = i;
@@ -287,7 +286,9 @@
             if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
             const data = await res.json();
             ownerData = data.owner_data;
-            operators = data.owner_data.operators || [];
+            const allOperators = data.owner_data.operators || [];
+            ownerAsOperator = allOperators.find(op => op.Role === 'Owner');
+            operators = allOperators.filter(op => op.Role !== 'Owner');
             populateForm(ownerData);
             changeLanguage(urlParams.get('lang') || 'it');
             dom.loader.classList.add('hidden');
@@ -298,57 +299,28 @@
     }
 
     function populateForm(data) {
-        dom.name.value = data.name || '';
-        dom.surname.value = data.surname || '';
-        dom.email.value = data.email || '';
-        dom.phone.value = data.phone || '';
-        dom.ragioneSociale.value = data.ragione_sociale || '';
-        dom.vatNumber.value = data.vat_number || '';
-        dom.indirizzo.value = data.indirizzo || '';
-        dom.site.value = data.site || '';
-        dom.linkedin_page.value = data.linkedin_page || '';
-        dom.facebook_page.value = data.facebook_page || '';
-        dom.gemini_key.value = data.gemini_key || '';
+        dom.name.value = data.name || ''; dom.surname.value = data.surname || ''; dom.email.value = data.email || '';
+        dom.phone.value = data.phone || ''; dom.ragioneSociale.value = data.ragione_sociale || ''; dom.vatNumber.value = data.vat_number || '';
+        dom.indirizzo.value = data.indirizzo || ''; dom.site.value = data.site || ''; dom.linkedin_page.value = data.linkedin_page || '';
+        dom.facebook_page.value = data.facebook_page || ''; dom.gemini_key.value = data.gemini_key || '';
         const [ownerFrom, ownerTo] = (data.owner_unavailable_time || '21-7').split('-');
         dom.ownerUnavFrom.value = ownerFrom; dom.ownerUnavTo.value = ownerTo;
         const [opFrom, opTo] = (data.operator_unavailable_time || '19-9').split('-');
         dom.operatorUnavFrom.value = opFrom; dom.operatorUnavTo.value = opTo;
         renderOperators();
+        isDirty = false; updateSaveButtonState();
     }
     
     function renderOperators() {
         dom.operatorsList.innerHTML = '';
         operators.forEach((op, index) => {
-            const isOwner = op.Role === 'Owner';
             const isPending = !op.OperatorChatID;
             let operatorHTML = '';
             if (isPending) {
                 const invitationLink = `https://t.me/${BOT_USERNAME}?start=${op.invitation_code}`;
-                operatorHTML = `
-                <div class="operator-item pending">
-                    <div class="op-info" style="width:100%;">
-                    <span class="op-name">${op.OperatorName} <i class="fas fa-clock"></i> ${dict().op_status_pending}</span>
-                    <p style="font-size:11px; color:var(--text-muted); margin-top:4px;">${dict().op_invite_text}</p>
-                    <div class="invitation-link">
-                        <input type="text" value="${invitationLink}" readonly>
-                        <button onclick="copyToClipboard('${invitationLink}', this)">${dict().op_btn_copy}</button>
-                    </div>
-                    </div>
-                    <div class="op-actions">
-                        <button type="button" onclick="deleteOperator(${index})"><i class="fas fa-trash-alt"></i></button>
-                    </div>
-                </div>`;
+                operatorHTML = `<div class="operator-item pending"><div class="op-info" style="width:100%;"><span class="op-name">${op.OperatorName} <i class="fas fa-clock"></i> ${dict().op_status_pending}</span><p style="font-size:11px; color:var(--text-muted); margin-top:4px;">${dict().op_invite_text}</p><div class="invitation-link"><input type="text" value="${invitationLink}" readonly><button onclick="copyToClipboard('${invitationLink}', this)">${dict().op_btn_copy}</button></div></div><div class="op-actions"><button type="button" onclick="deleteOperator(${index})"><i class="fas fa-trash-alt"></i></button></div></div>`;
             } else {
-                operatorHTML = `
-                <div class="operator-item">
-                    <div class="op-info">
-                        <span class="op-name">${op.OperatorName} ${isOwner ? '👑 (Owner)' : ''}</span>
-                        <span class="op-id">ID: ${op.OperatorChatID}</span>
-                    </div>
-                    <div class="op-actions">
-                        ${!isOwner ? `<button type="button" onclick="deleteOperator(${index})"><i class="fas fa-trash-alt"></i></button>` : ''}
-                    </div>
-                </div>`;
+                operatorHTML = `<div class="operator-item"><div class="op-info"><span class="op-name">${op.OperatorName}</span><span class="op-id">ID: ${op.OperatorChatID}</span></div><div class="op-actions"><button type="button" onclick="deleteOperator(${index})"><i class="fas fa-trash-alt"></i></button></div></div>`;
             }
             dom.operatorsList.innerHTML += operatorHTML;
         });
@@ -375,8 +347,11 @@
     window.closeModal = () => dom.modal.classList.add('hidden');
 
     window.deleteOperator = (index) => {
-        tg.showConfirm(`${dict().alert_confirm_delete} ${operators[index].OperatorName}?`, (ok) => {
-            if (ok) { operators.splice(index, 1); renderOperators(); tg.HapticFeedback.notificationOccurred('warning'); }
+        const op = operators[index];
+        const isPending = !op.OperatorChatID;
+        let confirmText = isPending ? `${dict().alert_revoke_invite} ${op.OperatorName}?` : `${dict().alert_confirm_delete} ${op.OperatorName}?`;
+        tg.showConfirm(confirmText, (ok) => {
+            if (ok) { operators.splice(index, 1); renderOperators(); setDirty(); tg.HapticFeedback.notificationOccurred('warning'); }
         });
     };
     
@@ -387,14 +362,23 @@
         const invitationCode = `INV-${vatNumber}-${ownerData.chat_id}-${uniquePart}`;
         const newOperator = { OperatorName: name, invitation_code: invitationCode, OperatorChatID: null, GeminiKey: null, OperatorLenguage: ownerData.lenguage, FreeHandOperator: true, Role: 'Operator' };
         operators.push(newOperator);
-        renderOperators(); closeModal(); tg.HapticFeedback.notificationOccurred('success');
+        renderOperators();
+        closeModal();
+        setDirty();
+        tg.HapticFeedback.notificationOccurred('success');
     };
-
+    
+    document.querySelectorAll('#editForm input, #editForm select').forEach(el => el.addEventListener('input', setDirty));
     dom.addOperatorBtn.addEventListener('click', () => openModal());
 
     dom.form.addEventListener('submit', async (e) => {
         e.preventDefault();
         dom.saveBtn.disabled = true; dom.saveBtn.querySelector('span').textContent = dict().saving_progress;
+        
+        const finalOperatorsArray = [];
+        if(ownerAsOperator) finalOperatorsArray.push(ownerAsOperator);
+        finalOperatorsArray.push(...operators);
+
         const updatedData = {
             name: dom.name.value, surname: dom.surname.value, email: dom.email.value, phone: dom.phone.value,
             ragione_sociale: dom.ragioneSociale.value, indirizzo: dom.indirizzo.value,
@@ -402,13 +386,14 @@
             gemini_key: dom.gemini_key.value,
             owner_unavailable_time: `${dom.ownerUnavFrom.value}-${dom.ownerUnavTo.value}`,
             operator_unavailable_time: `${dom.operatorUnavFrom.value}-${dom.operatorUnavTo.value}`,
-            operators: operators
+            operators: finalOperatorsArray
         };
         try {
             await fetch(WEBHOOK_URL, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ action: 'save_owner_data', vat_number: vatNumber, data_update: updatedData }) });
             tg.HapticFeedback.notificationOccurred('success');
             dom.saveBtn.style.background = 'var(--success)';
             dom.saveBtn.querySelector('span').innerHTML = dict().saving_success;
+            isDirty = false; updateSaveButtonState();
             setTimeout(() => tg.close(), 1500);
         } catch (err) {
             tg.showAlert(dict().alert_saving_error);
