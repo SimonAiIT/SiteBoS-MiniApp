@@ -5,29 +5,18 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>Gestione Dati Azienda</title>
   
-  <!-- LIBS -->
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
   <style>
-    /* --- STILE BASE (Identico a onboarding.html) --- */
     :root {
-      --bg-start: #4a5b8f; --bg-end: #2a3d5f; 
-      --text-main: #ffffff; --text-muted: rgba(255, 255, 255, 0.75);
-      --primary: #5B6FED; --primary-hover: #4a5ecf;
-      --success: #4cd964; --error: #ff6b6b; --warning: #f59e0b;
-      --border: rgba(255, 255, 255, 0.15);
-      --input-bg: rgba(255, 255, 255, 0.08);
-      --card-bg: rgba(0, 0, 0, 0.25);
-      --glass: rgba(255, 255, 255, 0.05);
+      --bg-start: #4a5b8f; --bg-end: #2a3d5f; --text-main: #ffffff; --text-muted: rgba(255, 255, 255, 0.75);
+      --primary: #5B6FED; --primary-hover: #4a5ecf; --success: #4cd964; --error: #ff6b6b; --warning: #f59e0b;
+      --border: rgba(255, 255, 255, 0.15); --input-bg: rgba(255, 255, 255, 0.08); --card-bg: rgba(0, 0, 0, 0.25);
     }
     * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-    body {
-      font-family: 'Inter', sans-serif;
-      background: linear-gradient(135deg, var(--bg-start) 0%, var(--bg-end) 100%);
-      color: var(--text-main); min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 20px;
-    }
+    body { font-family: 'Inter', sans-serif; background: linear-gradient(135deg, var(--bg-start) 0%, var(--bg-end) 100%); color: var(--text-main); min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 20px; }
     .container { width: 100%; max-width: 600px; padding-bottom: 80px; }
     .hidden { display: none !important; }
     h2 { font-size: 24px; font-weight: 700; margin-bottom: 8px; }
@@ -36,17 +25,15 @@
     label { display: block; font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
     input { width: 100%; padding: 16px; background: var(--input-bg); border: 1px solid var(--border); border-radius: 14px; color: white; font-family: inherit; font-size: 15px; transition: all 0.3s; }
     input:focus { outline: none; border-color: var(--primary); }
-    input:disabled { opacity: 0.7; cursor: not-allowed; }
+    input:disabled, input[readonly] { opacity: 0.7; cursor: not-allowed; }
     .btn { padding: 16px; border-radius: 14px; font-weight: 600; font-size: 15px; cursor: pointer; border: none; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; }
     .btn-primary { background: var(--primary); color: white; }
     .btn-secondary { background: transparent; border: 1px solid var(--border); color: var(--text-muted); }
-    .btn-block { width: 100%; }
     .btn:disabled { opacity: 0.5; cursor: not-allowed; }
     #loader { position:fixed; inset:0; background:var(--bg-end); z-index:99; display:flex; justify-content:center; align-items:center; flex-direction:column; }
     .spinner { width:40px; height:40px; border:4px solid rgba(255,255,255,0.1); border-top-color:var(--primary); border-radius:50%; animation:spin 0.8s linear infinite; }
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    /* --- STILE SPECIFICO PER GESTIONE OPERATORI --- */
     .operators-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 16px; padding: 20px; margin-top: 30px; }
     .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid var(--border); padding-bottom: 15px; }
     .card-header h3 { font-size: 16px; margin: 0; display: flex; align-items: center; gap: 10px; }
@@ -57,146 +44,233 @@
     .op-id { font-size: 11px; color: var(--text-muted); display: block; }
     .op-actions button { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 14px; padding: 8px; transition: color 0.2s; }
     .op-actions button:hover { color: var(--primary); }
+    .operator-item.pending .op-name { color: var(--warning); }
+    .invitation-link { display: flex; margin-top: 8px; }
+    .invitation-link input { flex-grow: 1; font-size: 12px; padding: 8px 10px; border-radius: 8px 0 0 8px; border-right: none; background: rgba(0,0,0,0.3); }
+    .invitation-link button { padding: 8px 12px; font-size: 12px; border-radius: 0 8px 8px 0; background: var(--primary); color: white; border: none; cursor: pointer; font-weight: 600; }
     .upgrade-prompt { text-align: center; font-size: 13px; color: var(--warning); margin-top: 15px; padding-top: 15px; border-top: 1px solid var(--border); }
     .upgrade-prompt a { color: var(--primary); font-weight: 600; text-decoration: none; }
     .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 100; display: flex; justify-content: center; align-items: center; backdrop-filter: blur(5px); }
     .modal-content { background: var(--bg-end); padding: 25px; border-radius: 16px; border: 1px solid var(--border); width: 90%; max-width: 400px; animation: fadeInModal 0.3s; }
-    .modal-content h4 { margin-bottom: 20px; }
+    .modal-content h4 { margin-bottom: 10px; }
+    .modal-content p { font-size: 13px; color: var(--text-muted); margin-bottom: 20px; }
     .btn-container { display: flex; gap: 10px; margin-top: 20px; }
     @keyframes fadeInModal { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
   </style>
 </head>
 <body>
 
-  <div id="loader">
-    <div class="spinner"></div>
-  </div>
+  <div id="loader"><div class="spinner"></div></div>
 
   <div id="app-content" class="container hidden">
-    <h2>Gestione Dati Azienda</h2>
-    <p class="subtitle">Modifica le informazioni e salva per aggiornare il sistema.</p>
+    <h2 data-i18n="title">Gestione Dati Azienda</h2>
+    <p class="subtitle" data-i18n="subtitle">Modifica le informazioni e salva per aggiornare il sistema.</p>
 
     <form id="editForm">
-      <div class="input-group">
-        <label>P.IVA (Non modificabile)</label>
-        <input type="text" id="vat_number" readonly>
-      </div>
-      <div class="input-group">
-        <label>Ragione Sociale</label>
-        <input type="text" id="ragione_sociale" required>
-      </div>
-      <div class="input-group">
-        <label>Email</label>
-        <input type="email" id="email" required>
-      </div>
-      <div class="input-group">
-        <label>Sito Web</label>
-        <input type="url" id="site">
-      </div>
-      <!-- Aggiungi qui altri campi editabili se necessario -->
+      <div class="input-group"><label data-i18n="lbl_vat">P.IVA (Non modificabile)</label><input type="text" id="vat_number" readonly></div>
+      <div class="input-group"><label data-i18n="lbl_company_name">Ragione Sociale</label><input type="text" id="ragione_sociale" required></div>
+      <div class="input-group"><label data-i18n="lbl_email">Email</label><input type="email" id="email" required></div>
+      <div class="input-group"><label data-i18n="lbl_phone">Telefono</label><input type="tel" id="phone"></div>
+      <div class="input-group"><label data-i18n="lbl_site">Sito Web</label><input type="url" id="site"></div>
 
-      <!-- SEZIONE GESTIONE OPERATORI -->
       <div class="operators-card">
         <div class="card-header">
-          <h3><i class="fas fa-users"></i> Gestione Operatori</h3>
+          <h3><i class="fas fa-users"></i> <span data-i18n="op_title">Gestione Operatori</span></h3>
           <span class="slot-counter" id="slot-counter">0 / 3</span>
         </div>
         <div id="operators-list"></div>
         <button type="button" class="btn btn-secondary btn-block" id="add-operator-btn" style="margin-top: 15px;">
-          <i class="fas fa-plus-circle"></i> Aggiungi Operatore
+          <i class="fas fa-plus-circle"></i> <span data-i18n="op_btn_invite">Invita Nuovo Operatore</span>
         </button>
         <div class="upgrade-prompt hidden" id="upgrade-prompt">
-          <p>Hai raggiunto il limite di 3 operatori.</p>
-          <a href="https://t.me/TrinAi_OperativeChief">Contatta TrinAi per sbloccare più slot!</a>
+          <p data-i18n="op_limit_reached">Hai raggiunto il limite di 3 operatori.</p>
+          <a href="https://t.me/TrinAi_OperativeChief" data-i18n="op_contact_support">Contatta TrinAi per sbloccare più slot!</a>
         </div>
       </div>
 
       <button type="submit" id="saveBtn" class="btn btn-primary" style="margin-top: 30px;">
-        <i class="fas fa-save"></i> Salva Tutte le Modifiche
+        <i class="fas fa-save"></i> <span data-i18n="btn_save">Salva Tutte le Modifiche</span>
       </button>
     </form>
   </div>
 
-  <!-- MODAL AGGIUNTA/MODIFICA OPERATORE -->
   <div id="operator-modal" class="modal-overlay hidden">
     <div class="modal-content">
-      <h4 id="modal-title">Aggiungi Nuovo Operatore</h4>
-      <input type="hidden" id="operator-index">
-      <div class="input-group"><label>Nome Operatore</label><input type="text" id="op-name" placeholder="Mario Rossi"></div>
-      <div class="input-group"><label>Telegram Chat ID</label><input type="number" id="op-chat-id" placeholder="123456789"></div>
-      <div class="input-group"><label>Gemini API Key</label><input type="text" id="op-gemini-key" placeholder="AIzaSy..."></div>
+      <h4 id="modal-title" data-i18n="modal_title">Invita Nuovo Operatore</h4>
+      <p data-i18n="modal_subtitle">Inserisci il nome. Verrà generato un link di invito univoco da condividere.</p>
+      <div class="input-group">
+        <label data-i18n="modal_lbl_name">Nome Operatore</label>
+        <input type="text" id="op-name" placeholder="Mario Rossi">
+      </div>
       <div class="btn-container">
-        <button type="button" class="btn btn-secondary" onclick="closeModal()">Annulla</button>
-        <button type="button" class="btn btn-primary" onclick="saveOperator()">Salva</button>
+        <button type="button" class="btn btn-secondary" onclick="closeModal()" data-i18n="btn_cancel">Annulla</button>
+        <button type="button" class="btn btn-primary" onclick="generateInvitation()" data-i18n="btn_generate">Genera Invito</button>
       </div>
     </div>
   </div>
 
   <script>
-    const WEBHOOK_URL = "https://trinai.api.workflow.dcmake.it/webhook/83acc670-15ae-4da0-ae0e-3587c85bd5f4"; // USA LO STESSO WEBHOOK
+    const WEBHOOK_URL = "https://trinai.api.workflow.dcmake.it/webhook/83acc670-15ae-4da0-ae0e-3587c85bd5f4";
+    const BOT_USERNAME = "TrinAi_SiteBoS_bot";
     const tg = window.Telegram.WebApp; tg.ready(); tg.expand();
 
     const urlParams = new URLSearchParams(window.location.search);
     const vatNumber = urlParams.get('vat');
+    
+    const dom = { /* ... DOM elements ... */ }; // Per brevità
+    Object.assign(dom, {
+        loader: document.getElementById('loader'), app: document.getElementById('app-content'),
+        form: document.getElementById('editForm'), saveBtn: document.getElementById('saveBtn'),
+        vatNumberInput: document.getElementById('vat_number'), ragioneSocialeInput: document.getElementById('ragione_sociale'),
+        emailInput: document.getElementById('email'), phoneInput: document.getElementById('phone'), siteInput: document.getElementById('site'),
+        operatorsList: document.getElementById('operators-list'), slotCounter: document.getElementById('slot-counter'),
+        addOperatorBtn: document.getElementById('add-operator-btn'), upgradePrompt: document.getElementById('upgrade-prompt'),
+        modal: document.getElementById('operator-modal'), modalTitle: document.getElementById('modal-title'), opName: document.getElementById('op-name')
+    });
 
-    const dom = {
-      loader: document.getElementById('loader'), app: document.getElementById('app-content'),
-      form: document.getElementById('editForm'), saveBtn: document.getElementById('saveBtn'),
-      operatorsList: document.getElementById('operators-list'), slotCounter: document.getElementById('slot-counter'),
-      addOperatorBtn: document.getElementById('add-operator-btn'), upgradePrompt: document.getElementById('upgrade-prompt'),
-      modal: document.getElementById('operator-modal'), modalTitle: document.getElementById('modal-title'),
-      opIndex: document.getElementById('operator-index'), opName: document.getElementById('op-name'),
-      opChatId: document.getElementById('op-chat-id'), opGeminiKey: document.getElementById('op-gemini-key')
+    const i18n = {
+      it: {
+        title: "Gestione Dati Azienda", subtitle: "Modifica le informazioni e salva.",
+        lbl_vat: "P.IVA", lbl_company_name: "Ragione Sociale", lbl_email: "Email", lbl_phone: "Telefono", lbl_site: "Sito Web",
+        op_title: "Gestione Operatori", op_btn_invite: "Invita Nuovo Operatore", op_limit_reached: "Limite operatori raggiunto.", op_contact_support: "Contatta TrinAi per più slot!",
+        op_status_pending: "In attesa", op_invite_text: "Invia questo link per l'attivazione:", op_btn_copy: "Copia", op_copied: "Copiato!",
+        modal_title: "Invita Operatore", modal_subtitle: "Inserisci il nome. Verrà generato un link di invito.", modal_lbl_name: "Nome Operatore",
+        btn_cancel: "Annulla", btn_generate: "Genera Invito", btn_save: "Salva Modifiche",
+        alert_confirm_delete: "Sei sicuro di voler revocare l'invito per", alert_name_required: "Il nome dell'operatore è obbligatorio.",
+        alert_loading_error: "Errore nel caricamento dati. Riprova.", alert_saving_error: "Errore nel salvataggio. Riprova.",
+        saving_progress: "Salvataggio...", saving_success: "✅ Salvato!"
+      },
+      en: {
+        title: "Company Data Management", subtitle: "Edit the information and save.",
+        lbl_vat: "VAT ID", lbl_company_name: "Company Name", lbl_email: "Email", lbl_phone: "Phone", lbl_site: "Website",
+        op_title: "Operator Management", op_btn_invite: "Invite New Operator", op_limit_reached: "Operator limit reached.", op_contact_support: "Contact TrinAi for more slots!",
+        op_status_pending: "Pending", op_invite_text: "Send this link for activation:", op_btn_copy: "Copy", op_copied: "Copied!",
+        modal_title: "Invite Operator", modal_subtitle: "Enter the name. An invitation link will be generated.", modal_lbl_name: "Operator Name",
+        btn_cancel: "Cancel", btn_generate: "Generate Invite", btn_save: "Save Changes",
+        alert_confirm_delete: "Are you sure you want to revoke the invitation for", alert_name_required: "Operator name is required.",
+        alert_loading_error: "Error loading data. Please try again.", alert_saving_error: "Error saving data. Please try again.",
+        saving_progress: "Saving...", saving_success: "✅ Saved!"
+      },
+      fr: {
+        title: "Gestion des Données", subtitle: "Modifiez les informations et enregistrez.",
+        lbl_vat: "TVA", lbl_company_name: "Raison Sociale", lbl_email: "Email", lbl_phone: "Téléphone", lbl_site: "Site Web",
+        op_title: "Gestion des Opérateurs", op_btn_invite: "Inviter un Opérateur", op_limit_reached: "Limite d'opérateurs atteinte.", op_contact_support: "Contactez TrinAi pour plus de slots !",
+        op_status_pending: "En attente", op_invite_text: "Envoyez ce lien pour l'activation :", op_btn_copy: "Copier", op_copied: "Copié !",
+        modal_title: "Inviter un Opérateur", modal_subtitle: "Entrez le nom. Un lien d'invitation sera généré.", modal_lbl_name: "Nom de l'Opérateur",
+        btn_cancel: "Annuler", btn_generate: "Générer l'invitation", btn_save: "Enregistrer",
+        alert_confirm_delete: "Êtes-vous sûr de vouloir révoquer l'invitation pour", alert_name_required: "Le nom de l'opérateur est requis.",
+        alert_loading_error: "Erreur de chargement. Veuillez réessayer.", alert_saving_error: "Erreur d'enregistrement. Veuillez réessayer.",
+        saving_progress: "Enregistrement...", saving_success: "✅ Enregistré !"
+      },
+      de: {
+        title: "Firmendatenverwaltung", subtitle: "Informationen bearbeiten und speichern.",
+        lbl_vat: "USt-IdNr.", lbl_company_name: "Firmenname", lbl_email: "E-Mail", lbl_phone: "Telefon", lbl_site: "Webseite",
+        op_title: "Bedienerverwaltung", op_btn_invite: "Bediener Einladen", op_limit_reached: "Bedienerlimit erreicht.", op_contact_support: "Kontaktieren Sie TrinAi für mehr Plätze!",
+        op_status_pending: "Ausstehend", op_invite_text: "Senden Sie diesen Link zur Aktivierung:", op_btn_copy: "Kopieren", op_copied: "Kopiert!",
+        modal_title: "Bediener Einladen", modal_subtitle: "Namen eingeben. Ein Einladungslink wird erstellt.", modal_lbl_name: "Bedienername",
+        btn_cancel: "Abbrechen", btn_generate: "Einladung Erstellen", btn_save: "Speichern",
+        alert_confirm_delete: "Einladung für", alert_name_required: "Bedienername erforderlich.",
+        alert_loading_error: "Fehler beim Laden. Bitte erneut versuchen.", alert_saving_error: "Fehler beim Speichern. Bitte erneut versuchen.",
+        saving_progress: "Speichern...", saving_success: "✅ Gespeichert!"
+      },
+      es: {
+        title: "Gestión de Datos", subtitle: "Edita la información y guarda.",
+        lbl_vat: "IVA", lbl_company_name: "Razón Social", lbl_email: "Email", lbl_phone: "Teléfono", lbl_site: "Sitio Web",
+        op_title: "Gestión de Operadores", op_btn_invite: "Invitar Operador", op_limit_reached: "Límite de operadores alcanzado.", op_contact_support: "Contacta a TrinAi para más espacios!",
+        op_status_pending: "Pendiente", op_invite_text: "Envía este enlace para activar:", op_btn_copy: "Copiar", op_copied: "¡Copiado!",
+        modal_title: "Invitar Operador", modal_subtitle: "Introduce el nombre. Se generará un enlace de invitación.", modal_lbl_name: "Nombre del Operador",
+        btn_cancel: "Cancelar", btn_generate: "Generar Invitación", btn_save: "Guardar",
+        alert_confirm_delete: "¿Seguro que quieres revocar la invitación para", alert_name_required: "El nombre del operador es obligatorio.",
+        alert_loading_error: "Error al cargar. Inténtalo de nuevo.", alert_saving_error: "Error al guardar. Inténtalo de nuevo.",
+        saving_progress: "Guardando...", saving_success: "✅ ¡Guardado!"
+      },
+      pt: {
+        title: "Gestão de Dados", subtitle: "Edite as informações e salve.",
+        lbl_vat: "NIF", lbl_company_name: "Razão Social", lbl_email: "Email", lbl_phone: "Telefone", lbl_site: "Website",
+        op_title: "Gestão de Operadores", op_btn_invite: "Convidar Operador", op_limit_reached: "Limite de operadores atingido.", op_contact_support: "Contate a TrinAi para mais vagas!",
+        op_status_pending: "Pendente", op_invite_text: "Envie este link para ativar:", op_btn_copy: "Copiar", op_copied: "Copiado!",
+        modal_title: "Convidar Operador", modal_subtitle: "Insira o nome. Um link de convite será gerado.", modal_lbl_name: "Nome do Operador",
+        btn_cancel: "Cancelar", btn_generate: "Gerar Convite", btn_save: "Salvar",
+        alert_confirm_delete: "Tem certeza que deseja revogar o convite para", alert_name_required: "O nome do operador é obrigatório.",
+        alert_loading_error: "Erro ao carregar. Tente novamente.", alert_saving_error: "Erro ao salvar. Tente novamente.",
+        saving_progress: "Salvando...", saving_success: "✅ Salvo!"
+      }
     };
-
-    let operators = [];
+    
+    let ownerData = {}, operators = [], currentLang = 'it';
+    const dict = () => i18n[currentLang] || i18n.it;
+    
+    function changeLanguage(lang) {
+        currentLang = lang;
+        document.querySelectorAll('[data-i18n]').forEach(el => { 
+            const k = el.getAttribute('data-i18n'); 
+            if(dict()[k]) el.innerHTML = dict()[k]; 
+        });
+    }
 
     async function loadData() {
-      if (!vatNumber) { tg.showAlert('ID Azienda non trovato!'); return; }
-      try {
-        const res = await fetch(WEBHOOK_URL, {
-          method: 'POST', headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify({ action: 'get_owner_data', vat_number: vatNumber })
-        });
-        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-        const data = await res.json();
-        populateForm(data.owner_data);
-        dom.loader.classList.add('hidden');
-        dom.app.classList.remove('hidden');
-      } catch (err) {
-        tg.showAlert("Errore nel caricamento dei dati. Riprova.");
-        tg.close();
-      }
+        if (!vatNumber) { tg.showAlert('ID not found!'); return; }
+        try {
+            const res = await fetch(WEBHOOK_URL, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ action: 'get_owner_data', vat_number: vatNumber }) });
+            if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+            const data = await res.json();
+            ownerData = data.owner_data;
+            operators = data.owner_data.operators || [];
+            populateForm(ownerData);
+            changeLanguage(urlParams.get('lang') || 'it');
+            dom.loader.classList.add('hidden');
+            dom.app.classList.remove('hidden');
+        } catch (err) {
+            tg.showAlert(dict().alert_loading_error); tg.close();
+        }
     }
 
     function populateForm(data) {
-      document.getElementById('vat_number').value = data.vat_number;
-      document.getElementById('ragione_sociale').value = data.ragione_sociale;
-      document.getElementById('email').value = data.email;
-      document.getElementById('site').value = data.site;
-      operators = data.operators || [];
-      renderOperators();
+        dom.vatNumberInput.value = data.vat_number || '';
+        dom.ragioneSocialeInput.value = data.ragione_sociale || '';
+        dom.emailInput.value = data.email || '';
+        dom.phoneInput.value = data.phone || '';
+        dom.siteInput.value = data.site || '';
+        renderOperators();
     }
 
     function renderOperators() {
-      dom.operatorsList.innerHTML = '';
-      operators.forEach((op, index) => {
-        const isOwner = op.Role === 'Owner';
-        const operatorHTML = `
-          <div class="operator-item">
-            <div class="op-info">
-              <span class="op-name">${op.OperatorName} ${isOwner ? '👑 (Owner)' : ''}</span>
-              <span class="op-id">ID: ${op.OperatorChatID}</span>
-            </div>
-            <div class="op-actions">
-              <button type="button" onclick="openModal(${index})"><i class="fas fa-pencil-alt"></i></button>
-              ${!isOwner ? `<button type="button" onclick="deleteOperator(${index})"><i class="fas fa-trash-alt"></i></button>` : ''}
-            </div>
-          </div>
-        `;
-        dom.operatorsList.innerHTML += operatorHTML;
-      });
-      updateOperatorControls();
+        dom.operatorsList.innerHTML = '';
+        operators.forEach((op, index) => {
+            const isOwner = op.Role === 'Owner';
+            const isPending = !op.OperatorChatID;
+            let operatorHTML = '';
+            if (isPending) {
+                const invitationLink = `https://t.me/${BOT_USERNAME}?start=${op.invitation_code}`;
+                operatorHTML = `
+                <div class="operator-item pending">
+                    <div class="op-info" style="width:100%;">
+                    <span class="op-name">${op.OperatorName} <i class="fas fa-clock"></i> ${dict().op_status_pending}</span>
+                    <p style="font-size:11px; color:var(--text-muted); margin-top:4px;">${dict().op_invite_text}</p>
+                    <div class="invitation-link">
+                        <input type="text" value="${invitationLink}" readonly>
+                        <button onclick="copyToClipboard('${invitationLink}', this)">${dict().op_btn_copy}</button>
+                    </div>
+                    </div>
+                    <div class="op-actions">
+                        <button type="button" onclick="deleteOperator(${index})"><i class="fas fa-trash-alt"></i></button>
+                    </div>
+                </div>`;
+            } else {
+                operatorHTML = `
+                <div class="operator-item">
+                    <div class="op-info">
+                        <span class="op-name">${op.OperatorName} ${isOwner ? '👑 (Owner)' : ''}</span>
+                        <span class="op-id">ID: ${op.OperatorChatID}</span>
+                    </div>
+                    <div class="op-actions">
+                        ${!isOwner ? `<button type="button" onclick="deleteOperator(${index})"><i class="fas fa-trash-alt"></i></button>` : ''}
+                    </div>
+                </div>`;
+            }
+            dom.operatorsList.innerHTML += operatorHTML;
+        });
+        updateOperatorControls();
     }
     
     function updateOperatorControls() {
@@ -206,80 +280,55 @@
         dom.addOperatorBtn.classList.toggle('hidden', !canAdd);
         dom.upgradePrompt.classList.toggle('hidden', canAdd);
     }
-
-    window.openModal = (index = -1) => {
-      dom.opIndex.value = index;
-      if (index > -1) {
-        const op = operators[index];
-        dom.modalTitle.textContent = 'Modifica Operatore';
-        dom.opName.value = op.OperatorName;
-        dom.opChatId.value = op.OperatorChatID;
-        dom.opGeminiKey.value = op.GeminiKey;
-      } else {
-        dom.modalTitle.textContent = 'Aggiungi Nuovo Operatore';
-        dom.form.reset(); // Svuota i campi del modal
-      }
-      dom.modal.classList.remove('hidden');
-    };
     
+    window.copyToClipboard = (text, button) => {
+        navigator.clipboard.writeText(text).then(() => {
+            button.textContent = dict().op_copied;
+            tg.HapticFeedback.notificationOccurred('success');
+            setTimeout(() => { button.textContent = dict().op_btn_copy; }, 2000);
+        });
+    };
+
+    window.openModal = () => { dom.opName.value = ''; dom.modal.classList.remove('hidden'); };
     window.closeModal = () => dom.modal.classList.add('hidden');
 
     window.deleteOperator = (index) => {
-      tg.showConfirm(`Sei sicuro di voler eliminare l'operatore ${operators[index].OperatorName}?`, (ok) => {
-        if (ok) {
-          operators.splice(index, 1);
-          renderOperators();
-          tg.HapticFeedback.notificationOccurred('success');
-        }
-      });
+        tg.showConfirm(`${dict().alert_confirm_delete} ${operators[index].OperatorName}?`, (ok) => {
+            if (ok) { operators.splice(index, 1); renderOperators(); tg.HapticFeedback.notificationOccurred('warning'); }
+        });
     };
-
-    window.saveOperator = () => {
-      const index = parseInt(dom.opIndex.value);
-      const newOpData = {
-        OperatorName: dom.opName.value,
-        OperatorChatID: parseInt(dom.opChatId.value),
-        GeminiKey: dom.opGeminiKey.value,
-        OperatorLenguage: operators[0]?.OperatorLenguage || 'Italiano', // Eredita la lingua
-        FreeHandOperator: true,
-        Role: (index > -1 && operators[index].Role === 'Owner') ? 'Owner' : 'Operator'
-      };
-      if (!newOpData.OperatorName || !newOpData.OperatorChatID) { tg.showAlert("Nome e Chat ID sono obbligatori."); return; }
-
-      if (index > -1) {
-        operators[index] = newOpData;
-      } else {
-        operators.push(newOpData);
-      }
-      renderOperators();
-      closeModal();
-      tg.HapticFeedback.notificationOccurred('success');
+    
+    window.generateInvitation = () => {
+        const name = dom.opName.value.trim();
+        if (!name) { tg.showAlert(dict().alert_name_required); return; }
+        const uniquePart = Math.random().toString(36).substring(2, 8).toUpperCase();
+        const invitationCode = `INV-${vatNumber}-${ownerData.chat_id}-${uniquePart}`;
+        const newOperator = { OperatorName: name, invitation_code: invitationCode, OperatorChatID: null, GeminiKey: null, OperatorLenguage: ownerData.lenguage, FreeHandOperator: true, Role: 'Operator' };
+        operators.push(newOperator);
+        renderOperators(); closeModal(); tg.HapticFeedback.notificationOccurred('success');
     };
 
     dom.addOperatorBtn.addEventListener('click', () => openModal());
 
     dom.form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      dom.saveBtn.disabled = true; dom.saveBtn.innerHTML = 'Salvataggio in corso...';
-      const updatedData = {
-        ragione_sociale: document.getElementById('ragione_sociale').value,
-        email: document.getElementById('email').value,
-        site: document.getElementById('site').value,
-        operators: operators // Includi l'array aggiornato
-      };
-      try {
-        await fetch(WEBHOOK_URL, {
-          method: 'POST', headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify({ action: 'save_owner_data', vat_number: vatNumber, data_update: updatedData })
-        });
-        tg.HapticFeedback.notificationOccurred('success');
-        dom.saveBtn.style.background = 'var(--success)';
-        dom.saveBtn.innerHTML = '✅ Salvato con Successo!';
-        setTimeout(() => tg.close(), 1500);
-      } catch (err) {
-        tg.showAlert("Errore nel salvataggio. Riprova.");
-        dom.saveBtn.disabled = false; dom.saveBtn.innerHTML = 'Salva Tutte le Modifiche';
-      }
+        e.preventDefault();
+        dom.saveBtn.disabled = true; dom.saveBtn.querySelector('span').textContent = dict().saving_progress;
+        const updatedData = {
+            ragione_sociale: dom.ragioneSocialeInput.value, email: dom.emailInput.value,
+            phone: dom.phoneInput.value, site: dom.siteInput.value,
+            operators: operators
+        };
+        try {
+            await fetch(WEBHOOK_URL, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ action: 'save_owner_data', vat_number: vatNumber, data_update: updatedData }) });
+            tg.HapticFeedback.notificationOccurred('success');
+
+            dom.saveBtn.style.background = 'var(--success)';
+            dom.saveBtn.innerHTML = dict().saving_success;
+            setTimeout(() => tg.close(), 1500);
+        } catch (err) {
+            tg.showAlert(dict().alert_saving_error);
+            dom.saveBtn.disabled = false; dom.saveBtn.querySelector('span').textContent = dict().btn_save;
+        }
     });
 
     loadData();
