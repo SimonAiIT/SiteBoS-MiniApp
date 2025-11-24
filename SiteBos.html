@@ -16,7 +16,7 @@
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; scroll-behavior: smooth; }
         body { font-family: 'Inter', sans-serif; background: var(--bg-end); color: var(--text-main); height: 100vh; overflow: hidden; }
         .hidden { display: none !important; }
-        #loader { position:fixed; inset:0; background:var(--bg-end); z-index:99; display:flex; align-items:center; justify-content:center; }
+        #loader { position:fixed; inset:0; background:var(--bg-end); z-index:99; display:flex; align-items:center; justify-content:center; flex-direction: column; gap: 15px; }
         .spinner { width:40px; height:40px; border:4px solid rgba(255,255,255,0.1); border-top-color:var(--primary); border-radius:50%; animation:spin 0.8s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
 
@@ -26,83 +26,92 @@
         #brand-name { font-size: 16px; font-weight: 600; margin-right: auto; }
         #lang-selector { background: transparent; border: 1px solid var(--border); color: white; padding: 6px 10px; border-radius: 8px; font-size: 13px; }
 
-        #main-layout { display: flex; flex-grow: 1; overflow: hidden; }
-        #chat-panel { flex: 2; display: flex; flex-direction: column; background: linear-gradient(135deg, var(--bg-start) 0%, var(--bg-end) 100%); }
+        .view { height: 100%; width: 100%; position: absolute; top: 0; left: 0; transition: opacity 0.3s, transform 0.3s; }
+        .view.inactive { opacity: 0; pointer-events: none; transform: scale(0.98); }
+        
+        #chat-view { display: flex; flex-direction: column; padding-top: 54px; /* header height */ }
         #message-list { flex-grow: 1; overflow-y: auto; padding: 20px; }
-        .message { max-width: 85%; margin-bottom: 15px; padding: 12px 16px; border-radius: 18px; line-height: 1.5; word-wrap: break-word; }
+        .message { max-width: 85%; margin-bottom: 15px; padding: 12px 16px; border-radius: 18px; line-height: 1.5; word-wrap: break-word; animation: fadeIn 0.3s; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         .message.user { background: var(--primary); color: white; border-bottom-right-radius: 4px; margin-left: auto; }
         .message.ai { background: var(--card-bg); color: var(--text-main); border-bottom-left-radius: 4px; }
         .message.system { background: var(--input-bg); color: var(--text-muted); font-size: 12px; text-align: center; max-width: 100%; width: 100%; }
-        .message p { margin: 0 0 10px 0; } .message p:last-child { margin-bottom: 0; } .message a { color: var(--primary); font-weight: 600; }
-
+        .message a { color: var(--primary); font-weight: 600; }
+        
         #input-area { display: flex; padding: 15px; border-top: 1px solid var(--border); background: var(--card-bg); align-items: flex-end; }
-        #agent-indicator { font-size: 11px; color: var(--text-muted); position: absolute; top: -18px; left: 15px; background: var(--card-bg); padding: 2px 6px; border-radius: 4px; }
         #user-input { flex-grow: 1; resize: none; max-height: 120px; background: var(--input-bg); border: 1px solid var(--border); border-radius: 20px; padding: 12px 18px; font-size: 15px; color: white; }
         #send-btn { background: var(--primary); color: white; border: none; border-radius: 50%; width: 44px; height: 44px; margin-left: 10px; cursor: pointer; flex-shrink: 0; }
         #send-btn:disabled { background: var(--input-bg); color: var(--text-muted); }
-
-        #context-panel { flex: 1; background: var(--bg-end); border-left: 1px solid var(--border); padding: 25px; overflow-y: auto; transition: transform 0.3s; }
-        .context-card { background: var(--card-bg); padding: 20px; border-radius: 14px; margin-bottom: 20px; }
-        .context-card h3 { font-size: 16px; margin-bottom: 10px; border-bottom: 1px solid var(--border); padding-bottom: 10px; }
-        .context-card p { font-size: 14px; line-height: 1.6; color: var(--text-muted); }
-        .context-card input { width: 100%; margin-bottom: 10px; } .context-card button { width: 100%; }
-        .context-card .consent-group { display: flex; align-items: start; gap: 10px; font-size: 12px; margin-top: 15px; }
-
-        #widget-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 50; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(10px); }
-        #widget-content { background: var(--bg-end); border: 1px solid var(--border); border-radius: 16px; padding: 30px; max-width: 90%; width: 500px; }
-
-        @media (max-width: 768px) {
-            #context-panel { position: fixed; top: 0; right: 0; bottom: 0; width: 80%; max-width: 320px; transform: translateX(100%); z-index: 20; box-shadow: -5px 0 15px rgba(0,0,0,0.3); }
-            #context-panel.visible { transform: translateX(0); }
-            #brand-header { position: relative; }
-            #context-toggle-btn { display: block; background: none; border: none; color: white; font-size: 20px; cursor: pointer; }
-        }
-        @media (min-width: 769px) { #context-toggle-btn { display: none; } }
+        
+        #qualification-view { overflow-y: auto; padding: 80px 20px 40px 20px; }
+        .form-container { max-width: 500px; margin: 0 auto; }
+        .form-container h2 { text-align: center; } .form-container p { text-align: center; }
+        .input-group { margin-bottom: 20px; }
+        .consent-group { display: flex; align-items: start; gap: 10px; font-size: 13px; margin-top: 15px; }
+        .btn { padding: 16px; border-radius: 14px; font-weight: 600; font-size: 15px; cursor: pointer; border: none; }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-secondary { background: transparent; border: 1px solid var(--border); color: var(--text-muted); }
+        .btn-container { display: flex; gap: 10px; margin-top: 30px; }
+        
+        #qualify-btn { position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%); z-index: 10; background: var(--primary); color: white; border: none; border-radius: 30px; padding: 12px 20px; font-weight: 600; box-shadow: 0 5px 15px rgba(0,0,0,0.3); cursor: pointer; transition: all 0.3s; }
+        #qualify-btn.verified { background: var(--success); }
     </style>
 </head>
 <body>
-    <div id="loader"><div class="spinner"></div></div>
+    <div id="loader"><div class="spinner"></div><p style="color: var(--text-muted); margin-top: 15px;">Inizializzazione...</p></div>
 
     <div id="app-container" class="hidden">
         <div id="brand-header">
             <img id="brand-logo" src="https://placehold.co/64x64/2a3d5f/ffffff?text=B" alt="Logo">
-            <h1 id="brand-name">Business Name</h1>
+            <h1 id="brand-name"></h1>
             <select id="lang-selector">
                 <option value="it">🇮🇹 IT</option><option value="en">🇬🇧 EN</option><option value="fr">🇫🇷 FR</option>
                 <option value="de">🇩🇪 DE</option><option value="es">🇪🇸 ES</option><option value="pt">🇵🇹 PT</option>
             </select>
-            <button id="context-toggle-btn"><i class="fas fa-info-circle"></i></button>
         </div>
 
-        <div id="main-layout">
-            <div id="chat-panel">
+        <div id="view-container" style="position: relative; flex-grow: 1; overflow: hidden;">
+            <div id="chat-view" class="view">
                 <div id="message-list"></div>
-                <div id="input-area" style="position:relative;">
-                    <span id="agent-indicator"></span>
+                <div id="input-area">
                     <textarea id="user-input" rows="1" placeholder="Scrivi un messaggio..."></textarea>
                     <button id="send-btn" disabled><i class="fas fa-paper-plane"></i></button>
                 </div>
             </div>
-            <div id="context-panel"></div>
-        </div>
 
-        <div id="widget-overlay" class="hidden">
-            <div id="widget-content"></div>
+            <div id="qualification-view" class="view inactive">
+                <div class="form-container">
+                    <h2 data-i18n="qualify_title"></h2>
+                    <p class="subtitle" data-i18n="qualify_subtitle"></p>
+                    <div class="input-group"><label data-i18n="lbl_name"></label><input type="text" id="qualify-name" required></div>
+                    <div class="input-group"><label data-i18n="lbl_surname"></label><input type="text" id="qualify-surname"></div>
+                    <div class="input-group"><label data-i18n="lbl_email"></label><input type="email" id="qualify-email" required></div>
+                    <div class="input-group"><label data-i18n="lbl_company_name"></label><input type="text" id="qualify-company"></div>
+                    <div class="consent-group"><input type="checkbox" id="qualify-privacy" required><label for="qualify-privacy" data-i18n="lbl_privacy"></label></div>
+                    <div class="btn-container">
+                        <button class="btn btn-secondary" onclick="switchView('chat')"><span data-i18n="btn_cancel"></span></button>
+                        <button class="btn btn-primary" onclick="submitQualification()"><span data-i18n="btn_submit_qualify"></span></button>
+                    </div>
+                </div>
+            </div>
         </div>
+        
+        <button id="qualify-btn" onclick="switchView('qualification')">
+            <i class="fas fa-user-check"></i> <span data-i18n="btn_qualify"></span>
+        </button>
     </div>
 
     <script>
-        const WEBHOOK_URL = "https://trinai.api.workflow.dcmake.it/webhook/c5c35e66-ee23-4649-9b4c-775327bc3a23";
-        const tg = window.Telegram?.WebApp || {};
+        const WEBHOOK_URL = "https://trinai.api.workflow.dcmake.it/webhook/020a353d-9275-414c-9837-70018e4f72d6";
+        const tg = window.Telegram?.WebApp || { showAlert: (msg) => alert(msg) };
         
         const dom = {
             loader: document.getElementById('loader'), app: document.getElementById('app-container'),
             brandLogo: document.getElementById('brand-logo'), brandName: document.getElementById('brand-name'),
             langSelector: document.getElementById('lang-selector'), messageList: document.getElementById('message-list'),
-            agentIndicator: document.getElementById('agent-indicator'), userInput: document.getElementById('user-input'),
-            sendBtn: document.getElementById('send-btn'), contextPanel: document.getElementById('context-panel'),
-            widgetOverlay: document.getElementById('widget-overlay'), widgetContent: document.getElementById('widget-content'),
-            contextToggleBtn: document.getElementById('context-toggle-btn')
+            userInput: document.getElementById('user-input'), sendBtn: document.getElementById('send-btn'),
+            qualifyBtn: document.getElementById('qualify-btn'),
+            chatView: document.getElementById('chat-view'), qualificationView: document.getElementById('qualification-view')
         };
         
         let sessionId = localStorage.getItem('siteBosSessionId');
@@ -113,6 +122,20 @@
 
         const urlParams = new URLSearchParams(window.location.search);
         const vatNumber = urlParams.get('vat');
+        let currentLang = 'it';
+        const dict = () => i18n[currentLang] || i18n.it;
+
+        function switchView(viewName) {
+            if (viewName === 'chat') {
+                dom.chatView.classList.remove('inactive');
+                dom.qualificationView.classList.add('inactive');
+                dom.qualifyBtn.classList.remove('hidden');
+            } else if (viewName === 'qualification') {
+                dom.chatView.classList.add('inactive');
+                dom.qualificationView.classList.remove('inactive');
+                dom.qualifyBtn.classList.add('hidden');
+            }
+        }
 
         function appendMessage(html, speaker) {
             const msgDiv = document.createElement('div');
@@ -123,86 +146,10 @@
         }
 
         async function handleApiResponse(data) {
-            if (data.responses && Array.isArray(data.responses)) {
-                for (const response of data.responses) {
-                    if (response.response_type === 'CHAT_MESSAGE') {
-                        appendMessage(response.content, 'ai');
-                        dom.agentIndicator.textContent = `Parlando con: ${response.responding_agent_name || 'Assistente'}`;
-                    } else if (response.response_type === 'UPDATE_CONTEXT_PANEL') {
-                        updateContextPanel(response.context);
-                    } else if (response.response_type === 'LOAD_WIDGET') {
-                        loadWidget(response.widget_type, response.data);
-                    }
-                }
-            } else if (data.output) { // Fallback per il tuo workflow attuale
+            if (data.output) {
                 appendMessage(data.output, 'ai');
-                updateContextPanel({ view_type: 'RAW_DATA', data: data });
             }
         }
-
-        function updateContextPanel(context) {
-            dom.contextPanel.innerHTML = '';
-            if (!context) return;
-            
-            if (context.view_type === 'WELCOME') {
-                dom.contextPanel.innerHTML = `<div class="context-card"><h3>${context.data.title}</h3><div>${context.data.content}</div></div>`;
-            } else if (context.view_type === 'REGISTRATION_FORM') {
-                dom.contextPanel.innerHTML = `
-                    <div class="context-card" id="reg-wizard">
-                        <div id="reg-step-1">
-                            <h3>${context.data.title}</h3>
-                            <p>${context.data.subtitle}</p>
-                            <input type="text" id="reg-name" placeholder="Nome">
-                            <input type="text" id="reg-surname" placeholder="Cognome">
-                            <input type="email" id="reg-email" placeholder="Email">
-                            <button class="btn btn-primary" onclick="goToRegStep(2)">Avanti</button>
-                        </div>
-                        <div id="reg-step-2" class="hidden">
-                            <h3>Consensi</h3>
-                            <div class="consent-group"><input type="checkbox" id="privacy-consent"><label for="privacy-consent">Accetto la <a href="#" target="_blank">Privacy Policy</a>.</label></div>
-                            <div class="consent-group"><input type="checkbox" id="terms-consent"><label for="terms-consent">Accetto i <a href="#" target="_blank">Termini di Servizio</a>.</label></div>
-                            <button class="btn btn-primary" onclick="submitRegistration()">Registrati e Continua</button>
-                        </div>
-                    </div>`;
-            } else if (context.view_type === 'KNOWLEDGE_FRAGMENT') {
-                // Logica per renderizzare il frammento
-            }
-        }
-        
-        window.goToRegStep = (step) => {
-            if (step === 2) {
-                if (!document.getElementById('reg-name').value || !document.getElementById('reg-email').value) {
-                    alert('Nome ed Email sono obbligatori.'); return;
-                }
-                document.getElementById('reg-step-1').classList.add('hidden');
-                document.getElementById('reg-step-2').classList.remove('hidden');
-            }
-        }
-        
-        window.submitRegistration = async () => {
-            if (!document.getElementById('privacy-consent').checked || !document.getElementById('terms-consent').checked) {
-                alert('Devi accettare i termini per procedere.'); return;
-            }
-            const payload = {
-                action: 'register_user', sessionId: sessionId,
-                user_data: {
-                    name: document.getElementById('reg-name').value,
-                    surname: document.getElementById('reg-surname').value,
-                    email: document.getElementById('reg-email').value
-                },
-                consents: { privacy_policy_accepted: true, terms_of_service_accepted: true, timestamp_utc: new Date().toISOString() },
-                vat_number: vatNumber, forced_language: dom.langSelector.value
-            };
-            // Invia payload al backend...
-        }
-
-        function loadWidget(widgetType, data) {
-            dom.widgetOverlay.classList.remove('hidden');
-            if (widgetType === 'APPOINTMENT_SCHEDULER') {
-                dom.widgetContent.innerHTML = `<h2>Seleziona uno slot</h2><p>(Interfaccia Agenda qui)</p><button onclick="closeWidget()">Chiudi</button>`;
-            }
-        }
-        window.closeWidget = () => dom.widgetOverlay.classList.add('hidden');
 
         async function sendMessage(text) {
             if (!text.trim()) return;
@@ -219,7 +166,8 @@
 
             try {
                 const res = await fetch(WEBHOOK_URL, {
-                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 });
                 const responseData = await res.json();
@@ -228,6 +176,52 @@
                 appendMessage('Si è verificato un errore di connessione.', 'system');
             } finally {
                 dom.sendBtn.disabled = false;
+            }
+        }
+
+        async function submitQualification() {
+            const name = document.getElementById('qualify-name').value;
+            const email = document.getElementById('qualify-email').value;
+            const privacy = document.getElementById('qualify-privacy').checked;
+            
+            if (!name || !email || !privacy) {
+                tg.showAlert(dict().alert_qualify_required);
+                return;
+            }
+
+            const payload = {
+                action: "qualify_lead",
+                session_id: sessionId,
+                vat_number_tenant: vatNumber,
+                user_data: {
+                    name: name,
+                    surname: document.getElementById('qualify-surname').value,
+                    email: email,
+                    company: document.getElementById('qualify-company').value
+                },
+                consents: {
+                    privacy_policy_accepted: privacy,
+                    timestamp_utc: new Date().toISOString()
+                }
+            };
+            
+            try {
+                const res = await fetch(WEBHOOK_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+                
+                tg.showAlert(dict().alert_qualify_success, () => {
+                    switchView('chat');
+                    dom.qualifyBtn.innerHTML = `<i class="fas fa-check"></i> <span data-i18n="btn_qualified">${dict().btn_qualified}</span>`;
+                    dom.qualifyBtn.classList.add('verified');
+                    dom.qualifyBtn.disabled = true;
+                });
+
+            } catch(err) {
+                tg.showAlert(dict().alert_saving_error);
             }
         }
 
@@ -252,7 +246,6 @@
                 const honeyPot = data.HoneyPot;
                 dom.brandName.textContent = ownerData.ragione_sociale;
                 
-                updateContextPanel({ view_type: 'WELCOME', data: { title: 'Benvenuto!', content: honeyPot.offer_text } });
                 appendMessage(honeyPot.offer_text, 'ai');
 
                 dom.loader.classList.add('hidden');
@@ -262,20 +255,72 @@
                 document.body.innerHTML = '<h1>Errore di configurazione</h1><p>Impossibile caricare i dati per questo tenant.</p>';
             }
         }
-        
+
         dom.sendBtn.addEventListener('click', () => sendMessage(dom.userInput.value));
         dom.userInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                sendMessage(dom.userInput.value);
-            }
+            if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(dom.userInput.value); }
         });
         dom.userInput.addEventListener('input', () => {
             dom.userInput.style.height = 'auto';
             dom.userInput.style.height = `${dom.userInput.scrollHeight}px`;
         });
-        dom.contextToggleBtn.addEventListener('click', () => dom.contextPanel.classList.toggle('visible'));
+        dom.langSelector.addEventListener('change', (e) => { currentLang = e.target.value; changeLanguage(currentLang); });
 
+        function changeLanguage(lang) {
+            currentLang = lang;
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (dict()[key]) el.innerHTML = dict()[key];
+            });
+        }
+        
+const i18n = {
+          it: {
+            btn_qualify: "Diventa Utente Verificato", qualify_title: "Verifica il Tuo Profilo", qualify_subtitle: "Fornisci i tuoi dati per ricevere un'assistenza personalizzata e offerte dedicate.",
+            lbl_name: "Nome", lbl_surname: "Cognome", lbl_email: "Email", lbl_company_name: "Azienda (Opzionale)", lbl_privacy: "Accetto la <a href='#' target='_blank'>Privacy Policy</a>",
+            btn_cancel: "Annulla", btn_submit_qualify: "Invia e Verifica",
+            alert_qualify_required: "Nome, Email e consenso alla Privacy sono obbligatori.", alert_qualify_success: "Grazie! Il tuo profilo è stato verificato con successo.",
+            btn_qualified: "Profilo Verificato", alert_loading_error: "Errore nel caricamento.", alert_saving_error: "Errore nel salvataggio."
+          },
+          en: {
+            btn_qualify: "Become a Verified User", qualify_title: "Verify Your Profile", qualify_subtitle: "Provide your details to receive personalized assistance and dedicated offers.",
+            lbl_name: "Name", lbl_surname: "Surname", lbl_email: "Email", lbl_company_name: "Company (Optional)", lbl_privacy: "I accept the <a href='#' target='_blank'>Privacy Policy</a>",
+            btn_cancel: "Cancel", btn_submit_qualify: "Submit and Verify",
+            alert_qualify_required: "Name, Email, and Privacy consent are required.", alert_qualify_success: "Thank you! Your profile has been successfully verified.",
+            btn_qualified: "Profile Verified", alert_loading_error: "Loading error.", alert_saving_error: "Saving error."
+          },
+          fr: {
+            btn_qualify: "Devenir un Utilisateur Vérifié", qualify_title: "Vérifiez Votre Profil", qualify_subtitle: "Fournissez vos coordonnées pour une assistance personnalisée et des offres dédiées.",
+            lbl_name: "Prénom", lbl_surname: "Nom", lbl_email: "Email", lbl_company_name: "Entreprise (Optionnel)", lbl_privacy: "J'accepte la <a href='#' target='_blank'>Politique de Confidentialité</a>",
+            btn_cancel: "Annuler", btn_submit_qualify: "Envoyer et Vérifier",
+            alert_qualify_required: "Le nom, l'email et le consentement à la confidentialité sont requis.", alert_qualify_success: "Merci ! Votre profil a été vérifié avec succès.",
+            btn_qualified: "Profil Vérifié", alert_loading_error: "Erreur de chargement.", alert_saving_error: "Erreur d'enregistrement."
+          },
+          de: {
+            btn_qualify: "Verifizierter Benutzer Werden", qualify_title: "Profil Verifizieren", qualify_subtitle: "Geben Sie Ihre Daten an, um persönliche Unterstützung und spezielle Angebote zu erhalten.",
+            lbl_name: "Vorname", lbl_surname: "Nachname", lbl_email: "E-Mail", lbl_company_name: "Firma (Optional)", lbl_privacy: "Ich akzeptiere die <a href='#' target='_blank'>Datenschutzrichtlinie</a>",
+            btn_cancel: "Abbrechen", btn_submit_qualify: "Senden und Verifizieren",
+            alert_qualify_required: "Name, E-Mail und Datenschutzzustimmung sind erforderlich.", alert_qualify_success: "Vielen Dank! Ihr Profil wurde erfolgreich verifiziert.",
+            btn_qualified: "Profil Verifiziert", alert_loading_error: "Ladefehler.", alert_saving_error: "Speicherfehler."
+          },
+          es: {
+            btn_qualify: "Convertirse en Usuario Verificado", qualify_title: "Verificar tu Perfil", qualify_subtitle: "Proporciona tus datos para recibir asistencia personalizada y ofertas dedicadas.",
+            lbl_name: "Nombre", lbl_surname: "Apellido", lbl_email: "Email", lbl_company_name: "Empresa (Opcional)", lbl_privacy: "Acepto la <a href='#' target='_blank'>Política de Privacidad</a>",
+            btn_cancel: "Cancelar", btn_submit_qualify: "Enviar y Verificar",
+            alert_qualify_required: "El nombre, el correo electrónico y el consentimiento de privacidad son obligatorios.", alert_qualify_success: "¡Gracias! Tu perfil ha sido verificado con éxito.",
+            btn_qualified: "Perfil Verificado", alert_loading_error: "Error al cargar.", alert_saving_error: "Error al guardar."
+          },
+          pt: {
+            btn_qualify: "Tornar-se um Usuário Verificado", qualify_title: "Verificar Seu Perfil", qualify_subtitle: "Forneça seus dados para receber assistência personalizada e ofertas dedicadas.",
+            lbl_name: "Nome", lbl_surname: "Sobrenome", lbl_email: "Email", lbl_company_name: "Empresa (Opcional)", lbl_privacy: "Aceito a <a href='#' target='_blank'>Política de Privacidade</a>",
+            btn_cancel: "Cancelar", btn_submit_qualify: "Enviar e Verificar",
+            alert_qualify_required: "Nome, E-mail e consentimento de privacidade são obrigatórios.", alert_qualify_success: "Obrigado! Seu perfil foi verificado com sucesso.",
+            btn_qualified: "Perfil Verificado", alert_loading_error: "Erro ao carregar.", alert_saving_error: "Erro ao salvar."
+          }
+        };
+
+        changeLanguage(localStorage.getItem('siteBosLang') || 'it');
+        dom.langSelector.value = currentLang;
         initialize();
     </script>
 </body>
