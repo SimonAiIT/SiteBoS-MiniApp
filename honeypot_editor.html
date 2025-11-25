@@ -64,11 +64,33 @@
     .time-selector { display: flex; align-items: center; gap: 8px; }
     .time-selector select { width: auto; flex: 1; }
     
-    .asset-upload-box { border: 2px dashed var(--border); border-radius: 16px; padding: 20px; text-align: center; cursor: pointer; background: var(--glass); transition: all 0.3s; position: relative; }
-    .asset-upload-box .upload-icon { font-size: 28px; margin-bottom: 10px; color: var(--text-muted); }
-    .asset-upload-box .upload-text { font-size: 13px; color: var(--text-muted); }
-    .asset-preview { margin-top: 15px; }
-    .asset-preview img { max-width: 100px; max-height: 100px; border-radius: 8px; border: 1px solid var(--border); }
+    /* --- STILE ASSET UPLOAD AGGIORNATO --- */
+    .asset-upload-box { 
+        border: 2px dashed var(--border); 
+        border-radius: 16px; 
+        padding: 30px 20px;
+        text-align: center; 
+        cursor: pointer; 
+        background: var(--glass); 
+        transition: all 0.3s; 
+        position: relative; 
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 160px;
+    }
+    .asset-upload-box:hover { border-color: var(--primary); background: rgba(255,255,255,0.08); }
+    .asset-upload-box input[type="file"] { 
+        position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; z-index: 10; 
+    }
+    .asset-upload-box .upload-icon { font-size: 40px; margin-bottom: 10px; color: var(--text-muted); transition: color 0.3s; }
+    .asset-upload-box:hover .upload-icon { color: var(--primary); }
+    .asset-upload-box .upload-text { font-size: 13px; color: var(--text-muted); font-weight: 500; }
+    
+    .asset-preview { margin-top: 15px; width: 100%; display: flex; flex-direction: column; align-items: center; z-index: 1; }
+    .asset-preview img { max-width: 100px; max-height: 100px; border-radius: 8px; border: 2px solid var(--border); box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
     .asset-description { font-size: 12px; font-style: italic; color: var(--text-muted); margin-top: 8px; }
     
     .guide-box { background: rgba(0,0,0,0.2); border-radius: 12px; padding: 20px; }
@@ -79,11 +101,9 @@
     .guide-box a { color: var(--primary); font-weight: 600; text-decoration: none; }
     .guide-box .input-group { margin-top: 25px; }
     
-    /* Highlight Style per le Card "Azione Richiesta" */
     .knowledge-card.highlight { border: 1px solid var(--primary); background: linear-gradient(135deg, rgba(91, 111, 237, 0.15), rgba(0,0,0,0.2)); }
     .knowledge-card.highlight .card-header h3 { color: white; text-shadow: 0 2px 4px rgba(0,0,0,0.3); }
 
-    /* Stile per il generatore di offerte */
     .offer-preview { margin-top: 10px; background: white; color: #333; padding: 15px; border-radius: 8px; font-size: 14px; line-height: 1.5; border: 1px solid var(--border); min-height: 60px; cursor: pointer; position: relative; transition: transform 0.1s, box-shadow 0.2s; }
     .offer-preview:active { transform: scale(0.99); }
     .offer-preview:hover { box-shadow: 0 0 10px rgba(91, 111, 237, 0.3); border-color: var(--primary); }
@@ -179,7 +199,7 @@
         </div>
     </div>
 
-    <!-- SEZIONE 6: Asset Visivi -->
+    <!-- SEZIONE 6: Asset Visivi (AGGIORNATA) -->
     <div class="knowledge-card">
         <div class="card-header" onclick="toggleCard(this)">
             <h3><i class="fas fa-photo-video"></i> <span data-i18n="section_assets_title"></span></h3>
@@ -187,8 +207,26 @@
         </div>
         <div class="card-content">
             <div class="row" style="gap: 20px;">
-                <div class="col"><label data-i18n="lbl_logo"></label><div class="asset-upload-box" id="logo-upload-box"><input type="file" onchange="handleAssetUpload('logo', this.files[0])"><div class="upload-icon"><i class="fas fa-image"></i></div><span class="upload-text" data-i18n="upload_logo"></span><div id="logo-preview" class="asset-preview"></div></div></div>
-                <div class="col"><label data-i18n="lbl_photo"></label><div class="asset-upload-box" id="photo-upload-box"><input type="file" onchange="handleAssetUpload('photo', this.files[0])"><div class="upload-icon"><i class="fas fa-camera"></i></div><span class="upload-text" data-i18n="upload_photo"></span><div id="photo-preview" class="asset-preview"></div></div></div>
+                <!-- LOGO UPLOAD -->
+                <div class="col">
+                    <label data-i18n="lbl_logo"></label>
+                    <div class="asset-upload-box" id="logo-upload-box">
+                        <input type="file" accept="image/*" onchange="handleAssetUpload('logo', this.files[0])">
+                        <div class="upload-icon"><i class="fas fa-cloud-upload-alt"></i></div>
+                        <span class="upload-text" data-i18n="upload_logo"></span>
+                        <div id="logo-preview" class="asset-preview"></div>
+                    </div>
+                </div>
+                <!-- FOTO UPLOAD -->
+                <div class="col">
+                    <label data-i18n="lbl_photo"></label>
+                    <div class="asset-upload-box" id="photo-upload-box">
+                        <input type="file" accept="image/*" onchange="handleAssetUpload('photo', this.files[0])">
+                        <div class="upload-icon"><i class="fas fa-camera"></i></div>
+                        <span class="upload-text" data-i18n="upload_photo"></span>
+                        <div id="photo-preview" class="asset-preview"></div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -425,7 +463,7 @@
             }
         }
         
-        dom.botTokenInput.value = honeypotData.bot_token || '';
+        dom.botTokenInput.value = honeypotData.config?.bot_token || '';
     }
     
     function renderDeepDives(fragmentIndex) {
