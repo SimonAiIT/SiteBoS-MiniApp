@@ -64,7 +64,6 @@
     .time-selector { display: flex; align-items: center; gap: 8px; }
     .time-selector select { width: auto; flex: 1; }
     
-    /* --- STILE ASSET UPLOAD AGGIORNATO --- */
     .asset-upload-box { 
         border: 2px dashed var(--border); 
         border-radius: 16px; 
@@ -148,7 +147,7 @@
       </div>
     </div>
 
-    <!-- SEZIONE 2: Configurazione Bot -->
+    <!-- SEZIONE 2: Configurazione Bot (AGGIORNATA CON LOGICA LINK) -->
     <div class="knowledge-card highlight open">
       <div class="card-header" onclick="toggleCard(this)">
         <h3><i class="fas fa-rocket"></i> <span data-i18n="section_bot_title"></span></h3>
@@ -161,9 +160,16 @@
           <div class="guide-step"><i class="fas fa-pen"></i> <span data-i18n="guide_bot_3"></span></div>
           <div class="guide-step"><i class="fas fa-key"></i> <span data-i18n="guide_bot_4"></span></div>
           <div class="guide-step"><i class="fas fa-video"></i> <span data-i18n="guide_bot_video"></span></div>
-          <div class="input-group">
+          
+          <div class="input-group" style="margin-top: 20px;">
             <label>Telegram Bot Token</label>
-            <input type="text" id="bot-token-input" placeholder="12345:ABC-...">
+            <div style="display: flex; gap: 10px; align-items: center;">
+                <input type="text" id="bot-token-input" placeholder="12345:ABC-..." style="flex-grow: 1;">
+                <button type="button" class="btn btn-primary btn-sm" id="btn-link-bot" onclick="linkBot()" style="white-space: nowrap; width: auto;">
+                    <i class="fas fa-link"></i> <span data-i18n="btn_link_bot"></span>
+                </button>
+            </div>
+            <div id="bot-status" style="margin-top: 10px; font-size: 13px; display: none;"></div>
           </div>
         </div>
       </div>
@@ -199,7 +205,7 @@
         </div>
     </div>
 
-    <!-- SEZIONE 6: Asset Visivi (AGGIORNATA) -->
+    <!-- SEZIONE 6: Asset Visivi -->
     <div class="knowledge-card">
         <div class="card-header" onclick="toggleCard(this)">
             <h3><i class="fas fa-photo-video"></i> <span data-i18n="section_assets_title"></span></h3>
@@ -207,26 +213,8 @@
         </div>
         <div class="card-content">
             <div class="row" style="gap: 20px;">
-                <!-- LOGO UPLOAD -->
-                <div class="col">
-                    <label data-i18n="lbl_logo"></label>
-                    <div class="asset-upload-box" id="logo-upload-box">
-                        <input type="file" accept="image/*" onchange="handleAssetUpload('logo', this.files[0])">
-                        <div class="upload-icon"><i class="fas fa-cloud-upload-alt"></i></div>
-                        <span class="upload-text" data-i18n="upload_logo"></span>
-                        <div id="logo-preview" class="asset-preview"></div>
-                    </div>
-                </div>
-                <!-- FOTO UPLOAD -->
-                <div class="col">
-                    <label data-i18n="lbl_photo"></label>
-                    <div class="asset-upload-box" id="photo-upload-box">
-                        <input type="file" accept="image/*" onchange="handleAssetUpload('photo', this.files[0])">
-                        <div class="upload-icon"><i class="fas fa-camera"></i></div>
-                        <span class="upload-text" data-i18n="upload_photo"></span>
-                        <div id="photo-preview" class="asset-preview"></div>
-                    </div>
-                </div>
+                <div class="col"><label data-i18n="lbl_logo"></label><div class="asset-upload-box" id="logo-upload-box"><input type="file" accept="image/*" onchange="handleAssetUpload('logo', this.files[0])"><div class="upload-icon"><i class="fas fa-cloud-upload-alt"></i></div><span class="upload-text" data-i18n="upload_logo"></span><div id="logo-preview" class="asset-preview"></div></div></div>
+                <div class="col"><label data-i18n="lbl_photo"></label><div class="asset-upload-box" id="photo-upload-box"><input type="file" accept="image/*" onchange="handleAssetUpload('photo', this.files[0])"><div class="upload-icon"><i class="fas fa-camera"></i></div><span class="upload-text" data-i18n="upload_photo"></span><div id="photo-preview" class="asset-preview"></div></div></div>
             </div>
         </div>
     </div>
@@ -260,6 +248,8 @@
         saveBar: document.getElementById('save-bar'),
         saveBtn: document.getElementById('saveBtn'),
         botTokenInput: document.getElementById('bot-token-input'),
+        btnLinkBot: document.getElementById('btn-link-bot'),
+        botStatus: document.getElementById('bot-status'),
         offerPrompt: document.getElementById('offer-prompt'),
         offerPreview: document.getElementById('offer-preview-box'),
         offerStorage: document.getElementById('offer_html_storage')
@@ -385,6 +375,62 @@
         });
     };
 
+    async function linkBot() {
+        const token = dom.botTokenInput.value.trim();
+        if (!token) { tg.showAlert(dict().alert_token_required); return; }
+        
+        // Validazione formato token base
+        if (!/^\d+:[A-Za-z0-9_-]{35}/.test(token)) {
+             tg.showAlert(dict().alert_token_invalid); return;
+        }
+
+        const btn = dom.btnLinkBot;
+        const statusDiv = dom.botStatus;
+        const originalText = btn.innerHTML;
+        
+        btn.disabled = true; 
+        btn.innerHTML = `<i class="fas fa-circle-notch fa-spin"></i>`;
+
+        try {
+            const res = await fetch(WEBHOOK_URL, {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'link_telegram_bot', vat_number: vatNumber, bot_token: token })
+            });
+            
+            if (!res.ok) throw new Error('Network error');
+            const data = await res.json();
+            
+            if (data.ok === true) {
+                statusDiv.style.display = 'block';
+                statusDiv.style.color = 'var(--success)';
+                statusDiv.innerHTML = `<i class="fas fa-check-circle"></i> <b>${dict().status_linked}</b>`;
+                
+                if (!honeypotData.config) honeypotData.config = {};
+                honeypotData.config.bot_token = token;
+                honeypotData.config.bot_linked = true;
+                
+                dom.botTokenInput.disabled = true;
+                btn.style.display = 'none';
+                
+                checkIfDirty(); 
+                tg.HapticFeedback.notificationOccurred('success');
+            } else {
+                throw new Error(data.description || 'Telegram Error');
+            }
+
+        } catch (error) {
+            tg.showAlert(`${dict().alert_link_error}: ${error.message}`);
+            statusDiv.style.display = 'block';
+            statusDiv.style.color = 'var(--error)';
+            statusDiv.innerHTML = `<i class="fas fa-times-circle"></i> ${error.message}`;
+        } finally {
+            if (!dom.botTokenInput.disabled) {
+                btn.disabled = false; 
+                btn.innerHTML = originalText;
+            }
+        }
+    }
+
     async function loadData() {
         if (!vatNumber) { tg.showAlert('ID not found'); return; }
         try {
@@ -464,6 +510,15 @@
         }
         
         dom.botTokenInput.value = honeypotData.config?.bot_token || '';
+        
+        // Check if already linked
+        if (honeypotData.config?.bot_linked) {
+            dom.botTokenInput.disabled = true;
+            dom.btnLinkBot.style.display = 'none';
+            dom.botStatus.style.display = 'block';
+            dom.botStatus.style.color = 'var(--success)';
+            dom.botStatus.innerHTML = `<i class="fas fa-check-circle"></i> <b>${dict().status_linked}</b>`;
+        }
     }
     
     function renderDeepDives(fragmentIndex) {
@@ -545,7 +600,7 @@
         title: "Editor Base di Conoscenza", subtitle: "Modella l'anima AI della tua azienda.",
         section_offer_title: "Azione Richiesta: Offerta Benvenuto", offer_desc: "Descrivi cosa vuoi offrire ai nuovi utenti. L'AI genererà un'offerta accattivante per te.", lbl_offer_prompt: "Descrivi la tua offerta", btn_generate_offer: "Genera Offerta", lbl_offer_preview: "Anteprima", offer_preview_placeholder: "Qui vedrai l'anteprima dell'offerta generata...", alert_offer_required: "Inserisci una descrizione per l'offerta.", generating: "Generazione...", alert_generation_error: "Errore nella generazione AI.", lbl_click_copy: "Clicca per copiare (Testo Social)", alert_copied: "Testo copiato! Incollalo su Facebook o LinkedIn.",
         section_hours_title: "Orari di Apertura", section_assets_title: "Asset Visivi", lbl_logo: "Logo Aziendale", upload_logo: "Carica il tuo logo", lbl_photo: "Foto Rappresentativa", upload_photo: "Carica una foto",
-        section_bot_title: "Azione Richiesta: Configura il Tuo Bot", guide_bot_1: "Apri <a href='{botFatherUrl}' target='_blank'>@BotFather</a> su Telegram.", guide_bot_2: "Invia <code>/newbot</code> e segui le istruzioni.", guide_bot_3: "Scegli un nome e uno username.", guide_bot_4: "<b>Copia il token API</b> e incollalo nel campo qui sotto.", guide_bot_video: "Serve aiuto? <a href='{botVideoUrl}' target='_blank'>Guarda il video tutorial (3 min)</a>.",
+        section_bot_title: "Azione Richiesta: Configura il Tuo Bot", guide_bot_1: "Apri <a href='{botFatherUrl}' target='_blank'>@BotFather</a> su Telegram.", guide_bot_2: "Invia <code>/newbot</code> e segui le istruzioni.", guide_bot_3: "Scegli un nome e uno username.", guide_bot_4: "<b>Copia il token API</b> e incollalo nel campo qui sotto.", guide_bot_video: "Serve aiuto? <a href='{botVideoUrl}' target='_blank'>Guarda il video tutorial</a>.", btn_link_bot: "Associa", status_linked: "Bot Associato", alert_token_required: "Inserisci il token del bot.", alert_token_invalid: "Formato token non valido.", alert_link_error: "Errore Associazione",
         section_group_title: "Azione Richiesta: Crea Gruppo di Lavoro", guide_group_1: "Crea un nuovo gruppo privato su Telegram.", guide_group_2: "Aggiungi sia il tuo bot appena creato, sia <code>@TrinAi_SiteBoS_bot</code> come membri.", guide_group_3: "Promuovi entrambi i bot ad Amministratori.", guide_group_video: "Serve aiuto? <a href='{groupVideoUrl}' target='_blank'>Guarda il video tutorial</a>.",
         lbl_utterances: "Domande Esempio", lbl_answer: "Risposta", lbl_summary: "Sintesi", lbl_deepdive: "Approfondimenti", lbl_question: "Domanda", btn_add_qa: "Aggiungi D&R",
         day_monday: "Lunedì", day_tuesday: "Martedì", day_wednesday: "Mercoledì", day_thursday: "Giovedì", day_friday: "Venerdì", day_saturday: "Sabato", day_sunday: "Domenica",
@@ -556,7 +611,7 @@
         title: "Knowledge Base Editor", subtitle: "Shape the AI soul of your business.",
         section_offer_title: "Action Required: Welcome Offer", offer_desc: "Describe what you want to offer new users. The AI will generate an engaging offer for you.", lbl_offer_prompt: "Describe your offer", btn_generate_offer: "Generate Offer", lbl_offer_preview: "Preview", offer_preview_placeholder: "You will see the generated offer preview here...", alert_offer_required: "Please enter a description for the offer.", generating: "Generating...", alert_generation_error: "AI generation error.", lbl_click_copy: "Click to copy (Social Text)", alert_copied: "Text copied! Paste it on Facebook or LinkedIn.",
         section_hours_title: "Opening Hours", section_assets_title: "Visual Assets", lbl_logo: "Company Logo", upload_logo: "Upload your logo", lbl_photo: "Representative Photo", upload_photo: "Upload a photo",
-        section_bot_title: "Action Required: Configure Your Bot", guide_bot_1: "Open <a href='{botFatherUrl}' target='_blank'>@BotFather</a> on Telegram.", guide_bot_2: "Send <code>/newbot</code> and follow instructions.", guide_bot_3: "Choose a name and username.", guide_bot_4: "<b>Copy API token</b> and paste below.", guide_bot_video: "Need help? <a href='{botVideoUrl}' target='_blank'>Watch tutorial</a>.",
+        section_bot_title: "Action Required: Configure Your Bot", guide_bot_1: "Open <a href='{botFatherUrl}' target='_blank'>@BotFather</a> on Telegram.", guide_bot_2: "Send <code>/newbot</code> and follow instructions.", guide_bot_3: "Choose a name and username.", guide_bot_4: "<b>Copy API token</b> and paste below.", guide_bot_video: "Need help? <a href='{botVideoUrl}' target='_blank'>Watch tutorial</a>.", btn_link_bot: "Link", status_linked: "Bot Linked", alert_token_required: "Please enter the bot token.", alert_token_invalid: "Invalid token format.", alert_link_error: "Linking Error",
         section_group_title: "Action Required: Create Work Group", guide_group_1: "Create a new private group.", guide_group_2: "Add your bot and <code>@TrinAi_SiteBoS_bot</code> as members.", guide_group_3: "Promote both bots to Admins.", guide_group_video: "Need help? <a href='{groupVideoUrl}' target='_blank'>Watch tutorial</a>.",
         lbl_utterances: "Sample Questions", lbl_answer: "Answer", lbl_summary: "Summary", lbl_deepdive: "Deep Dives", lbl_question: "Question", btn_add_qa: "Add Q&A",
         day_monday: "Monday", day_tuesday: "Tuesday", day_wednesday: "Wednesday", day_thursday: "Thursday", day_friday: "Friday", day_saturday: "Saturday", day_sunday: "Sunday",
@@ -567,7 +622,7 @@
         title: "Éditeur de Base de Connaissances", subtitle: "Façonnez l'âme IA de votre entreprise.",
         section_offer_title: "Action Requise : Offre de Bienvenue", offer_desc: "Décrivez ce que vous voulez offrir. L'IA générera une offre attrayante pour vous.", lbl_offer_prompt: "Décrivez votre offre", btn_generate_offer: "Générer l'Offre", lbl_offer_preview: "Aperçu", offer_preview_placeholder: "Vous verrez l'aperçu de l'offre ici...", alert_offer_required: "Veuillez saisir une description pour l'offre.", generating: "Génération...", alert_generation_error: "Erreur de génération IA.", lbl_click_copy: "Cliquez pour copier (Texte Social)", alert_copied: "Texte copié ! Collez-le sur Facebook ou LinkedIn.",
         section_hours_title: "Heures d'Ouverture", section_assets_title: "Actifs Visuels", lbl_logo: "Logo", upload_logo: "Téléchargez votre logo", lbl_photo: "Photo", upload_photo: "Téléchargez une photo",
-        section_bot_title: "Action Requise : Configurez Votre Bot", guide_bot_1: "Ouvrez <a href='{botFatherUrl}' target='_blank'>@BotFather</a>.", guide_bot_2: "Envoyez <code>/newbot</code>.", guide_bot_3: "Choisissez un nom et username.", guide_bot_4: "<b>Copiez le jeton API</b> et collez-le ci-dessous.", guide_bot_video: "Besoin d'aide ? <a href='{botVideoUrl}' target='_blank'>Voir le tutoriel</a>.",
+        section_bot_title: "Action Requise : Configurez Votre Bot", guide_bot_1: "Ouvrez <a href='{botFatherUrl}' target='_blank'>@BotFather</a>.", guide_bot_2: "Envoyez <code>/newbot</code>.", guide_bot_3: "Choisissez un nom et username.", guide_bot_4: "<b>Copiez le jeton API</b> et collez-le ci-dessous.", guide_bot_video: "Besoin d'aide ? <a href='{botVideoUrl}' target='_blank'>Voir le tutoriel</a>.", btn_link_bot: "Lier", status_linked: "Bot Lié", alert_token_required: "Veuillez entrer le jeton du bot.", alert_token_invalid: "Format de jeton invalide.", alert_link_error: "Erreur de Liaison",
         section_group_title: "Action Requise : Créer Groupe", guide_group_1: "Créez un groupe privé.", guide_group_2: "Ajoutez votre bot et <code>@TrinAi_SiteBoS_bot</code>.", guide_group_3: "Promouvez les deux Admins.", guide_group_video: "Besoin d'aide ? <a href='{groupVideoUrl}' target='_blank'>Voir le tutoriel</a>.",
         lbl_utterances: "Exemples", lbl_answer: "Réponse", lbl_summary: "Résumé", lbl_deepdive: "Détails", lbl_question: "Question", btn_add_qa: "Ajouter Q&R",
         day_monday: "Lundi", day_tuesday: "Mardi", day_wednesday: "Mercredi", day_thursday: "Jeudi", day_friday: "Vendredi", day_saturday: "Samedi", day_sunday: "Dimanche",
@@ -578,7 +633,7 @@
         title: "Wissensdatenbank-Editor", subtitle: "Gestalten Sie die KI-Seele Ihres Unternehmens.",
         section_offer_title: "Aktion Erforderlich: Willkommensangebot", offer_desc: "Beschreiben Sie Ihr Angebot. Die KI generiert ein attraktives Angebot für Sie.", lbl_offer_prompt: "Beschreiben Sie Ihr Angebot", btn_generate_offer: "Angebot Generieren", lbl_offer_preview: "Vorschau", offer_preview_placeholder: "Hier sehen Sie die Vorschau...", alert_offer_required: "Bitte geben Sie eine Beschreibung für das Angebot ein.", generating: "Generiere...", alert_generation_error: "KI-Generierungsfehler.", lbl_click_copy: "Klicken zum Kopieren (Social Text)", alert_copied: "Text kopiert! Auf Facebook oder LinkedIn einfügen.",
         section_hours_title: "Öffnungszeiten", section_assets_title: "Visuelle Assets", lbl_logo: "Logo", upload_logo: "Logo hochladen", lbl_photo: "Foto", upload_photo: "Foto hochladen",
-        section_bot_title: "Aktion Erforderlich: Bot Konfigurieren", guide_bot_1: "<a href='{botFatherUrl}' target='_blank'>@BotFather</a> öffnen.", guide_bot_2: "<code>/newbot</code> senden.", guide_bot_3: "Namen wählen.", guide_bot_4: "<b>API-Token kopieren</b> und unten einfügen.", guide_bot_video: "Hilfe? <a href='{botVideoUrl}' target='_blank'>Tutorial ansehen</a>.",
+        section_bot_title: "Aktion Erforderlich: Bot Konfigurieren", guide_bot_1: "<a href='{botFatherUrl}' target='_blank'>@BotFather</a> öffnen.", guide_bot_2: "<code>/newbot</code> senden.", guide_bot_3: "Namen wählen.", guide_bot_4: "<b>API-Token kopieren</b> und unten einfügen.", guide_bot_video: "Hilfe? <a href='{botVideoUrl}' target='_blank'>Tutorial ansehen</a>.", btn_link_bot: "Verbinden", status_linked: "Bot Verbunden", alert_token_required: "Bitte Bot-Token eingeben.", alert_token_invalid: "Ungültiges Token-Format.", alert_link_error: "Verbindungsfehler",
         section_group_title: "Aktion Erforderlich: Gruppe Erstellen", guide_group_1: "Private Gruppe erstellen.", guide_group_2: "Fügen Sie Bots hinzu.", guide_group_3: "Zu Admins befördern.", guide_group_video: "Hilfe? <a href='{groupVideoUrl}' target='_blank'>Tutorial ansehen</a>.",
         lbl_utterances: "Beispielfragen", lbl_answer: "Antwort", lbl_summary: "Zusammenfassung", lbl_deepdive: "Details", lbl_question: "Frage", btn_add_qa: "F&A hinzufügen",
         day_monday: "Montag", day_tuesday: "Dienstag", day_wednesday: "Mittwoch", day_thursday: "Donnerstag", day_friday: "Freitag", day_saturday: "Samstag", day_sunday: "Sonntag",
@@ -589,7 +644,7 @@
         title: "Editor de Base de Conocimiento", subtitle: "Modela el alma de IA de tu negocio.",
         section_offer_title: "Acción Requerida: Oferta de Bienvenida", offer_desc: "Describe tu oferta. La IA generará una oferta atractiva para ti.", lbl_offer_prompt: "Describe tu oferta", btn_generate_offer: "Generar Oferta", lbl_offer_preview: "Vista Previa", offer_preview_placeholder: "Verás la vista previa aquí...", alert_offer_required: "Por favor, introduce una descripción para la oferta.", generating: "Generando...", alert_generation_error: "Error de generación de IA.", lbl_click_copy: "Clic para copiar (Texto Social)", alert_copied: "¡Texto copiado! Pégalo en Facebook o LinkedIn.",
         section_hours_title: "Horarios", section_assets_title: "Activos Visuales", lbl_logo: "Logo", upload_logo: "Sube tu logo", lbl_photo: "Foto", upload_photo: "Sube una foto",
-        section_bot_title: "Acción Requerida: Configura tu Bot", guide_bot_1: "Abre <a href='{botFatherUrl}' target='_blank'>@BotFather</a>.", guide_bot_2: "Envía <code>/newbot</code>.", guide_bot_3: "Elige nombre y usuario.", guide_bot_4: "<b>Copia el token API</b> y pégalo abajo.", guide_bot_video: "¿Ayuda? <a href='{botVideoUrl}' target='_blank'>Ver video</a>.",
+        section_bot_title: "Acción Requerida: Configura tu Bot", guide_bot_1: "Abre <a href='{botFatherUrl}' target='_blank'>@BotFather</a>.", guide_bot_2: "Envía <code>/newbot</code>.", guide_bot_3: "Elige nombre y usuario.", guide_bot_4: "<b>Copia el token API</b> y pégalo abajo.", guide_bot_video: "¿Ayuda? <a href='{botVideoUrl}' target='_blank'>Ver video</a>.", btn_link_bot: "Vincular", status_linked: "Bot Vinculado", alert_token_required: "Por favor ingresa el token del bot.", alert_token_invalid: "Formato de token inválido.", alert_link_error: "Error de Vinculación",
         section_group_title: "Acción Requerida: Crear Grupo", guide_group_1: "Crea un grupo privado.", guide_group_2: "Añade los bots.", guide_group_3: "Promociona a Admins.", guide_group_video: "¿Ayuda? <a href='{groupVideoUrl}' target='_blank'>Ver video</a>.",
         lbl_utterances: "Preguntas", lbl_answer: "Respuesta", lbl_summary: "Resumen", lbl_deepdive: "Detalles", lbl_question: "Pregunta", btn_add_qa: "Añadir P&R",
         day_monday: "Lunes", day_tuesday: "Martes", day_wednesday: "Miércoles", day_thursday: "Jueves", day_friday: "Viernes", day_saturday: "Sábado", day_sunday: "Domingo",
@@ -600,7 +655,7 @@
         title: "Editor da Base de Conhecimento", subtitle: "Molde a alma de IA do seu negócio.",
         section_offer_title: "Ação Necessária: Oferta de Boas-vindas", offer_desc: "Descreva sua oferta. A IA gerará uma oferta atraente para você.", lbl_offer_prompt: "Descreva sua oferta", btn_generate_offer: "Gerar Oferta", lbl_offer_preview: "Pré-visualização", offer_preview_placeholder: "Você verá a pré-visualização aqui...", alert_offer_required: "Por favor, insira uma descrição para a oferta.", generating: "Gerando...", alert_generation_error: "Erro de geração de IA.", lbl_click_copy: "Clique para copiar (Texto Social)", alert_copied: "Texto copiado! Cole no Facebook ou LinkedIn.",
         section_hours_title: "Horários", section_assets_title: "Ativos Visuais", lbl_logo: "Logo", upload_logo: "Carregue seu logo", lbl_photo: "Foto", upload_photo: "Carregue uma foto",
-        section_bot_title: "Ação Necessária: Configure seu Bot", guide_bot_1: "Abra o <a href='{botFatherUrl}' target='_blank'>@BotFather</a>.", guide_bot_2: "Envie <code>/newbot</code>.", guide_bot_3: "Escolha nome e usuário.", guide_bot_4: "<b>Copie o token da API</b> e cole abaixo.", guide_bot_video: "Ajuda? <a href='{botVideoUrl}' target='_blank'>Ver vídeo</a>.",
+        section_bot_title: "Ação Necessária: Configure seu Bot", guide_bot_1: "Abra o <a href='{botFatherUrl}' target='_blank'>@BotFather</a>.", guide_bot_2: "Envie <code>/newbot</code>.", guide_bot_3: "Escolha nome e usuário.", guide_bot_4: "<b>Copie o token da API</b> e cole abaixo.", guide_bot_video: "Ajuda? <a href='{botVideoUrl}' target='_blank'>Ver vídeo</a>.", btn_link_bot: "Vincular", status_linked: "Bot Vinculado", alert_token_required: "Por favor insira o token do bot.", alert_token_invalid: "Formato de token inválido.", alert_link_error: "Erro de Vinculação",
         section_group_title: "Ação Necessária: Criar Grupo", guide_group_1: "Crie um grupo privado.", guide_group_2: "Adicione os bots.", guide_group_3: "Promova a Admin.",
         lbl_utterances: "Perguntas", lbl_answer: "Resposta", lbl_summary: "Resumo", lbl_deepdive: "Detalhes", lbl_question: "Pergunta", btn_add_qa: "Adicionar P&R",
         day_monday: "Segunda", day_tuesday: "Terça", day_wednesday: "Quarta", day_thursday: "Quinta", day_friday: "Sexta", day_saturday: "Sábado", day_sunday: "Domingo",
