@@ -1,10 +1,12 @@
 :root {
   --bg-start: #4a5b8f; --bg-end: #2a3d5f;
   --text-main: #ffffff; --text-muted: rgba(255,255,255,0.75);
+  --text-secondary: rgba(255,255,255,0.7);
   --primary: #5B6FED; --primary-hover: #4a5ecf;
   --success: #4cd964; --error: #ff6b6b; --warning: #f59e0b;
   --border: rgba(255,255,255,0.18); --input-bg: rgba(255,255,255,0.08);
   --card-bg: rgba(0,0,0,0.22); --glass: rgba(255,255,255,0.04);
+  --hover-bg: rgba(255,255,255,0.1);
 }
 * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 body {
@@ -59,6 +61,17 @@ input:focus, textarea:focus, select:focus {
   min-width: 120px; padding: 12px; color: var(--text-main); background: var(--primary); cursor: pointer;
   transition: background 0.2s, border 0.2s, color 0.2s;
 }
+.btn-icon {
+  background: transparent; border: none; cursor: pointer;
+  font-size: 16px; padding: 8px; border-radius: 8px;
+  transition: background 0.2s; color: var(--text-secondary);
+  display: flex; align-items: center; justify-content: center;
+  min-width: auto;
+}
+.btn-icon:hover { 
+  background: var(--hover-bg); 
+  color: var(--text-main); 
+}
 .btn-primary { background: var(--primary); }
 .btn-primary:hover, .btn:hover { background: var(--primary-hover); }
 .btn-secondary {
@@ -68,10 +81,11 @@ input:focus, textarea:focus, select:focus {
   background: transparent; color: var(--primary); border: 2px solid var(--primary);
 }
 .btn-delete {
-  background: var(--error); color: #fff;
+  color: var(--error);
 }
 .btn-delete:hover {
-  background: #c82333;
+  background: rgba(255,107,107,0.15);
+  color: var(--error);
 }
 .btn-success { background: var(--success); color: #fff; }
 .btn-warning { background: var(--warning); color: #333; }
@@ -111,6 +125,10 @@ th, td {
 }
 th { background: var(--primary); color: #fff; font-weight: 600; }
 tr:hover { background: rgba(91,111,237,0.10); }
+.collapsible-content {
+  overflow: hidden;
+  transition: max-height 0.3s ease;
+}
 @media (max-width: 800px) {
   .container { max-width: 98vw; padding: 10px; }
 }
