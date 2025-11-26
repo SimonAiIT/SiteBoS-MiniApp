@@ -54,12 +54,18 @@
     
     .company-card { display: flex; align-items: center; gap: 15px; background: var(--card-bg); border: 1px solid var(--border); padding: 15px; border-radius: 16px; margin-bottom: 12px; cursor: pointer; transition: all 0.2s; }
     .company-card:active { transform: scale(0.98); border-color: var(--primary); }
-    .company-avatar { width: 45px; height: 45px; border-radius: 50%; background: var(--primary); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 18px; color: white; border: 2px solid rgba(255,255,255,0.2); }
+    .company-avatar { width: 45px; height: 45px; border-radius: 50%; background: var(--primary); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 18px; color: white; border: 2px solid rgba(255,255,255,0.2); object-fit: cover; }
 
-    /* --- HUB HEADER --- */
+    /* --- HUB HEADER (BRANDED) --- */
     .hub-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid var(--border); }
+    
+    .brand-area { display: flex; align-items: center; gap: 12px; }
+    .brand-logo { width: 50px; height: 50px; border-radius: 12px; object-fit: contain; background: rgba(255,255,255,0.1); border: 1px solid var(--border); }
+    .owner-avatar { width: 35px; height: 35px; border-radius: 50%; object-fit: cover; border: 2px solid var(--success); margin-left: -10px; box-shadow: 2px 2px 5px rgba(0,0,0,0.3); }
+    
     .lang-select { background: rgba(0,0,0,0.3); border: 1px solid var(--border); color: white; padding: 6px 12px; border-radius: 20px; font-size: 12px; outline: none; }
 
+    /* AI INDICATOR */
     .ai-status { width: 38px; height: 38px; border-radius: 50%; background: var(--card-bg); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; transition: all 0.3s; position: relative; margin-left: 10px; }
     .ai-status.processing { border-color: var(--primary); box-shadow: 0 0 10px rgba(91, 111, 237, 0.3); }
     .ai-status.processing i { animation: spin 1s linear infinite; color: var(--primary); }
@@ -68,8 +74,9 @@
     .ai-status i { font-size: 16px; color: var(--text-muted); }
     .ai-status.insight i, .ai-status.human i { color: white; }
 
+    /* INSIGHT BUBBLE */
     .insight-bubble { 
-        position: fixed; top: 75px; left: 5%; width: 90%; 
+        position: fixed; top: 85px; left: 5%; width: 90%; 
         background: rgba(20, 30, 50, 0.98); border: 1px solid var(--primary); 
         border-radius: 16px; padding: 20px; z-index: 500; 
         backdrop-filter: blur(15px); box-shadow: 0 10px 40px rgba(0,0,0,0.6);
@@ -78,10 +85,17 @@
     }
     .insight-bubble.visible { transform: translateY(0); opacity: 1; pointer-events: auto; }
 
-    /* --- TABS & PRODUCTS --- */
-    .tab-content { display: none; animation: fadeIn 0.4s ease-out; }
-    .tab-content.active { display: block; }
-    
+    /* --- KNOWLEDGE BASE (HONEYPOT) --- */
+    .kb-search { margin-bottom: 20px; }
+    .kb-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 16px; margin-bottom: 15px; overflow: hidden; transition: all 0.2s; }
+    .kb-header { padding: 15px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.02); }
+    .kb-header h3 { font-size: 15px; margin: 0; line-height: 1.4; color: white; width: 90%; }
+    .kb-body { padding: 15px; display: none; border-top: 1px solid var(--border); font-size: 14px; color: var(--text-muted); line-height: 1.6; }
+    .kb-body.open { display: block; animation: fadeIn 0.3s; }
+    .kb-section { margin-top: 15px; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 8px; }
+    .kb-q { font-weight: 700; color: var(--primary); font-size: 13px; margin-bottom: 5px; }
+
+    /* --- PRODUCTS --- */
     .category-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 16px; margin-bottom: 15px; overflow: hidden; }
     .cat-header { padding: 15px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; background: rgba(255,255,255,0.05); }
     .cat-header h3 { margin: 0; font-size: 16px; color: white; }
@@ -102,7 +116,7 @@
     .cal-slot { background: var(--primary); color: white; padding: 8px; border-radius: 6px; font-size: 12px; margin-bottom: 5px; cursor: pointer; transition: transform 0.1s; }
     .cal-slot:active { transform: scale(0.95); }
 
-    /* --- CART (FLOATING) --- */
+    /* --- CART FAB --- */
     .cart-fab { 
         position: fixed; bottom: 150px; right: 20px; z-index: 450;
         width: 55px; height: 55px; background: var(--success); border-radius: 50%;
@@ -150,10 +164,12 @@
     /* Cart List */
     .cart-list { max-height: 300px; overflow-y: auto; margin-bottom: 20px; }
     .cart-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid var(--border); }
-    .cart-item:last-child { border-bottom: none; }
     .cart-item-info { font-size: 14px; color: white; }
-    .cart-item-price { font-size: 13px; color: var(--success); font-weight: 700; }
-    .btn-remove { color: var(--error); background: transparent; border: none; font-size: 16px; cursor: pointer; padding: 5px; }
+    .btn-remove { color: var(--error); background: transparent; border: none; font-size: 16px; cursor: pointer; }
+
+    /* TABS UTIL */
+    .tab-content { display: none; animation: fadeIn 0.4s ease-out; }
+    .tab-content.active { display: block; }
 
   </style>
 </head>
@@ -175,11 +191,17 @@
   <!-- 2. CLIENT HUB -->
   <div id="view-hub" class="view-container hidden fade-in" style="max-width: 100%;">
     
-    <!-- Header -->
+    <!-- BRANDED HEADER -->
     <div class="hub-header">
-      <div>
-        <h3 id="company-name" style="color:white; font-size:18px; margin:0;">Company</h3>
-        <span id="user-badge" style="font-size:10px; background:rgba(255,255,255,0.1); padding:2px 8px; border-radius:10px; color:var(--text-muted);">GUEST</span>
+      <div class="brand-area">
+        <img id="brand-logo" src="" class="brand-logo hidden">
+        <div>
+          <h3 id="company-name" style="color:white; font-size:16px; margin:0;">Company</h3>
+          <div style="display:flex; align-items:center; gap:5px; margin-top:4px;">
+             <img id="owner-avatar" src="" class="owner-avatar hidden">
+             <span id="user-badge" style="font-size:10px; background:rgba(255,255,255,0.1); padding:2px 6px; border-radius:10px; color:var(--text-muted);">GUEST</span>
+          </div>
+        </div>
       </div>
       <div style="display:flex; align-items:center; gap:8px;">
          <select id="lang-selector" onchange="changeLanguage(this.value)" class="lang-select">
@@ -193,7 +215,7 @@
       </div>
     </div>
 
-    <!-- Insight -->
+    <!-- AI Insight -->
     <div id="insight-bubble" class="insight-bubble">
       <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
         <strong style="color:var(--primary); font-size:12px;">AI INSIGHT</strong>
@@ -202,17 +224,23 @@
       <p id="insight-text" style="color:white; font-size:14px; line-height:1.5; margin:0;"></p>
     </div>
 
-    <!-- TABS -->
+    <!-- TAB: HONEYPOT (Knowledge Base) -->
     <div id="tab-knowledge" class="tab-content active">
       <h2 data-i18n="tab_hp">HoneyPot</h2>
-      <div id="content-knowledge" style="margin-top:15px;"></div>
+      <div class="search-box" style="margin-bottom:15px;">
+        <i class="fas fa-search"></i>
+        <input type="text" id="kb-search" placeholder="Cerca nella KB..." onkeyup="filterKB()">
+      </div>
+      <div id="content-knowledge"></div>
     </div>
 
+    <!-- TAB: PRODUCTS -->
     <div id="tab-products" class="tab-content">
       <h2 data-i18n="tab_prod">Prodotti</h2>
       <div id="content-products" style="margin-top:15px;"></div>
     </div>
 
+    <!-- TAB: AGENDA -->
     <div id="tab-agenda" class="tab-content">
       <h2 data-i18n="tab_agenda">Agenda</h2>
       <div id="content-agenda" class="calendar-grid"></div>
@@ -263,11 +291,11 @@
       <div class="q-group"><label class="q-label">Indirizzo</label><textarea id="q-address" class="q-input" rows="2" placeholder="Via, Civico, Città"></textarea></div>
       <div class="q-group"><label class="q-label">Telefono</label><input type="tel" id="q-phone" class="q-input"></div>
 
-      <div style="display:flex; gap:10px; margin-bottom:15px; font-size:13px; color:var(--text-muted);">
+      <div style="display:flex; gap:10px; margin-bottom:15px; font-size:13px; color:var(--text-muted); align-items:center;">
         <input type="checkbox" id="q-privacy"> <label for="q-privacy">Accetto <a href="https://www.trinai.it/compliance/clientsitebos" target="_blank" style="color:var(--primary);">Privacy Policy</a></label>
       </div>
 
-      <button class="btn btn-primary" onclick="submitQualification()">Salva & Registra</button>
+      <button class="btn btn-primary" onclick="submitQualification()">Salva Profilo</button>
       <button class="btn btn-outline" onclick="closeQualification()">Chiudi</button>
     </div>
   </div>
@@ -276,15 +304,13 @@
   <div id="cart-modal" class="modal-overlay hidden">
     <div class="modal-content fade-in">
       <h2 style="color:white; margin-bottom:15px;">Riepilogo Richiesta</h2>
-      <div id="cart-items" class="cart-list">
-        <!-- Items go here -->
-      </div>
+      <div id="cart-items" class="cart-list"></div>
       <div class="q-group">
-        <label class="q-label">Note / Richieste</label>
-        <textarea id="order-notes" class="q-input" rows="2" placeholder="Specifiche per l'ordine..."></textarea>
+        <label class="q-label">Note</label>
+        <textarea id="order-notes" class="q-input" rows="2" placeholder="Specifiche..."></textarea>
       </div>
-      <button class="btn btn-secondary" onclick="sendOrder()">Invia Richiesta / Ordine</button>
-      <button class="btn btn-outline" onclick="document.getElementById('cart-modal').classList.add('hidden')">Continua acquisti</button>
+      <button class="btn btn-secondary" onclick="sendOrder()">Invia Richiesta</button>
+      <button class="btn btn-outline" onclick="document.getElementById('cart-modal').classList.add('hidden')">Continua</button>
     </div>
   </div>
 
@@ -292,7 +318,7 @@
   <div id="login-modal" class="modal-overlay hidden">
     <div class="modal-content fade-in" style="text-align:center;">
         <h3 data-i18n="login_title">Identificazione</h3>
-        <p class="subtitle" data-i18n="login_desc">Accedi per recuperare sessione.</p>
+        <p class="subtitle" data-i18n="login_desc">Accedi.</p>
         <input type="text" id="login-user" class="q-input" placeholder="Username" style="margin-bottom:10px;">
         <input type="password" id="login-pass" class="q-input" placeholder="Password">
         <button class="btn btn-primary" onclick="processLogin()">Accedi</button>
@@ -308,7 +334,7 @@
         COGNITIVE: "https://trinai.api.workflow.dcmake.it/webhook/f33ae38a-5afd-488d-9222-60871d1b2020",     // Endpoint AI (KCRag Insight)
         HUMAN: "https://trinai.api.workflow.dcmake.it/webhook/f33ae38a-5afd-488d-9222-60871d1b2021"              // Endpoint Human (Handover)
     };
-  
+
     const i18n = {
       it: { portal_title:"Portale SiteBoS", portal_sub:"Cerca azienda.", tab_hp:"HoneyPot", tab_prod:"Prodotti", tab_agenda:"Agenda", nav_hp:"HoneyPot", nav_prod:"Prodotti", nav_agenda:"Agenda", nav_profile:"Profilo", qual_title:"Profilo Utente", qual_sub:"I tuoi dati.", login_title:"Identificazione", login_desc:"Accedi." },
       en: { portal_title:"SiteBoS Portal", portal_sub:"Search company.", tab_hp:"HoneyPot", tab_prod:"Products", tab_agenda:"Agenda", nav_hp:"HoneyPot", nav_prod:"Products", nav_agenda:"Agenda", nav_profile:"Profile", qual_title:"User Profile", qual_sub:"Your data.", login_title:"Login", login_desc:"Login." },
@@ -325,7 +351,6 @@
         const p = new URLSearchParams(window.location.search);
         app.vat = p.get('vat_number');
         const name = p.get('ragione_sociale');
-        
         const ul = navigator.language.slice(0,2);
         if(i18n[ul]) changeLanguage(ul);
 
@@ -366,10 +391,11 @@
         if(c) { app.cart = JSON.parse(c); updateCartUI(); }
 
         renderCalendar();
-        triggerAction('get_catalog'); 
+        
+        // REQUEST DATA
+        triggerAction('init_load');
     }
 
-    // --- PARALLEL ENGINE ---
     async function triggerAction(type, payload = null) {
         const ind = document.getElementById('ai-indicator');
         ind.className = 'ai-status processing';
@@ -377,10 +403,14 @@
         const body = { vat: app.vat, profile: app.user, type: type, payload: payload };
         if(type==='image') body.payload = await fileToBase64(payload);
 
+        // REFLEX
         fetch(API.REFLEX, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body) })
-            .then(r=>r.json()).then(d => { if(d.ui_command) execUi(d.ui_command); if(d.data) renderData(type, d.data); })
-            .catch(e=>console.log('R-err'));
+            .then(r=>r.json()).then(d => { 
+                if(d.ui_command) execUi(d.ui_command); 
+                if(d.data) handleData(type, d.data);
+            }).catch(e=>console.log('R-err'));
 
+        // COGNITIVE
         fetch(API.COGNITIVE, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body) })
             .then(r=>r.json()).then(d => {
                 if(d.ai_insight) showInsight(d.ai_insight);
@@ -395,148 +425,126 @@
          document.getElementById('ai-icon').className='fas fa-headset';
     }
 
-    function execUi(cmd) {
-        if(cmd.action==='NAVIGATE') switchTab(cmd.target);
-        if(cmd.action==='OPEN_QUALIFY') openQualification();
-        if(cmd.action==='OPEN_LOGIN') document.getElementById('login-modal').classList.remove('hidden');
-    }
-
-    function renderData(type, data) {
-        if(type === 'get_catalog' && data.categories) {
-            const html = data.categories.map(cat => `
-                <div class="category-card">
-                    <div class="cat-header" onclick="this.nextElementSibling.classList.toggle('open')">
-                        <h3>${cat.short_name}</h3><i class="fas fa-chevron-down" style="color:white"></i>
-                    </div>
-                    <div class="cat-body">
-                        ${cat.subcategories.map(sub => `
-                            <div class="product-item">
-                                <h4>${sub.short_name}</h4>
-                                <div class="prod-actions">
-                                    <span class="price-tag">INFO</span>
-                                    <button class="btn-add" onclick="addToCart('${sub.short_name}', '${sub.callback_data}')"><i class="fas fa-plus"></i></button>
-                                </div>
-                            </div>`).join('')}
-                    </div>
-                </div>`).join('');
-            document.getElementById('content-products').innerHTML = html;
+    function handleData(type, data) {
+        // Handle BRANDING assets
+        if(data.assets) {
+            if(data.assets.logo) { 
+                const img = document.getElementById('brand-logo'); 
+                img.src = `data:${data.assets.logo.mime};base64,${data.assets.logo.base64}`; 
+                img.classList.remove('hidden'); 
+            }
+            if(data.assets.avatar) { 
+                const img = document.getElementById('owner-avatar'); 
+                img.src = `data:${data.assets.avatar.mime};base64,${data.assets.avatar.base64}`; 
+                img.classList.remove('hidden'); 
+            }
         }
+        
+        // Handle HONEYPOT
+        if(data.honeypot) renderHoneyPot(data.honeypot);
+        
+        // Handle CATALOG
+        if(data.categories) renderCatalog(data.categories);
     }
 
-    function showInsight(text) {
-        const ind = document.getElementById('ai-indicator'); ind.className='ai-status insight';
-        document.getElementById('ai-icon').className='fas fa-lightbulb';
-        document.getElementById('insight-text').innerHTML = text;
-        toggleInsight();
-    }
-
-    // --- CART SYSTEM ---
-    window.addToCart = (name, id) => {
-        app.cart.push({name: name, id: id, qty: 1});
-        updateCartUI();
-        if(tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('selection');
-    };
-    
-    window.updateCartUI = () => {
-        const fab = document.getElementById('cart-fab');
-        const count = document.getElementById('cart-count');
-        if(app.cart.length > 0) {
-            fab.classList.add('visible');
-            count.innerText = app.cart.length;
-            localStorage.setItem('sb_cart_'+app.vat, JSON.stringify(app.cart));
-        } else {
-            fab.classList.remove('visible');
-            localStorage.removeItem('sb_cart_'+app.vat);
-        }
-    };
-    
-    window.openCart = () => {
-        const list = document.getElementById('cart-items');
-        list.innerHTML = app.cart.map((item, i) => `
-            <div class="cart-item">
-                <div class="cart-item-info">${item.name}</div>
-                <button class="btn-remove" onclick="removeFromCart(${i})"><i class="fas fa-trash"></i></button>
+    // --- RENDERERS ---
+    function renderHoneyPot(fragments) {
+        const cont = document.getElementById('content-knowledge');
+        if(!fragments || fragments.length === 0) { cont.innerHTML = "<p style='color:gray'>Nessun articolo.</p>"; return; }
+        
+        cont.innerHTML = fragments.map(f => `
+            <div class="kb-card">
+                <div class="kb-header" onclick="this.nextElementSibling.classList.toggle('open')">
+                    <h3><i class="fas fa-book" style="color:var(--primary); margin-right:8px;"></i> ${f.title}</h3>
+                    <i class="fas fa-chevron-down" style="color:var(--text-muted)"></i>
+                </div>
+                <div class="kb-body">
+                    <p>${f.answer_fragment}</p>
+                    ${(f.sections||[]).map(s => `
+                        <div class="kb-section">
+                            <div class="kb-q">${s.question}</div>
+                            <div>${s.answer}</div>
+                        </div>
+                    `).join('')}
+                </div>
             </div>
         `).join('');
+    }
+
+    function renderCatalog(categories) {
+        const cont = document.getElementById('content-products');
+        cont.innerHTML = categories.map(cat => `
+            <div class="category-card">
+                <div class="cat-header" onclick="this.nextElementSibling.classList.toggle('open')">
+                    <h3>${cat.short_name}</h3><i class="fas fa-chevron-down" style="color:white"></i>
+                </div>
+                <div class="cat-body">
+                    ${cat.subcategories.map(sub => `
+                        <div class="product-item">
+                            <h4>${sub.short_name}</h4>
+                            <div class="prod-actions">
+                                <span class="price-tag">INFO</span>
+                                <button class="btn-add" onclick="addToCart('${sub.short_name}', '${sub.callback_data}')"><i class="fas fa-plus"></i></button>
+                            </div>
+                        </div>`).join('')}
+                </div>
+            </div>`).join('');
+    }
+
+    function renderCalendar() {
+        const c = document.getElementById('content-agenda');
+        const days = ['Lun','Mar','Mer','Gio','Ven','Sab'];
+        c.innerHTML = days.map(d => `<div class="cal-day"><h4>${d}</h4><div class="cal-slot">09:00</div><div class="cal-slot">15:00</div></div>`).join('');
+    }
+
+    // --- CART ---
+    window.addToCart = (name, id) => { app.cart.push({name:name, id:id, qty:1}); updateCartUI(); if(tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('selection'); };
+    window.updateCartUI = () => {
+        const fab=document.getElementById('cart-fab'), cnt=document.getElementById('cart-count');
+        if(app.cart.length>0){ fab.classList.add('visible'); cnt.innerText=app.cart.length; localStorage.setItem('sb_cart_'+app.vat, JSON.stringify(app.cart)); }
+        else { fab.classList.remove('visible'); localStorage.removeItem('sb_cart_'+app.vat); }
+    };
+    window.openCart = () => {
+        document.getElementById('cart-items').innerHTML = app.cart.map((item,i)=>`<div class="cart-item"><div class="cart-item-info">${item.name}</div><button class="btn-remove" onclick="rmCart(${i})"><i class="fas fa-trash"></i></button></div>`).join('');
         document.getElementById('cart-modal').classList.remove('hidden');
     };
-    
-    window.removeFromCart = (i) => { app.cart.splice(i, 1); updateCartUI(); openCart(); if(app.cart.length===0) document.getElementById('cart-modal').classList.add('hidden'); };
-    
+    window.rmCart = (i) => { app.cart.splice(i,1); updateCartUI(); openCart(); if(app.cart.length===0) document.getElementById('cart-modal').classList.add('hidden'); };
     window.sendOrder = () => {
-        if(!app.user || app.user.status !== 'VERIFIED') { alert('Completa il profilo per ordinare.'); openQualification(); return; }
-        const notes = document.getElementById('order-notes').value;
-        triggerAction('submit_order', { cart: app.cart, notes: notes });
-        app.cart = []; updateCartUI();
-        document.getElementById('cart-modal').classList.add('hidden');
-        if(tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
-        alert('Richiesta inviata! Ti contatteremo a breve.');
+        if(!app.user || app.user.status!=='VERIFIED'){ alert('Completa profilo.'); openQualification(); return; }
+        const n = document.getElementById('order-notes').value;
+        triggerAction('submit_order', {cart:app.cart, notes:n});
+        app.cart=[]; updateCartUI(); document.getElementById('cart-modal').classList.add('hidden');
+        alert('Richiesta inviata.');
     };
 
     // --- UTILS ---
     window.sendText = () => { const t=document.getElementById('chat-input'); if(t.value){ triggerAction('text', t.value); t.value=''; }};
-    
     window.switchTab = (id, el) => {
         document.querySelectorAll('.tab-content').forEach(d=>d.classList.remove('active'));
         document.getElementById('tab-'+id).classList.add('active');
         document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
         if(el) el.classList.add('active');
     }
-    
     window.toggleInsight = () => document.getElementById('insight-bubble').classList.toggle('visible');
-    
-    window.openQualification = () => {
-        document.getElementById('qualify-modal').classList.remove('hidden');
-        if(app.user) { document.getElementById('q-username').value=app.user.username||''; document.getElementById('q-email').value=app.user.email; }
-    }
+    window.openQualification = () => { document.getElementById('qualify-modal').classList.remove('hidden'); if(app.user){ document.getElementById('q-username').value=app.user.username||''; document.getElementById('q-email').value=app.user.email; }};
     window.closeQualification = () => document.getElementById('qualify-modal').classList.add('hidden');
+    window.execUi = (cmd) => { if(cmd.action==='NAVIGATE') switchTab(cmd.target); if(cmd.action==='OPEN_QUALIFY') openQualification(); if(cmd.action==='OPEN_LOGIN') document.getElementById('login-modal').classList.remove('hidden'); };
+    window.showInsight = (text) => { const i=document.getElementById('ai-indicator'); i.className='ai-status insight'; document.getElementById('insight-text').innerHTML=text; toggleInsight(); };
+    window.filterKB = () => { const t=document.getElementById('kb-search').value.toLowerCase(); document.querySelectorAll('.kb-card').forEach(c => c.style.display=c.innerText.toLowerCase().includes(t)?'block':'none'); };
+    window.filterPublicList = () => { const t=document.getElementById('public-search').value.toLowerCase(); document.querySelectorAll('.company-card').forEach(c => c.style.display=c.innerText.toLowerCase().includes(t)?'flex':'none'); };
     
     window.submitQualification = () => {
-        const u = document.getElementById('q-username').value;
-        const p = document.getElementById('q-password').value;
-        if(!u || !p) { alert('User/Pass required'); return; }
-        if(!document.getElementById('q-privacy').checked) { alert('Privacy required'); return; }
-        
-        const prof = {
-            username: u, password: p,
-            email: document.getElementById('q-email').value,
-            name: document.getElementById('q-name').value,
-            surname: document.getElementById('q-surname').value,
-            company: document.getElementById('q-company').value,
-            address: document.getElementById('q-address').value,
-            phone: document.getElementById('q-phone').value,
-            status: 'VERIFIED'
-        };
-        app.user = prof;
-        localStorage.setItem('sb_profile_'+app.vat, JSON.stringify(prof));
-        updateBadge(); closeQualification();
-        triggerAction('profile_update', prof);
-    }
-    
+        const u=document.getElementById('q-username').value, p=document.getElementById('q-password').value;
+        if(!u || !p || !document.getElementById('q-privacy').checked) { alert('Dati mancanti'); return; }
+        const prof = { username:u, password:p, email:document.getElementById('q-email').value, name:document.getElementById('q-name').value, surname:document.getElementById('q-surname').value, address:document.getElementById('q-address').value, phone:document.getElementById('q-phone').value, status:'VERIFIED' };
+        app.user=prof; localStorage.setItem('sb_profile_'+app.vat, JSON.stringify(prof));
+        updateBadge(); closeQualification(); triggerAction('profile_update', prof);
+    };
     window.processLogin = () => {
-        const u = document.getElementById('login-user').value;
-        const p = document.getElementById('login-pass').value;
-        if(u && p) {
-            app.user = { username: u, status: 'VERIFIED' };
-            updateBadge();
-            document.getElementById('login-modal').classList.add('hidden');
-            triggerAction('login_verify', {username:u, password:p});
-        }
-    }
-
-    function updateBadge() { const b=document.getElementById('user-badge'); if(app.user){b.innerText="VERIFIED"; b.style.color="#4cd964";} }
-    
-    function renderCalendar() {
-        const c = document.getElementById('content-agenda');
-        const days = ['Lun','Mar','Mer','Gio','Ven','Sab'];
-        c.innerHTML = days.map(d => `<div class="cal-day"><h4>${d}</h4><div class="cal-slot">09:00</div><div class="cal-slot">15:00</div></div>`).join('');
-    }
-    
-    window.filterPublicList = () => {
-        const t = document.getElementById('public-search').value.toLowerCase();
-        document.querySelectorAll('.company-card').forEach(c => c.style.display=c.innerText.toLowerCase().includes(t)?'flex':'none');
-    }
-    
+        const u=document.getElementById('login-user').value, p=document.getElementById('login-pass').value;
+        if(u && p) { app.user={username:u, status:'VERIFIED'}; updateBadge(); document.getElementById('login-modal').classList.add('hidden'); triggerAction('login_verify', {username:u, password:p}); }
+    };
+    function updateBadge() { const b=document.getElementById('user-badge'); if(app.user?.status==='VERIFIED'){ b.innerText="VERIFIED"; b.style.color="#4cd964"; } }
     const fileToBase64 = f => new Promise((r,j)=>{ const rd=new FileReader(); rd.onload=()=>r(rd.result.split(',')[1]); rd.onerror=j; rd.readAsDataURL(f); });
 
 </script>
