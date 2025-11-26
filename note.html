@@ -5,72 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>Nuova Nota / ToDo</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <style>
-    :root {
-      --bg-start: #4a5b8f; --bg-end: #2a3d5f; --text-primary: #ffffff;
-      --text-secondary: rgba(255, 255, 255, 0.7); --border-color: rgba(255, 255, 255, 0.2);
-      --input-bg: rgba(255, 255, 255, 0.08); --accent-color: #5B6FED;
-    }
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-      background: linear-gradient(135deg, var(--bg-start) 0%, var(--bg-end) 100%);
-      color: var(--text-primary); padding: 20px; min-height: 100vh;
-    }
-    .container { max-width: 500px; margin: 0 auto; }
-    h1 { font-size: 26px; margin-bottom: 8px; font-weight: 600; }
-    .subtitle { font-size: 14px; color: var(--text-secondary); margin-bottom: 32px; font-weight: 300; }
-    .form-group { margin-bottom: 20px; }
-    label { display: block; margin-bottom: 10px; font-size: 14px; font-weight: 500; }
-    
-    input, textarea, select {
-      width: 100%; padding: 14px 16px; border: 1px solid var(--border-color);
-      border-radius: 12px; background: var(--input-bg); backdrop-filter: blur(10px);
-      color: var(--text-primary); font-size: 15px; font-family: inherit;
-      -webkit-appearance: none;
-      appearance: none;
-    }
-    
-    select {
-        background-image: url('data:image/svg+xml;utf8,<svg fill="white" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>');
-        background-repeat: no-repeat;
-        background-position: right 16px center;
-        padding-right: 40px;
-    }
-    
-    option {
-      background: var(--bg-end);
-      color: var(--text-primary);
-    }
-
-    input[type="date"]::-webkit-calendar-picker-indicator {
-      cursor: pointer;
-      opacity: 0.7;
-      filter: invert(1);
-      transform: scale(1.2);
-      transition: opacity 0.2s ease;
-    }
-    input[type="date"]::-webkit-calendar-picker-indicator:hover {
-      opacity: 1;
-    }
-
-    input:focus, textarea:focus, select:focus {
-      outline: none; border-color: rgba(255, 255, 255, 0.5);
-      box-shadow: 0 0 15px rgba(91, 111, 237, 0.3);
-    }
-    textarea { resize: vertical; min-height: 120px; }
-    .required::after { content: " *"; color: #ff6b6b; }
-    .button-container { text-align: center; margin-top: 32px; }
-    #submitBtn {
-      width: 100%; padding: 14px; background: var(--accent-color); color: var(--text-primary);
-      border: none; border-radius: 12px; font-size: 15px; font-weight: 600; cursor: pointer;
-    }
-    #submitBtn:disabled { background: #555; cursor: not-allowed; opacity: 0.6; }
-    .cancel-hint { text-align: center; margin-top: 16px; font-size: 13px; color: var(--text-secondary); opacity: 0.8; }
-    .hint { font-size: 12px; color: rgba(255, 255, 255, 0.6); margin-top: 6px; }
-    .row { display: flex; gap: 16px; }
-    .row .form-group { flex: 1; }
-  </style>
+  
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <div class="container">
