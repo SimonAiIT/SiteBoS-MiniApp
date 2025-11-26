@@ -58,11 +58,9 @@
 
     /* --- HUB HEADER --- */
     .hub-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid var(--border); }
-    
     .brand-area { display: flex; align-items: center; gap: 12px; }
     .brand-logo { width: 50px; height: 50px; border-radius: 12px; object-fit: contain; background: rgba(255,255,255,0.1); border: 1px solid var(--border); }
     .owner-avatar { width: 35px; height: 35px; border-radius: 50%; object-fit: cover; border: 2px solid var(--success); margin-left: -10px; box-shadow: 2px 2px 5px rgba(0,0,0,0.3); }
-    
     .lang-select { background: rgba(0,0,0,0.3); border: 1px solid var(--border); color: white; padding: 6px 12px; border-radius: 20px; font-size: 12px; outline: none; }
 
     /* AI INDICATOR */
@@ -74,7 +72,6 @@
     .ai-status i { font-size: 16px; color: var(--text-muted); }
     .ai-status.insight i, .ai-status.human i { color: white; }
 
-    /* INSIGHT BUBBLE */
     .insight-bubble { 
         position: fixed; top: 85px; left: 5%; width: 90%; 
         background: rgba(20, 30, 50, 0.98); border: 1px solid var(--primary); 
@@ -85,7 +82,11 @@
     }
     .insight-bubble.visible { transform: translateY(0); opacity: 1; pointer-events: auto; }
 
-    /* --- HONEYPOT (KB) --- */
+    /* --- HONEYPOT (KB) PRO STYLE --- */
+    .offer-banner { background: rgba(91, 111, 237, 0.15); border: 1px solid var(--primary); border-radius: 16px; padding: 20px; margin-bottom: 25px; animation: fadeIn 0.5s; }
+    .offer-banner h3 { color: white; margin-top: 0; }
+    .offer-banner a { color: var(--primary); font-weight: bold; }
+
     .kb-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 16px; margin-bottom: 15px; overflow: hidden; transition: all 0.2s; }
     .kb-header { padding: 15px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.02); }
     .kb-header h3 { font-size: 15px; margin: 0; line-height: 1.4; color: white; width: 90%; }
@@ -458,34 +459,57 @@
     }
 
     function handleData(type, data) {
+        // 1. ASSETS
         const assets = data.assets || (data.data && data.data.assets);
         if(assets) {
             if(assets.logo) { const i = document.getElementById('brand-logo'); i.src = assets.logo.base64 ? `data:${assets.logo.mime};base64,${assets.logo.base64}` : assets.logo; i.classList.remove('hidden'); }
             if(assets.avatar) { const i = document.getElementById('owner-avatar'); i.src = assets.avatar.base64 ? `data:${assets.avatar.mime};base64,${assets.avatar.base64}` : assets.avatar; i.classList.remove('hidden'); }
         }
-        const hp = data.honeypot || (data.data && data.data.honeypot);
-        if(hp) renderHoneyPot(hp);
+        // 2. HONEYPOT (Nested Fix)
+        let hpData = data.honeypot || (data.data && data.data.honeypot);
+        if(hpData) renderHoneyPot(hpData);
         
-        const cat = data.categories || (data.data && data.data.categories);
-        if(cat) renderCatalogStructure(cat);
+        // 3. CATALOGO (Lazy)
+        const catData = data.categories || (data.data && data.data.categories);
+        if(catData) renderCatalogStructure(catData);
         
+        // 4. PRODOTTI (Drill Down)
         if(data.products_update) renderProductsUpdate(data.products_update);
     }
 
     function renderHoneyPot(payload) {
         const cont = document.getElementById('content-knowledge');
         let fragments = [];
-        if (Array.isArray(payload)) fragments = payload;
-        else if (payload.knowledge_fragments && Array.isArray(payload.knowledge_fragments)) fragments = payload.knowledge_fragments;
+        let offer = "";
 
-        if(!fragments || fragments.length === 0) { cont.innerHTML = "<p style='color:gray; text-align:center; padding:20px;'>Nessun articolo.</p>"; return; }
-        cont.innerHTML = fragments.map(f => `
+        // Estrazione intelligente
+        if (Array.isArray(payload)) {
+            fragments = payload;
+        } else if (payload && payload.knowledge_fragments) {
+            fragments = payload.knowledge_fragments;
+            offer = payload.offer_text || "";
+        }
+
+        if ((!fragments || fragments.length === 0) && !offer) { 
+            cont.innerHTML = "<p style='color:gray; text-align:center; padding:20px;'>Nessun articolo.</p>"; 
+            return; 
+        }
+
+        let html = "";
+        if(offer) html += `<div class="offer-banner">${offer}</div>`;
+
+        html += fragments.map(f => `
             <div class="kb-card">
                 <div class="kb-header" onclick="this.nextElementSibling.classList.toggle('open')">
                     <h3><i class="fas fa-book" style="color:var(--primary); margin-right:8px;"></i> ${f.title ? f.title.replace(/_/g, ' ') : 'Dettaglio'}</h3><i class="fas fa-chevron-down" style="color:var(--text-muted)"></i>
                 </div>
-                <div class="kb-body"><div class="kb-summary">${f.summary || f.answer_fragment || ''}</div>${(f.sections||[]).map(s => `<div class="kb-section"><div class="kb-q">${s.question}</div><div class="kb-a">${s.answer}</div></div>`).join('')}</div>
+                <div class="kb-body">
+                    <div class="kb-summary">${f.summary || f.answer_fragment || ''}</div>
+                    ${(f.sections||[]).map(s => `<div class="kb-section"><div class="kb-q">${s.question}</div><div class="kb-a">${s.answer}</div></div>`).join('')}
+                </div>
             </div>`).join('');
+        
+        cont.innerHTML = html;
     }
 
     function renderCatalogStructure(categories) {
@@ -496,6 +520,7 @@
                     <h3>${cat.short_name}</h3><i class="fas fa-chevron-down" style="color:white"></i>
                 </div>
                 <div class="cat-body" id="cat-body-${cat.callback_data}">
+                    <!-- Se le sottocategorie sono già presenti, renderizzale subito -->
                     ${cat.subcategories && cat.subcategories.length > 0 ? renderSubcategoriesHTML(cat.subcategories) : '<div style="text-align:center; padding:10px;"><i class="fas fa-circle-notch fa-spin"></i></div>'}
                 </div>
             </div>`).join('');
@@ -517,6 +542,7 @@
     function expandCategory(catId) {
         const body = document.getElementById(`cat-body-${catId}`);
         body.classList.toggle('open');
+        // Se vuoto o solo spinner, chiama il backend
         if(body.innerText.trim() === '' || (body.children.length === 1 && body.children[0].tagName === 'DIV')) triggerAction('get_category_products', catId);
     }
 
@@ -573,19 +599,8 @@
         app.currentTab = id;
     }
     window.toggleInsight = () => document.getElementById('insight-bubble').classList.toggle('visible');
-    
-    window.openQualification = () => { 
-        document.getElementById('qualify-modal').classList.remove('hidden');
-        if(app.user) { 
-            document.getElementById('q-username').value=app.user.username||''; 
-            document.getElementById('q-email').value=app.user.email||''; 
-        } else {
-            document.getElementById('q-username').value='';
-            document.getElementById('q-password').value='';
-        }
-    };
+    window.openQualification = () => { document.getElementById('qualify-modal').classList.remove('hidden'); if(app.user){ document.getElementById('q-username').value=app.user.username||''; document.getElementById('q-email').value=app.user.email; } else { document.getElementById('q-username').value=''; document.getElementById('q-password').value=''; }};
     window.closeQualification = () => document.getElementById('qualify-modal').classList.add('hidden');
-    
     window.execUi = (cmd) => { if(cmd.action==='NAVIGATE') switchTab(cmd.target); if(cmd.action==='OPEN_QUALIFY') openQualification(); if(cmd.action==='OPEN_LOGIN') document.getElementById('login-modal').classList.remove('hidden'); };
     window.showInsight = (text) => { const i=document.getElementById('ai-indicator'); i.className='ai-status insight'; document.getElementById('ai-icon').className='fas fa-lightbulb'; document.getElementById('insight-text').innerHTML=text; toggleInsight(); };
     window.filterKB = () => { const t=document.getElementById('kb-search').value.toLowerCase(); document.querySelectorAll('.kb-card').forEach(c => c.style.display=c.innerText.toLowerCase().includes(t)?'block':'none'); };
