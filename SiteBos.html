@@ -11,7 +11,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
   <style>
-    /* --- THEME VARIABLES (ORIGINAL) --- */
+    /* --- THEME VARIABLES --- */
     :root {
       --bg-start: #4a5b8f; --bg-end: #2a3d5f; 
       --text-main: #ffffff; --text-muted: rgba(255, 255, 255, 0.75);
@@ -78,7 +78,7 @@
     }
     .insight-bubble.visible { transform: translateY(0); opacity: 1; pointer-events: auto; }
 
-    /* --- TABS & CARDS --- */
+    /* --- TABS & PRODUCTS --- */
     .tab-content { display: none; animation: fadeIn 0.4s ease-out; }
     .tab-content.active { display: block; }
     
@@ -89,8 +89,11 @@
     .cat-body.open { display: block; border-top: 1px solid var(--border); }
     
     .product-item { background: rgba(0,0,0,0.2); border-radius: 10px; padding: 12px; margin-bottom: 10px; border: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
-    .product-item h4 { margin: 0 0 5px 0; font-size: 14px; color: white; }
-    .price-tag { background: var(--success); color: #003300; font-size: 11px; padding: 2px 6px; border-radius: 4px; font-weight: 700; }
+    .product-item h4 { margin: 0 0 5px 0; font-size: 14px; color: white; width: 70%; }
+    .prod-actions { display: flex; align-items: center; gap: 10px; }
+    .price-tag { font-size: 12px; color: var(--success); font-weight: 700; }
+    .btn-add { background: var(--primary); color: white; width: 28px; height: 28px; border-radius: 8px; display: flex; align-items: center; justify-content: center; cursor: pointer; border: none; font-size: 14px; }
+    .btn-add:active { transform: scale(0.9); }
 
     /* --- CALENDAR --- */
     .calendar-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
@@ -98,6 +101,19 @@
     .cal-day h4 { font-size: 12px; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase; }
     .cal-slot { background: var(--primary); color: white; padding: 8px; border-radius: 6px; font-size: 12px; margin-bottom: 5px; cursor: pointer; transition: transform 0.1s; }
     .cal-slot:active { transform: scale(0.95); }
+
+    /* --- CART (FLOATING) --- */
+    .cart-fab { 
+        position: fixed; bottom: 150px; right: 20px; z-index: 450;
+        width: 55px; height: 55px; background: var(--success); border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.4); cursor: pointer;
+        transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        transform: scale(0);
+    }
+    .cart-fab.visible { transform: scale(1); }
+    .cart-fab i { color: #003300; font-size: 22px; }
+    .cart-badge { position: absolute; top: -5px; right: -5px; background: red; color: white; width: 22px; height: 22px; border-radius: 50%; font-size: 11px; display: flex; align-items: center; justify-content: center; font-weight: 700; border: 2px solid #2a3d5f; }
 
     /* --- INPUT BAR --- */
     .input-bar-container { position: fixed; bottom: calc(var(--nav-height) + 15px); left: 0; right: 0; padding: 0 15px; z-index: 400; display: flex; justify-content: center; }
@@ -113,20 +129,31 @@
     .icon-btn { width: 36px; height: 36px; border-radius: 50%; border: none; background: transparent; color: var(--text-muted); font-size: 18px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
     .icon-btn.send { background: var(--primary); color: white; }
 
-    /* --- NAV & MODAL --- */
+    /* --- NAV --- */
     .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; height: var(--nav-height); background: rgba(30, 40, 65, 0.98); border-top: 1px solid var(--border); display: flex; justify-content: space-around; align-items: center; z-index: 500; padding-bottom: env(safe-area-inset-bottom); }
     .nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; color: rgba(255,255,255,0.5); font-size: 10px; text-decoration: none; padding: 8px; border-radius: 8px; flex: 1; }
     .nav-item.active { color: white; }
     .nav-item.active i { color: var(--primary); }
 
+    /* --- MODALS --- */
     .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 900; display: flex; flex-direction: column; padding: 20px; overflow-y: auto; }
-    .modal-content { max-width: 500px; margin: auto; width: 100%; background: var(--bg-end); border: 1px solid var(--border); padding: 25px; border-radius: 20px; }
+    .modal-content { max-width: 500px; margin: auto; width: 100%; background: var(--bg-end); border: 1px solid var(--border); padding: 25px; border-radius: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.5); }
     .q-group { margin-bottom: 15px; }
     .q-label { font-size: 12px; color: var(--text-muted); margin-bottom: 5px; display: block; text-transform: uppercase; }
     .q-input { width: 100%; padding: 14px; background: var(--input-bg); border: 1px solid var(--border); border-radius: 10px; color: white; font-size: 15px; }
+    
     .btn { width: 100%; padding: 16px; border-radius: 12px; font-weight: 600; cursor: pointer; border: none; margin-top: 10px; }
     .btn-primary { background: var(--primary); color: white; }
+    .btn-secondary { background: var(--success); color: #003300; }
     .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text-muted); }
+
+    /* Cart List */
+    .cart-list { max-height: 300px; overflow-y: auto; margin-bottom: 20px; }
+    .cart-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid var(--border); }
+    .cart-item:last-child { border-bottom: none; }
+    .cart-item-info { font-size: 14px; color: white; }
+    .cart-item-price { font-size: 13px; color: var(--success); font-weight: 700; }
+    .btn-remove { color: var(--error); background: transparent; border: none; font-size: 16px; cursor: pointer; padding: 5px; }
 
   </style>
 </head>
@@ -166,7 +193,7 @@
       </div>
     </div>
 
-    <!-- AI Insight Wide Bubble -->
+    <!-- Insight -->
     <div id="insight-bubble" class="insight-bubble">
       <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
         <strong style="color:var(--primary); font-size:12px;">AI INSIGHT</strong>
@@ -177,7 +204,7 @@
 
     <!-- TABS -->
     <div id="tab-knowledge" class="tab-content active">
-      <h2 data-i18n="tab_kb">Knowledge Base</h2>
+      <h2 data-i18n="tab_hp">HoneyPot</h2>
       <div id="content-knowledge" style="margin-top:15px;"></div>
     </div>
 
@@ -189,6 +216,12 @@
     <div id="tab-agenda" class="tab-content">
       <h2 data-i18n="tab_agenda">Agenda</h2>
       <div id="content-agenda" class="calendar-grid"></div>
+    </div>
+
+    <!-- CART FAB -->
+    <div id="cart-fab" class="cart-fab" onclick="openCart()">
+      <i class="fas fa-shopping-cart"></i>
+      <span id="cart-count" class="cart-badge">0</span>
     </div>
 
     <!-- INPUT BAR -->
@@ -204,54 +237,88 @@
 
     <!-- NAV -->
     <nav class="bottom-nav">
-      <a href="#" class="nav-item active" onclick="switchTab('knowledge', this)"><i class="fas fa-book-open"></i><span data-i18n="nav_kb">KB</span></a>
+      <a href="#" class="nav-item active" onclick="switchTab('knowledge', this)"><i class="fas fa-archive"></i><span data-i18n="nav_hp">HoneyPot</span></a>
       <a href="#" class="nav-item" onclick="switchTab('products', this)"><i class="fas fa-box-open"></i><span data-i18n="nav_prod">Prodotti</span></a>
       <a href="#" class="nav-item" onclick="switchTab('agenda', this)"><i class="fas fa-calendar-alt"></i><span data-i18n="nav_agenda">Agenda</span></a>
       <a href="#" class="nav-item" onclick="openQualification()"><i class="fas fa-id-card"></i><span data-i18n="nav_profile">Profilo</span></a>
     </nav>
   </div>
 
-  <!-- 3. QUALIFICATION MODAL -->
+  <!-- 3. MODAL: QUALIFICATION -->
   <div id="qualify-modal" class="modal-overlay hidden">
     <div class="modal-content fade-in">
-      <h2 data-i18n="qual_title">Qualificazione</h2>
-      <p class="subtitle" data-i18n="qual_sub">Completa il profilo per accedere.</p>
+      <h2 data-i18n="qual_title">Profilo Utente</h2>
+      <p class="subtitle" data-i18n="qual_sub">Completa per accedere.</p>
       
+      <div style="background:rgba(255,255,255,0.05); padding:15px; border-radius:10px; margin-bottom:15px; border:1px solid var(--primary);">
+        <div class="q-group"><label class="q-label" style="color:var(--primary);">Username</label><input type="text" id="q-username" class="q-input"></div>
+        <div class="q-group" style="margin-bottom:0;"><label class="q-label" style="color:var(--primary);">Password</label><input type="password" id="q-password" class="q-input"></div>
+      </div>
+
       <div class="q-group"><label class="q-label">Email</label><input type="email" id="q-email" class="q-input"></div>
       <div style="display:flex; gap:10px;">
         <div class="q-group" style="flex:1"><label class="q-label">Nome</label><input type="text" id="q-name" class="q-input"></div>
         <div class="q-group" style="flex:1"><label class="q-label">Cognome</label><input type="text" id="q-surname" class="q-input"></div>
       </div>
-      <div class="q-group"><label class="q-label">Azienda</label><input type="text" id="q-company" class="q-input"></div>
+      <div class="q-group"><label class="q-label">Indirizzo</label><textarea id="q-address" class="q-input" rows="2" placeholder="Via, Civico, Città"></textarea></div>
       <div class="q-group"><label class="q-label">Telefono</label><input type="tel" id="q-phone" class="q-input"></div>
 
-      <div style="display:flex; gap:10px; margin-bottom:10px; font-size:13px; color:var(--text-muted);">
-        <input type="checkbox" id="q-privacy"> <label for="q-privacy">Privacy Policy</label>
+      <div style="display:flex; gap:10px; margin-bottom:15px; font-size:13px; color:var(--text-muted);">
+        <input type="checkbox" id="q-privacy"> <label for="q-privacy">Accetto <a href="https://www.trinai.it/compliance/clientsitebos" target="_blank" style="color:var(--primary);">Privacy Policy</a></label>
       </div>
 
-      <button class="btn btn-primary" onclick="submitQualification()">Salva Profilo</button>
+      <button class="btn btn-primary" onclick="submitQualification()">Salva & Registra</button>
       <button class="btn btn-outline" onclick="closeQualification()">Chiudi</button>
     </div>
   </div>
 
+  <!-- 4. MODAL: CART -->
+  <div id="cart-modal" class="modal-overlay hidden">
+    <div class="modal-content fade-in">
+      <h2 style="color:white; margin-bottom:15px;">Riepilogo Richiesta</h2>
+      <div id="cart-items" class="cart-list">
+        <!-- Items go here -->
+      </div>
+      <div class="q-group">
+        <label class="q-label">Note / Richieste</label>
+        <textarea id="order-notes" class="q-input" rows="2" placeholder="Specifiche per l'ordine..."></textarea>
+      </div>
+      <button class="btn btn-secondary" onclick="sendOrder()">Invia Richiesta / Ordine</button>
+      <button class="btn btn-outline" onclick="document.getElementById('cart-modal').classList.add('hidden')">Continua acquisti</button>
+    </div>
+  </div>
+
+  <!-- 5. MODAL: LOGIN -->
+  <div id="login-modal" class="modal-overlay hidden">
+    <div class="modal-content fade-in" style="text-align:center;">
+        <h3 data-i18n="login_title">Identificazione</h3>
+        <p class="subtitle" data-i18n="login_desc">Accedi per recuperare sessione.</p>
+        <input type="text" id="login-user" class="q-input" placeholder="Username" style="margin-bottom:10px;">
+        <input type="password" id="login-pass" class="q-input" placeholder="Password">
+        <button class="btn btn-primary" onclick="processLogin()">Accedi</button>
+        <button class="btn btn-outline" onclick="document.getElementById('login-modal').classList.add('hidden')">Annulla</button>
+    </div>
+  </div>
+
 <script>
+    // --- CONFIG ---
     const API = {
         PUBLIC: "https://trinai.api.workflow.dcmake.it/webhook/f33ae38a-5afd-488d-9222-60871d1b2018", // Endpoint per lista aziende (No Params)
         REFLEX: "https://trinai.api.workflow.dcmake.it/webhook/f33ae38a-5afd-488d-9222-60871d1b2019",           // Endpoint Reflex (UI Command)
         COGNITIVE: "https://trinai.api.workflow.dcmake.it/webhook/f33ae38a-5afd-488d-9222-60871d1b2020",     // Endpoint AI (KCRag Insight)
         HUMAN: "https://trinai.api.workflow.dcmake.it/webhook/f33ae38a-5afd-488d-9222-60871d1b2021"              // Endpoint Human (Handover)
     };
-
+  
     const i18n = {
-      it: { portal_title: "Portale SiteBoS", portal_sub: "Seleziona azienda.", tab_kb: "Knowledge Base", tab_prod: "Prodotti", tab_agenda: "Agenda", nav_kb: "KB", nav_prod: "Prodotti", nav_agenda: "Agenda", nav_profile: "Profilo", qual_title: "Profilo Utente", qual_sub: "I tuoi dati." },
-      en: { portal_title: "SiteBoS Portal", portal_sub: "Select company.", tab_kb: "Knowledge Base", tab_prod: "Products", tab_agenda: "Agenda", nav_kb: "KB", nav_prod: "Products", nav_agenda: "Agenda", nav_profile: "Profile", qual_title: "User Profile", qual_sub: "Your data." },
-      fr: { portal_title: "Portail SiteBoS", portal_sub: "Choisir entreprise.", tab_kb: "Base", tab_prod: "Produits", tab_agenda: "Agenda", nav_kb: "KB", nav_prod: "Produits", nav_agenda: "Agenda", nav_profile: "Profil", qual_title: "Profil", qual_sub: "Vos données." },
-      de: { portal_title: "SiteBoS Portal", portal_sub: "Firma wählen.", tab_kb: "Wissen", tab_prod: "Produkte", tab_agenda: "Agenda", nav_kb: "Wissen", nav_prod: "Produkte", nav_agenda: "Agenda", nav_profile: "Profil", qual_title: "Profil", qual_sub: "Ihre Daten." },
-      es: { portal_title: "Portal SiteBoS", portal_sub: "Seleccionar empresa.", tab_kb: "Base", tab_prod: "Productos", tab_agenda: "Agenda", nav_kb: "KB", nav_prod: "Prod", nav_agenda: "Agenda", nav_profile: "Perfil", qual_title: "Perfil", qual_sub: "Tus datos." },
-      pt: { portal_title: "Portal SiteBoS", portal_sub: "Selecione empresa.", tab_kb: "Base", tab_prod: "Produtos", tab_agenda: "Agenda", nav_kb: "KB", nav_prod: "Prod", nav_agenda: "Agenda", nav_profile: "Perfil", qual_title: "Perfil", qual_sub: "Seus dados." }
+      it: { portal_title:"Portale SiteBoS", portal_sub:"Cerca azienda.", tab_hp:"HoneyPot", tab_prod:"Prodotti", tab_agenda:"Agenda", nav_hp:"HoneyPot", nav_prod:"Prodotti", nav_agenda:"Agenda", nav_profile:"Profilo", qual_title:"Profilo Utente", qual_sub:"I tuoi dati.", login_title:"Identificazione", login_desc:"Accedi." },
+      en: { portal_title:"SiteBoS Portal", portal_sub:"Search company.", tab_hp:"HoneyPot", tab_prod:"Products", tab_agenda:"Agenda", nav_hp:"HoneyPot", nav_prod:"Products", nav_agenda:"Agenda", nav_profile:"Profile", qual_title:"User Profile", qual_sub:"Your data.", login_title:"Login", login_desc:"Login." },
+      fr: { portal_title:"Portail SiteBoS", portal_sub:"Rechercher.", tab_hp:"HoneyPot", tab_prod:"Produits", tab_agenda:"Agenda", nav_hp:"HoneyPot", nav_prod:"Produits", nav_agenda:"Agenda", nav_profile:"Profil", qual_title:"Profil", qual_sub:"Vos données.", login_title:"Connexion", login_desc:"Accéder." },
+      de: { portal_title:"SiteBoS Portal", portal_sub:"Suche.", tab_hp:"HoneyPot", tab_prod:"Produkte", tab_agenda:"Agenda", nav_hp:"HoneyPot", nav_prod:"Produkte", nav_agenda:"Agenda", nav_profile:"Profil", qual_title:"Profil", qual_sub:"Ihre Daten.", login_title:"Anmeldung", login_desc:"Zugang." },
+      es: { portal_title:"Portal SiteBoS", portal_sub:"Buscar.", tab_hp:"HoneyPot", tab_prod:"Productos", tab_agenda:"Agenda", nav_hp:"HoneyPot", nav_prod:"Prod", nav_agenda:"Agenda", nav_profile:"Perfil", qual_title:"Perfil", qual_sub:"Tus datos.", login_title:"Login", login_desc:"Entrar." },
+      pt: { portal_title:"Portal SiteBoS", portal_sub:"Procurar.", tab_hp:"HoneyPot", tab_prod:"Produtos", tab_agenda:"Agenda", nav_hp:"HoneyPot", nav_prod:"Prod", nav_agenda:"Agenda", nav_profile:"Perfil", qual_title:"Perfil", qual_sub:"Seus dados.", login_title:"Login", login_desc:"Entrar." }
     };
 
-    const app = { vat: null, lang: 'it', user: null };
+    const app = { vat: null, lang: 'it', user: null, cart: [] };
     const tg = window.Telegram.WebApp; tg.ready(); tg.expand();
 
     window.onload = async () => {
@@ -291,14 +358,18 @@
     function initHub(vat, name) {
         document.getElementById('view-hub').classList.remove('hidden');
         if(name) document.getElementById('company-name').innerText = name;
+        
         const s = localStorage.getItem('sb_profile_'+vat);
         if(s) { app.user = JSON.parse(s); updateBadge(); }
+        
+        const c = localStorage.getItem('sb_cart_'+vat);
+        if(c) { app.cart = JSON.parse(c); updateCartUI(); }
+
         renderCalendar();
-        // Trigger initial loads
         triggerAction('get_catalog'); 
     }
 
-    // --- 3-CHANNEL ENGINE ---
+    // --- PARALLEL ENGINE ---
     async function triggerAction(type, payload = null) {
         const ind = document.getElementById('ai-indicator');
         ind.className = 'ai-status processing';
@@ -306,12 +377,10 @@
         const body = { vat: app.vat, profile: app.user, type: type, payload: payload };
         if(type==='image') body.payload = await fileToBase64(payload);
 
-        // 1. REFLEX (UI)
         fetch(API.REFLEX, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body) })
             .then(r=>r.json()).then(d => { if(d.ui_command) execUi(d.ui_command); if(d.data) renderData(type, d.data); })
             .catch(e=>console.log('R-err'));
 
-        // 2. COGNITIVE (Insight)
         fetch(API.COGNITIVE, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body) })
             .then(r=>r.json()).then(d => {
                 if(d.ai_insight) showInsight(d.ai_insight);
@@ -329,6 +398,7 @@
     function execUi(cmd) {
         if(cmd.action==='NAVIGATE') switchTab(cmd.target);
         if(cmd.action==='OPEN_QUALIFY') openQualification();
+        if(cmd.action==='OPEN_LOGIN') document.getElementById('login-modal').classList.remove('hidden');
     }
 
     function renderData(type, data) {
@@ -341,13 +411,14 @@
                     <div class="cat-body">
                         ${cat.subcategories.map(sub => `
                             <div class="product-item">
-                                <div><h4>${sub.short_name}</h4></div>
-                                <span class="price-tag">INFO</span>
-                            </div>
-                        `).join('')}
+                                <h4>${sub.short_name}</h4>
+                                <div class="prod-actions">
+                                    <span class="price-tag">INFO</span>
+                                    <button class="btn-add" onclick="addToCart('${sub.short_name}', '${sub.callback_data}')"><i class="fas fa-plus"></i></button>
+                                </div>
+                            </div>`).join('')}
                     </div>
-                </div>
-            `).join('');
+                </div>`).join('');
             document.getElementById('content-products').innerHTML = html;
         }
     }
@@ -359,24 +430,81 @@
         toggleInsight();
     }
 
+    // --- CART SYSTEM ---
+    window.addToCart = (name, id) => {
+        app.cart.push({name: name, id: id, qty: 1});
+        updateCartUI();
+        if(tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('selection');
+    };
+    
+    window.updateCartUI = () => {
+        const fab = document.getElementById('cart-fab');
+        const count = document.getElementById('cart-count');
+        if(app.cart.length > 0) {
+            fab.classList.add('visible');
+            count.innerText = app.cart.length;
+            localStorage.setItem('sb_cart_'+app.vat, JSON.stringify(app.cart));
+        } else {
+            fab.classList.remove('visible');
+            localStorage.removeItem('sb_cart_'+app.vat);
+        }
+    };
+    
+    window.openCart = () => {
+        const list = document.getElementById('cart-items');
+        list.innerHTML = app.cart.map((item, i) => `
+            <div class="cart-item">
+                <div class="cart-item-info">${item.name}</div>
+                <button class="btn-remove" onclick="removeFromCart(${i})"><i class="fas fa-trash"></i></button>
+            </div>
+        `).join('');
+        document.getElementById('cart-modal').classList.remove('hidden');
+    };
+    
+    window.removeFromCart = (i) => { app.cart.splice(i, 1); updateCartUI(); openCart(); if(app.cart.length===0) document.getElementById('cart-modal').classList.add('hidden'); };
+    
+    window.sendOrder = () => {
+        if(!app.user || app.user.status !== 'VERIFIED') { alert('Completa il profilo per ordinare.'); openQualification(); return; }
+        const notes = document.getElementById('order-notes').value;
+        triggerAction('submit_order', { cart: app.cart, notes: notes });
+        app.cart = []; updateCartUI();
+        document.getElementById('cart-modal').classList.add('hidden');
+        if(tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
+        alert('Richiesta inviata! Ti contatteremo a breve.');
+    };
+
     // --- UTILS ---
     window.sendText = () => { const t=document.getElementById('chat-input'); if(t.value){ triggerAction('text', t.value); t.value=''; }};
+    
     window.switchTab = (id, el) => {
         document.querySelectorAll('.tab-content').forEach(d=>d.classList.remove('active'));
         document.getElementById('tab-'+id).classList.add('active');
         document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
         if(el) el.classList.add('active');
     }
+    
     window.toggleInsight = () => document.getElementById('insight-bubble').classList.toggle('visible');
+    
     window.openQualification = () => {
         document.getElementById('qualify-modal').classList.remove('hidden');
-        if(app.user) { document.getElementById('q-email').value=app.user.email; document.getElementById('q-name').value=app.user.name; }
+        if(app.user) { document.getElementById('q-username').value=app.user.username||''; document.getElementById('q-email').value=app.user.email; }
     }
     window.closeQualification = () => document.getElementById('qualify-modal').classList.add('hidden');
+    
     window.submitQualification = () => {
+        const u = document.getElementById('q-username').value;
+        const p = document.getElementById('q-password').value;
+        if(!u || !p) { alert('User/Pass required'); return; }
+        if(!document.getElementById('q-privacy').checked) { alert('Privacy required'); return; }
+        
         const prof = {
+            username: u, password: p,
             email: document.getElementById('q-email').value,
             name: document.getElementById('q-name').value,
+            surname: document.getElementById('q-surname').value,
+            company: document.getElementById('q-company').value,
+            address: document.getElementById('q-address').value,
+            phone: document.getElementById('q-phone').value,
             status: 'VERIFIED'
         };
         app.user = prof;
@@ -384,16 +512,31 @@
         updateBadge(); closeQualification();
         triggerAction('profile_update', prof);
     }
+    
+    window.processLogin = () => {
+        const u = document.getElementById('login-user').value;
+        const p = document.getElementById('login-pass').value;
+        if(u && p) {
+            app.user = { username: u, status: 'VERIFIED' };
+            updateBadge();
+            document.getElementById('login-modal').classList.add('hidden');
+            triggerAction('login_verify', {username:u, password:p});
+        }
+    }
+
     function updateBadge() { const b=document.getElementById('user-badge'); if(app.user){b.innerText="VERIFIED"; b.style.color="#4cd964";} }
+    
     function renderCalendar() {
         const c = document.getElementById('content-agenda');
-        const days = ['L','M','M','G','V','S'];
+        const days = ['Lun','Mar','Mer','Gio','Ven','Sab'];
         c.innerHTML = days.map(d => `<div class="cal-day"><h4>${d}</h4><div class="cal-slot">09:00</div><div class="cal-slot">15:00</div></div>`).join('');
     }
+    
     window.filterPublicList = () => {
         const t = document.getElementById('public-search').value.toLowerCase();
         document.querySelectorAll('.company-card').forEach(c => c.style.display=c.innerText.toLowerCase().includes(t)?'flex':'none');
     }
+    
     const fileToBase64 = f => new Promise((r,j)=>{ const rd=new FileReader(); rd.onload=()=>r(rd.result.split(',')[1]); rd.onerror=j; rd.readAsDataURL(f); });
 
 </script>
