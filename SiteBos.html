@@ -442,7 +442,7 @@
                 let content = Array.isArray(json) ? json[0] : json;
                 if (content.body) content = content.body;
                 if (content.ui_command) execUi(content.ui_command);
-                if (content.data || content.honeypot || content.categories) handleData(type, content.data || content); 
+                if (content.data || content.honeypot || content.categories) handleData(type, content); // Passa tutto il JSON, non solo .data!
                 if (content.ai_insight) showInsight(content.ai_insight);
                 if (content.human_handover) triggerHuman(body);
             } catch (e) { console.error("Err:", e); }
