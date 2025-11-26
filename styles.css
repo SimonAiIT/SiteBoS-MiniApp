@@ -199,7 +199,23 @@ select {
 
 /* Collapsible Content Logic */
 .hidden { display: none !important; }
-.collapsible-content { overflow: hidden; }
+
+.collapsible-content {
+  display: none; /* Nascosto di default */
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.collapsible-content.open {
+  display: block; /* Visibile quando ha la classe 'open' */
+  animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
 
 /* Step Meta/Flags */
 .step-meta { display: flex; gap: 12px; font-size: 12px; color: var(--text-secondary); margin-top: 8px; }
