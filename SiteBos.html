@@ -56,7 +56,7 @@
     .company-card:active { transform: scale(0.98); border-color: var(--primary); }
     .company-avatar { width: 45px; height: 45px; border-radius: 50%; background: var(--primary); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 18px; color: white; border: 2px solid rgba(255,255,255,0.2); object-fit: cover; }
 
-    /* --- HUB HEADER (BRANDED) --- */
+    /* --- HUB HEADER --- */
     .hub-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid var(--border); }
     
     .brand-area { display: flex; align-items: center; gap: 12px; }
@@ -85,7 +85,7 @@
     }
     .insight-bubble.visible { transform: translateY(0); opacity: 1; pointer-events: auto; }
 
-    /* --- HONEYPOT (KB) PRO STYLE --- */
+    /* --- HONEYPOT (KB) --- */
     .kb-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 16px; margin-bottom: 15px; overflow: hidden; transition: all 0.2s; }
     .kb-header { padding: 15px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.02); }
     .kb-header h3 { font-size: 15px; margin: 0; line-height: 1.4; color: white; width: 90%; }
@@ -140,13 +140,12 @@
     .icon-btn { width: 36px; height: 36px; border-radius: 50%; border: none; background: transparent; color: var(--text-muted); font-size: 18px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
     .icon-btn.send { background: var(--primary); color: white; }
 
-    /* --- NAV --- */
+    /* --- NAV & MODAL --- */
     .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; height: var(--nav-height); background: rgba(30, 40, 65, 0.98); border-top: 1px solid var(--border); display: flex; justify-content: space-around; align-items: center; z-index: 500; padding-bottom: env(safe-area-inset-bottom); }
     .nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; color: rgba(255,255,255,0.5); font-size: 10px; text-decoration: none; padding: 8px; border-radius: 8px; flex: 1; }
     .nav-item.active { color: white; }
     .nav-item.active i { color: var(--primary); }
 
-    /* --- MODALS --- */
     .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 900; display: flex; flex-direction: column; padding: 20px; overflow-y: auto; }
     .modal-content { max-width: 500px; margin: auto; width: 100%; background: var(--bg-end); border: 1px solid var(--border); padding: 25px; border-radius: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.5); }
     .q-group { margin-bottom: 15px; }
@@ -343,7 +342,7 @@
   </div>
 
 <script>
-    // CONFIG
+    // --- CONFIG ---
     const API = {
         PUBLIC: "https://trinai.api.workflow.dcmake.it/webhook/f33ae38a-5afd-488d-9222-60871d1b2018",         // Endpoint per lista aziende (No Params)
         REFLEX: "https://trinai.api.workflow.dcmake.it/webhook/f33ae38a-5afd-488d-9222-60871d1b2019",         // Endpoint Reflex (UI Command)
@@ -381,6 +380,7 @@
         document.querySelectorAll('[data-i18n]').forEach(e => { const k = e.getAttribute('data-i18n'); if(d[k]) e.innerText = d[k]; });
     }
 
+    // --- PUBLIC ---
     async function initPublic() {
         document.getElementById('view-public').classList.remove('hidden');
         try {
@@ -394,17 +394,22 @@
         } catch(e){}
     }
 
+    // --- HUB ---
     function initHub(vat, name) {
         document.getElementById('view-hub').classList.remove('hidden');
         if(name) document.getElementById('company-name').innerText = name;
+        
         const s = localStorage.getItem('sb_profile_'+vat);
         if(s) { app.user = JSON.parse(s); updateBadge(); }
+        
         const c = localStorage.getItem('sb_cart_'+vat);
         if(c) { app.cart = JSON.parse(c); updateCartUI(); }
+
         renderCalendar();
         triggerAction('init_load');
     }
 
+    // --- SESSION ID ---
     function getClientSessionId() {
         if (app.user && app.user.username) return app.user.username;
         let anonId = localStorage.getItem('sb_anon_id');
@@ -412,21 +417,38 @@
         return anonId;
     }
 
+    // --- PARALLEL ENGINE ---
     async function triggerAction(type, payload = null) {
         const ind = document.getElementById('ai-indicator');
         ind.className = 'ai-status processing';
-        const body = { vat: app.vat, session_id: getClientSessionId(), profile: app.user, current_tab: app.currentTab, type: type, payload: payload };
+        
+        const body = { 
+            vat: app.vat, 
+            session_id: getClientSessionId(), 
+            profile: app.user, 
+            current_tab: app.currentTab,
+            type: type, 
+            payload: payload 
+        };
+        
         if(type==='image') body.payload = await fileToBase64(payload);
 
-        fetch(API.REFLEX, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body) })
-            .then(r=>r.json()).then(d => { if(d.ui_command) execUi(d.ui_command); if(d.data) handleData(type, d.data); }).catch(e=>console.log('R-err'));
+        const processResponse = async (res) => {
+            try {
+                if (!res.ok) throw new Error('Network response not ok');
+                const json = await res.json();
+                console.log("📦 RAW:", json); 
+                let content = Array.isArray(json) ? json[0] : json;
+                if (content.body) content = content.body;
+                if (content.ui_command) execUi(content.ui_command);
+                if (content.data || content.honeypot || content.categories) handleData(type, content.data || content); 
+                if (content.ai_insight) showInsight(content.ai_insight);
+                if (content.human_handover) triggerHuman(body);
+            } catch (e) { console.error("Err:", e); }
+        };
 
-        fetch(API.COGNITIVE, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body) })
-            .then(r=>r.json()).then(d => {
-                if(d.ai_insight) showInsight(d.ai_insight);
-                else if(d.human_handover) triggerHuman(body);
-                else ind.className = 'ai-status';
-            }).catch(e=>ind.className='ai-status');
+        fetch(API.REFLEX, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body) }).then(processResponse);
+        fetch(API.COGNITIVE, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body) }).then(processResponse).catch(e => ind.className = 'ai-status');
     }
 
     function triggerHuman(body) {
@@ -435,81 +457,34 @@
          document.getElementById('ai-icon').className='fas fa-headset';
     }
 
-function handleData(type, data) {
-        // Debug: Vediamo cosa arriva davvero nella console del browser (F12)
-        console.log("📦 DATA RECEIVED:", type, data);
-
-        // GESTIONE ASSETS (Logo/Foto)
-        // Cerca assets dentro data.assets o direttamente in data
+    function handleData(type, data) {
         const assets = data.assets || (data.data && data.data.assets);
-        if (assets) {
-            if (assets.logo) { 
-                const img = document.getElementById('brand-logo'); 
-                // Supporto sia per oggetto {base64, mime} che per stringa diretta
-                const src = assets.logo.base64 ? `data:${assets.logo.mime};base64,${assets.logo.base64}` : assets.logo;
-                img.src = src; 
-                img.classList.remove('hidden'); 
-            }
-            if (assets.avatar) { 
-                const img = document.getElementById('owner-avatar'); 
-                const src = assets.avatar.base64 ? `data:${assets.avatar.mime};base64,${assets.avatar.base64}` : assets.avatar;
-                img.src = src; 
-                img.classList.remove('hidden'); 
-            }
+        if(assets) {
+            if(assets.logo) { const i = document.getElementById('brand-logo'); i.src = assets.logo.base64 ? `data:${assets.logo.mime};base64,${assets.logo.base64}` : assets.logo; i.classList.remove('hidden'); }
+            if(assets.avatar) { const i = document.getElementById('owner-avatar'); i.src = assets.avatar.base64 ? `data:${assets.avatar.mime};base64,${assets.avatar.base64}` : assets.avatar; i.classList.remove('hidden'); }
         }
-
-        // GESTIONE HONEYPOT (La fix è qui)
-        // Cerca 'honeypot' ovunque
-        const hpData = data.honeypot || (data.data && data.data.honeypot);
-        if (hpData) renderHoneyPot(hpData);
-
-        // GESTIONE CATALOGO
-        const catData = data.categories || (data.data && data.data.categories);
-        if (catData) renderCatalogStructure(catData);
-
-        // GESTIONE PRODOTTI (Lazy)
-        if (data.products_update) renderProductsUpdate(data.products_update);
+        const hp = data.honeypot || (data.data && data.data.honeypot);
+        if(hp) renderHoneyPot(hp);
+        
+        const cat = data.categories || (data.data && data.data.categories);
+        if(cat) renderCatalogStructure(cat);
+        
+        if(data.products_update) renderProductsUpdate(data.products_update);
     }
 
     function renderHoneyPot(payload) {
         const cont = document.getElementById('content-knowledge');
-        
-        // 1. ESTRAZIONE INTELLIGENTE DELL'ARRAY
-        // Se il payload è già un array, usalo. 
-        // Se è un oggetto che contiene "knowledge_fragments", usa quello.
         let fragments = [];
-        if (Array.isArray(payload)) {
-            fragments = payload;
-        } else if (payload.knowledge_fragments && Array.isArray(payload.knowledge_fragments)) {
-            fragments = payload.knowledge_fragments;
-        }
+        if (Array.isArray(payload)) fragments = payload;
+        else if (payload.knowledge_fragments && Array.isArray(payload.knowledge_fragments)) fragments = payload.knowledge_fragments;
 
-        console.log("📚 Fragments extracted:", fragments); // Debug
-
-        // 2. RENDERIZZAZIONE
-        if (!fragments || fragments.length === 0) { 
-            cont.innerHTML = "<p style='color:gray; text-align:center; padding:20px;'>Nessun articolo trovato.</p>"; 
-            return; 
-        }
-
+        if(!fragments || fragments.length === 0) { cont.innerHTML = "<p style='color:gray; text-align:center; padding:20px;'>Nessun articolo.</p>"; return; }
         cont.innerHTML = fragments.map(f => `
             <div class="kb-card">
                 <div class="kb-header" onclick="this.nextElementSibling.classList.toggle('open')">
-                    <h3><i class="fas fa-book" style="color:var(--primary); margin-right:8px;"></i> ${f.title ? f.title.replace(/_/g, ' ') : 'Dettaglio'}</h3>
-                    <i class="fas fa-chevron-down" style="color:var(--text-muted)"></i>
+                    <h3><i class="fas fa-book" style="color:var(--primary); margin-right:8px;"></i> ${f.title ? f.title.replace(/_/g, ' ') : 'Dettaglio'}</h3><i class="fas fa-chevron-down" style="color:var(--text-muted)"></i>
                 </div>
-                <div class="kb-body">
-                    <!-- Summary o Answer Fragment -->
-                    <div class="kb-summary">${f.summary || f.answer_fragment || ''}</div>
-                    
-                    <!-- Sezioni Q&A -->
-                    ${(f.sections || []).map(s => `
-                        <div class="kb-section">
-                            <div class="kb-q">${s.question}</div>
-                            <div class="kb-a">${s.answer}</div>
-                        </div>
-                    `).join('')}
-                </div>
+                <div class="kb-body"><div class="kb-summary">${f.summary || f.answer_fragment || ''}</div>${(f.sections||[]).map(s => `<div class="kb-section"><div class="kb-q">${s.question}</div><div class="kb-a">${s.answer}</div></div>`).join('')}</div>
             </div>`).join('');
     }
 
@@ -554,6 +529,7 @@ function handleData(type, data) {
         </div>`).join('');
     }
 
+    // --- BOOKING & CART ---
     let currentSlot = null;
     window.openBookingModal = (slot) => {
         if(!app.user || app.user.status!=='VERIFIED') { alert("Completa profilo."); openQualification(); return; }
@@ -587,6 +563,7 @@ function handleData(type, data) {
         alert('Richiesta inviata.');
     };
 
+    // --- UTILS ---
     window.sendText = () => { const t=document.getElementById('chat-input'); if(t.value){ triggerAction('text', t.value); t.value=''; }};
     window.switchTab = (id, el) => {
         document.querySelectorAll('.tab-content').forEach(d=>d.classList.remove('active'));
@@ -596,8 +573,19 @@ function handleData(type, data) {
         app.currentTab = id;
     }
     window.toggleInsight = () => document.getElementById('insight-bubble').classList.toggle('visible');
-    window.openQualification = () => { document.getElementById('qualify-modal').classList.remove('hidden'); if(app.user){ document.getElementById('q-username').value=app.user.username||''; document.getElementById('q-email').value=app.user.email; }};
+    
+    window.openQualification = () => { 
+        document.getElementById('qualify-modal').classList.remove('hidden');
+        if(app.user) { 
+            document.getElementById('q-username').value=app.user.username||''; 
+            document.getElementById('q-email').value=app.user.email||''; 
+        } else {
+            document.getElementById('q-username').value='';
+            document.getElementById('q-password').value='';
+        }
+    };
     window.closeQualification = () => document.getElementById('qualify-modal').classList.add('hidden');
+    
     window.execUi = (cmd) => { if(cmd.action==='NAVIGATE') switchTab(cmd.target); if(cmd.action==='OPEN_QUALIFY') openQualification(); if(cmd.action==='OPEN_LOGIN') document.getElementById('login-modal').classList.remove('hidden'); };
     window.showInsight = (text) => { const i=document.getElementById('ai-indicator'); i.className='ai-status insight'; document.getElementById('ai-icon').className='fas fa-lightbulb'; document.getElementById('insight-text').innerHTML=text; toggleInsight(); };
     window.filterKB = () => { const t=document.getElementById('kb-search').value.toLowerCase(); document.querySelectorAll('.kb-card').forEach(c => c.style.display=c.innerText.toLowerCase().includes(t)?'block':'none'); };
