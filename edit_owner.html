@@ -9,59 +9,8 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
-  <style>
-    :root {
-      --bg-start: #4a5b8f; --bg-end: #2a3d5f; --text-main: #ffffff; --text-muted: rgba(255, 255, 255, 0.75);
-      --primary: #5B6FED; --primary-hover: #4a5ecf; --success: #4cd964; --error: #ff6b6b; --warning: #f59e0b;
-      --border: rgba(255, 255, 255, 0.15); --input-bg: rgba(255, 255, 255, 0.08); --card-bg: rgba(0, 0, 0, 0.25);
-    }
-    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-    body { font-family: 'Inter', sans-serif; background: linear-gradient(135deg, var(--bg-start) 0%, var(--bg-end) 100%); color: var(--text-main); min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 20px; }
-    .container { width: 100%; max-width: 600px; padding-bottom: 80px; }
-    .hidden { display: none !important; }
-    .form-section { border-top: 1px solid var(--border); margin-top: 30px; padding-top: 25px; }
-    .form-section-title { font-size: 14px; font-weight: 600; color: var(--primary); margin-bottom: 20px; text-transform: uppercase; letter-spacing: 1px; }
-    h2 { font-size: 24px; font-weight: 700; margin-bottom: 8px; }
-    p.subtitle { font-size: 14px; color: var(--text-muted); margin-bottom: 28px; line-height: 1.6; }
-    .input-group { margin-bottom: 18px; }
-    label { display: block; font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
-    input, select { width: 100%; padding: 16px; background: var(--input-bg); border: 1px solid var(--border); border-radius: 14px; color: white; font-family: inherit; font-size: 15px; transition: all 0.3s; appearance: none; -webkit-appearance: none; }
-    select { background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%239ca3af' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e"); background-position: right 0.7rem center; background-repeat: no-repeat; background-size: 1.2em 1.2em; padding-right: 2.5rem; }
-    input:focus, select:focus { outline: none; border-color: var(--primary); }
-    input:disabled, input[readonly] { opacity: 0.7; cursor: not-allowed; background: rgba(0,0,0,0.15); }
-    .btn { padding: 16px; border-radius: 14px; font-weight: 600; font-size: 15px; cursor: pointer; border: none; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; }
-    .btn-primary { background: var(--primary); color: white; }
-    .btn-secondary { background: transparent; border: 1px solid var(--border); color: var(--text-muted); }
-    .btn:disabled { background: var(--input-bg); color: var(--text-muted); opacity: 0.5; cursor: not-allowed; border-color: var(--border); }
-    #loader { position:fixed; inset:0; background:var(--bg-end); z-index:99; display:flex; justify-content:center; align-items:center; flex-direction:column; }
-    .spinner { width:40px; height:40px; border:4px solid rgba(255,255,255,0.1); border-top-color:var(--primary); border-radius:50%; animation:spin 0.8s linear infinite; }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    .row { display: flex; gap: 12px; } .col { flex: 1; }
-    .time-range-selector { display: flex; align-items: center; gap: 10px; }
-    .time-range-selector span { color: var(--text-muted); }
-    .operators-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 16px; padding: 20px; }
-    .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid var(--border); padding-bottom: 15px; }
-    .card-header h3 { font-size: 16px; margin: 0; display: flex; align-items: center; gap: 10px; }
-    .slot-counter { font-size: 12px; font-weight: 600; background: rgba(255,255,255,0.1); padding: 5px 10px; border-radius: 20px; }
-    .operator-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 5px; border-bottom: 1px solid rgba(255,255,255,0.05); }
-    .operator-item:last-child { border-bottom: none; }
-    .op-name { font-weight: 600; font-size: 14px; }
-    .op-id { font-size: 11px; color: var(--text-muted); display: block; }
-    .op-actions button { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 14px; padding: 8px; transition: color 0.2s; }
-    .op-actions button:hover { color: var(--primary); }
-    .operator-item.pending .op-name { color: var(--warning); }
-    .invitation-link { display: flex; margin-top: 8px; }
-    .invitation-link input { flex-grow: 1; font-size: 12px; padding: 8px 10px; border-radius: 8px 0 0 8px; border-right: none; background: rgba(0,0,0,0.3); }
-    .invitation-link button { padding: 8px 12px; font-size: 12px; border-radius: 0 8px 8px 0; background: var(--primary); color: white; border: none; cursor: pointer; font-weight: 600; }
-    .upgrade-prompt { text-align: center; font-size: 13px; color: var(--warning); margin-top: 15px; padding-top: 15px; border-top: 1px solid var(--border); }
-    .upgrade-prompt a { color: var(--primary); font-weight: 600; text-decoration: none; }
-    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 100; display: flex; justify-content: center; align-items: center; backdrop-filter: blur(5px); }
-    .modal-content { background: var(--bg-end); padding: 25px; border-radius: 16px; border: 1px solid var(--border); width: 90%; max-width: 400px; animation: fadeInModal 0.3s; }
-    .modal-content h4 { margin-bottom: 10px; }
-    .modal-content p { font-size: 13px; color: var(--text-muted); margin-bottom: 20px; }
-    .btn-container { display: flex; gap: 10px; margin-top: 20px; }
-    @keyframes fadeInModal { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
-  </style>
+  
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
@@ -113,7 +62,7 @@
             <span class="slot-counter" id="slot-counter">0 / 3</span>
           </div>
           <div id="operators-list"></div>
-          <button type="button" class="btn btn-secondary" id="add-operator-btn" style="margin-top: 15px;">
+          <button type="button" class="btn btn-secondary" id="add-operator-btn">
             <i class="fas fa-plus-circle"></i> <span data-i18n="op_btn_invite"></span>
           </button>
           <div class="upgrade-prompt hidden" id="upgrade-prompt">
@@ -123,7 +72,7 @@
         </div>
       </div>
 
-      <button type="submit" id="saveBtn" class="btn btn-primary" style="margin-top: 40px;" disabled>
+      <button type="submit" id="saveBtn" class="btn btn-primary" disabled>
         <i class="fas fa-save"></i> <span data-i18n="btn_save"></span>
       </button>
     </form>
@@ -339,7 +288,7 @@
             let operatorHTML = '';
             if (isPending) {
                 const invitationLink = `https://t.me/${BOT_USERNAME}?start=${op.invitation_code}`;
-                operatorHTML = `<div class="operator-item pending"><div class="op-info" style="width:100%;"><span class="op-name">${op.OperatorName} <i class="fas fa-clock"></i> ${dict().op_status_pending}</span><p style="font-size:11px; color:var(--text-muted); margin-top:4px;">${dict().op_invite_text}</p><div class="invitation-link"><input type="text" value="${invitationLink}" readonly><button onclick="copyToClipboard('${invitationLink}', this)">${dict().op_btn_copy}</button></div></div><div class="op-actions"><button type="button" onclick="deleteOperator(${index})"><i class="fas fa-trash-alt"></i></button></div></div>`;
+                operatorHTML = `<div class="operator-item pending"><div class="op-info"><span class="op-name">${op.OperatorName} <i class="fas fa-clock"></i> ${dict().op_status_pending}</span><p>${dict().op_invite_text}</p><div class="invitation-link"><input type="text" value="${invitationLink}" readonly><button onclick="copyToClipboard('${invitationLink}', this)">${dict().op_btn_copy}</button></div></div><div class="op-actions"><button type="button" onclick="deleteOperator(${index})"><i class="fas fa-trash-alt"></i></button></div></div>`;
             } else {
                 operatorHTML = `<div class="operator-item"><div class="op-info"><span class="op-name">${op.OperatorName}</span><span class="op-id">ID: ${op.OperatorChatID}</span></div><div class="op-actions"><button type="button" onclick="deleteOperator(${index})"><i class="fas fa-trash-alt"></i></button></div></div>`;
             }
