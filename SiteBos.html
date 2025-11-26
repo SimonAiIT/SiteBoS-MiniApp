@@ -435,25 +435,81 @@
          document.getElementById('ai-icon').className='fas fa-headset';
     }
 
-    function handleData(type, data) {
-        if(data.assets) {
-            if(data.assets.logo) { const i = document.getElementById('brand-logo'); i.src = `data:${data.assets.logo.mime};base64,${data.assets.logo.base64}`; i.classList.remove('hidden'); }
-            if(data.assets.avatar) { const i = document.getElementById('owner-avatar'); i.src = `data:${data.assets.avatar.mime};base64,${data.assets.avatar.base64}`; i.classList.remove('hidden'); }
+function handleData(type, data) {
+        // Debug: Vediamo cosa arriva davvero nella console del browser (F12)
+        console.log("📦 DATA RECEIVED:", type, data);
+
+        // GESTIONE ASSETS (Logo/Foto)
+        // Cerca assets dentro data.assets o direttamente in data
+        const assets = data.assets || (data.data && data.data.assets);
+        if (assets) {
+            if (assets.logo) { 
+                const img = document.getElementById('brand-logo'); 
+                // Supporto sia per oggetto {base64, mime} che per stringa diretta
+                const src = assets.logo.base64 ? `data:${assets.logo.mime};base64,${assets.logo.base64}` : assets.logo;
+                img.src = src; 
+                img.classList.remove('hidden'); 
+            }
+            if (assets.avatar) { 
+                const img = document.getElementById('owner-avatar'); 
+                const src = assets.avatar.base64 ? `data:${assets.avatar.mime};base64,${assets.avatar.base64}` : assets.avatar;
+                img.src = src; 
+                img.classList.remove('hidden'); 
+            }
         }
-        if(data.honeypot) renderHoneyPot(data.honeypot);
-        if(data.categories) renderCatalogStructure(data.categories);
-        if(data.products_update) renderProductsUpdate(data.products_update);
+
+        // GESTIONE HONEYPOT (La fix è qui)
+        // Cerca 'honeypot' ovunque
+        const hpData = data.honeypot || (data.data && data.data.honeypot);
+        if (hpData) renderHoneyPot(hpData);
+
+        // GESTIONE CATALOGO
+        const catData = data.categories || (data.data && data.data.categories);
+        if (catData) renderCatalogStructure(catData);
+
+        // GESTIONE PRODOTTI (Lazy)
+        if (data.products_update) renderProductsUpdate(data.products_update);
     }
 
-    function renderHoneyPot(fragments) {
+    function renderHoneyPot(payload) {
         const cont = document.getElementById('content-knowledge');
-        if(!fragments || fragments.length === 0) { cont.innerHTML = "<p style='color:gray'>Nessun articolo.</p>"; return; }
+        
+        // 1. ESTRAZIONE INTELLIGENTE DELL'ARRAY
+        // Se il payload è già un array, usalo. 
+        // Se è un oggetto che contiene "knowledge_fragments", usa quello.
+        let fragments = [];
+        if (Array.isArray(payload)) {
+            fragments = payload;
+        } else if (payload.knowledge_fragments && Array.isArray(payload.knowledge_fragments)) {
+            fragments = payload.knowledge_fragments;
+        }
+
+        console.log("📚 Fragments extracted:", fragments); // Debug
+
+        // 2. RENDERIZZAZIONE
+        if (!fragments || fragments.length === 0) { 
+            cont.innerHTML = "<p style='color:gray; text-align:center; padding:20px;'>Nessun articolo trovato.</p>"; 
+            return; 
+        }
+
         cont.innerHTML = fragments.map(f => `
             <div class="kb-card">
                 <div class="kb-header" onclick="this.nextElementSibling.classList.toggle('open')">
-                    <h3><i class="fas fa-book" style="color:var(--primary); margin-right:8px;"></i> ${f.title}</h3><i class="fas fa-chevron-down" style="color:var(--text-muted)"></i>
+                    <h3><i class="fas fa-book" style="color:var(--primary); margin-right:8px;"></i> ${f.title ? f.title.replace(/_/g, ' ') : 'Dettaglio'}</h3>
+                    <i class="fas fa-chevron-down" style="color:var(--text-muted)"></i>
                 </div>
-                <div class="kb-body"><div class="kb-summary">${f.summary || f.answer_fragment}</div>${(f.sections||[]).map(s => `<div class="kb-section"><div class="kb-q">${s.question}</div><div class="kb-a">${s.answer}</div></div>`).join('')}</div>
+                <div class="kb-body">
+                    <!-- Summary o Answer Fragment -->
+                    <div class="kb-summary">${f.summary || f.answer_fragment || ''}</div>
+                    
+                    <!-- Sezioni Q&A -->
+                    ${(f.sections || []).map(s => `
+                        <div class="kb-section">
+                            <div class="kb-q">${s.question}</div>
+                            <div class="kb-a">${s.answer}</div>
+                        </div>
+                    `).join('')}
+                </div>
             </div>`).join('');
     }
 
