@@ -498,16 +498,22 @@
         let html = "";
         if(offer) html += `<div class="offer-banner">${offer}</div>`;
 
+
         html += fragments.map(f => `
             <div class="kb-card">
                 <div class="kb-header" onclick="this.nextElementSibling.classList.toggle('open')">
-                    <h3><i class="fas fa-book" style="color:var(--primary); margin-right:8px;"></i> ${f.title ? f.title.replace(/_/g, ' ') : 'Dettaglio'}</h3><i class="fas fa-chevron-down" style="color:var(--text-muted)"></i>
+                    <h3><i class="fas fa-book" style="color:var(--primary); margin-right:8px;"></i> 
+                        ${f.title ? f.title.replace(/_/g, ' ') : 'Dettaglio'}
+                    </h3>
+                    <i class="fas fa-chevron-down" style="color:var(--text-muted)"></i>
                 </div>
                 <div class="kb-body">
                     <div class="kb-summary">${f.summary || f.answer_fragment || ''}</div>
                     ${(f.sections||[]).map(s => `<div class="kb-section"><div class="kb-q">${s.question}</div><div class="kb-a">${s.answer}</div></div>`).join('')}
                 </div>
-            </div>`).join('');
+            </div>
+        `).join('');
+
         
         cont.innerHTML = html;
     }
