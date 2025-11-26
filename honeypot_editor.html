@@ -9,109 +9,8 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
-  <style>
-    :root {
-      --bg-start: #4a5b8f; --bg-end: #2a3d5f; 
-      --text-main: #ffffff; --text-muted: rgba(255, 255, 255, 0.75);
-      --primary: #5B6FED; --primary-hover: #4a5ecf;
-      --success: #4cd964; --error: #ff6b6b; --warning: #f59e0b;
-      --border: rgba(255, 255, 255, 0.15);
-      --input-bg: rgba(255, 255, 255, 0.08);
-      --card-bg: rgba(0, 0, 0, 0.25);
-      --glass: rgba(255, 255, 255, 0.05);
-    }
-    
-    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-    body { font-family: 'Inter', sans-serif; background: linear-gradient(135deg, var(--bg-start) 0%, var(--bg-end) 100%); color: var(--text-main); min-height: 100vh; }
-    .container { width: 100%; max-width: 700px; margin: 0 auto; padding: 20px 20px 120px 20px; }
-    .hidden { display: none !important; }
-    h2 { font-size: 26px; font-weight: 700; margin-bottom: 8px; color: white; }
-    p.subtitle { font-size: 15px; color: var(--text-muted); margin-bottom: 30px; line-height: 1.6; }
-    label { display: block; font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
-    input, textarea, select { width: 100%; padding: 14px; background: var(--input-bg); border: 1px solid var(--border); border-radius: 12px; color: white; font-family: inherit; font-size: 15px; transition: all 0.3s; }
-    textarea { resize: vertical; min-height: 100px; line-height: 1.5; }
-    select { background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%239ca3af' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e"); background-position: right 0.7rem center; background-repeat: no-repeat; background-size: 1.2em 1.2em; padding-right: 2.5rem; appearance: none; -webkit-appearance: none; }
-    input:focus, textarea:focus, select:focus { outline: none; border-color: var(--primary); background: rgba(255,255,255,0.1); }
-    
-    .btn { padding: 16px; border-radius: 14px; font-weight: 600; font-size: 15px; cursor: pointer; border: none; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; }
-    .btn-primary { background: var(--primary); color: white; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
-    .btn-secondary { background: transparent; border: 1px solid var(--border); color: var(--text-muted); }
-    .btn-sm { padding: 8px 14px; font-size: 13px; border-radius: 10px; width: auto; display: inline-flex; }
-    .btn:disabled { background: var(--input-bg) !important; color: var(--text-muted) !important; opacity: 0.5; cursor: not-allowed; border-color: var(--border) !important; }
-    
-    .row { display: flex; gap: 12px; } .col { flex: 1; }
-    #loader { position:fixed; inset:0; background:var(--bg-end); z-index:99; display:flex; align-items:center; justify-content:center; }
-    .spinner { width:40px; height:40px; border:4px solid rgba(255,255,255,0.1); border-top-color:var(--primary); border-radius:50%; animation:spin 0.8s linear infinite; }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    
-    .knowledge-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 16px; margin-bottom: 20px; overflow: hidden; transition: all 0.3s; }
-    .card-header { padding: 18px 20px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; background: rgba(255,255,255,0.03); }
-    .card-header h3 { font-size: 16px; margin: 0; display: flex; align-items: center; gap: 12px; color: white; }
-    .card-header .chevron { transition: transform 0.3s; color: var(--text-muted); }
-    .card-content { padding: 20px; border-top: 1px solid var(--border); display: none; }
-    .knowledge-card.open .card-content { display: block; }
-    .knowledge-card.open .chevron { transform: rotate(180deg); }
-    .input-group { margin-bottom: 20px; }
-    
-    .utterance-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 8px; }
-    .tag { background: rgba(255,255,255,0.1); padding: 5px 10px; font-size: 12px; border-radius: 20px; color: var(--text-muted); }
-    
-    .deep-dive-item { background: rgba(0,0,0,0.2); padding: 15px; border-radius: 12px; margin-bottom: 15px; }
-    .deep-dive-item .input-group { margin-bottom: 10px; }
-    
-    .hours-grid { display: grid; grid-template-columns: 80px 1fr; gap: 10px 15px; align-items: center; }
-    .hours-grid label { margin: 0; text-transform: none; font-weight: 500; }
-    .time-selector { display: flex; align-items: center; gap: 8px; }
-    .time-selector select { width: auto; flex: 1; }
-    
-    .asset-upload-box { 
-        border: 2px dashed var(--border); 
-        border-radius: 16px; 
-        padding: 30px 20px;
-        text-align: center; 
-        cursor: pointer; 
-        background: var(--glass); 
-        transition: all 0.3s; 
-        position: relative; 
-        overflow: hidden;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        min-height: 160px;
-    }
-    .asset-upload-box:hover { border-color: var(--primary); background: rgba(255,255,255,0.08); }
-    .asset-upload-box input[type="file"] { 
-        position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; z-index: 10; 
-    }
-    .asset-upload-box .upload-icon { font-size: 40px; margin-bottom: 10px; color: var(--text-muted); transition: color 0.3s; }
-    .asset-upload-box:hover .upload-icon { color: var(--primary); }
-    .asset-upload-box .upload-text { font-size: 13px; color: var(--text-muted); font-weight: 500; }
-    
-    .asset-preview { margin-top: 15px; width: 100%; display: flex; flex-direction: column; align-items: center; z-index: 1; }
-    .asset-preview img { max-width: 100px; max-height: 100px; border-radius: 8px; border: 2px solid var(--border); box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
-    .asset-description { font-size: 12px; font-style: italic; color: var(--text-muted); margin-top: 8px; }
-    
-    .guide-box { background: rgba(0,0,0,0.2); border-radius: 12px; padding: 20px; }
-    .guide-step { display: flex; align-items: flex-start; gap: 15px; margin-bottom: 20px; font-size: 14px; line-height: 1.5; color: var(--text-muted); }
-    .guide-step:last-child { margin-bottom: 0; }
-    .guide-step i { font-size: 18px; color: var(--primary); width: 20px; text-align: center; margin-top: 2px; }
-    .guide-box code { background: rgba(0,0,0,0.4); padding: 2px 5px; border-radius: 4px; font-family: monospace; color: #fff; }
-    .guide-box a { color: var(--primary); font-weight: 600; text-decoration: none; }
-    .guide-box .input-group { margin-top: 25px; }
-    
-    .knowledge-card.highlight { border: 1px solid var(--primary); background: linear-gradient(135deg, rgba(91, 111, 237, 0.15), rgba(0,0,0,0.2)); }
-    .knowledge-card.highlight .card-header h3 { color: white; text-shadow: 0 2px 4px rgba(0,0,0,0.3); }
-
-    .offer-preview { margin-top: 10px; background: white; color: #333; padding: 15px; border-radius: 8px; font-size: 14px; line-height: 1.5; border: 1px solid var(--border); min-height: 60px; cursor: pointer; position: relative; transition: transform 0.1s, box-shadow 0.2s; }
-    .offer-preview:active { transform: scale(0.99); }
-    .offer-preview:hover { box-shadow: 0 0 10px rgba(91, 111, 237, 0.3); border-color: var(--primary); }
-    .offer-preview h1, .offer-preview h2, .offer-preview h3, .offer-preview strong, .offer-preview b { color: #000; }
-    .click-hint { font-size: 11px; color: var(--primary); font-weight: 600; margin-left: auto; display: block; width: max-content; margin-bottom: 5px; }
-
-    .save-bar { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(42, 61, 95, 0.95); backdrop-filter: blur(10px); padding: 15px; border-top: 1px solid var(--border); z-index: 10; transform: translateY(100%); transition: transform 0.3s; }
-    .save-bar.visible { transform: translateY(0); }
-  </style>
+  
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
@@ -128,7 +27,7 @@
         <i class="fas fa-chevron-down chevron"></i>
       </div>
       <div class="card-content">
-        <p style="font-size:13px; color:var(--text-muted); margin-bottom:15px;" data-i18n="offer_desc"></p>
+        <p data-i18n="offer_desc"></p>
         <div class="input-group">
             <label data-i18n="lbl_offer_prompt"></label>
             <textarea id="offer-prompt" placeholder="..." rows="2"></textarea>
@@ -136,8 +35,8 @@
         <button type="button" class="btn btn-primary" onclick="generateOfferHTML()">
             <i class="fas fa-magic"></i> <span data-i18n="btn_generate_offer"></span>
         </button>
-        <div class="input-group" style="margin-top: 25px;">
-            <div style="display:flex; justify-content:space-between; align-items:flex-end;">
+        <div class="input-group">
+            <div>
                 <label data-i18n="lbl_offer_preview"></label>
                 <span class="click-hint"><i class="far fa-copy"></i> <span data-i18n="lbl_click_copy"></span></span>
             </div>
@@ -161,15 +60,15 @@
           <div class="guide-step"><i class="fas fa-key"></i> <span data-i18n="guide_bot_4"></span></div>
           <div class="guide-step"><i class="fas fa-video"></i> <span data-i18n="guide_bot_video"></span></div>
           
-          <div class="input-group" style="margin-top: 20px;">
+          <div class="input-group">
             <label>Telegram Bot Token</label>
-            <div style="display: flex; gap: 10px; align-items: center;">
-                <input type="text" id="bot-token-input" placeholder="12345:ABC-..." style="flex-grow: 1;">
-                <button type="button" class="btn btn-primary btn-sm" id="btn-link-bot" onclick="linkBot()" style="white-space: nowrap; width: auto;">
+            <div>
+                <input type="text" id="bot-token-input" placeholder="12345:ABC-...">
+                <button type="button" class="btn btn-primary btn-sm" id="btn-link-bot" onclick="linkBot()">
                     <i class="fas fa-link"></i> <span data-i18n="btn_link_bot"></span>
                 </button>
             </div>
-            <div id="bot-status" style="margin-top: 10px; font-size: 13px; display: none;"></div>
+            <div id="bot-status"></div>
           </div>
         </div>
       </div>
@@ -212,7 +111,7 @@
             <i class="fas fa-chevron-down chevron"></i>
         </div>
         <div class="card-content">
-            <div class="row" style="gap: 20px;">
+            <div class="row">
                 <div class="col"><label data-i18n="lbl_logo"></label><div class="asset-upload-box" id="logo-upload-box"><input type="file" accept="image/*" onchange="handleAssetUpload('logo', this.files[0])"><div class="upload-icon"><i class="fas fa-cloud-upload-alt"></i></div><span class="upload-text" data-i18n="upload_logo"></span><div id="logo-preview" class="asset-preview"></div></div></div>
                 <div class="col"><label data-i18n="lbl_photo"></label><div class="asset-upload-box" id="photo-upload-box"><input type="file" accept="image/*" onchange="handleAssetUpload('photo', this.files[0])"><div class="upload-icon"><i class="fas fa-camera"></i></div><span class="upload-text" data-i18n="upload_photo"></span><div id="photo-preview" class="asset-preview"></div></div></div>
             </div>
@@ -292,7 +191,7 @@
     async function handleAssetUpload(assetType, file) {
         if (!file) return;
         const previewContainer = document.getElementById(`${assetType}-preview`);
-        previewContainer.innerHTML = `<div class="spinner" style="width:20px; height:20px; border-width:2px;"></div>`;
+        previewContainer.innerHTML = `<div class="spinner"></div>`;
         try {
             const fileData = await getFileData(file);
             const res = await fetch(WEBHOOK_URL, {
@@ -454,7 +353,7 @@
             dom.offerPreview.innerHTML = honeypotData.offer_text;
             dom.offerStorage.value = honeypotData.offer_text;
         } else {
-            dom.offerPreview.innerHTML = `<em style="color:#999; font-size:12px;">${dict().offer_preview_placeholder}</em>`;
+            dom.offerPreview.innerHTML = `<em>${dict().offer_preview_placeholder}</em>`;
         }
 
         dom.container.innerHTML = '';
