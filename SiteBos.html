@@ -58,11 +58,9 @@
 
     /* --- HUB HEADER (BRANDED) --- */
     .hub-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid var(--border); }
-    
     .brand-area { display: flex; align-items: center; gap: 12px; }
     .brand-logo { width: 50px; height: 50px; border-radius: 12px; object-fit: contain; background: rgba(255,255,255,0.1); border: 1px solid var(--border); }
     .owner-avatar { width: 35px; height: 35px; border-radius: 50%; object-fit: cover; border: 2px solid var(--success); margin-left: -10px; box-shadow: 2px 2px 5px rgba(0,0,0,0.3); }
-    
     .lang-select { background: rgba(0,0,0,0.3); border: 1px solid var(--border); color: white; padding: 6px 12px; border-radius: 20px; font-size: 12px; outline: none; }
 
     /* AI INDICATOR */
@@ -74,7 +72,6 @@
     .ai-status i { font-size: 16px; color: var(--text-muted); }
     .ai-status.insight i, .ai-status.human i { color: white; }
 
-    /* INSIGHT BUBBLE */
     .insight-bubble { 
         position: fixed; top: 85px; left: 5%; width: 90%; 
         background: rgba(20, 30, 50, 0.98); border: 1px solid var(--primary); 
@@ -85,8 +82,7 @@
     }
     .insight-bubble.visible { transform: translateY(0); opacity: 1; pointer-events: auto; }
 
-    /* --- KNOWLEDGE BASE (HONEYPOT) --- */
-    .kb-search { margin-bottom: 20px; }
+    /* --- HONEYPOT (KB) --- */
     .kb-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 16px; margin-bottom: 15px; overflow: hidden; transition: all 0.2s; }
     .kb-header { padding: 15px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.02); }
     .kb-header h3 { font-size: 15px; margin: 0; line-height: 1.4; color: white; width: 90%; }
@@ -95,12 +91,12 @@
     .kb-section { margin-top: 15px; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 8px; }
     .kb-q { font-weight: 700; color: var(--primary); font-size: 13px; margin-bottom: 5px; }
 
-    /* --- PRODUCTS --- */
+    /* --- PRODUCTS (LAZY LOAD STYLES) --- */
     .category-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 16px; margin-bottom: 15px; overflow: hidden; }
     .cat-header { padding: 15px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; background: rgba(255,255,255,0.05); }
     .cat-header h3 { margin: 0; font-size: 16px; color: white; }
-    .cat-body { padding: 15px; display: none; }
-    .cat-body.open { display: block; border-top: 1px solid var(--border); }
+    .cat-body { padding: 15px; display: none; border-top: 1px solid var(--border); }
+    .cat-body.open { display: block; animation: fadeIn 0.3s; }
     
     .product-item { background: rgba(0,0,0,0.2); border-radius: 10px; padding: 12px; margin-bottom: 10px; border: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
     .product-item h4 { margin: 0 0 5px 0; font-size: 14px; color: white; width: 70%; }
@@ -131,25 +127,18 @@
 
     /* --- INPUT BAR --- */
     .input-bar-container { position: fixed; bottom: calc(var(--nav-height) + 15px); left: 0; right: 0; padding: 0 15px; z-index: 400; display: flex; justify-content: center; }
-    .input-bar { 
-        width: 100%; max-width: 500px;
-        background: rgba(20, 30, 50, 0.9); backdrop-filter: blur(20px);
-        border: 1px solid var(--border); border-radius: 25px;
-        padding: 8px; display: flex; align-items: center; gap: 8px;
-        box-shadow: 0 5px 20px rgba(0,0,0,0.4);
-    }
+    .input-bar { width: 100%; max-width: 500px; background: rgba(20, 30, 50, 0.9); backdrop-filter: blur(20px); border: 1px solid var(--border); border-radius: 25px; padding: 8px; display: flex; align-items: center; gap: 8px; box-shadow: 0 5px 20px rgba(0,0,0,0.4); }
     .chat-input { flex: 1; background: rgba(255,255,255,0.1); border: none; border-radius: 20px; padding: 10px 15px; color: white; font-size: 14px; }
     .chat-input:focus { outline: none; background: rgba(255,255,255,0.2); }
     .icon-btn { width: 36px; height: 36px; border-radius: 50%; border: none; background: transparent; color: var(--text-muted); font-size: 18px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
     .icon-btn.send { background: var(--primary); color: white; }
 
-    /* --- NAV --- */
+    /* --- NAV & MODAL --- */
     .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; height: var(--nav-height); background: rgba(30, 40, 65, 0.98); border-top: 1px solid var(--border); display: flex; justify-content: space-around; align-items: center; z-index: 500; padding-bottom: env(safe-area-inset-bottom); }
     .nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; color: rgba(255,255,255,0.5); font-size: 10px; text-decoration: none; padding: 8px; border-radius: 8px; flex: 1; }
     .nav-item.active { color: white; }
     .nav-item.active i { color: var(--primary); }
 
-    /* --- MODALS --- */
     .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 900; display: flex; flex-direction: column; padding: 20px; overflow-y: auto; }
     .modal-content { max-width: 500px; margin: auto; width: 100%; background: var(--bg-end); border: 1px solid var(--border); padding: 25px; border-radius: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.5); }
     .q-group { margin-bottom: 15px; }
@@ -161,13 +150,11 @@
     .btn-secondary { background: var(--success); color: #003300; }
     .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text-muted); }
 
-    /* Cart List */
     .cart-list { max-height: 300px; overflow-y: auto; margin-bottom: 20px; }
     .cart-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid var(--border); }
     .cart-item-info { font-size: 14px; color: white; }
     .btn-remove { color: var(--error); background: transparent; border: none; font-size: 16px; cursor: pointer; }
 
-    /* TABS UTIL */
     .tab-content { display: none; animation: fadeIn 0.4s ease-out; }
     .tab-content.active { display: block; }
 
@@ -229,7 +216,7 @@
       <h2 data-i18n="tab_hp">HoneyPot</h2>
       <div class="search-box" style="margin-bottom:15px;">
         <i class="fas fa-search"></i>
-        <input type="text" id="kb-search" placeholder="Cerca nella KB..." onkeyup="filterKB()">
+        <input type="text" id="kb-search" placeholder="Cerca nella KB..." onkeypress="if(event.key==='Enter') triggerAction('search_kb', this.value)">
       </div>
       <div id="content-knowledge"></div>
     </div>
@@ -344,7 +331,7 @@
       pt: { portal_title:"Portal SiteBoS", portal_sub:"Procurar.", tab_hp:"HoneyPot", tab_prod:"Produtos", tab_agenda:"Agenda", nav_hp:"HoneyPot", nav_prod:"Prod", nav_agenda:"Agenda", nav_profile:"Perfil", qual_title:"Perfil", qual_sub:"Seus dados.", login_title:"Login", login_desc:"Entrar." }
     };
 
-    const app = { vat: null, lang: 'it', user: null, cart: [] };
+    const app = { vat: null, lang: 'it', user: null, cart: [], currentTab: 'knowledge' };
     const tg = window.Telegram.WebApp; tg.ready(); tg.expand();
 
     window.onload = async () => {
@@ -391,16 +378,34 @@
         if(c) { app.cart = JSON.parse(c); updateCartUI(); }
 
         renderCalendar();
-        
-        // REQUEST DATA
         triggerAction('init_load');
     }
 
+    // --- SESSION ID ---
+    function getClientSessionId() {
+        if (app.user && app.user.username) return app.user.username;
+        let anonId = localStorage.getItem('sb_anon_id');
+        if (!anonId) {
+            anonId = 'anon_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+            localStorage.setItem('sb_anon_id', anonId);
+        }
+        return anonId;
+    }
+
+    // --- PARALLEL ENGINE ---
     async function triggerAction(type, payload = null) {
         const ind = document.getElementById('ai-indicator');
         ind.className = 'ai-status processing';
         
-        const body = { vat: app.vat, profile: app.user, type: type, payload: payload };
+        const body = { 
+            vat: app.vat, 
+            session_id: getClientSessionId(),
+            profile: app.user, 
+            current_tab: app.currentTab,
+            type: type, 
+            payload: payload 
+        };
+        
         if(type==='image') body.payload = await fileToBase64(payload);
 
         // REFLEX
@@ -426,32 +431,27 @@
     }
 
     function handleData(type, data) {
-        // Handle BRANDING assets
+        // BRANDING
         if(data.assets) {
             if(data.assets.logo) { 
-                const img = document.getElementById('brand-logo'); 
-                img.src = `data:${data.assets.logo.mime};base64,${data.assets.logo.base64}`; 
-                img.classList.remove('hidden'); 
+                const img = document.getElementById('brand-logo'); img.src = `data:${data.assets.logo.mime};base64,${data.assets.logo.base64}`; img.classList.remove('hidden'); 
             }
             if(data.assets.avatar) { 
-                const img = document.getElementById('owner-avatar'); 
-                img.src = `data:${data.assets.avatar.mime};base64,${data.assets.avatar.base64}`; 
-                img.classList.remove('hidden'); 
+                const img = document.getElementById('owner-avatar'); img.src = `data:${data.assets.avatar.mime};base64,${data.assets.avatar.base64}`; img.classList.remove('hidden'); 
             }
         }
-        
-        // Handle HONEYPOT
+        // HONEYPOT
         if(data.honeypot) renderHoneyPot(data.honeypot);
-        
-        // Handle CATALOG
-        if(data.categories) renderCatalog(data.categories);
+        // CATALOG STRUCTURE
+        if(data.categories) renderCatalogStructure(data.categories);
+        // PRODUCT UPDATE (Lazy Load)
+        if(data.products_update) renderProductsUpdate(data.products_update);
     }
 
     // --- RENDERERS ---
     function renderHoneyPot(fragments) {
         const cont = document.getElementById('content-knowledge');
         if(!fragments || fragments.length === 0) { cont.innerHTML = "<p style='color:gray'>Nessun articolo.</p>"; return; }
-        
         cont.innerHTML = fragments.map(f => `
             <div class="kb-card">
                 <div class="kb-header" onclick="this.nextElementSibling.classList.toggle('open')">
@@ -460,41 +460,51 @@
                 </div>
                 <div class="kb-body">
                     <p>${f.answer_fragment}</p>
-                    ${(f.sections||[]).map(s => `
-                        <div class="kb-section">
-                            <div class="kb-q">${s.question}</div>
-                            <div>${s.answer}</div>
-                        </div>
-                    `).join('')}
-                </div>
-            </div>
-        `).join('');
-    }
-
-    function renderCatalog(categories) {
-        const cont = document.getElementById('content-products');
-        cont.innerHTML = categories.map(cat => `
-            <div class="category-card">
-                <div class="cat-header" onclick="this.nextElementSibling.classList.toggle('open')">
-                    <h3>${cat.short_name}</h3><i class="fas fa-chevron-down" style="color:white"></i>
-                </div>
-                <div class="cat-body">
-                    ${cat.subcategories.map(sub => `
-                        <div class="product-item">
-                            <h4>${sub.short_name}</h4>
-                            <div class="prod-actions">
-                                <span class="price-tag">INFO</span>
-                                <button class="btn-add" onclick="addToCart('${sub.short_name}', '${sub.callback_data}')"><i class="fas fa-plus"></i></button>
-                            </div>
-                        </div>`).join('')}
+                    ${(f.sections||[]).map(s => `<div class="kb-section"><div class="kb-q">${s.question}</div><div>${s.answer}</div></div>`).join('')}
                 </div>
             </div>`).join('');
+    }
+
+    function renderCatalogStructure(categories) {
+        const cont = document.getElementById('content-products');
+        cont.innerHTML = categories.map(cat => `
+            <div class="category-card" id="cat-card-${cat.callback_data}">
+                <div class="cat-header" onclick="expandCategory('${cat.callback_data}')">
+                    <h3>${cat.short_name}</h3><i class="fas fa-chevron-down" style="color:white"></i>
+                </div>
+                <div class="cat-body" id="cat-body-${cat.callback_data}">
+                    <div style="text-align:center; padding:10px;"><i class="fas fa-circle-notch fa-spin"></i></div>
+                </div>
+            </div>`).join('');
+    }
+
+    function renderProductsUpdate(update) {
+        const body = document.getElementById(`cat-body-${update.category_id}`);
+        if(body) {
+            body.innerHTML = update.items.map(sub => `
+                <div class="product-item">
+                    <h4>${sub.short_name}</h4>
+                    <div class="prod-actions">
+                        <span class="price-tag">${sub.price || 'INFO'}</span>
+                        <button class="btn-add" onclick="addToCart('${sub.short_name}', '${sub.callback_data}')"><i class="fas fa-plus"></i></button>
+                    </div>
+                </div>`).join('');
+            body.classList.add('open');
+        }
+    }
+
+    function expandCategory(catId) {
+        const body = document.getElementById(`cat-body-${catId}`);
+        body.classList.toggle('open');
+        if(body.innerText.trim() === '' || body.children.length <= 1) {
+            triggerAction('get_category_products', catId);
+        }
     }
 
     function renderCalendar() {
         const c = document.getElementById('content-agenda');
         const days = ['Lun','Mar','Mer','Gio','Ven','Sab'];
-        c.innerHTML = days.map(d => `<div class="cal-day"><h4>${d}</h4><div class="cal-slot">09:00</div><div class="cal-slot">15:00</div></div>`).join('');
+        c.innerHTML = days.map(d => `<div class="cal-day"><h4>${d}</h4><div class="cal-slot" onclick="triggerAction('book_slot','${d} 09:00')">09:00</div><div class="cal-slot" onclick="triggerAction('book_slot','${d} 15:00')">15:00</div></div>`).join('');
     }
 
     // --- CART ---
@@ -524,12 +534,13 @@
         document.getElementById('tab-'+id).classList.add('active');
         document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
         if(el) el.classList.add('active');
+        app.currentTab = id; // TRACK TAB
     }
     window.toggleInsight = () => document.getElementById('insight-bubble').classList.toggle('visible');
     window.openQualification = () => { document.getElementById('qualify-modal').classList.remove('hidden'); if(app.user){ document.getElementById('q-username').value=app.user.username||''; document.getElementById('q-email').value=app.user.email; }};
     window.closeQualification = () => document.getElementById('qualify-modal').classList.add('hidden');
     window.execUi = (cmd) => { if(cmd.action==='NAVIGATE') switchTab(cmd.target); if(cmd.action==='OPEN_QUALIFY') openQualification(); if(cmd.action==='OPEN_LOGIN') document.getElementById('login-modal').classList.remove('hidden'); };
-    window.showInsight = (text) => { const i=document.getElementById('ai-indicator'); i.className='ai-status insight'; document.getElementById('insight-text').innerHTML=text; toggleInsight(); };
+    window.showInsight = (text) => { const i=document.getElementById('ai-indicator'); i.className='ai-status insight'; document.getElementById('ai-icon').className='fas fa-lightbulb'; document.getElementById('insight-text').innerHTML=text; toggleInsight(); };
     window.filterKB = () => { const t=document.getElementById('kb-search').value.toLowerCase(); document.querySelectorAll('.kb-card').forEach(c => c.style.display=c.innerText.toLowerCase().includes(t)?'block':'none'); };
     window.filterPublicList = () => { const t=document.getElementById('public-search').value.toLowerCase(); document.querySelectorAll('.company-card').forEach(c => c.style.display=c.innerText.toLowerCase().includes(t)?'flex':'none'); };
     
