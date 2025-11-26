@@ -7,96 +7,8 @@
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
-  <style>
-    :root {
-      --bg-start: #4a5b8f; --bg-end: #2a3d5f; --text-primary: #ffffff;
-      --text-secondary: rgba(255, 255, 255, 0.7); --border-color: rgba(255, 255, 255, 0.2);
-      --input-bg: rgba(255, 255, 255, 0.08); --accent-color: #5B6FED; --error-color: #ff6b6b;
-    }
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-      background: linear-gradient(135deg, var(--bg-start) 0%, var(--bg-end) 100%);
-      color: var(--text-primary); padding: 20px; min-height: 100vh;
-      /* Abilita lo scorrimento orizzontale se il contenuto è troppo largo */
-      overflow-x: auto;
-    }
-    #calendar {
-      max-width: 900px;
-      /* Imposta una larghezza minima per evitare che si comprima troppo */
-      min-width: 650px; 
-      margin: 0 auto;
-      background: rgba(255, 255, 255, 0.07);
-      border-radius: 14px;
-      padding: 16px;
-      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3);
-    }
-    .fc {
-      font-family: inherit;
-      color: var(--text-primary);
-    }
-    .fc .fc-toolbar-title {
-      font-weight: 600;
-      font-size: 1.3rem;
-      color: var(--text-primary);
-    }
-    .fc button {
-      background: var(--input-bg);
-      border: 1px solid var(--border-color);
-      color: var(--text-primary);
-      border-radius: 8px;
-      font-weight: 600;
-    }
-    .fc button:hover, .fc button:focus {
-      background: var(--accent-color);
-      border-color: var(--accent-color);
-      color: #fff;
-      outline: none;
-      box-shadow: 0 0 10px var(--accent-color);
-    }
-    .fc .fc-daygrid-event {
-      border-radius: 8px;
-      padding: 2px 6px;
-      font-size: 0.9rem;
-      font-weight: 600;
-      line-height: 1.2;
-      white-space: normal;
-      cursor: pointer;
-    }
-    .fc .fc-timegrid-event {
-      cursor: pointer;
-    }
-    
-    /* Stili per gli header e i bordi del calendario */
-    .fc .fc-col-header-cell {
-      /* Usa esattamente il colore azzurrino dello sfondo come richiesto */
-      background-color: var(--bg-start);
-    }
-    .fc-theme-standard th, 
-    .fc-theme-standard td {
-      /* Rende i bordi interni coerenti con il tema */
-      border-color: var(--border-color);
-    }
-
-    /* Modal popup fallback */
-    .modal-overlay {
-      display: none; position: fixed; top: 0; left: 0;
-      width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7);
-      z-index: 9999; align-items: center; justify-content: center;
-    }
-    .modal-overlay.active { display: flex; }
-    .modal-content {
-      background: linear-gradient(135deg, var(--bg-start) 0%, var(--bg-end) 100%);
-      border-radius: 16px; padding: 24px; max-width: 400px; width: 90%;
-      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5); color: var(--text-primary);
-      white-space: pre-line; line-height: 1.6;
-    }
-    .modal-close {
-      margin-top: 20px; background: var(--accent-color); color: white;
-      border: none; padding: 12px 24px; border-radius: 8px;
-      font-weight: 600; cursor: pointer; width: 100%;
-    }
-  </style>
+  
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <div id="calendar"></div>
@@ -212,7 +124,7 @@
     document.title = t.title;
 
     if (!groupId) {
-      document.body.innerHTML = `<h2 style="color: red; text-align:center;">${t.missingParam}</h2>`;
+      document.body.innerHTML = `<h2>${t.missingParam}</h2>`;
       throw new Error(t.missingParam);
     }
 
@@ -300,7 +212,7 @@
         calendar.render();
       })
       .catch(err => {
-        document.body.innerHTML = `<h2 style="color: red; text-align:center;">${t.error}: ${err.message}</h2>`;
+        document.body.innerHTML = `<h2>${t.error}: ${err.message}</h2>`;
       });
   </script>
 </body>
