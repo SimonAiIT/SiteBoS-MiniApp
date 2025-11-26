@@ -1,149 +1,259 @@
+/* ========================================
+   VARIABLES & THEME
+   ======================================== */
 :root {
-  --bg-start: #4a5b8f; --bg-end: #2a3d5f;
-  --text-main: #ffffff; --text-muted: rgba(255,255,255,0.75);
-  --text-secondary: rgba(255,255,255,0.7);
-  --primary: #5B6FED; --primary-hover: #4a5ecf;
-  --success: #4cd964; --error: #ff6b6b; --warning: #f59e0b;
-  --border: rgba(255,255,255,0.18); --input-bg: rgba(255,255,255,0.08);
-  --card-bg: rgba(0,0,0,0.22); --glass: rgba(255,255,255,0.04);
-  --hover-bg: rgba(255,255,255,0.1);
+  --bg-start: #4a5b8f;
+  --bg-end: #2a3d5f;
+  --text-main: #ffffff;
+  --text-muted: rgba(255, 255, 255, 0.75);
+  --text-secondary: rgba(255, 255, 255, 0.7);
+  --primary: #5B6FED;
+  --primary-hover: #4a5ecf;
+  --success: #4cd964;
+  --error: #ff6b6b;
+  --warning: #f59e0b;
+  --border: rgba(255, 255, 255, 0.18);
+  --input-bg: rgba(255, 255, 255, 0.08);
+  --card-bg: rgba(0, 0, 0, 0.22);
+  --glass: rgba(255, 255, 255, 0.04);
+  --hover-bg: rgba(255, 255, 255, 0.1);
+  --nav-height: 70px;
 }
+
+/* ========================================
+   RESET & BASE
+   ======================================== */
 * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
 body {
-  font-family: 'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubuntu,sans-serif;
-  background: linear-gradient(135deg,var(--bg-start)0%,var(--bg-end)100%);
-  color: var(--text-main); min-height: 100vh; padding: 20px;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+  background: linear-gradient(135deg, var(--bg-start) 0%, var(--bg-end) 100%);
+  color: var(--text-main);
+  min-height: 100vh;
+  padding: 20px;
+  padding-bottom: 80px; /* Space for bottom nav/actions */
 }
-.container { max-width: 650px; margin: 0 auto; padding-bottom: 60px; position: relative; }
-.hidden { display: none !important; }
-h1, h2, h3 { font-weight: 700; margin-bottom: 10px; }
+
+.container {
+  max-width: 700px; /* Slightly wider for blueprints/tables */
+  margin: 0 auto;
+  position: relative;
+}
+
+/* ========================================
+   TYPOGRAPHY
+   ======================================== */
+h1, h2, h3, h4 { font-weight: 700; margin-bottom: 10px; color: #fff; }
 h1 { font-size: 26px; }
 h2 { font-size: 22px; }
-.subtitle { font-size: 15px; color: var(--text-muted); margin-bottom: 30px; }
+h3 { font-size: 18px; }
+
+.subtitle { font-size: 15px; color: var(--text-muted); margin-bottom: 30px; line-height: 1.5; }
+
 .section-title {
   font-size: 16px; font-weight: 600; margin: 28px 0 16px;
   padding-bottom: 8px; border-bottom: 1px solid var(--border);
+  text-transform: uppercase; letter-spacing: 0.5px; color: var(--primary);
 }
+
+/* ========================================
+   FORMS & INPUTS
+   ======================================== */
 .form-group, .input-group { margin-bottom: 20px; }
+
 label {
-  display: block; font-size: 13px; font-weight: 600; color: var(--text-muted);
-  margin-bottom: 8px; letter-spacing: 0.5px;
+  display: block; font-size: 12px; font-weight: 600; color: var(--text-muted);
+  margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;
 }
+
 input, textarea, select {
-  width: 100%; padding: 14px; background: var(--input-bg); border: 1px solid var(--border);
-  border-radius: 12px; color: var(--text-main); font-family: inherit; font-size: 15px; transition: all 0.3s;
+  width: 100%; padding: 14px;
+  background: var(--input-bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  color: var(--text-main);
+  font-family: inherit; font-size: 15px;
+  transition: all 0.2s ease;
 }
-input[type="date"],input[type="time"] {
-  color-scheme: dark;
+
+input:focus, textarea:focus, select:focus {
+  border-color: var(--primary);
+  outline: none;
+  background: rgba(91, 111, 237, 0.11);
+  box-shadow: 0 0 0 2px rgba(91, 111, 237, 0.2);
 }
+
+/* Date/Time Inputs dark mode fix */
+input[type="date"], input[type="time"] { color-scheme: dark; }
 input[type="date"]::-webkit-calendar-picker-indicator,
 input[type="time"]::-webkit-calendar-picker-indicator {
   filter: invert(1); opacity: 0.8; cursor: pointer;
 }
+
 textarea { resize: vertical; min-height: 100px; line-height: 1.5; }
+
+/* Custom Select Arrow */
 select {
   background-image: url("data:image/svg+xml;utf8,<svg fill='white' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>");
-  background-repeat: no-repeat; background-position: right 12px center;
+  background-repeat: no-repeat;
+  background-position: right 12px center;
   appearance: none; -webkit-appearance: none;
 }
-input:focus, textarea:focus, select:focus {
-  border-color: var(--primary); outline: none; background: rgba(91,111,237,0.11);
-}
-.form-section, .card {
-  background: var(--card-bg); border-radius: 18px; margin-bottom: 20px; padding: 22px;
-  border: 1px solid var(--border); box-shadow: 0 8px 32px rgba(0,0,0,0.12);
-}
-.button-container, .btn-container, .radio-group, .checkbox-group {
-  display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 16px;
-}
-.btn, button[type="submit"], button[type="button"] {
-  border-radius: 11px; border: 1px solid transparent; font-size: 15px; font-weight: 600;
-  min-width: 120px; padding: 12px; color: var(--text-main); background: var(--primary); cursor: pointer;
-  transition: background 0.2s, border 0.2s, color 0.2s;
-}
-.btn-icon {
-  background: transparent; border: none; cursor: pointer;
-  font-size: 16px; padding: 8px; border-radius: 8px;
-  transition: background 0.2s; color: var(--text-secondary);
-  display: flex; align-items: center; justify-content: center;
-  min-width: auto;
-}
-.btn-icon:hover { 
-  background: var(--hover-bg); 
-  color: var(--text-main); 
-}
-.btn-primary { background: var(--primary); }
-.btn-primary:hover, .btn:hover { background: var(--primary-hover); }
-.btn-secondary {
-  background: var(--glass); color: var(--primary); border: 1px solid var(--border);
-}
-.btn-outline {
-  background: transparent; color: var(--primary); border: 2px solid var(--primary);
-}
-.btn-delete {
-  color: var(--error);
-}
-.btn-delete:hover {
-  background: rgba(255,107,107,0.15);
-  color: var(--error);
-}
-.btn-success { background: var(--success); color: #fff; }
-.btn-warning { background: var(--warning); color: #333; }
-.btn-sm { min-width: 60px; padding: 8px; font-size: 13px; }
-.btn-block { width: 100%; }
-.list, .item-list { list-style: none; }
-.list-item {
-  padding: 12px; border-bottom: 1px solid var(--border);
-  display: flex; align-items: center; justify-content: space-between;
-}
-.list-item:last-child { border-bottom: none; }
-.note, .info-note {
-  padding: 12px 16px; border-radius: 8px; margin-bottom: 18px;
-  background: var(--glass); border-left: 4px solid var(--primary); color: var(--primary);
-}
-.note-success { background: rgba(76,217,100,0.18); border-left-color: var(--success); color: var(--success);}
-.note-error { background: rgba(255,107,107,0.18); border-left-color: var(--error); color: var(--error);}
-.note-warning { background: rgba(245,158,11,0.13); border-left-color: var(--warning); color: var(--warning);}
-.stage, .step, .steps-container {
-  background: var(--glass); border-radius: 14px; padding: 18px; margin-bottom: 14px;
+
+/* ========================================
+   CONTAINERS & CARDS
+   ======================================== */
+.form-section, .card, .editor-container {
+  background: var(--card-bg);
+  border-radius: 18px;
+  margin-bottom: 20px;
+  padding: 22px;
   border: 1px solid var(--border);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
 }
-.stage-header, .step-header {
-  display: flex; align-items: center; justify-content: space-between;
-  margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px solid var(--border);
+
+/* ========================================
+   BUTTONS
+   ======================================== */
+.button-container, .btn-container {
+  display: flex; gap: 12px; flex-wrap: wrap; margin-top: 20px;
 }
-.stage-title, .step-title { font-weight: 600; font-size: 1.1rem; }
-.progress-bar { width: 100%; height: 8px; background: rgba(255,255,255,0.13); border-radius: 4px; margin: 16px 0; }
-.progress-fill { height: 100%; background: var(--primary); transition: width 0.3s; }
-.table, table {
-  width: 100%; border-collapse: collapse; margin-bottom: 18px;
-  background: var(--glass); border-radius: 12px;
+
+.btn, button[type="submit"], button[type="button"]:not(.btn-icon) {
+  border-radius: 11px; border: 1px solid transparent;
+  font-size: 15px; font-weight: 600;
+  padding: 12px 20px;
+  color: #fff; background: var(--primary);
+  cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center;
+  transition: all 0.2s ease;
+  min-width: 100px;
 }
-th, td {
-  padding: 10px; text-align: left; border-bottom: 1px solid var(--border);
+
+.btn:hover { background: var(--primary-hover); transform: translateY(-1px); }
+
+/* Variants */
+.btn-secondary { background: var(--glass); color: var(--text-main); border: 1px solid var(--border); }
+.btn-secondary:hover { background: var(--hover-bg); }
+
+.btn-outline { background: transparent; color: var(--primary); border: 2px solid var(--primary); }
+.btn-outline:hover { background: var(--primary); color: #fff; }
+
+.btn-delete, .btn-remove { background: var(--error); color: #fff; }
+.btn-delete:hover, .btn-remove:hover { background: #d32f2f; }
+
+.btn-add, .btn-success { background: var(--success); color: #fff; }
+.btn-add:hover { background: #388e3c; }
+
+.btn-sm { padding: 8px 12px; font-size: 13px; min-width: auto; }
+.btn-block { width: 100%; display: flex; }
+
+/* --- ICON BUTTONS (Fix for Blueprint/Toggle) --- */
+.btn-icon {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 18px;
+  padding: 8px;
+  border-radius: 8px;
+  transition: background 0.2s, color 0.2s;
+  color: var(--text-secondary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px; height: 36px;
+}
+
+.btn-icon:hover {
+  background: var(--hover-bg);
   color: var(--text-main);
 }
-th { background: var(--primary); color: #fff; font-weight: 600; }
-tr:hover { background: rgba(91,111,237,0.10); }
-.collapsible-content {
-  overflow: hidden;
-  transition: max-height 0.3s ease;
-}
-@media (max-width: 800px) {
-  .container { max-width: 98vw; padding: 10px; }
-}
-/* Utility */
-.text-center { text-align: center; }
-.mt-1 { margin-top: 8px; } .mt-2 { margin-top: 16px; }
-.mb-1 { margin-bottom: 8px; } .mb-2 { margin-bottom: 16px; }
-.p-1 { padding: 8px; } .p-2 { padding: 16px; }
-.d-flex { display: flex; }
-.flex-column { flex-direction: column; }
-.align-center { align-items: center; }
 
-::-webkit-scrollbar {
-  width: 8px; background: var(--bg-end);
+.btn-icon.btn-delete { color: var(--error); }
+.btn-icon.btn-delete:hover { background: rgba(255, 107, 107, 0.15); }
+
+/* ========================================
+   BLUEPRINT / STAGES / STEPS
+   ======================================== */
+.stage, .step {
+  background: var(--glass);
+  border-radius: 14px;
+  padding: 16px;
+  margin-bottom: 16px;
+  border: 1px solid var(--border);
 }
-::-webkit-scrollbar-thumb {
-  background: var(--border); border-radius: 8px;
+
+.stage-header, .step-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 12px; padding-bottom: 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.stage-title, .step-title { font-weight: 600; font-size: 1.1rem; color: #fff; }
+
+.steps-container {
+  margin-left: 14px;
+  padding-left: 14px;
+  border-left: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Collapsible Content Logic */
+.hidden { display: none !important; }
+.collapsible-content { overflow: hidden; }
+
+/* Step Meta/Flags */
+.step-meta { display: flex; gap: 12px; font-size: 12px; color: var(--text-secondary); margin-top: 8px; }
+.flag-container { display: flex; gap: 12px; margin: 12px 0; }
+.flag-item { display: flex; align-items: center; gap: 6px; font-size: 12px; cursor: pointer; text-transform: none; }
+
+/* ========================================
+   NOTIFICATIONS & NOTES
+   ======================================== */
+.note, .info-note {
+  padding: 14px; border-radius: 10px; margin-bottom: 18px;
+  background: rgba(91, 111, 237, 0.15);
+  border-left: 4px solid var(--primary);
+  color: #fff; font-size: 14px;
+}
+.note-warning { background: rgba(245, 158, 11, 0.15); border-left-color: var(--warning); color: #ffdb8f; }
+.note-error { background: rgba(255, 107, 107, 0.15); border-left-color: var(--error); color: #ffcdd2; }
+.note-success { background: rgba(76, 217, 100, 0.15); border-left-color: var(--success); color: #b9f6ca; }
+
+/* ========================================
+   TABLES & LISTS
+   ======================================== */
+table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+th, td { padding: 12px; text-align: left; border-bottom: 1px solid var(--border); }
+th { color: var(--text-muted); font-size: 12px; text-transform: uppercase; }
+tr:hover { background: rgba(255, 255, 255, 0.03); }
+
+.list-item {
+  padding: 14px; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+}
+
+/* ========================================
+   UTILITIES & MISC
+   ======================================== */
+.text-center { text-align: center; }
+.d-flex { display: flex; }
+.gap-2 { gap: 10px; }
+.align-center { align-items: center; }
+.justify-between { justify-content: space-between; }
+
+/* Custom Scrollbar */
+::-webkit-scrollbar { width: 8px; background: var(--bg-end); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+/* Radio/Checkbox Groups */
+.radio-group, .checkbox-group { display: flex; gap: 15px; margin-top: 8px; }
+.radio-group label, .checkbox-group label { display: flex; align-items: center; gap: 6px; cursor: pointer; text-transform: none; }
+
+/* Responsive */
+@media (max-width: 768px) {
+  .container { padding: 0 10px 80px 10px; }
+  .button-container { flex-direction: column; }
+  .btn { width: 100%; }
+  .stage-header, .step-header { flex-wrap: wrap; gap: 10px; }
 }
