@@ -5,31 +5,41 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>SiteBoS Activation</title>
   
-  <!-- LIBS -->
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
-  
-    <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    /* FIX VISIVO BARRA PROGRESSO (Sovrascrive styles.css) */
+    .progress-bar { display: flex; justify-content: space-between; align-items: flex-start; position: relative; margin: 0 10px 40px 10px; padding: 0; }
+    .progress-line { position: absolute; top: 15px; left: 0; width: 100%; height: 2px; background: rgba(255, 255, 255, 0.2); z-index: 0; }
+    .progress-fill { position: absolute; top: 15px; left: 0; height: 2px; background: var(--success); z-index: 0; transition: width 0.3s ease; width: 0%; }
+    .step-item { position: relative; z-index: 1; background: transparent; flex: 1; display: flex; flex-direction: column; align-items: center; }
+    .step-circle { width: 32px; height: 32px; border-radius: 50%; background: #2a3d5f; border: 2px solid var(--glass-border); display: flex; align-items: center; justify-content: center; margin-bottom: 8px; font-weight: bold; font-size: 14px; color: var(--text-muted); transition: all 0.3s; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
+    .step-item.active .step-circle { border-color: var(--primary); background: var(--primary); color: #fff; transform: scale(1.1); box-shadow: 0 0 15px rgba(91, 111, 237, 0.6); }
+    .step-item.completed .step-circle { border-color: var(--success); background: var(--success); color: #fff; }
+    .step-label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+    .step-item.active .step-label { color: #fff; font-weight: 700; }
+  </style>
 </head>
 <body>
 
   <div id="loader">
-    <div></div>
-    <div>SECURE HANDSHAKE</div>
+    <div class="spinner"></div>
+    <div style="margin-top:10px; font-size:12px;">SECURE HANDSHAKE</div>
   </div>
 
-  <div id="access-denied" class="hidden">
-    <div class="lock-icon">🔒</div>
+  <div id="access-denied" class="hidden container text-center" style="padding-top:50px;">
+    <div style="font-size:50px; margin-bottom:20px;">🔒</div>
     <h2 data-i18n="access_denied_title">Accesso Riservato</h2>
     <p class="subtitle" data-i18n="access_denied_desc">Configurazione disponibile solo tramite Bot.</p>
     <a href="https://t.me/TrinAi_SiteBoS_bot" class="btn btn-primary btn-block" data-i18n="open_bot">Apri Bot Telegram</a>
   </div>
 
   <div id="app-content" class="container hidden">
-    <div class="wizard-header">
-      <select id="lang-selector" onchange="changeLanguage(this.value)" class="lang-select">
+    <div class="wizard-header" style="display:flex; justify-content:flex-end; margin-bottom:10px;">
+      <select id="lang-selector" onchange="changeLanguage(this.value)" class="lang-select" style="width:auto; padding:5px;">
         <option value="it">🇮🇹 IT</option>
         <option value="en">🇬🇧 EN</option>
         <option value="fr">🇫🇷 FR</option>
@@ -47,21 +57,21 @@
       <div class="step-item" id="si-3"><div class="step-circle">3</div><div class="step-label" data-i18n="step_plan">Promo</div></div>
     </div>
 
-    <form id="wizardForm">
+    <form id="wizardForm" onsubmit="return false;">
       
       <!-- STEP 1 -->
       <div class="step-content fade-in" id="step-1">
         <h2 data-i18n="h_identity">Setup & Sicurezza</h2>
         <p class="subtitle" data-i18n="sub_identity">Consensi, Chiave API e Verifica Identità.</p>
 
-        <div class="legal-box">
+        <div class="legal-box form-section">
             <div class="checkbox-group">
                 <input type="checkbox" id="chk_privacy" onchange="checkLegalGate()">
-                <label for="chk_privacy" class="checkbox-label" data-i18n="legal_privacy">Dichiaro di aver letto e accettato la <a href="https://trinai.it/compliance/privacy">Privacy Policy</a>.</label>
+                <label for="chk_privacy" class="checkbox-label" data-i18n="legal_privacy">Dichiaro di aver letto e accettato la <a href="#">Privacy Policy</a>.</label>
             </div>
             <div class="checkbox-group">
                 <input type="checkbox" id="chk_terms" onchange="checkLegalGate()">
-                <label for="chk_terms" class="checkbox-label" data-i18n="legal_terms">Accetto i <a href="https://trinai.it/compliance/policy">Termini e Condizioni</a>.</label>
+                <label for="chk_terms" class="checkbox-label" data-i18n="legal_terms">Accetto i <a href="#">Termini e Condizioni</a>.</label>
             </div>
             <div class="checkbox-group">
                 <input type="checkbox" id="chk_ai" onchange="checkLegalGate()">
@@ -69,21 +79,21 @@
             </div>
         </div>
 
-        <div class="api-key-card">
-            <div class="api-header">
-                <div class="api-title"><i class="fas fa-brain"></i> Gemini API Key</div>
-                <a href="https://aistudio.google.com/api-keys" target="_blank" class="btn-get-key" data-i18n="btn_get_key">Genera Gratis <i class="fas fa-external-link-alt"></i></a>
+        <div class="api-key-card form-section">
+            <div class="api-header" style="display:flex; justify-content:space-between; margin-bottom:10px;">
+                <div class="api-title" style="color:var(--primary); font-weight:bold;"><i class="fas fa-brain"></i> Gemini API Key</div>
+                <a href="https://aistudio.google.com/api-keys" target="_blank" class="btn btn-sm btn-secondary" style="text-decoration:none;" data-i18n="btn_get_key">Genera Gratis</a>
             </div>
             <input type="text" id="gemini_key" placeholder="Incolla qui: AIzaSy..." disabled required>
-            <div class="byok-note" data-i18n="byok_note">⚠️ BYOK: I dati rimangono sotto il tuo controllo.</div>
+            <div class="byok-note hint" data-i18n="byok_note">⚠️ BYOK: I dati rimangono sotto il tuo controllo.</div>
         </div>
 
         <div class="input-group">
           <label data-i18n="lbl_id_card">Documento d'Identità (Fronte)</label>
           <div class="upload-box" id="upload-box">
             <input type="file" id="id_document" accept="image/*,application/pdf">
-            <span class="upload-icon" id="upload-icon"><i class="fas fa-id-card"></i></span>
-            <span class="upload-text" id="upload-text" data-i18n="upload_lock">Accetta i termini per sbloccare</span>
+            <div class="upload-icon" id="upload-icon"><i class="fas fa-id-card"></i></div>
+            <div class="upload-text" id="upload-text" data-i18n="upload_lock">Accetta i termini per sbloccare</div>
           </div>
         </div>
 
@@ -96,7 +106,7 @@
         <div class="input-group"><label class="required" data-i18n="lbl_phone">Cellulare</label><input type="tel" id="phone" required></div>
 
         <div class="btn-container">
-          <button type="button" class="btn btn-primary" id="btn-step1" onclick="submitStep1()" disabled>
+          <button type="button" class="btn btn-primary btn-block" id="btn-step1" onclick="submitStep1()" disabled>
             <span data-i18n="btn_next">Avanti</span> <i class="fas fa-arrow-right"></i>
           </button>
         </div>
@@ -114,7 +124,7 @@
         </div>
         
         <div>
-            <div data-i18n="section_identity">IDENTITÀ OPERATIVA</div>
+            <div class="section-title" data-i18n="section_identity" style="margin-top:0;">IDENTITÀ OPERATIVA</div>
             <div class="input-group">
                 <label data-i18n="lbl_sector">Settore di Attività</label>
                 <select id="sector">
@@ -170,24 +180,31 @@
 
         <div class="pioneer-card">
             <div class="pioneer-badge" data-i18n="pioneer_badge">14 GIORNI GRATIS</div>
-            <div class="pioneer-title">SiteBoS Enterprise</div>
-            <p class="pioneer-desc" data-i18n="pioneer_desc">Accedi alla potenza completa dell'AI per la tua azienda. Nessun addebito oggi.</p>
-            <div><span class="pioneer-value">€ 5.000 / anno</span><span class="pioneer-price" data-i18n="pioneer_free">GRATIS ORA</span></div>
+            <div class="pioneer-title" style="font-size:18px; font-weight:bold; color:#fff; margin-bottom:5px;">SiteBoS Enterprise</div>
+            <p class="pioneer-desc" data-i18n="pioneer_desc" style="font-size:13px; color:rgba(255,255,255,0.7);">Accedi alla potenza completa dell'AI per la tua azienda. Nessun addebito oggi.</p>
+            <div style="margin-top:15px; display:flex; justify-content:space-between; align-items:center;">
+                <span class="pioneer-value" style="text-decoration:line-through; color:rgba(255,255,255,0.5);">€ 5.000 / anno</span>
+                <span class="pioneer-price" data-i18n="pioneer_free" style="color:#4cd964; font-weight:bold; font-size:20px;">GRATIS ORA</span>
+            </div>
         </div>
 
-        <div>
+        <div style="margin-top:20px;">
             <label data-i18n="lbl_payment_pref">Preferenza di pagamento futura:</label>
             <div class="payment-selector">
-                <div class="payment-option" onclick="selectPayment('stripe', this)"><i class="fab fa-stripe-s"></i> Carta</div>
+                <div class="payment-option selected" onclick="selectPayment('stripe', this)"><i class="fab fa-stripe-s"></i> Carta</div>
                 <div class="payment-option" onclick="selectPayment('paypal', this)"><i class="fab fa-paypal"></i> PayPal</div>
                 <div class="payment-option" onclick="selectPayment('wire', this)"><i class="fas fa-university"></i> <span data-i18n="pay_wire">Bonifico</span></div>
             </div>
-            <input type="hidden" id="payment_pref" value="">
+            <input type="hidden" id="payment_pref" value="stripe">
         </div>
 
         <div class="btn-container">
           <button type="button" class="btn btn-secondary" onclick="goToStep(2)"><i class="fas fa-arrow-left"></i> <span data-i18n="btn_back">Indietro</span></button>
-          <button type="submit" class="btn btn-primary" id="submitBtn"><i class="fas fa-rocket"></i> <span data-i18n="btn_activate">ATTIVA PROVA ORA</span></button>
+          
+          <!-- QUI È LA MODIFICA: type="button" che chiama submitFinalForm() -->
+          <button type="button" class="btn btn-success" id="submitBtn" onclick="submitFinalForm()">
+            <i class="fas fa-rocket"></i> <span data-i18n="btn_activate">ATTIVA PROVA ORA</span>
+          </button>
         </div>
       </div>
 
@@ -195,7 +212,7 @@
   </div>
 
   <script>
-    const WEBHOOK_URL = "https://trinai.api.workflow.dcmake.it/webhook/83acc670-15ae-4da0-ae0e-3587c85bd5f4";
+    const WEBHOOK_URL = "https://trinai.api.workflow.dcmake.it/webhook/ef4aece4-9ec0-4026-a7a7-328562bcbdf6";
     const tg = window.Telegram.WebApp; tg.ready(); tg.expand();
 
     // I18N
@@ -204,7 +221,7 @@
         access_denied_title:"Accesso Negato", access_denied_desc:"Accesso consentito solo via Bot.", open_bot:"Apri Bot",
         step_identity:"Start", step_company:"Azienda", step_plan:"Promo",
         h_identity:"Setup & Sicurezza", sub_identity:"Consensi, Chiave API e KYC.",
-        legal_privacy:"Accetto <a href='#'>Privacy Policy</a>.", legal_terms:"Accetto <a href='#'>Termini</a>.", legal_ai:"Autorizzo analisi AI.",
+        legal_privacy:"Accetto Privacy", legal_terms:"Accetto Termini", legal_ai:"Autorizzo analisi AI",
         btn_get_key:"Genera Gratis", byok_note:"⚠️ BYOK: Dati sotto il tuo controllo.",
         lbl_id_card:"Documento (Fronte)", upload_lock:"Accetta termini per sbloccare", upload_hint:"Carica Foto/PDF",
         lbl_name:"Nome", lbl_surname:"Cognome", lbl_fiscal:"Codice Fiscale", lbl_email:"Email (Admin)", lbl_phone:"Cellulare",
@@ -212,14 +229,14 @@
         h_company:"Profilo Aziendale", sub_company:"Configurazione operativa e fiscale.",
         lbl_company_name:"Ragione Sociale", lbl_vat:"P.IVA", lbl_sdi:"SDI / PEC", lbl_address:"Sede Legale", lbl_site:"Sito Web",
         section_identity: "IDENTITÀ OPERATIVA", lbl_sector: "Settore", lbl_what_we_do: "Cosa fate?", lbl_goal: "Obiettivo AI",
-        h_plan:"Offerta Pionieri", sub_plan:"Attiva ora, decidi dopo.", pioneer_badge:"14 GIORNI GRATIS", pioneer_desc:"Accesso completo Enterprise.", pioneer_free:"GRATIS ORA",
-        lbl_payment_pref: "Se rimarrai, come preferirai pagare?", pay_wire: "Bonifico", btn_activate: "ATTIVA PROVA ORA"
+        h_plan:"Offerta Pionieri", sub_plan:"Attiva ora, decidi dopo.", pioneer_badge:"14 GIORNI GRATIS", pioneer_desc:"Accesso completo Enterprise.", pioneer_free:"GRATIS",
+        lbl_payment_pref: "Metodo pagamento preferito:", pay_wire: "Bonifico", btn_activate: "ATTIVA PROVA ORA"
       },
       en: {
         access_denied_title:"Access Denied", access_denied_desc:"Bot access only.", open_bot:"Open Bot",
         step_identity:"Start", step_company:"Company", step_plan:"Promo",
         h_identity:"Setup & Security", sub_identity:"Consents, API Key & KYC.",
-        legal_privacy:"Accept <a href='#'>Privacy</a>.", legal_terms:"Accept <a href='#'>Terms</a>.", legal_ai:"Auth AI check.",
+        legal_privacy:"Accept Privacy", legal_terms:"Accept Terms", legal_ai:"Auth AI check",
         btn_get_key:"Get Key Free", byok_note:"⚠️ BYOK: You control data.",
         lbl_id_card:"ID Document", upload_lock:"Accept terms to unlock", upload_hint:"Upload Photo/PDF",
         lbl_name:"Name", lbl_surname:"Surname", lbl_fiscal:"Tax ID", lbl_email:"Email", lbl_phone:"Mobile",
@@ -228,67 +245,7 @@
         lbl_company_name:"Company Name", lbl_vat:"VAT ID", lbl_sdi:"Tax Code", lbl_address:"Address", lbl_site:"Website",
         section_identity: "OPERATIONAL IDENTITY", lbl_sector: "Sector", lbl_what_we_do: "What do you do?", lbl_goal: "AI Goal",
         h_plan:"Pioneer Offer", sub_plan:"Activate now, decide later.", pioneer_badge:"14 DAYS FREE", pioneer_desc:"Full Enterprise Access.", pioneer_free:"FREE NOW",
-        lbl_payment_pref: "Future payment preference:", pay_wire: "Wire Transfer", btn_activate: "START TRIAL NOW"
-      },
-      fr: {
-        access_denied_title:"Accès Refusé", access_denied_desc:"Accès via Bot uniquement.", open_bot:"Ouvrir Bot",
-        step_identity:"Début", step_company:"Entreprise", step_plan:"Promo",
-        h_identity:"Config & Sécurité", sub_identity:"Consentements, Clé API & KYC.",
-        legal_privacy:"Accepter <a href='#'>Confidentialité</a>.", legal_terms:"Accepter <a href='#'>Conditions</a>.", legal_ai:"Auth analyse IA.",
-        btn_get_key:"Clé Gratuite", byok_note:"⚠️ BYOK: Vous contrôlez les données.",
-        lbl_id_card:"Document (Recto)", upload_lock:"Accepter termes pour débloquer", upload_hint:"Charger Photo/PDF",
-        lbl_name:"Prénom", lbl_surname:"Nom", lbl_fiscal:"Code Fiscal", lbl_email:"Email (Admin)", lbl_phone:"Mobile",
-        btn_next:"Suivant", btn_back:"Retour",
-        h_company:"Profil Entreprise", sub_company:"Config opérationnelle & fiscale.",
-        lbl_company_name:"Raison Sociale", lbl_vat:"TVA", lbl_sdi:"Code TVA", lbl_address:"Siège Social", lbl_site:"Site Web",
-        section_identity: "IDENTITÉ OPÉRATIONNELLE", lbl_sector: "Secteur", lbl_what_we_do: "Que faites-vous ?", lbl_goal: "Objectif IA",
-        h_plan:"Offre Pionniers", sub_plan:"Activez maintenant, décidez plus tard.", pioneer_badge:"14 JOURS GRATUITS", pioneer_desc:"Accès Enterprise Complet.", pioneer_free:"GRATUIT",
-        lbl_payment_pref: "Préférence de paiement future :", pay_wire: "Virement", btn_activate: "LANCER L'ESSAI"
-      },
-      de: {
-        access_denied_title:"Zugriff verweigert", access_denied_desc:"Nur über Bot zugänglich.", open_bot:"Bot öffnen",
-        step_identity:"Start", step_company:"Firma", step_plan:"Promo",
-        h_identity:"Setup & Sicherheit", sub_identity:"Zustimmungen, API Key & KYC.",
-        legal_privacy:"Akzeptiere <a href='#'>Datenschutz</a>.", legal_terms:"Akzeptiere <a href='#'>AGB</a>.", legal_ai:"KI-Analyse erlauben.",
-        btn_get_key:"Gratis Key", byok_note:"⚠️ BYOK: Ihre Datenkontrolle.",
-        lbl_id_card:"Ausweis (Vorderseite)", upload_lock:"AGB akzeptieren zum Freischalten", upload_hint:"Foto/PDF hochladen",
-        lbl_name:"Vorname", lbl_surname:"Nachname", lbl_fiscal:"Steuernummer", lbl_email:"E-Mail (Admin)", lbl_phone:"Mobil",
-        btn_next:"Weiter", btn_back:"Zurück",
-        h_company:"Firmenprofil", sub_company:"Operative & Steuerliche Konfiguration.",
-        lbl_company_name:"Firmenname", lbl_vat:"USt-IdNr.", lbl_sdi:"Steuercode", lbl_address:"Firmensitz", lbl_site:"Webseite",
-        section_identity: "OPERATIVE IDENTITÄT", lbl_sector: "Branche", lbl_what_we_do: "Was machen Sie?", lbl_goal: "KI-Ziel",
-        h_plan:"Pionier-Angebot", sub_plan:"Jetzt aktivieren, später entscheiden.", pioneer_badge:"14 TAGE GRATIS", pioneer_desc:"Voller Enterprise-Zugriff.", pioneer_free:"JETZT GRATIS",
-        lbl_payment_pref: "Zukünftige Zahlungsart:", pay_wire: "Überweisung", btn_activate: "TEST STARTEN"
-      },
-      es: {
-        access_denied_title:"Acceso Denegado", access_denied_desc:"Acceso solo vía Bot.", open_bot:"Abrir Bot",
-        step_identity:"Inicio", step_company:"Empresa", step_plan:"Promo",
-        h_identity:"Config y Seguridad", sub_identity:"Consentimientos, Clave API y KYC.",
-        legal_privacy:"Acepto <a href='#'>Privacidad</a>.", legal_terms:"Acepto <a href='#'>Términos</a>.", legal_ai:"Autorizo análisis IA.",
-        btn_get_key:"Clave Gratis", byok_note:"⚠️ BYOK: Tú controlas los datos.",
-        lbl_id_card:"Documento (Frente)", upload_lock:"Aceptar términos para desbloquear", upload_hint:"Subir Foto/PDF",
-        lbl_name:"Nombre", lbl_surname:"Apellido", lbl_fiscal:"NIF/NIE", lbl_email:"Email (Admin)", lbl_phone:"Móvil",
-        btn_next:"Siguiente", btn_back:"Atrás",
-        h_company:"Perfil de Empresa", sub_company:"Configuración operativa y fiscal.",
-        lbl_company_name:"Razón Social", lbl_vat:"IVA", lbl_sdi:"Cód. Fiscal", lbl_address:"Sede Legal", lbl_site:"Sitio Web",
-        section_identity: "IDENTIDAD OPERATIVA", lbl_sector: "Sector", lbl_what_we_do: "¿Qué hacen?", lbl_goal: "Objetivo IA",
-        h_plan:"Oferta Pioneros", sub_plan:"Activa ahora, decide luego.", pioneer_badge:"14 DÍAS GRATIS", pioneer_desc:"Acceso Enterprise Completo.", pioneer_free:"GRATIS AHORA",
-        lbl_payment_pref: "Preferencia de pago futura:", pay_wire: "Transferencia", btn_activate: "INICIAR PRUEBA"
-      },
-      pt: {
-        access_denied_title:"Acesso Negado", access_denied_desc:"Acesso apenas via Bot.", open_bot:"Abrir Bot",
-        step_identity:"Início", step_company:"Empresa", step_plan:"Promo",
-        h_identity:"Config e Segurança", sub_identity:"Consentimentos, Chave API e KYC.",
-        legal_privacy:"Aceito <a href='#'>Privacidade</a>.", legal_terms:"Aceito <a href='#'>Termos</a>.", legal_ai:"Autorizo análise IA.",
-        btn_get_key:"Chave Grátis", byok_note:"⚠️ BYOK: Você controla os dados.",
-        lbl_id_card:"Documento (Frente)", upload_lock:"Aceitar termos para desbloquear", upload_hint:"Carregar Foto/PDF",
-        lbl_name:"Nome", lbl_surname:"Sobrenome", lbl_fiscal:"NIF", lbl_email:"Email (Admin)", lbl_phone:"Celular",
-        btn_next:"Próximo", btn_back:"Voltar",
-        h_company:"Perfil da Empresa", sub_company:"Configuração operacional e fiscal.",
-        lbl_company_name:"Razão Social", lbl_vat:"IVA", lbl_sdi:"Cód. Fiscal", lbl_address:"Sede Legal", lbl_site:"Site Web",
-        section_identity: "IDENTIDADE OPERACIONAL", lbl_sector: "Setor", lbl_what_we_do: "O que fazem?", lbl_goal: "Objetivo IA",
-        h_plan:"Oferta Pioneiros", sub_plan:"Ative agora, decida depois.", pioneer_badge:"14 DIAS GRÁTIS", pioneer_desc:"Acesso Enterprise Completo.", pioneer_free:"GRÁTIS AGORA",
-        lbl_payment_pref: "Preferência de pagamento futura:", pay_wire: "Transferência", btn_activate: "INICIAR TESTE"
+        lbl_payment_pref: "Preferred payment method:", pay_wire: "Wire Transfer", btn_activate: "START TRIAL NOW"
       }
     };
 
@@ -314,10 +271,8 @@
         dom.app.classList.remove('hidden'); 
         document.getElementById('loader').style.display='none';
         const user = tg.initDataUnsafe?.user;
-        if(user && user.language_code && i18n[user.language_code]) { 
-            document.getElementById('lang-selector').value = user.language_code; 
-            changeLanguage(user.language_code); 
-        }
+        const l = urlParams.get('lang') || user?.language_code;
+        if(l && i18n[l]) { document.getElementById('lang-selector').value = l; changeLanguage(l); }
     }
 
     function changeLanguage(lang) {
@@ -394,13 +349,17 @@
         document.getElementById('payment_pref').value = type;
     }
 
-    document.getElementById('wizardForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const btn = document.getElementById('submitBtn'); btn.disabled = true; btn.innerHTML = '<i class="fas fa-rocket fa-spin"></i> Activating...';
+    // FUNZIONE DI SUBMIT MANUALE CHE CHIAMA IL WEBHOOK
+    window.submitFinalForm = async function() {
+      const btn = document.getElementById('submitBtn'); 
+      btn.disabled = true; btn.innerHTML = '<i class="fas fa-rocket fa-spin"></i> Activating...';
       const addr = `${document.getElementById('addr_route').value} ${document.getElementById('addr_num').value}, ${document.getElementById('addr_zip').value} ${document.getElementById('addr_city').value} (${document.getElementById('addr_prov').value})`;
       
       const payload = {
-        action: 'payment_checkout', user_id: GLOBAL_CHAT_ID, chat_id: GLOBAL_CHAT_ID, thread_id: GLOBAL_THREAD_ID,
+        action: 'payment_checkout', 
+        user_id: GLOBAL_CHAT_ID, 
+        chat_id: GLOBAL_CHAT_ID, 
+        thread_id: GLOBAL_THREAD_ID,
         owner_data: {
             gemini_key: dom.geminiKey.value, name: dom.fName.value, surname: dom.fSurname.value, fiscal_code: dom.fFiscal.value,
             email: document.getElementById('email').value, phone: document.getElementById('phone').value,
@@ -408,7 +367,7 @@
             sdi_pec: document.getElementById('sdi_pec').value, indirizzo: addr, site: document.getElementById('site').value,
             linkedin_page: document.getElementById('linkedin_page').value, facebook_page: document.getElementById('facebook_page').value,
             sector: document.getElementById('sector').value, what_we_do: document.getElementById('what_we_do').value, main_goal: document.getElementById('main_goal').value,
-            payment_preference: document.getElementById('payment_pref').value || 'not_specified',
+            payment_preference: document.getElementById('payment_pref').value || 'stripe',
             plan: 'pioneer_free_trial', terms_accepted: true,
             lenguage: currentLang
         }
@@ -417,10 +376,21 @@
       try {
         const res = await fetch(WEBHOOK_URL, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload)});
         const data = await res.json();
-        if(data.checkout_url) window.location.href = data.checkout_url; 
-        else { btn.style.background = 'var(--success)'; btn.innerHTML = "✅ ATTIVATO!"; setTimeout(() => tg.close(), 1500); }
-      } catch(err) { alert("Conn Error."); btn.disabled = false; btn.innerHTML = '<i class="fas fa-rocket"></i> ATTIVA PROVA ORA'; }
-    });
+        
+        if(data.checkout_url) {
+            window.location.href = data.checkout_url; 
+        } else { 
+            btn.className = 'btn btn-success btn-block'; 
+            btn.innerHTML = "✅ ATTIVATO!"; 
+            tg.HapticFeedback.notificationOccurred('success');
+            setTimeout(() => tg.close(), 1500); 
+        }
+      } catch(err) { 
+          alert("Conn Error."); 
+          btn.disabled = false; 
+          btn.innerHTML = '<i class="fas fa-rocket"></i> ATTIVA PROVA ORA'; 
+      }
+    };
 
     const getFileData = file => new Promise((res, rej) => {
         const r = new FileReader(); r.readAsDataURL(file);
