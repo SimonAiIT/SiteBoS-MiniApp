@@ -11,7 +11,18 @@
   
   <link rel="stylesheet" href="styles.css">
   <style>
-    /* FIX VISIVO BARRA PROGRESSO (Sovrascrive styles.css) */
+    /* FIX CRITICO UPLOAD: Assicura che l'input file copra tutto il box e sia cliccabile */
+    .upload-box { position: relative; overflow: hidden; cursor: pointer; }
+    .upload-box input[type="file"] { 
+        position: absolute; 
+        top: 0; left: 0; 
+        width: 100%; height: 100%; 
+        opacity: 0; 
+        z-index: 10; 
+        cursor: pointer; 
+    }
+    
+    /* FIX VISIVO BARRA */
     .progress-bar { display: flex; justify-content: space-between; align-items: flex-start; position: relative; margin: 0 10px 40px 10px; padding: 0; }
     .progress-line { position: absolute; top: 15px; left: 0; width: 100%; height: 2px; background: rgba(255, 255, 255, 0.2); z-index: 0; }
     .progress-fill { position: absolute; top: 15px; left: 0; height: 2px; background: var(--success); z-index: 0; transition: width 0.3s ease; width: 0%; }
@@ -67,11 +78,11 @@
         <div class="legal-box form-section">
             <div class="checkbox-group">
                 <input type="checkbox" id="chk_privacy" onchange="checkLegalGate()">
-                <label for="chk_privacy" class="checkbox-label" data-i18n="legal_privacy">Dichiaro di aver letto e accettato la <a href="#">Privacy Policy</a>.</label>
+                <label for="chk_privacy" class="checkbox-label" data-i18n="legal_privacy">Dichiaro di aver letto e accettato la Privacy Policy.</label>
             </div>
             <div class="checkbox-group">
                 <input type="checkbox" id="chk_terms" onchange="checkLegalGate()">
-                <label for="chk_terms" class="checkbox-label" data-i18n="legal_terms">Accetto i <a href="#">Termini e Condizioni</a>.</label>
+                <label for="chk_terms" class="checkbox-label" data-i18n="legal_terms">Accetto i Termini e Condizioni.</label>
             </div>
             <div class="checkbox-group">
                 <input type="checkbox" id="chk_ai" onchange="checkLegalGate()">
@@ -91,6 +102,7 @@
         <div class="input-group">
           <label data-i18n="lbl_id_card">Documento d'Identità (Fronte)</label>
           <div class="upload-box" id="upload-box">
+            <!-- REMOVED DISABLED ATTRIBUTE TO ENSURE CLICKABILITY -->
             <input type="file" id="id_document" accept="image/*,application/pdf">
             <div class="upload-icon" id="upload-icon"><i class="fas fa-id-card"></i></div>
             <div class="upload-text" id="upload-text" data-i18n="upload_lock">Accetta i termini per sbloccare</div>
@@ -201,7 +213,7 @@
         <div class="btn-container">
           <button type="button" class="btn btn-secondary" onclick="goToStep(2)"><i class="fas fa-arrow-left"></i> <span data-i18n="btn_back">Indietro</span></button>
           
-          <!-- QUI È LA MODIFICA: type="button" che chiama submitFinalForm() -->
+          <!-- BOTTONE FINALE CHE CHIAMA LA FUNZIONE JS -->
           <button type="button" class="btn btn-success" id="submitBtn" onclick="submitFinalForm()">
             <i class="fas fa-rocket"></i> <span data-i18n="btn_activate">ATTIVA PROVA ORA</span>
           </button>
@@ -229,8 +241,8 @@
         h_company:"Profilo Aziendale", sub_company:"Configurazione operativa e fiscale.",
         lbl_company_name:"Ragione Sociale", lbl_vat:"P.IVA", lbl_sdi:"SDI / PEC", lbl_address:"Sede Legale", lbl_site:"Sito Web",
         section_identity: "IDENTITÀ OPERATIVA", lbl_sector: "Settore", lbl_what_we_do: "Cosa fate?", lbl_goal: "Obiettivo AI",
-        h_plan:"Offerta Pionieri", sub_plan:"Attiva ora, decidi dopo.", pioneer_badge:"14 GIORNI GRATIS", pioneer_desc:"Accesso completo Enterprise.", pioneer_free:"GRATIS",
-        lbl_payment_pref: "Metodo pagamento preferito:", pay_wire: "Bonifico", btn_activate: "ATTIVA PROVA ORA"
+        h_plan:"Offerta Pionieri", sub_plan:"Attiva ora, decidi dopo.", pioneer_badge:"14 GIORNI GRATIS", pioneer_desc:"Accesso completo Enterprise.", pioneer_free:"GRATIS ORA",
+        lbl_payment_pref: "Preferenza di pagamento futura:", pay_wire: "Bonifico", btn_activate: "ATTIVA PROVA ORA"
       },
       en: {
         access_denied_title:"Access Denied", access_denied_desc:"Bot access only.", open_bot:"Open Bot",
@@ -245,7 +257,67 @@
         lbl_company_name:"Company Name", lbl_vat:"VAT ID", lbl_sdi:"Tax Code", lbl_address:"Address", lbl_site:"Website",
         section_identity: "OPERATIONAL IDENTITY", lbl_sector: "Sector", lbl_what_we_do: "What do you do?", lbl_goal: "AI Goal",
         h_plan:"Pioneer Offer", sub_plan:"Activate now, decide later.", pioneer_badge:"14 DAYS FREE", pioneer_desc:"Full Enterprise Access.", pioneer_free:"FREE NOW",
-        lbl_payment_pref: "Preferred payment method:", pay_wire: "Wire Transfer", btn_activate: "START TRIAL NOW"
+        lbl_payment_pref: "Future payment preference:", pay_wire: "Wire Transfer", btn_activate: "START TRIAL NOW"
+      },
+      fr: {
+        access_denied_title:"Accès Refusé", access_denied_desc:"Accès via Bot uniquement.", open_bot:"Ouvrir Bot",
+        step_identity:"Début", step_company:"Entreprise", step_plan:"Promo",
+        h_identity:"Config & Sécurité", sub_identity:"Consentements, Clé API & KYC.",
+        legal_privacy:"Accepter Confidentialité", legal_terms:"Accepter Conditions", legal_ai:"Auth analyse IA",
+        btn_get_key:"Clé Gratuite", byok_note:"⚠️ BYOK: Vous contrôlez les données.",
+        lbl_id_card:"Document (Recto)", upload_lock:"Accepter termes pour débloquer", upload_hint:"Charger Photo/PDF",
+        lbl_name:"Prénom", lbl_surname:"Nom", lbl_fiscal:"Code Fiscal", lbl_email:"Email (Admin)", lbl_phone:"Mobile",
+        btn_next:"Suivant", btn_back:"Retour",
+        h_company:"Profil Entreprise", sub_company:"Config opérationnelle & fiscale.",
+        lbl_company_name:"Raison Sociale", lbl_vat:"TVA", lbl_sdi:"Code TVA", lbl_address:"Siège Social", lbl_site:"Site Web",
+        section_identity: "IDENTITÉ OPÉRATIONNELLE", lbl_sector: "Secteur", lbl_what_we_do: "Que faites-vous ?", lbl_goal: "Objectif IA",
+        h_plan:"Offre Pionniers", sub_plan:"Activez maintenant, décidez plus tard.", pioneer_badge:"14 JOURS GRATUITS", pioneer_desc:"Accès Enterprise Complet.", pioneer_free:"GRATUIT",
+        lbl_payment_pref: "Préférence de paiement future :", pay_wire: "Virement", btn_activate: "LANCER L'ESSAI"
+      },
+      de: {
+        access_denied_title:"Zugriff verweigert", access_denied_desc:"Nur über Bot zugänglich.", open_bot:"Bot öffnen",
+        step_identity:"Start", step_company:"Firma", step_plan:"Promo",
+        h_identity:"Setup & Sicherheit", sub_identity:"Zustimmungen, API Key & KYC.",
+        legal_privacy:"Akzeptiere Datenschutz", legal_terms:"Akzeptiere AGB", legal_ai:"KI-Analyse erlauben",
+        btn_get_key:"Gratis Key", byok_note:"⚠️ BYOK: Ihre Datenkontrolle.",
+        lbl_id_card:"Ausweis (Vorderseite)", upload_lock:"AGB akzeptieren zum Freischalten", upload_hint:"Foto/PDF hochladen",
+        lbl_name:"Vorname", lbl_surname:"Nachname", lbl_fiscal:"Steuernummer", lbl_email:"E-Mail (Admin)", lbl_phone:"Mobil",
+        btn_next:"Weiter", btn_back:"Zurück",
+        h_company:"Firmenprofil", sub_company:"Operative & Steuerliche Konfiguration.",
+        lbl_company_name:"Firmenname", lbl_vat:"USt-IdNr.", lbl_sdi:"Steuercode", lbl_address:"Firmensitz", lbl_site:"Webseite",
+        section_identity: "OPERATIVE IDENTITÄT", lbl_sector: "Branche", lbl_what_we_do: "Was machen Sie?", lbl_goal: "KI-Ziel",
+        h_plan:"Pionier-Angebot", sub_plan:"Jetzt aktivieren, später entscheiden.", pioneer_badge:"14 TAGE GRATIS", pioneer_desc:"Voller Enterprise-Zugriff.", pioneer_free:"JETZT GRATIS",
+        lbl_payment_pref: "Zukünftige Zahlungsart:", pay_wire: "Überweisung", btn_activate: "TEST STARTEN"
+      },
+      es: {
+        access_denied_title:"Acceso Denegado", access_denied_desc:"Acceso solo vía Bot.", open_bot:"Abrir Bot",
+        step_identity:"Inicio", step_company:"Empresa", step_plan:"Promo",
+        h_identity:"Config y Seguridad", sub_identity:"Consentimientos, Clave API y KYC.",
+        legal_privacy:"Acepto Privacidad", legal_terms:"Acepto Términos", legal_ai:"Autorizo análisis IA",
+        btn_get_key:"Clave Gratis", byok_note:"⚠️ BYOK: Tú controlas los datos.",
+        lbl_id_card:"Documento (Frente)", upload_lock:"Aceptar términos para desbloquear", upload_hint:"Subir Foto/PDF",
+        lbl_name:"Nombre", lbl_surname:"Apellido", lbl_fiscal:"NIF/NIE", lbl_email:"Email (Admin)", lbl_phone:"Móvil",
+        btn_next:"Siguiente", btn_back:"Atrás",
+        h_company:"Perfil de Empresa", sub_company:"Configuración operativa y fiscal.",
+        lbl_company_name:"Razón Social", lbl_vat:"IVA", lbl_sdi:"Cód. Fiscal", lbl_address:"Sede Legal", lbl_site:"Sitio Web",
+        section_identity: "IDENTIDAD OPERATIVA", lbl_sector: "Sector", lbl_what_we_do: "¿Qué hacen?", lbl_goal: "Objetivo IA",
+        h_plan:"Oferta Pioneros", sub_plan:"Activa ahora, decide luego.", pioneer_badge:"14 DÍAS GRATIS", pioneer_desc:"Acceso Enterprise Completo.", pioneer_free:"GRATIS AHORA",
+        lbl_payment_pref: "Preferencia de pago futura:", pay_wire: "Transferencia", btn_activate: "INICIAR PRUEBA"
+      },
+      pt: {
+        access_denied_title:"Acesso Negado", access_denied_desc:"Acesso apenas via Bot.", open_bot:"Abrir Bot",
+        step_identity:"Início", step_company:"Empresa", step_plan:"Promo",
+        h_identity:"Config e Segurança", sub_identity:"Consentimentos, Chave API e KYC.",
+        legal_privacy:"Aceito Privacidade", legal_terms:"Aceito Termos", legal_ai:"Autorizo análise IA",
+        btn_get_key:"Chave Grátis", byok_note:"⚠️ BYOK: Você controla os dados.",
+        lbl_id_card:"Documento (Frente)", upload_lock:"Aceitar termos para desbloquear", upload_hint:"Carregar Foto/PDF",
+        lbl_name:"Nome", lbl_surname:"Sobrenome", lbl_fiscal:"NIF", lbl_email:"Email (Admin)", lbl_phone:"Celular",
+        btn_next:"Próximo", btn_back:"Voltar",
+        h_company:"Perfil da Empresa", sub_company:"Configuração operacional e fiscal.",
+        lbl_company_name:"Razão Social", lbl_vat:"IVA", lbl_sdi:"Cód. Fiscal", lbl_address:"Sede Legal", lbl_site:"Site Web",
+        section_identity: "IDENTIDADE OPERACIONAL", lbl_sector: "Setor", lbl_what_we_do: "O que fazem?", lbl_goal: "Objetivo IA",
+        h_plan:"Oferta Pioneiros", sub_plan:"Ative agora, decida depois.", pioneer_badge:"14 DIAS GRÁTIS", pioneer_desc:"Acesso Enterprise Completo.", pioneer_free:"GRÁTIS AGORA",
+        lbl_payment_pref: "Preferência de pagamento futura:", pay_wire: "Transferência", btn_activate: "INICIAR TESTE"
       }
     };
 
@@ -284,15 +356,26 @@
         const ok = dom.chkPrivacy.checked && dom.chkTerms.checked && dom.chkAi.checked;
         dom.fileBox.classList.toggle('enabled', ok);
         dom.geminiKey.disabled = !ok;
+        // Fix: abilitiamo input file se ok, ma lo controlliamo via JS
         dom.fileText.innerText = ok ? (i18n[currentLang]||i18n.it).upload_hint : (i18n[currentLang]||i18n.it).upload_lock;
         dom.btnStep1.disabled = !ok;
     }
 
+    // LISTENER CHANGE PER OCR (RESTORED)
     dom.fileInput.addEventListener('change', async (e) => {
         if(e.target.files.length > 0) {
             const file = e.target.files[0];
             const key = dom.geminiKey.value;
+            
+            // Check manuale se i termini sono accettati
+            if(!dom.chkPrivacy.checked) {
+                alert("Accetta i termini prima di caricare.");
+                e.target.value = ""; // Reset
+                return;
+            }
+
             if(!key) { alert("Inserisci Gemini Key prima dell'upload"); return; }
+            
             dom.fileBox.classList.add('analyzing'); dom.fileIcon.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i>';
             dom.fileText.innerText = "AI Analysis..."; dom.btnStep1.disabled = true; 
             try {
@@ -349,7 +432,7 @@
         document.getElementById('payment_pref').value = type;
     }
 
-    // FUNZIONE DI SUBMIT MANUALE CHE CHIAMA IL WEBHOOK
+    // FUNCTION FOR FINAL BUTTON (BYPASSES FORM SUBMIT)
     window.submitFinalForm = async function() {
       const btn = document.getElementById('submitBtn'); 
       btn.disabled = true; btn.innerHTML = '<i class="fas fa-rocket fa-spin"></i> Activating...';
@@ -367,7 +450,7 @@
             sdi_pec: document.getElementById('sdi_pec').value, indirizzo: addr, site: document.getElementById('site').value,
             linkedin_page: document.getElementById('linkedin_page').value, facebook_page: document.getElementById('facebook_page').value,
             sector: document.getElementById('sector').value, what_we_do: document.getElementById('what_we_do').value, main_goal: document.getElementById('main_goal').value,
-            payment_preference: document.getElementById('payment_pref').value || 'stripe',
+            payment_preference: document.getElementById('payment_pref').value || 'not_specified',
             plan: 'pioneer_free_trial', terms_accepted: true,
             lenguage: currentLang
         }
@@ -376,20 +459,9 @@
       try {
         const res = await fetch(WEBHOOK_URL, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload)});
         const data = await res.json();
-        
-        if(data.checkout_url) {
-            window.location.href = data.checkout_url; 
-        } else { 
-            btn.className = 'btn btn-success btn-block'; 
-            btn.innerHTML = "✅ ATTIVATO!"; 
-            tg.HapticFeedback.notificationOccurred('success');
-            setTimeout(() => tg.close(), 1500); 
-        }
-      } catch(err) { 
-          alert("Conn Error."); 
-          btn.disabled = false; 
-          btn.innerHTML = '<i class="fas fa-rocket"></i> ATTIVA PROVA ORA'; 
-      }
+        if(data.checkout_url) window.location.href = data.checkout_url; 
+        else { btn.className = 'btn btn-success btn-block'; btn.innerHTML = "✅ ATTIVATO!"; setTimeout(() => tg.close(), 1500); }
+      } catch(err) { alert("Conn Error."); btn.disabled = false; btn.innerHTML = '<i class="fas fa-rocket"></i> ATTIVA PROVA ORA'; }
     };
 
     const getFileData = file => new Promise((res, rej) => {
