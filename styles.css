@@ -273,3 +273,182 @@ tr:hover { background: rgba(255, 255, 255, 0.03); }
   .btn { width: 100%; }
   .stage-header, .step-header { flex-wrap: wrap; gap: 10px; }
 }
+
+/* ===========================
+   EDIT BLUEPRINT – LAYOUT CLEAN
+   =========================== */
+
+/* Stage container più “card” */
+.stage-card {
+  background: rgba(0, 0, 0, 0.22);
+  border-radius: 18px;
+  border: 1px solid rgba(255,255,255,0.18);
+  padding: 18px 18px 14px;
+  margin-bottom: 20px;
+}
+
+/* Header di stage più compatto */
+.stage-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 14px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(255,255,255,0.18);
+}
+
+/* Singolo step come card pulita */
+.step-item {
+  background: rgba(0, 0, 0, 0.26);
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,0.14);
+  padding: 12px 14px;
+  margin-bottom: 10px;
+}
+
+/* Header step: tre colonne (handle / contenuto / azioni) */
+.step-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+/* Handle allineato in alto come screenshot 2 */
+.step-header .drag-handle {
+  margin-top: 4px;
+  opacity: 0.6;
+}
+
+/* Colonna centrale (ID, titolo, descrizione) */
+.step-header > div:nth-child(2) {
+  flex: 1;
+  padding-right: 10px !important;
+}
+
+/* ID step come “pill” */
+.step-id {
+  background: rgba(255,255,255,0.12);
+  color: #fff;
+  border-radius: 999px;
+  padding: 3px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  display: inline-block;
+  margin-bottom: 6px;
+}
+
+/* Titolo step */
+.step-name-input {
+  font-size: 15px;
+  font-weight: 600;
+  border: none;
+  background: transparent;
+  color: #fff;
+  padding: 2px 0;
+}
+.step-name-input:focus {
+  outline: none;
+  border-bottom: 1px solid rgba(255,255,255,0.4);
+}
+
+/* Descrizione come textarea “card” */
+.step-header textarea {
+  width: 100% !important;
+  background: rgba(0,0,0,0.35) !important;
+  border-radius: 10px !important;
+  border: 1px solid rgba(255,255,255,0.15) !important;
+  padding: 10px 12px !important;
+  min-height: 70px !important;
+  font-size: 13px !important;
+  line-height: 1.4 !important;
+  color: var(--text-secondary) !important;
+}
+
+/* Riga meta tempo più leggibile */
+.step-meta {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: 8px;
+}
+.step-meta .meta-item input[type="number"] {
+  width: 64px !important;
+  background: rgba(0,0,0,0.45) !important;
+  border-radius: 999px !important;
+  border: 1px solid rgba(255,255,255,0.18) !important;
+  padding: 4px 8px !important;
+  text-align: center !important;
+}
+
+/* Colonna destra con icone allineate */
+.step-header > div:last-child {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: center;
+}
+
+/* Icon buttons in stile UI pulita */
+.btn-icon {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 18px;
+  padding: 6px;
+  border-radius: 999px;
+  color: var(--text-secondary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  transition: background 0.2s, color 0.2s, transform 0.1s;
+}
+.btn-icon:hover {
+  background: rgba(255,255,255,0.12);
+  color: #fff;
+  transform: translateY(-1px);
+}
+.btn-icon.btn-delete {
+  color: var(--error-color);
+}
+.btn-icon.btn-delete:hover {
+  background: rgba(255,107,107,0.18);
+}
+
+/* Area dettagli (📋) come sottocarta ordinata */
+.collapsible-content {
+  display: none;
+  margin-top: 8px;
+  padding: 12px 12px 10px;
+  border-radius: 12px;
+  background: rgba(0,0,0,0.30);
+  border: 1px solid rgba(255,255,255,0.16);
+}
+.collapsible-content.open {
+  display: block;
+}
+
+/* Checkbox “logistics flags” più allineati */
+.flag-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.flag-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  .stage-card { padding: 14px 12px; }
+  .step-item { padding: 10px 10px; }
+  .step-header { align-items: stretch; }
+}
