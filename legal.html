@@ -169,13 +169,14 @@
       </div>
     </div>
 
-    <div class="button-container">
-      <button onclick="tg.close()" class="btn btn-primary btn-block" data-i18n="btn_close">Chiudi / Close</button>
+<div class="button-container">
+      <button id="btnClose" class="btn btn-primary btn-block" data-i18n="btn_close">Chiudi / Close</button>
     </div>
 
-  </div>
+  </div> <!-- Chiude il container -->
 
-  <script>
+<script>
+    // Inizializzazione Telegram
     const tg = window.Telegram.WebApp;
     tg.ready();
     tg.expand();
@@ -197,7 +198,7 @@
     // Detect Language
     const urlParams = new URLSearchParams(window.location.search);
     const langParam = urlParams.get('lang') || 'it';
-    const currentLang = (['it', 'en'].includes(langParam)) ? langParam : 'en'; // Default to EN if not IT
+    const currentLang = (['it', 'en'].includes(langParam)) ? langParam : 'en'; 
 
     // Apply Static Translations
     const t = translations[currentLang];
@@ -213,15 +214,23 @@
 
     // Tab Switching Logic
     function switchTab(tab) {
-      // Buttons
       document.querySelectorAll('.nav-tab').forEach(el => el.classList.remove('active'));
       document.getElementById('tab-' + tab).classList.add('active');
-
-      // Content
       document.getElementById('content-privacy').classList.add('hidden');
       document.getElementById('content-terms').classList.add('hidden');
       document.getElementById('content-' + tab).classList.remove('hidden');
     }
+
+    // --- LOGICA DI CHIUSURA ROBUSTA ---
+    document.getElementById('btnClose').addEventListener('click', function() {
+        if (window.Telegram && window.Telegram.WebApp) {
+            window.Telegram.WebApp.close();
+        } else {
+            // Fallback se sei su un browser normale (per capire che il click funziona)
+            alert("Il comando 'Chiudi' funziona solo dentro l'app di Telegram.");
+            window.close(); // Tenta di chiudere la tab del browser
+        }
+    });
 
   </script>
 </body>
