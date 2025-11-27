@@ -4,242 +4,114 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <title>Calendario Manager Desk</title>
+  
+  <!-- Telegram WebApp -->
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  
+  <!-- FullCalendar -->
   <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
-  <style>
-    :root {
-      --bg-start: #4a5b8f; --bg-end: #2a3d5f; --text-primary: #ffffff;
-      --text-secondary: rgba(255, 255, 255, 0.7); --border-color: rgba(255, 255, 255, 0.2);
-      --input-bg: rgba(255, 255, 255, 0.08); --accent-color: #5B6FED; --error-color: #ff6b6b;
-    }
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-      background: linear-gradient(135deg, var(--bg-start) 0%, var(--bg-end) 100%);
-      color: var(--text-primary); padding: 20px; min-height: 100vh;
-      /* Abilita lo scorrimento orizzontale se il contenuto è troppo largo */
-      overflow-x: auto;
-    }
-    #calendar {
-      max-width: 900px;
-      /* Imposta una larghezza minima per evitare che si comprima troppo */
-      min-width: 650px; 
-      margin: 0 auto;
-      background: rgba(255, 255, 255, 0.07);
-      border-radius: 14px;
-      padding: 16px;
-      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3);
-    }
-    .fc {
-      font-family: inherit;
-      color: var(--text-primary);
-    }
-    .fc .fc-toolbar-title {
-      font-weight: 600;
-      font-size: 1.3rem;
-      color: var(--text-primary);
-    }
-    .fc button {
-      background: var(--input-bg);
-      border: 1px solid var(--border-color);
-      color: var(--text-primary);
-      border-radius: 8px;
-      font-weight: 600;
-    }
-    .fc button:hover, .fc button:focus {
-      background: var(--accent-color);
-      border-color: var(--accent-color);
-      color: #fff;
-      outline: none;
-      box-shadow: 0 0 10px var(--accent-color);
-    }
-    .fc .fc-daygrid-event {
-      border-radius: 8px;
-      padding: 2px 6px;
-      font-size: 0.9rem;
-      font-weight: 600;
-      line-height: 1.2;
-      white-space: normal;
-      cursor: pointer;
-    }
-    .fc .fc-timegrid-event {
-      cursor: pointer;
-    }
-    
-    /* Stili per gli header e i bordi del calendario */
-    .fc .fc-col-header-cell {
-      /* Usa esattamente il colore azzurrino dello sfondo come richiesto */
-      background-color: var(--bg-start);
-    }
-    .fc-theme-standard th, 
-    .fc-theme-standard td {
-      /* Rende i bordi interni coerenti con il tema */
-      border-color: var(--border-color);
-    }
-
-    /* Modal popup fallback */
-    .modal-overlay {
-      display: none; position: fixed; top: 0; left: 0;
-      width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7);
-      z-index: 9999; align-items: center; justify-content: center;
-    }
-    .modal-overlay.active { display: flex; }
-    .modal-content {
-      background: linear-gradient(135deg, var(--bg-start) 0%, var(--bg-end) 100%);
-      border-radius: 16px; padding: 24px; max-width: 400px; width: 90%;
-      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5); color: var(--text-primary);
-      white-space: pre-line; line-height: 1.6;
-    }
-    .modal-close {
-      margin-top: 20px; background: var(--accent-color); color: white;
-      border: none; padding: 12px 24px; border-radius: 8px;
-      font-weight: 600; cursor: pointer; width: 100%;
-    }
-  </style>
+  
+  <!-- Custom Styles -->
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <div id="calendar"></div>
-  <!-- Modal fallback per dettagli evento -->
-  <div class="modal-overlay" id="modalOverlay">
-    <div class="modal-content">
-      <div id="modalText"></div>
-      <button class="modal-close" id="modalCloseBtn" onclick="closeModal()">Chiudi</button>
+
+  <!-- LOADER -->
+  <div id="loader">
+    <div class="spinner"></div>
+    <p style="margin-top:10px; color: var(--text-muted); font-size: 12px;">Caricamento Agenda...</p>
+  </div>
+
+  <div class="container">
+    <!-- CALENDAR WRAPPER -->
+    <div class="card" style="padding: 10px;">
+      <div id="calendar"></div>
     </div>
   </div>
+
+  <!-- MODAL: EVENT DETAILS -->
+  <div class="modal-overlay hidden" id="modalOverlay">
+    <div class="modal-content fade-in">
+      <h3>Dettagli Evento</h3>
+      <div id="modalText" style="white-space: pre-wrap; margin-bottom: 20px; font-size: 14px; color: var(--text-muted); line-height: 1.6;"></div>
+      <button class="btn btn-primary btn-block" id="modalCloseBtn" onclick="closeModal()">Chiudi</button>
+    </div>
+  </div>
+
   <script>
-    // Traduzioni multilingua
+    // --- TRANSLATIONS ---
     const translations = {
       it: {
-        title: 'Calendario Manager Desk',
-        missingParam: 'Parametro group_id mancante',
-        error: 'Errore',
-        close: 'Chiudi',
-        priority: 'Priorità',
-        dueDate: 'Scadenza',
-        status: 'Status',
-        tags: 'Tags',
-        duration: 'Durata',
-        end: 'Fine',
-        location: 'Non specificato',
-        locale: 'it'
+        title: 'Calendario Manager Desk', missingParam: 'Parametro group_id mancante', error: 'Errore',
+        close: 'Chiudi', priority: 'Priorità', dueDate: 'Scadenza', status: 'Status', tags: 'Tags',
+        duration: 'Durata', end: 'Fine', location: 'Non specificato', locale: 'it'
       },
       en: {
-        title: 'Manager Desk Calendar',
-        missingParam: 'Missing group_id parameter',
-        error: 'Error',
-        close: 'Close',
-        priority: 'Priority',
-        dueDate: 'Due Date',
-        status: 'Status',
-        tags: 'Tags',
-        duration: 'Duration',
-        end: 'End',
-        location: 'Not specified',
-        locale: 'en'
+        title: 'Manager Desk Calendar', missingParam: 'Missing group_id parameter', error: 'Error',
+        close: 'Close', priority: 'Priority', dueDate: 'Due Date', status: 'Status', tags: 'Tags',
+        duration: 'Duration', end: 'End', location: 'Not specified', locale: 'en'
       },
       fr: {
-        title: 'Calendrier Manager Desk',
-        missingParam: 'Paramètre group_id manquant',
-        error: 'Erreur',
-        close: 'Fermer',
-        priority: 'Priorité',
-        dueDate: 'Date limite',
-        status: 'Statut',
-        tags: 'Tags',
-        duration: 'Durée',
-        end: 'Fin',
-        location: 'Non spécifié',
-        locale: 'fr'
+        title: 'Calendrier Manager Desk', missingParam: 'Paramètre group_id manquant', error: 'Erreur',
+        close: 'Fermer', priority: 'Priorité', dueDate: 'Date limite', status: 'Statut', tags: 'Tags',
+        duration: 'Durée', end: 'Fin', location: 'Non spécifié', locale: 'fr'
       },
       de: {
-        title: 'Manager Desk Kalender',
-        missingParam: 'Fehlender group_id Parameter',
-        error: 'Fehler',
-        close: 'Schließen',
-        priority: 'Priorität',
-        dueDate: 'Fälligkeitsdatum',
-        status: 'Status',
-        tags: 'Tags',
-        duration: 'Dauer',
-        end: 'Ende',
-        location: 'Nicht angegeben',
-        locale: 'de'
+        title: 'Manager Desk Kalender', missingParam: 'Fehlender group_id Parameter', error: 'Fehler',
+        close: 'Schließen', priority: 'Priorität', dueDate: 'Fälligkeitsdatum', status: 'Status', tags: 'Tags',
+        duration: 'Dauer', end: 'Ende', location: 'Nicht angegeben', locale: 'de'
       },
       es: {
-        title: 'Calendario Manager Desk',
-        missingParam: 'Falta el parámetro group_id',
-        error: 'Error',
-        close: 'Cerrar',
-        priority: 'Prioridad',
-        dueDate: 'Fecha límite',
-        status: 'Estado',
-        tags: 'Etiquetas',
-        duration: 'Duración',
-        end: 'Fin',
-        location: 'No especificado',
-        locale: 'es'
+        title: 'Calendario Manager Desk', missingParam: 'Falta el parámetro group_id', error: 'Error',
+        close: 'Cerrar', priority: 'Prioridad', dueDate: 'Fecha límite', status: 'Estado', tags: 'Etiquetas',
+        duration: 'Duración', end: 'Fin', location: 'No especificado', locale: 'es'
       },
       pt: {
-        title: 'Calendário Manager Desk',
-        missingParam: 'Parâmetro group_id ausente',
-        error: 'Erro',
-        close: 'Fechar',
-        priority: 'Prioridade',
-        dueDate: 'Data limite',
-        status: 'Status',
-        tags: 'Tags',
-        duration: 'Duração',
-        end: 'Fim',
-        location: 'Não especificado',
-        locale: 'pt'
+        title: 'Calendário Manager Desk', missingParam: 'Parâmetro group_id ausente', error: 'Erro',
+        close: 'Fechar', priority: 'Prioridade', dueDate: 'Data limite', status: 'Status', tags: 'Tags',
+        duration: 'Duração', end: 'Fim', location: 'Não especificado', locale: 'pt'
       }
     };
 
+    // --- INIT ---
     const tg = window.Telegram.WebApp;
     tg.ready();
     tg.expand();
 
+    // Gestione colori tema Telegram (Opzionale, se vuoi forzare l'header)
+    if (tg.headerColor) tg.headerColor = '#2a3d5f'; // Matches var(--bg-end)
+    if (tg.backgroundColor) tg.backgroundColor = '#2a3d5f';
+
     const params = new URLSearchParams(window.location.search);
     const groupId = params.get('group_id');
     const langParam = params.get('lang') || 'en';
-    
-    // Seleziona la lingua con fallback su inglese
-    const lang = translations[langParam] ? langParam : 'en';
-    const t = translations[lang];
+    const t = translations[translations[langParam] ? langParam : 'en'];
 
-    // Imposta il titolo della pagina
     document.title = t.title;
+    document.getElementById('modalCloseBtn').textContent = t.close;
+
+    const loader = document.getElementById('loader');
 
     if (!groupId) {
-      document.body.innerHTML = `<h2 style="color: red; text-align:center;">${t.missingParam}</h2>`;
+      loader.innerHTML = `<h3 style="color: var(--error)">${t.missingParam}</h3>`;
       throw new Error(t.missingParam);
     }
 
     const apiUrl = `https://trinai.api.workflow.dcmake.it/webhook/manager-desk/appointments?group_id=${groupId}`;
 
-    // Imposta il testo del pulsante chiudi
-    document.getElementById('modalCloseBtn').textContent = t.close;
-
+    // --- MODAL FUNCTIONS ---
     function showEventDetails(details) {
-      // Prova prima con Telegram
-      if (tg && tg.showAlert) {
-        try {
-          tg.showAlert(details);
-          return;
-        } catch (e) {
-          console.warn('Telegram showAlert fallito, uso modal', e);
-        }
-      }
-      // Fallback: modal custom
+      // Usa il modale HTML custom invece di tg.showAlert per coerenza stilistica
       document.getElementById('modalText').textContent = details;
-      document.getElementById('modalOverlay').classList.add('active');
+      document.getElementById('modalOverlay').classList.remove('hidden');
     }
 
     function closeModal() {
-      document.getElementById('modalOverlay').classList.remove('active');
+      document.getElementById('modalOverlay').classList.add('hidden');
     }
 
+    // --- FETCH & RENDER ---
     fetch(apiUrl)
       .then(res => {
         if (!res.ok) throw new Error(`HTTP ${t.error}: ${res.status}`);
@@ -247,7 +119,6 @@
       })
       .then(responseData => {
         const eventsArray = responseData.events; 
-        console.log('Eventi caricati:', eventsArray);
         
         const calendarEl = document.getElementById('calendar');
         const calendar = new FullCalendar.Calendar(calendarEl, {
@@ -261,12 +132,25 @@
           firstDay: 1,
           slotMinTime: '07:00:00',
           slotMaxTime: '22:00:00',
+          allDaySlot: true,
           events: eventsArray,
           height: 'auto',
           dayMaxEventRows: true,
           selectable: false,
           editable: false,
           
+          // Styling events dynamically based on type
+          eventDidMount: function(info) {
+             if (info.event.extendedProps.type === 'note') {
+                 info.el.style.backgroundColor = 'var(--warning)';
+                 info.el.style.borderColor = 'var(--warning)';
+                 info.el.style.color = '#fff';
+             } else {
+                 info.el.style.backgroundColor = 'var(--primary)';
+                 info.el.style.borderColor = 'var(--primary)';
+             }
+          },
+
           eventClick: function(info) {
             const event = info.event;
             const props = event.extendedProps;
@@ -276,17 +160,21 @@
               const dueDate = new Date(event.start);
               const priorityEmoji = { 'HIGH': '🔴', 'MEDIUM': '🟡', 'LOW': '🔵' };
 
-              details = `📌 ${event.title.replace('📌 ', '')}\n\n${priorityEmoji[props.priority] || '⚪'} ${t.priority}: ${props.priority}\n📅 ${t.dueDate}: ${dueDate.toLocaleDateString(t.locale, {
-  weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
-})}\n📊 ${t.status}: ${props.status}\n${props.tags && props.tags.length > 0 ? '🏷️ ' + t.tags + ': ' + props.tags.join(', ') : ''}`;
+              details = `📌 ${event.title.replace('📌 ', '')}\n
+${priorityEmoji[props.priority] || '⚪'} ${t.priority}: ${props.priority}
+📅 ${t.dueDate}: ${dueDate.toLocaleDateString(t.locale, { weekday: 'long', day: 'numeric', month: 'long' })}
+📊 ${t.status}: ${props.status}
+${props.tags && props.tags.length > 0 ? '🏷️ ' + t.tags + ': ' + props.tags.join(', ') : ''}`;
             } else {
               const start = new Date(event.start);
               const end = event.end ? new Date(event.end) : null;
               
-              details = `📅 ${event.title}\n\n🕐 ${start.toLocaleString(t.locale, {
-  weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
-  hour: '2-digit', minute: '2-digit'
-})}\n${end ? '🕐 ' + t.end + ': ' + end.toLocaleTimeString(t.locale, {hour: '2-digit', minute: '2-digit'}) : ''}\n\n⏱️ ${t.duration}: ${props.duration_minutes || 'N/A'} min\n📍 ${props.location || t.location}\n${props.description ? '📝 ' + props.description : ''}`;
+              details = `📅 ${event.title}\n
+🕐 ${start.toLocaleString(t.locale, { weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' })}
+${end ? '🏁 ' + t.end + ': ' + end.toLocaleTimeString(t.locale, {hour: '2-digit', minute: '2-digit'}) : ''}
+⏱️ ${t.duration}: ${props.duration_minutes || 'N/A'} min
+📍 ${props.location || t.location}
+${props.description ? '\n📝 ' + props.description : ''}`;
             }
 
             showEventDetails(details);
@@ -298,9 +186,11 @@
         });
         
         calendar.render();
+        // Nascondi il loader solo quando il calendario è renderizzato
+        loader.classList.add('hidden');
       })
       .catch(err => {
-        document.body.innerHTML = `<h2 style="color: red; text-align:center;">${t.error}: ${err.message}</h2>`;
+        loader.innerHTML = `<div style="text-align:center; padding:20px;"><h3 style="color: var(--error)">${t.error}</h3><p>${err.message}</p></div>`;
       });
   </script>
 </body>
