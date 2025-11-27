@@ -5,141 +5,88 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>HoneyPot Editor</title>
   
+  <!-- LIBS -->
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
+  <!-- UNIFIED STYLE -->
+  <link rel="stylesheet" href="styles.css">
+  
   <style>
-    :root {
-      --bg-start: #4a5b8f; --bg-end: #2a3d5f; 
-      --text-main: #ffffff; --text-muted: rgba(255, 255, 255, 0.75);
-      --primary: #5B6FED; --primary-hover: #4a5ecf;
-      --success: #4cd964; --error: #ff6b6b; --warning: #f59e0b;
-      --border: rgba(255, 255, 255, 0.15);
-      --input-bg: rgba(255, 255, 255, 0.08);
-      --card-bg: rgba(0, 0, 0, 0.25);
-      --glass: rgba(255, 255, 255, 0.05);
+    /* Piccoli aggiustamenti specifici per questa pagina non coperti dal CSS globale */
+    .guide-step {
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--text-muted);
+      font-size: 14px;
     }
+    .guide-step:last-child { border-bottom: none; }
+    .guide-step i { color: var(--primary); width: 20px; text-align: center; }
     
-    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-    body { font-family: 'Inter', sans-serif; background: linear-gradient(135deg, var(--bg-start) 0%, var(--bg-end) 100%); color: var(--text-main); min-height: 100vh; }
-    .container { width: 100%; max-width: 700px; margin: 0 auto; padding: 20px 20px 120px 20px; }
-    .hidden { display: none !important; }
-    h2 { font-size: 26px; font-weight: 700; margin-bottom: 8px; color: white; }
-    p.subtitle { font-size: 15px; color: var(--text-muted); margin-bottom: 30px; line-height: 1.6; }
-    label { display: block; font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
-    input, textarea, select { width: 100%; padding: 14px; background: var(--input-bg); border: 1px solid var(--border); border-radius: 12px; color: white; font-family: inherit; font-size: 15px; transition: all 0.3s; }
-    textarea { resize: vertical; min-height: 100px; line-height: 1.5; }
-    select { background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%239ca3af' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e"); background-position: right 0.7rem center; background-repeat: no-repeat; background-size: 1.2em 1.2em; padding-right: 2.5rem; appearance: none; -webkit-appearance: none; }
-    input:focus, textarea:focus, select:focus { outline: none; border-color: var(--primary); background: rgba(255,255,255,0.1); }
-    
-    .btn { padding: 16px; border-radius: 14px; font-weight: 600; font-size: 15px; cursor: pointer; border: none; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; }
-    .btn-primary { background: var(--primary); color: white; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
-    .btn-secondary { background: transparent; border: 1px solid var(--border); color: var(--text-muted); }
-    .btn-sm { padding: 8px 14px; font-size: 13px; border-radius: 10px; width: auto; display: inline-flex; }
-    .btn:disabled { background: var(--input-bg) !important; color: var(--text-muted) !important; opacity: 0.5; cursor: not-allowed; border-color: var(--border) !important; }
-    
-    .row { display: flex; gap: 12px; } .col { flex: 1; }
-    #loader { position:fixed; inset:0; background:var(--bg-end); z-index:99; display:flex; align-items:center; justify-content:center; }
-    .spinner { width:40px; height:40px; border:4px solid rgba(255,255,255,0.1); border-top-color:var(--primary); border-radius:50%; animation:spin 0.8s linear infinite; }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    
-    .knowledge-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 16px; margin-bottom: 20px; overflow: hidden; transition: all 0.3s; }
-    .card-header { padding: 18px 20px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; background: rgba(255,255,255,0.03); }
-    .card-header h3 { font-size: 16px; margin: 0; display: flex; align-items: center; gap: 12px; color: white; }
-    .card-header .chevron { transition: transform 0.3s; color: var(--text-muted); }
-    .card-content { padding: 20px; border-top: 1px solid var(--border); display: none; }
-    .knowledge-card.open .card-content { display: block; }
-    .knowledge-card.open .chevron { transform: rotate(180deg); }
-    .input-group { margin-bottom: 20px; }
-    
-    .utterance-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 8px; }
-    .tag { background: rgba(255,255,255,0.1); padding: 5px 10px; font-size: 12px; border-radius: 20px; color: var(--text-muted); }
-    
-    .deep-dive-item { background: rgba(0,0,0,0.2); padding: 15px; border-radius: 12px; margin-bottom: 15px; }
-    .deep-dive-item .input-group { margin-bottom: 10px; }
-    
-    .hours-grid { display: grid; grid-template-columns: 80px 1fr; gap: 10px 15px; align-items: center; }
-    .hours-grid label { margin: 0; text-transform: none; font-weight: 500; }
-    .time-selector { display: flex; align-items: center; gap: 8px; }
-    .time-selector select { width: auto; flex: 1; }
-    
-    .asset-upload-box { 
-        border: 2px dashed var(--border); 
-        border-radius: 16px; 
-        padding: 30px 20px;
-        text-align: center; 
-        cursor: pointer; 
-        background: var(--glass); 
-        transition: all 0.3s; 
-        position: relative; 
-        overflow: hidden;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        min-height: 160px;
+    .save-bar {
+      position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+      z-index: 100;
+      transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      transform: translate(-50%, 100px); /* Nascosto inizialmente */
     }
-    .asset-upload-box:hover { border-color: var(--primary); background: rgba(255,255,255,0.08); }
-    .asset-upload-box input[type="file"] { 
-        position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; z-index: 10; 
+    .save-bar.visible { transform: translate(-50%, 0); }
+    
+    .utterance-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 5px; }
+    .asset-preview img { max-width: 100px; border-radius: 8px; margin-top: 10px; border: 1px solid var(--border); }
+    .asset-description { font-size: 11px; color: var(--text-muted); margin-top: 4px; font-style: italic; }
+    
+    .offer-preview {
+      background: rgba(0,0,0,0.3);
+      border: 1px dashed var(--border);
+      padding: 15px;
+      border-radius: 12px;
+      font-size: 13px;
+      line-height: 1.5;
+      color: var(--text-secondary);
+      margin-top: 10px;
+      cursor: pointer;
+      transition: all 0.2s;
     }
-    .asset-upload-box .upload-icon { font-size: 40px; margin-bottom: 10px; color: var(--text-muted); transition: color 0.3s; }
-    .asset-upload-box:hover .upload-icon { color: var(--primary); }
-    .asset-upload-box .upload-text { font-size: 13px; color: var(--text-muted); font-weight: 500; }
-    
-    .asset-preview { margin-top: 15px; width: 100%; display: flex; flex-direction: column; align-items: center; z-index: 1; }
-    .asset-preview img { max-width: 100px; max-height: 100px; border-radius: 8px; border: 2px solid var(--border); box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
-    .asset-description { font-size: 12px; font-style: italic; color: var(--text-muted); margin-top: 8px; }
-    
-    .guide-box { background: rgba(0,0,0,0.2); border-radius: 12px; padding: 20px; }
-    .guide-step { display: flex; align-items: flex-start; gap: 15px; margin-bottom: 20px; font-size: 14px; line-height: 1.5; color: var(--text-muted); }
-    .guide-step:last-child { margin-bottom: 0; }
-    .guide-step i { font-size: 18px; color: var(--primary); width: 20px; text-align: center; margin-top: 2px; }
-    .guide-box code { background: rgba(0,0,0,0.4); padding: 2px 5px; border-radius: 4px; font-family: monospace; color: #fff; }
-    .guide-box a { color: var(--primary); font-weight: 600; text-decoration: none; }
-    .guide-box .input-group { margin-top: 25px; }
-    
-    .knowledge-card.highlight { border: 1px solid var(--primary); background: linear-gradient(135deg, rgba(91, 111, 237, 0.15), rgba(0,0,0,0.2)); }
-    .knowledge-card.highlight .card-header h3 { color: white; text-shadow: 0 2px 4px rgba(0,0,0,0.3); }
-
-    .offer-preview { margin-top: 10px; background: white; color: #333; padding: 15px; border-radius: 8px; font-size: 14px; line-height: 1.5; border: 1px solid var(--border); min-height: 60px; cursor: pointer; position: relative; transition: transform 0.1s, box-shadow 0.2s; }
-    .offer-preview:active { transform: scale(0.99); }
-    .offer-preview:hover { box-shadow: 0 0 10px rgba(91, 111, 237, 0.3); border-color: var(--primary); }
-    .offer-preview h1, .offer-preview h2, .offer-preview h3, .offer-preview strong, .offer-preview b { color: #000; }
-    .click-hint { font-size: 11px; color: var(--primary); font-weight: 600; margin-left: auto; display: block; width: max-content; margin-bottom: 5px; }
-
-    .save-bar { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(42, 61, 95, 0.95); backdrop-filter: blur(10px); padding: 15px; border-top: 1px solid var(--border); z-index: 10; transform: translateY(100%); transition: transform 0.3s; }
-    .save-bar.visible { transform: translateY(0); }
+    .offer-preview:hover { background: rgba(0,0,0,0.4); border-color: var(--primary); color: var(--text-main); }
+    .click-hint { font-size: 10px; color: var(--primary); float: right; cursor: pointer; }
   </style>
 </head>
 <body>
 
+  <!-- LOADER -->
   <div id="loader"><div class="spinner"></div></div>
 
+  <!-- MAIN CONTENT -->
   <div id="app-content" class="container hidden">
-    <h2 data-i18n="title"></h2>
-    <p class="subtitle" data-i18n="subtitle"></p>
+    <h1 data-i18n="title">Knowledge Base Editor</h1>
+    <p class="subtitle" data-i18n="subtitle">Modella l'anima AI della tua azienda.</p>
     
     <!-- SEZIONE 1: Offerta di Benvenuto (AI Powered) -->
     <div class="knowledge-card highlight open">
       <div class="card-header" onclick="toggleCard(this)">
-        <h3><i class="fas fa-gift"></i> <span data-i18n="section_offer_title"></span></h3>
+        <h3><i class="fas fa-gift"></i> <span data-i18n="section_offer_title">Offerta Benvenuto</span></h3>
         <i class="fas fa-chevron-down chevron"></i>
       </div>
       <div class="card-content">
-        <p style="font-size:13px; color:var(--text-muted); margin-bottom:15px;" data-i18n="offer_desc"></p>
+        <p class="subtitle" data-i18n="offer_desc" style="margin-bottom: 15px;">Descrivi cosa vuoi offrire.</p>
+        
         <div class="input-group">
-            <label data-i18n="lbl_offer_prompt"></label>
-            <textarea id="offer-prompt" placeholder="..." rows="2"></textarea>
+            <label data-i18n="lbl_offer_prompt">Descrivi la tua offerta</label>
+            <textarea id="offer-prompt" placeholder="Es: 10% di sconto sul primo acquisto..." rows="2"></textarea>
         </div>
-        <button type="button" class="btn btn-primary" onclick="generateOfferHTML()">
-            <i class="fas fa-magic"></i> <span data-i18n="btn_generate_offer"></span>
+        
+        <button type="button" class="btn btn-primary btn-block" onclick="generateOfferHTML()">
+            <i class="fas fa-magic"></i> <span data-i18n="btn_generate_offer">Genera Offerta AI</span>
         </button>
-        <div class="input-group" style="margin-top: 25px;">
-            <div style="display:flex; justify-content:space-between; align-items:flex-end;">
-                <label data-i18n="lbl_offer_preview"></label>
-                <span class="click-hint"><i class="far fa-copy"></i> <span data-i18n="lbl_click_copy"></span></span>
+
+        <div class="input-group mt-2">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <label data-i18n="lbl_offer_preview">Anteprima</label>
+                <span class="click-hint" onclick="copyOfferText()"><i class="far fa-copy"></i> <span data-i18n="lbl_click_copy">Copia</span></span>
             </div>
             <div id="offer-preview-box" class="offer-preview" onclick="copyOfferText()"></div>
             <input type="hidden" id="offer_html_storage" data-path="offer_text">
@@ -147,57 +94,57 @@
       </div>
     </div>
 
-    <!-- SEZIONE 2: Configurazione Bot (AGGIORNATA CON LOGICA LINK) -->
-    <div class="knowledge-card highlight open">
+    <!-- SEZIONE 2: Configurazione Bot -->
+    <div class="knowledge-card">
       <div class="card-header" onclick="toggleCard(this)">
-        <h3><i class="fas fa-rocket"></i> <span data-i18n="section_bot_title"></span></h3>
+        <h3><i class="fas fa-rocket"></i> <span data-i18n="section_bot_title">Configura Bot</span></h3>
         <i class="fas fa-chevron-down chevron"></i>
       </div>
       <div class="card-content">
         <div class="guide-box">
-          <div class="guide-step"><i class="fab fa-telegram"></i> <span data-i18n="guide_bot_1"></span></div>
-          <div class="guide-step"><i class="fas fa-plus-circle"></i> <span data-i18n="guide_bot_2"></span></div>
-          <div class="guide-step"><i class="fas fa-pen"></i> <span data-i18n="guide_bot_3"></span></div>
-          <div class="guide-step"><i class="fas fa-key"></i> <span data-i18n="guide_bot_4"></span></div>
-          <div class="guide-step"><i class="fas fa-video"></i> <span data-i18n="guide_bot_video"></span></div>
+          <div class="guide-step"><i class="fab fa-telegram"></i> <span data-i18n="guide_bot_1">Apri @BotFather</span></div>
+          <div class="guide-step"><i class="fas fa-plus-circle"></i> <span data-i18n="guide_bot_2">Invia /newbot</span></div>
+          <div class="guide-step"><i class="fas fa-pen"></i> <span data-i18n="guide_bot_3">Scegli nome e username</span></div>
+          <div class="guide-step"><i class="fas fa-key"></i> <span data-i18n="guide_bot_4">Copia API Token</span></div>
+          <div class="guide-step"><i class="fas fa-video"></i> <span data-i18n="guide_bot_video">Guarda Tutorial</span></div>
           
-          <div class="input-group" style="margin-top: 20px;">
+          <div class="input-group mt-2">
             <label>Telegram Bot Token</label>
-            <div style="display: flex; gap: 10px; align-items: center;">
-                <input type="text" id="bot-token-input" placeholder="12345:ABC-..." style="flex-grow: 1;">
-                <button type="button" class="btn btn-primary btn-sm" id="btn-link-bot" onclick="linkBot()" style="white-space: nowrap; width: auto;">
-                    <i class="fas fa-link"></i> <span data-i18n="btn_link_bot"></span>
+            <div class="d-flex gap-2">
+                <input type="text" id="bot-token-input" placeholder="123456:ABC-...">
+                <button type="button" class="btn btn-primary btn-sm" id="btn-link-bot" onclick="linkBot()">
+                    <i class="fas fa-link"></i> <span data-i18n="btn_link_bot">Associa</span>
                 </button>
             </div>
-            <div id="bot-status" style="margin-top: 10px; font-size: 13px; display: none;"></div>
+            <div id="bot-status" class="hint" style="margin-top: 8px; font-weight: 600;"></div>
           </div>
         </div>
       </div>
     </div>
 
     <!-- SEZIONE 3: Configurazione Gruppo -->
-    <div class="knowledge-card highlight open">
+    <div class="knowledge-card">
       <div class="card-header" onclick="toggleCard(this)">
-        <h3><i class="fas fa-users"></i> <span data-i18n="section_group_title"></span></h3>
+        <h3><i class="fas fa-users"></i> <span data-i18n="section_group_title">Gruppo di Lavoro</span></h3>
         <i class="fas fa-chevron-down chevron"></i>
       </div>
       <div class="card-content">
         <div class="guide-box">
-          <div class="guide-step"><i class="fas fa-plus-circle"></i> <span data-i18n="guide_group_1"></span></div>
-          <div class="guide-step"><i class="fas fa-user-plus"></i> <span data-i18n="guide_group_2"></span></div>
-          <div class="guide-step"><i class="fas fa-user-shield"></i> <span data-i18n="guide_group_3"></span></div>
-          <div class="guide-step"><i class="fas fa-video"></i> <span data-i18n="guide_group_video"></span></div>
+          <div class="guide-step"><i class="fas fa-plus-circle"></i> <span data-i18n="guide_group_1">Crea gruppo privato</span></div>
+          <div class="guide-step"><i class="fas fa-user-plus"></i> <span data-i18n="guide_group_2">Aggiungi i Bot</span></div>
+          <div class="guide-step"><i class="fas fa-user-shield"></i> <span data-i18n="guide_group_3">Rendili Amministratori</span></div>
+          <div class="guide-step"><i class="fas fa-video"></i> <span data-i18n="guide_group_video">Guarda Tutorial</span></div>
         </div>
       </div>
     </div>
 
-    <!-- SEZIONE 4: HoneyPot (Dinamico) -->
+    <!-- SEZIONE 4: HoneyPot (Generato Dinamicamente) -->
     <div id="honeypot-container"></div>
 
     <!-- SEZIONE 5: Orari -->
     <div class="knowledge-card">
         <div class="card-header" onclick="toggleCard(this)">
-            <h3><i class="fas fa-clock"></i> <span data-i18n="section_hours_title"></span></h3>
+            <h3><i class="fas fa-clock"></i> <span data-i18n="section_hours_title">Orari</span></h3>
             <i class="fas fa-chevron-down chevron"></i>
         </div>
         <div class="card-content">
@@ -208,26 +155,46 @@
     <!-- SEZIONE 6: Asset Visivi -->
     <div class="knowledge-card">
         <div class="card-header" onclick="toggleCard(this)">
-            <h3><i class="fas fa-photo-video"></i> <span data-i18n="section_assets_title"></span></h3>
+            <h3><i class="fas fa-photo-video"></i> <span data-i18n="section_assets_title">Asset Visivi</span></h3>
             <i class="fas fa-chevron-down chevron"></i>
         </div>
         <div class="card-content">
-            <div class="row" style="gap: 20px;">
-                <div class="col"><label data-i18n="lbl_logo"></label><div class="asset-upload-box" id="logo-upload-box"><input type="file" accept="image/*" onchange="handleAssetUpload('logo', this.files[0])"><div class="upload-icon"><i class="fas fa-cloud-upload-alt"></i></div><span class="upload-text" data-i18n="upload_logo"></span><div id="logo-preview" class="asset-preview"></div></div></div>
-                <div class="col"><label data-i18n="lbl_photo"></label><div class="asset-upload-box" id="photo-upload-box"><input type="file" accept="image/*" onchange="handleAssetUpload('photo', this.files[0])"><div class="upload-icon"><i class="fas fa-camera"></i></div><span class="upload-text" data-i18n="upload_photo"></span><div id="photo-preview" class="asset-preview"></div></div></div>
+            <div class="row">
+                <div class="col">
+                    <label data-i18n="lbl_logo">Logo Aziendale</label>
+                    <div class="asset-upload-box" id="logo-upload-box">
+                        <input type="file" accept="image/*" onchange="handleAssetUpload('logo', this.files[0])">
+                        <div class="upload-icon"><i class="fas fa-cloud-upload-alt"></i></div>
+                        <span class="upload-text" data-i18n="upload_logo">Carica</span>
+                        <div id="logo-preview" class="asset-preview"></div>
+                    </div>
+                </div>
+                <div class="col">
+                    <label data-i18n="lbl_photo">Foto Principale</label>
+                    <div class="asset-upload-box" id="photo-upload-box">
+                        <input type="file" accept="image/*" onchange="handleAssetUpload('photo', this.files[0])">
+                        <div class="upload-icon"><i class="fas fa-camera"></i></div>
+                        <span class="upload-text" data-i18n="upload_photo">Carica</span>
+                        <div id="photo-preview" class="asset-preview"></div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
   </div>
 
+  <!-- FLOATING SAVE BUTTON -->
   <div id="save-bar" class="save-bar">
-    <button id="saveBtn" class="btn btn-primary" disabled><i class="fas fa-save"></i> <span data-i18n="btn_save"></span></button>
+    <button id="saveBtn" class="btn btn-primary btn-lg shadow-lg" disabled>
+        <i class="fas fa-save"></i> <span data-i18n="btn_save">Salva Modifiche</span>
+    </button>
   </div>
 
 <script>
     const WEBHOOK_URL = "https://trinai.api.workflow.dcmake.it/webhook/48ee3cba-99dc-407a-98af-624e97b1e888";
     const BOTFATHER_VIDEO_URL = "https://www.youtube.com/watch?v=7a8UWhJWurs";
     const GROUP_VIDEO_URL = "https://www.youtube.com/watch?v=UunrYuBkQaw";
+    
     const tg = window.Telegram.WebApp;
     tg.ready();
     tg.expand();
@@ -238,8 +205,35 @@
     let honeypotData = {};
     let initialDataString = '';
     let currentLang = 'it';
-    const dict = () => i18n[currentLang] || i18n.it;
+    
+    const i18n = {
+      it: {
+        title: "Editor Base di Conoscenza", subtitle: "Modella l'anima AI della tua azienda.",
+        section_offer_title: "Azione Richiesta: Offerta Benvenuto", offer_desc: "L'AI genererà un'offerta accattivante per te.", lbl_offer_prompt: "Descrivi la tua offerta", btn_generate_offer: "Genera Offerta", lbl_offer_preview: "Anteprima", offer_preview_placeholder: "Qui vedrai l'anteprima...", alert_offer_required: "Inserisci una descrizione.", generating: "Generazione...", alert_generation_error: "Errore AI.", lbl_click_copy: "Copia", alert_copied: "Copiato!",
+        section_hours_title: "Orari di Apertura", section_assets_title: "Asset Visivi", lbl_logo: "Logo Aziendale", upload_logo: "Carica logo", lbl_photo: "Foto Rappresentativa", upload_photo: "Carica foto",
+        section_bot_title: "Azione Richiesta: Configura Bot", guide_bot_1: "Apri <a href='{botFatherUrl}' target='_blank'>@BotFather</a>", guide_bot_2: "Invia <code>/newbot</code>", guide_bot_3: "Scegli nome/username", guide_bot_4: "<b>Copia Token</b> e incollalo", guide_bot_video: "<a href='{botVideoUrl}' target='_blank'>Video Tutorial</a>", btn_link_bot: "Associa", status_linked: "Bot Associato ✅", alert_token_required: "Inserisci il token.", alert_token_invalid: "Token non valido.", alert_link_error: "Errore Associazione",
+        section_group_title: "Azione Richiesta: Gruppo", guide_group_1: "Crea gruppo privato", guide_group_2: "Aggiungi il tuo bot e <code>@TrinAi_SiteBoS_bot</code>", guide_group_3: "Falli Admin", guide_group_video: "<a href='{groupVideoUrl}' target='_blank'>Video Tutorial</a>",
+        lbl_utterances: "Domande Esempio", lbl_answer: "Risposta", lbl_summary: "Sintesi", lbl_deepdive: "Approfondimenti (Q&A Specifiche)", lbl_question: "Domanda", btn_add_qa: "Aggiungi D&R",
+        day_monday: "Lunedì", day_tuesday: "Martedì", day_wednesday: "Mercoledì", day_thursday: "Giovedì", day_friday: "Venerdì", day_saturday: "Sabato", day_sunday: "Domenica",
+        btn_save: "Salva Modifiche", saving_progress: "Salvataggio...", saving_success: "Salvato!",
+        alert_loading_error: "Errore caricamento.", alert_saving_error: "Errore salvataggio."
+      },
+      en: {
+        title: "Knowledge Base Editor", subtitle: "Shape your business AI soul.",
+        section_offer_title: "Action Required: Welcome Offer", offer_desc: "AI will generate an engaging offer.", lbl_offer_prompt: "Describe offer", btn_generate_offer: "Generate Offer", lbl_offer_preview: "Preview", offer_preview_placeholder: "Preview here...", alert_offer_required: "Enter description.", generating: "Generating...", alert_generation_error: "AI Error.", lbl_click_copy: "Copy", alert_copied: "Copied!",
+        section_hours_title: "Opening Hours", section_assets_title: "Visual Assets", lbl_logo: "Logo", upload_logo: "Upload logo", lbl_photo: "Main Photo", upload_photo: "Upload photo",
+        section_bot_title: "Action Required: Bot Config", guide_bot_1: "Open <a href='{botFatherUrl}' target='_blank'>@BotFather</a>", guide_bot_2: "Send <code>/newbot</code>", guide_bot_3: "Choose name/username", guide_bot_4: "<b>Copy Token</b> and paste", guide_bot_video: "<a href='{botVideoUrl}' target='_blank'>Tutorial</a>", btn_link_bot: "Link", status_linked: "Bot Linked ✅", alert_token_required: "Enter token.", alert_token_invalid: "Invalid token.", alert_link_error: "Link Error",
+        section_group_title: "Action Required: Group", guide_group_1: "Create private group", guide_group_2: "Add your bot and <code>@TrinAi_SiteBoS_bot</code>", guide_group_3: "Make them Admin", guide_group_video: "<a href='{groupVideoUrl}' target='_blank'>Tutorial</a>",
+        lbl_utterances: "Sample Questions", lbl_answer: "Answer", lbl_summary: "Summary", lbl_deepdive: "Deep Dives (Specific Q&A)", lbl_question: "Question", btn_add_qa: "Add Q&A",
+        day_monday: "Monday", day_tuesday: "Tuesday", day_wednesday: "Wednesday", day_thursday: "Thursday", day_friday: "Friday", day_saturday: "Saturday", day_sunday: "Sunday",
+        btn_save: "Save Changes", saving_progress: "Saving...", saving_success: "Saved!",
+        alert_loading_error: "Load error.", alert_saving_error: "Save error."
+      }
+      // Altre lingue omesse per brevità, usare fallback EN
+    };
 
+    const dict = () => i18n[currentLang] || i18n.en;
+    
     const dom = {
         loader: document.getElementById('loader'),
         app: document.getElementById('app-content'),
@@ -292,7 +286,7 @@
     async function handleAssetUpload(assetType, file) {
         if (!file) return;
         const previewContainer = document.getElementById(`${assetType}-preview`);
-        previewContainer.innerHTML = `<div class="spinner" style="width:20px; height:20px; border-width:2px;"></div>`;
+        previewContainer.innerHTML = `<div class="spinner" style="width:20px;height:20px;border-width:2px;"></div>`;
         try {
             const fileData = await getFileData(file);
             const res = await fetch(WEBHOOK_URL, {
@@ -347,87 +341,49 @@
     window.copyOfferText = () => {
         const html = dom.offerStorage.value;
         if (!html) return;
-
-        let text = html
-            .replace(/<br\s*\/?>/gi, '\n')
-            .replace(/<\/p>/gi, '\n\n')
-            .replace(/<b>(.*?)<\/b>/gi, '$1')
-            .replace(/<strong>(.*?)<\/strong>/gi, '$1')
-            .replace(/<\/?[^>]+(>|$)/g, "")
-            .replace(/\n\s*\n/g, '\n\n')
-            .trim();
-
+        let text = html.replace(/<br\s*\/?>/gi, '\n').replace(/<\/p>/gi, '\n\n').replace(/<\/?[^>]+(>|$)/g, "").trim();
         const link = `https://simonaiit.github.io/SiteBoS-MiniApp/SiteBos.html?vat=${vatNumber}`;
-        if (!text.includes(link)) {
-            text += `\n\n👉 Accedi qui: ${link}`;
-        }
+        if (!text.includes(link)) text += `\n\n👉 Accedi qui: ${link}`;
 
         navigator.clipboard.writeText(text).then(() => {
             tg.HapticFeedback.notificationOccurred('success');
             tg.showAlert(dict().alert_copied);
-            
-            // Feedback visivo
-            const box = document.getElementById('offer-preview-box');
-            box.style.borderColor = 'var(--success)';
-            setTimeout(() => { box.style.borderColor = 'var(--border)'; }, 500);
-        }).catch(err => {
-            tg.showAlert("Error copying text.");
         });
     };
 
     async function linkBot() {
         const token = dom.botTokenInput.value.trim();
         if (!token) { tg.showAlert(dict().alert_token_required); return; }
-        
-        // Validazione formato token base
-        if (!/^\d+:[A-Za-z0-9_-]{35}/.test(token)) {
-             tg.showAlert(dict().alert_token_invalid); return;
-        }
+        if (!/^\d+:[A-Za-z0-9_-]{35}/.test(token)) { tg.showAlert(dict().alert_token_invalid); return; }
 
         const btn = dom.btnLinkBot;
         const statusDiv = dom.botStatus;
         const originalText = btn.innerHTML;
-        
-        btn.disabled = true; 
-        btn.innerHTML = `<i class="fas fa-circle-notch fa-spin"></i>`;
+        btn.disabled = true; btn.innerHTML = `<i class="fas fa-circle-notch fa-spin"></i>`;
 
         try {
             const res = await fetch(WEBHOOK_URL, {
                 method: 'POST', headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ action: 'link_telegram_bot', vat_number: vatNumber, bot_token: token })
             });
-            
             if (!res.ok) throw new Error('Network error');
             const data = await res.json();
             
             if (data.ok === true) {
-                statusDiv.style.display = 'block';
-                statusDiv.style.color = 'var(--success)';
-                statusDiv.innerHTML = `<i class="fas fa-check-circle"></i> <b>${dict().status_linked}</b>`;
-                
+                statusDiv.style.display = 'block'; statusDiv.style.color = 'var(--success)';
+                statusDiv.innerHTML = `<i class="fas fa-check-circle"></i> ${dict().status_linked}`;
                 if (!honeypotData.config) honeypotData.config = {};
                 honeypotData.config.bot_token = token;
                 honeypotData.config.bot_linked = true;
-                
-                dom.botTokenInput.disabled = true;
-                btn.style.display = 'none';
-                
+                dom.botTokenInput.disabled = true; btn.style.display = 'none';
                 checkIfDirty(); 
                 tg.HapticFeedback.notificationOccurred('success');
-            } else {
-                throw new Error(data.description || 'Telegram Error');
-            }
+            } else { throw new Error(data.description || 'Telegram Error'); }
 
         } catch (error) {
             tg.showAlert(`${dict().alert_link_error}: ${error.message}`);
-            statusDiv.style.display = 'block';
-            statusDiv.style.color = 'var(--error)';
-            statusDiv.innerHTML = `<i class="fas fa-times-circle"></i> ${error.message}`;
         } finally {
-            if (!dom.botTokenInput.disabled) {
-                btn.disabled = false; 
-                btn.innerHTML = originalText;
-            }
+            if (!dom.botTokenInput.disabled) { btn.disabled = false; btn.innerHTML = originalText; }
         }
     }
 
@@ -435,7 +391,7 @@
         if (!vatNumber) { tg.showAlert('ID not found'); return; }
         try {
             const res = await fetch(WEBHOOK_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'get_honeypot_data', vat_number: vatNumber }) });
-            if (!res.ok) throw new Error('Network response was not ok');
+            if (!res.ok) throw new Error('Network error');
             const data = await res.json();
             honeypotData = data.oHONEYPOT.HoneyPot;
             renderAll();
@@ -450,13 +406,15 @@
     }
 
     function renderAll() {
+        // Offer
         if (honeypotData.offer_text) {
             dom.offerPreview.innerHTML = honeypotData.offer_text;
             dom.offerStorage.value = honeypotData.offer_text;
         } else {
-            dom.offerPreview.innerHTML = `<em style="color:#999; font-size:12px;">${dict().offer_preview_placeholder}</em>`;
+            dom.offerPreview.innerHTML = `<em>${dict().offer_preview_placeholder}</em>`;
         }
 
+        // Knowledge Fragments
         dom.container.innerHTML = '';
         if (honeypotData.knowledge_fragments) {
             honeypotData.knowledge_fragments.forEach((fragment, index) => {
@@ -464,25 +422,51 @@
                 card.className = 'knowledge-card';
                 const fragmentTitle = fragment.fragment_id.replace(/_V\d+$/, '').replace(/_/g, ' ');
                 card.innerHTML = `
-                    <div class="card-header" onclick="toggleCard(this)"><h3><i class="fas fa-book-open"></i> ${fragmentTitle}</h3><i class="fas fa-chevron-down chevron"></i></div>
+                    <div class="card-header" onclick="toggleCard(this)">
+                        <h3><i class="fas fa-book-open"></i> ${fragmentTitle}</h3>
+                        <i class="fas fa-chevron-down chevron"></i>
+                    </div>
                     <div class="card-content">
-                        <div class="input-group"><label data-i18n="lbl_utterances"></label><div class="utterance-tags">${(fragment.user_utterances || []).map(u => `<span class="tag">${u}</span>`).join('')}</div></div>
-                        <div class="input-group"><label data-i18n="lbl_answer"></label><textarea data-path="knowledge_fragments.${index}.answer_fragment" rows="5">${fragment.answer_fragment || ''}</textarea></div>
-                        <div class="input-group"><label data-i18n="lbl_summary"></label><input type="text" data-path="knowledge_fragments.${index}.summary" value="${fragment.summary || ''}"></div>
-                        <h4 data-i18n="lbl_deepdive"></h4><div id="deep-dive-${index}"></div>
-                        <button type="button" class="btn btn-secondary btn-sm" onclick="addDeepDive(${index})"><i class="fas fa-plus"></i> <span data-i18n="btn_add_qa"></span></button>
+                        <div class="input-group">
+                            <label data-i18n="lbl_utterances">Domande Esempio</label>
+                            <div class="utterance-tags">${(fragment.user_utterances || []).map(u => `<span class="tag">${u}</span>`).join('')}</div>
+                        </div>
+                        <div class="input-group">
+                            <label data-i18n="lbl_answer">Risposta Principale</label>
+                            <textarea data-path="knowledge_fragments.${index}.answer_fragment" rows="4">${fragment.answer_fragment || ''}</textarea>
+                        </div>
+                        <div class="input-group">
+                            <label data-i18n="lbl_summary">Sintesi</label>
+                            <input type="text" data-path="knowledge_fragments.${index}.summary" value="${fragment.summary || ''}">
+                        </div>
+                        
+                        <h4 class="section-title" data-i18n="lbl_deepdive">Approfondimenti</h4>
+                        <div id="deep-dive-${index}"></div>
+                        <button type="button" class="btn btn-secondary btn-sm mt-2" onclick="addDeepDive(${index})">
+                            <i class="fas fa-plus"></i> <span data-i18n="btn_add_qa">Aggiungi D&R</span>
+                        </button>
                     </div>`;
                 dom.container.appendChild(card);
                 renderDeepDives(index);
             });
         }
 
+        // Hours
         dom.hoursContainer.innerHTML = '';
         const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
         days.forEach(day => {
-            dom.hoursContainer.innerHTML += `<label data-i18n="day_${day}"></label><div class="time-selector"><select data-path="availability_schedule.hours.${day}.from"></select><span>-</span><select data-path="availability_schedule.hours.${day}.to"></select></div>`;
+            const row = document.createElement('div');
+            row.style.marginBottom = '10px';
+            row.innerHTML = `<label data-i18n="day_${day}" style="margin-bottom:4px;display:block;">${day}</label>
+                             <div class="d-flex align-center gap-2">
+                                <select data-path="availability_schedule.hours.${day}.from" style="flex:1;"></select>
+                                <span>-</span>
+                                <select data-path="availability_schedule.hours.${day}.to" style="flex:1;"></select>
+                             </div>`;
+            dom.hoursContainer.appendChild(row);
         });
         
+        // Populate Hour Options
         const selectors = dom.hoursContainer.querySelectorAll('select');
         selectors.forEach(selector => {
             for (let i = 0; i < 24; i++) {
@@ -490,6 +474,7 @@
             }
         });
         
+        // Set Hour Values
         if (honeypotData.availability_schedule && honeypotData.availability_schedule.hours) {
             days.forEach(day => {
                 const hours = honeypotData.availability_schedule.hours[day];
@@ -500,25 +485,24 @@
             });
         }
         
+        // Assets
         if (honeypotData.assets) {
-            if (honeypotData.assets.logo) {
-                document.getElementById('logo-preview').innerHTML = `<img src="data:${honeypotData.assets.logo.mime};base64,${honeypotData.assets.logo.base64}" alt="logo"><p class="asset-description">${honeypotData.assets.logo.description}</p>`;
-            }
-            if (honeypotData.assets.photo) {
-                document.getElementById('photo-preview').innerHTML = `<img src="data:${honeypotData.assets.photo.mime};base64,${honeypotData.assets.photo.base64}" alt="photo"><p class="asset-description">${honeypotData.assets.photo.description}</p>`;
-            }
+            if (honeypotData.assets.logo) document.getElementById('logo-preview').innerHTML = `<img src="data:${honeypotData.assets.logo.mime};base64,${honeypotData.assets.logo.base64}"><p class="asset-description">${honeypotData.assets.logo.description}</p>`;
+            if (honeypotData.assets.photo) document.getElementById('photo-preview').innerHTML = `<img src="data:${honeypotData.assets.photo.mime};base64,${honeypotData.assets.photo.base64}"><p class="asset-description">${honeypotData.assets.photo.description}</p>`;
         }
         
+        // Bot Config
         dom.botTokenInput.value = honeypotData.config?.bot_token || '';
-        
-        // Check if already linked
         if (honeypotData.config?.bot_linked) {
             dom.botTokenInput.disabled = true;
             dom.btnLinkBot.style.display = 'none';
             dom.botStatus.style.display = 'block';
             dom.botStatus.style.color = 'var(--success)';
-            dom.botStatus.innerHTML = `<i class="fas fa-check-circle"></i> <b>${dict().status_linked}</b>`;
+            dom.botStatus.innerHTML = `<i class="fas fa-check-circle"></i> ${dict().status_linked}`;
         }
+        
+        // Re-apply translation to generated elements
+        changeLanguage(currentLang);
     }
     
     function renderDeepDives(fragmentIndex) {
@@ -527,15 +511,22 @@
         if (honeypotData.knowledge_fragments[fragmentIndex].sections) {
             honeypotData.knowledge_fragments[fragmentIndex].sections.forEach((section, s_index) => {
                 const item = document.createElement('div');
-                item.className = 'deep-dive-item';
+                item.style.marginBottom = '15px';
+                item.style.padding = '10px';
+                item.style.background = 'rgba(0,0,0,0.1)';
+                item.style.borderRadius = '8px';
                 item.innerHTML = `
-                    <div class="input-group"><label data-i18n="lbl_question"></label><input type="text" data-path="knowledge_fragments.${fragmentIndex}.sections.${s_index}.question" value="${section.question || ''}"></div>
-                    <div class="input-group"><label data-i18n="lbl_answer"></label><textarea data-path="knowledge_fragments.${fragmentIndex}.sections.${s_index}.answer">${section.answer || ''}</textarea></div>
-                    <button type="button" class="btn btn-secondary btn-sm" onclick="removeDeepDive(${fragmentIndex}, ${s_index})"><i class="fas fa-trash"></i></button>`;
+                    <div class="input-group" style="margin-bottom:8px;">
+                        <input type="text" placeholder="Domanda" data-path="knowledge_fragments.${fragmentIndex}.sections.${s_index}.question" value="${section.question || ''}" style="font-weight:600;">
+                    </div>
+                    <div class="input-group" style="margin-bottom:8px;">
+                        <textarea placeholder="Risposta" data-path="knowledge_fragments.${fragmentIndex}.sections.${s_index}.answer" rows="2">${section.answer || ''}</textarea>
+                    </div>
+                    <button type="button" class="btn btn-remove btn-sm btn-icon" style="float:right;" onclick="removeDeepDive(${fragmentIndex}, ${s_index})"><i class="fas fa-trash"></i></button>
+                    <div style="clear:both;"></div>`;
                 container.appendChild(item);
             });
         }
-        changeLanguage(currentLang);
     }
     
     window.addDeepDive = (fragmentIndex) => {
@@ -573,7 +564,7 @@
 
     dom.saveBtn.addEventListener('click', async () => {
         dom.saveBtn.disabled = true;
-        dom.saveBtn.innerHTML = `<i class="fas fa-circle-notch fa-spin"></i> <span data-i18n="saving_progress">${dict().saving_progress}</span>`;
+        dom.saveBtn.innerHTML = `<i class="fas fa-circle-notch fa-spin"></i> ${dict().saving_progress}`;
         try {
             await fetch(WEBHOOK_URL, {
                 method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -581,88 +572,19 @@
             });
             tg.HapticFeedback.notificationOccurred('success');
             initialDataString = JSON.stringify(honeypotData);
-            dom.saveBtn.innerHTML = `<i class="fas fa-check"></i> <span data-i18n="saving_success">${dict().saving_success}</span>`;
+            dom.saveBtn.innerHTML = `<i class="fas fa-check"></i> ${dict().saving_success}`;
             setTimeout(() => {
-                dom.saveBtn.innerHTML = `<i class="fas fa-save"></i> <span data-i18n="btn_save">${dict().btn_save}</span>`;
+                dom.saveBtn.innerHTML = `<i class="fas fa-save"></i> ${dict().btn_save}`;
                 checkIfDirty();
             }, 2000);
         } catch (error) {
             tg.showAlert(dict().alert_saving_error);
             dom.saveBtn.disabled = false;
-            dom.saveBtn.innerHTML = `<i class="fas fa-save"></i> <span data-i18n="btn_save">${dict().btn_save}</span>`;
+            dom.saveBtn.innerHTML = `<i class="fas fa-save"></i> ${dict().btn_save}`;
         }
     });
 
     loadData();
-
-    const i18n = {
-      it: {
-        title: "Editor Base di Conoscenza", subtitle: "Modella l'anima AI della tua azienda.",
-        section_offer_title: "Azione Richiesta: Offerta Benvenuto", offer_desc: "Descrivi cosa vuoi offrire ai nuovi utenti. L'AI genererà un'offerta accattivante per te.", lbl_offer_prompt: "Descrivi la tua offerta", btn_generate_offer: "Genera Offerta", lbl_offer_preview: "Anteprima", offer_preview_placeholder: "Qui vedrai l'anteprima dell'offerta generata...", alert_offer_required: "Inserisci una descrizione per l'offerta.", generating: "Generazione...", alert_generation_error: "Errore nella generazione AI.", lbl_click_copy: "Clicca per copiare (Testo Social)", alert_copied: "Testo copiato! Incollalo su Facebook o LinkedIn.",
-        section_hours_title: "Orari di Apertura", section_assets_title: "Asset Visivi", lbl_logo: "Logo Aziendale", upload_logo: "Carica il tuo logo", lbl_photo: "Foto Rappresentativa", upload_photo: "Carica una foto",
-        section_bot_title: "Azione Richiesta: Configura il Tuo Bot", guide_bot_1: "Apri <a href='{botFatherUrl}' target='_blank'>@BotFather</a> su Telegram.", guide_bot_2: "Invia <code>/newbot</code> e segui le istruzioni.", guide_bot_3: "Scegli un nome e uno username.", guide_bot_4: "<b>Copia il token API</b> e incollalo nel campo qui sotto.", guide_bot_video: "Serve aiuto? <a href='{botVideoUrl}' target='_blank'>Guarda il video tutorial</a>.", btn_link_bot: "Associa", status_linked: "Bot Associato", alert_token_required: "Inserisci il token del bot.", alert_token_invalid: "Formato token non valido.", alert_link_error: "Errore Associazione",
-        section_group_title: "Azione Richiesta: Crea Gruppo di Lavoro", guide_group_1: "Crea un nuovo gruppo privato su Telegram.", guide_group_2: "Aggiungi sia il tuo bot appena creato, sia <code>@TrinAi_SiteBoS_bot</code> come membri.", guide_group_3: "Promuovi entrambi i bot ad Amministratori.", guide_group_video: "Serve aiuto? <a href='{groupVideoUrl}' target='_blank'>Guarda il video tutorial</a>.",
-        lbl_utterances: "Domande Esempio", lbl_answer: "Risposta", lbl_summary: "Sintesi", lbl_deepdive: "Approfondimenti", lbl_question: "Domanda", btn_add_qa: "Aggiungi D&R",
-        day_monday: "Lunedì", day_tuesday: "Martedì", day_wednesday: "Mercoledì", day_thursday: "Giovedì", day_friday: "Venerdì", day_saturday: "Sabato", day_sunday: "Domenica",
-        btn_save: "Salva Modifiche", saving_progress: "Salvataggio...", saving_success: "Salvato!",
-        alert_loading_error: "Errore nel caricamento dei dati.", alert_saving_error: "Errore nel salvataggio."
-      },
-      en: {
-        title: "Knowledge Base Editor", subtitle: "Shape the AI soul of your business.",
-        section_offer_title: "Action Required: Welcome Offer", offer_desc: "Describe what you want to offer new users. The AI will generate an engaging offer for you.", lbl_offer_prompt: "Describe your offer", btn_generate_offer: "Generate Offer", lbl_offer_preview: "Preview", offer_preview_placeholder: "You will see the generated offer preview here...", alert_offer_required: "Please enter a description for the offer.", generating: "Generating...", alert_generation_error: "AI generation error.", lbl_click_copy: "Click to copy (Social Text)", alert_copied: "Text copied! Paste it on Facebook or LinkedIn.",
-        section_hours_title: "Opening Hours", section_assets_title: "Visual Assets", lbl_logo: "Company Logo", upload_logo: "Upload your logo", lbl_photo: "Representative Photo", upload_photo: "Upload a photo",
-        section_bot_title: "Action Required: Configure Your Bot", guide_bot_1: "Open <a href='{botFatherUrl}' target='_blank'>@BotFather</a> on Telegram.", guide_bot_2: "Send <code>/newbot</code> and follow instructions.", guide_bot_3: "Choose a name and username.", guide_bot_4: "<b>Copy API token</b> and paste below.", guide_bot_video: "Need help? <a href='{botVideoUrl}' target='_blank'>Watch tutorial</a>.", btn_link_bot: "Link", status_linked: "Bot Linked", alert_token_required: "Please enter the bot token.", alert_token_invalid: "Invalid token format.", alert_link_error: "Linking Error",
-        section_group_title: "Action Required: Create Work Group", guide_group_1: "Create a new private group.", guide_group_2: "Add your bot and <code>@TrinAi_SiteBoS_bot</code> as members.", guide_group_3: "Promote both bots to Admins.", guide_group_video: "Need help? <a href='{groupVideoUrl}' target='_blank'>Watch tutorial</a>.",
-        lbl_utterances: "Sample Questions", lbl_answer: "Answer", lbl_summary: "Summary", lbl_deepdive: "Deep Dives", lbl_question: "Question", btn_add_qa: "Add Q&A",
-        day_monday: "Monday", day_tuesday: "Tuesday", day_wednesday: "Wednesday", day_thursday: "Thursday", day_friday: "Friday", day_saturday: "Saturday", day_sunday: "Sunday",
-        btn_save: "Save Changes", saving_progress: "Saving...", saving_success: "Saved!",
-        alert_loading_error: "Error loading data.", alert_saving_error: "Error saving data."
-      },
-      fr: {
-        title: "Éditeur de Base de Connaissances", subtitle: "Façonnez l'âme IA de votre entreprise.",
-        section_offer_title: "Action Requise : Offre de Bienvenue", offer_desc: "Décrivez ce que vous voulez offrir. L'IA générera une offre attrayante pour vous.", lbl_offer_prompt: "Décrivez votre offre", btn_generate_offer: "Générer l'Offre", lbl_offer_preview: "Aperçu", offer_preview_placeholder: "Vous verrez l'aperçu de l'offre ici...", alert_offer_required: "Veuillez saisir une description pour l'offre.", generating: "Génération...", alert_generation_error: "Erreur de génération IA.", lbl_click_copy: "Cliquez pour copier (Texte Social)", alert_copied: "Texte copié ! Collez-le sur Facebook ou LinkedIn.",
-        section_hours_title: "Heures d'Ouverture", section_assets_title: "Actifs Visuels", lbl_logo: "Logo", upload_logo: "Téléchargez votre logo", lbl_photo: "Photo", upload_photo: "Téléchargez une photo",
-        section_bot_title: "Action Requise : Configurez Votre Bot", guide_bot_1: "Ouvrez <a href='{botFatherUrl}' target='_blank'>@BotFather</a>.", guide_bot_2: "Envoyez <code>/newbot</code>.", guide_bot_3: "Choisissez un nom et username.", guide_bot_4: "<b>Copiez le jeton API</b> et collez-le ci-dessous.", guide_bot_video: "Besoin d'aide ? <a href='{botVideoUrl}' target='_blank'>Voir le tutoriel</a>.", btn_link_bot: "Lier", status_linked: "Bot Lié", alert_token_required: "Veuillez entrer le jeton du bot.", alert_token_invalid: "Format de jeton invalide.", alert_link_error: "Erreur de Liaison",
-        section_group_title: "Action Requise : Créer Groupe", guide_group_1: "Créez un groupe privé.", guide_group_2: "Ajoutez votre bot et <code>@TrinAi_SiteBoS_bot</code>.", guide_group_3: "Promouvez les deux Admins.", guide_group_video: "Besoin d'aide ? <a href='{groupVideoUrl}' target='_blank'>Voir le tutoriel</a>.",
-        lbl_utterances: "Exemples", lbl_answer: "Réponse", lbl_summary: "Résumé", lbl_deepdive: "Détails", lbl_question: "Question", btn_add_qa: "Ajouter Q&R",
-        day_monday: "Lundi", day_tuesday: "Mardi", day_wednesday: "Mercredi", day_thursday: "Jeudi", day_friday: "Vendredi", day_saturday: "Samedi", day_sunday: "Dimanche",
-        btn_save: "Enregistrer", saving_progress: "Enregistrement...", saving_success: "Enregistré !",
-        alert_loading_error: "Erreur de chargement.", alert_saving_error: "Erreur d'enregistrement."
-      },
-      de: {
-        title: "Wissensdatenbank-Editor", subtitle: "Gestalten Sie die KI-Seele Ihres Unternehmens.",
-        section_offer_title: "Aktion Erforderlich: Willkommensangebot", offer_desc: "Beschreiben Sie Ihr Angebot. Die KI generiert ein attraktives Angebot für Sie.", lbl_offer_prompt: "Beschreiben Sie Ihr Angebot", btn_generate_offer: "Angebot Generieren", lbl_offer_preview: "Vorschau", offer_preview_placeholder: "Hier sehen Sie die Vorschau...", alert_offer_required: "Bitte geben Sie eine Beschreibung für das Angebot ein.", generating: "Generiere...", alert_generation_error: "KI-Generierungsfehler.", lbl_click_copy: "Klicken zum Kopieren (Social Text)", alert_copied: "Text kopiert! Auf Facebook oder LinkedIn einfügen.",
-        section_hours_title: "Öffnungszeiten", section_assets_title: "Visuelle Assets", lbl_logo: "Logo", upload_logo: "Logo hochladen", lbl_photo: "Foto", upload_photo: "Foto hochladen",
-        section_bot_title: "Aktion Erforderlich: Bot Konfigurieren", guide_bot_1: "<a href='{botFatherUrl}' target='_blank'>@BotFather</a> öffnen.", guide_bot_2: "<code>/newbot</code> senden.", guide_bot_3: "Namen wählen.", guide_bot_4: "<b>API-Token kopieren</b> und unten einfügen.", guide_bot_video: "Hilfe? <a href='{botVideoUrl}' target='_blank'>Tutorial ansehen</a>.", btn_link_bot: "Verbinden", status_linked: "Bot Verbunden", alert_token_required: "Bitte Bot-Token eingeben.", alert_token_invalid: "Ungültiges Token-Format.", alert_link_error: "Verbindungsfehler",
-        section_group_title: "Aktion Erforderlich: Gruppe Erstellen", guide_group_1: "Private Gruppe erstellen.", guide_group_2: "Fügen Sie Bots hinzu.", guide_group_3: "Zu Admins befördern.", guide_group_video: "Hilfe? <a href='{groupVideoUrl}' target='_blank'>Tutorial ansehen</a>.",
-        lbl_utterances: "Beispielfragen", lbl_answer: "Antwort", lbl_summary: "Zusammenfassung", lbl_deepdive: "Details", lbl_question: "Frage", btn_add_qa: "F&A hinzufügen",
-        day_monday: "Montag", day_tuesday: "Dienstag", day_wednesday: "Mittwoch", day_thursday: "Donnerstag", day_friday: "Freitag", day_saturday: "Samstag", day_sunday: "Sonntag",
-        btn_save: "Speichern", saving_progress: "Speichern...", saving_success: "Gespeichert!",
-        alert_loading_error: "Daten-Ladefehler.", alert_saving_error: "Fehler beim Speichern."
-      },
-      es: {
-        title: "Editor de Base de Conocimiento", subtitle: "Modela el alma de IA de tu negocio.",
-        section_offer_title: "Acción Requerida: Oferta de Bienvenida", offer_desc: "Describe tu oferta. La IA generará una oferta atractiva para ti.", lbl_offer_prompt: "Describe tu oferta", btn_generate_offer: "Generar Oferta", lbl_offer_preview: "Vista Previa", offer_preview_placeholder: "Verás la vista previa aquí...", alert_offer_required: "Por favor, introduce una descripción para la oferta.", generating: "Generando...", alert_generation_error: "Error de generación de IA.", lbl_click_copy: "Clic para copiar (Texto Social)", alert_copied: "¡Texto copiado! Pégalo en Facebook o LinkedIn.",
-        section_hours_title: "Horarios", section_assets_title: "Activos Visuales", lbl_logo: "Logo", upload_logo: "Sube tu logo", lbl_photo: "Foto", upload_photo: "Sube una foto",
-        section_bot_title: "Acción Requerida: Configura tu Bot", guide_bot_1: "Abre <a href='{botFatherUrl}' target='_blank'>@BotFather</a>.", guide_bot_2: "Envía <code>/newbot</code>.", guide_bot_3: "Elige nombre y usuario.", guide_bot_4: "<b>Copia el token API</b> y pégalo abajo.", guide_bot_video: "¿Ayuda? <a href='{botVideoUrl}' target='_blank'>Ver video</a>.", btn_link_bot: "Vincular", status_linked: "Bot Vinculado", alert_token_required: "Por favor ingresa el token del bot.", alert_token_invalid: "Formato de token inválido.", alert_link_error: "Error de Vinculación",
-        section_group_title: "Acción Requerida: Crear Grupo", guide_group_1: "Crea un grupo privado.", guide_group_2: "Añade los bots.", guide_group_3: "Promociona a Admins.", guide_group_video: "¿Ayuda? <a href='{groupVideoUrl}' target='_blank'>Ver video</a>.",
-        lbl_utterances: "Preguntas", lbl_answer: "Respuesta", lbl_summary: "Resumen", lbl_deepdive: "Detalles", lbl_question: "Pregunta", btn_add_qa: "Añadir P&R",
-        day_monday: "Lunes", day_tuesday: "Martes", day_wednesday: "Miércoles", day_thursday: "Jueves", day_friday: "Viernes", day_saturday: "Sábado", day_sunday: "Domingo",
-        btn_save: "Guardar", saving_progress: "Guardando...", saving_success: "¡Guardado!",
-        alert_loading_error: "Error al cargar.", alert_saving_error: "Error al guardar."
-      },
-      pt: {
-        title: "Editor da Base de Conhecimento", subtitle: "Molde a alma de IA do seu negócio.",
-        section_offer_title: "Ação Necessária: Oferta de Boas-vindas", offer_desc: "Descreva sua oferta. A IA gerará uma oferta atraente para você.", lbl_offer_prompt: "Descreva sua oferta", btn_generate_offer: "Gerar Oferta", lbl_offer_preview: "Pré-visualização", offer_preview_placeholder: "Você verá a pré-visualização aqui...", alert_offer_required: "Por favor, insira uma descrição para a oferta.", generating: "Gerando...", alert_generation_error: "Erro de geração de IA.", lbl_click_copy: "Clique para copiar (Texto Social)", alert_copied: "Texto copiado! Cole no Facebook ou LinkedIn.",
-        section_hours_title: "Horários", section_assets_title: "Ativos Visuais", lbl_logo: "Logo", upload_logo: "Carregue seu logo", lbl_photo: "Foto", upload_photo: "Carregue uma foto",
-        section_bot_title: "Ação Necessária: Configure seu Bot", guide_bot_1: "Abra o <a href='{botFatherUrl}' target='_blank'>@BotFather</a>.", guide_bot_2: "Envie <code>/newbot</code>.", guide_bot_3: "Escolha nome e usuário.", guide_bot_4: "<b>Copie o token da API</b> e cole abaixo.", guide_bot_video: "Ajuda? <a href='{botVideoUrl}' target='_blank'>Ver vídeo</a>.", btn_link_bot: "Vincular", status_linked: "Bot Vinculado", alert_token_required: "Por favor insira o token do bot.", alert_token_invalid: "Formato de token inválido.", alert_link_error: "Erro de Vinculação",
-        section_group_title: "Ação Necessária: Criar Grupo", guide_group_1: "Crie um grupo privado.", guide_group_2: "Adicione os bots.", guide_group_3: "Promova a Admin.",
-        lbl_utterances: "Perguntas", lbl_answer: "Resposta", lbl_summary: "Resumo", lbl_deepdive: "Detalhes", lbl_question: "Pergunta", btn_add_qa: "Adicionar P&R",
-        day_monday: "Segunda", day_tuesday: "Terça", day_wednesday: "Quarta", day_thursday: "Quinta", day_friday: "Sexta", day_saturday: "Sábado", day_sunday: "Domingo",
-        btn_save: "Salvar", saving_progress: "Salvando...", saving_success: "Salvo!",
-        alert_loading_error: "Erro ao carregar.", alert_saving_error: "Erro ao salvar."
-      }
-    };
-  </script>
+</script>
 </body>
 </html>
