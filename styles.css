@@ -280,12 +280,12 @@ input[type="checkbox"], input[type="radio"] {
   justify-content: space-between;
   align-items: flex-start;
   position: relative;
-  margin: 0 10px 40px 10px; /* Spazio sotto aumentato */
+  margin: 0 10px 40px 10px;
 }
 
 .progress-line {
   position: absolute;
-  top: 15px; /* Centrato rispetto al cerchio */
+  top: 15px; /* Centrato verticalmente rispetto al cerchio (30px/2) */
   left: 0;
   width: 100%;
   height: 2px;
@@ -307,7 +307,7 @@ input[type="checkbox"], input[type="radio"] {
 .step-item {
   position: relative;
   z-index: 1;
-  background: transparent; /* TRASPARENTE: Rimuove il rettangolo nero */
+  background: transparent; /* FONDAMENTALE: Trasparente */
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -317,13 +317,13 @@ input[type="checkbox"], input[type="radio"] {
 .step-circle {
   width: 32px; height: 32px;
   border-radius: 50%;
-  background: #2a3d5f; /* Colore solido per coprire la riga dietro */
+  background: #2a3d5f; /* Stesso colore della card/sfondo per coprire la linea */
   border: 2px solid var(--glass-border);
   display: flex; align-items: center; justify-content: center;
   margin-bottom: 8px;
   font-weight: bold; font-size: 14px; color: var(--text-muted);
   transition: all 0.3s;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.3); /* Ombra ripristinata */
+  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
 }
 
 .step-item.active .step-circle {
@@ -345,7 +345,7 @@ input[type="checkbox"], input[type="radio"] {
   color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  text-shadow: 0 2px 4px rgba(0,0,0,0.5); /* Leggibilità migliorata */
+  text-shadow: 0 2px 4px rgba(0,0,0,0.8); /* Ombra testo per leggibilità */
 }
 
 .step-item.active .step-label {
