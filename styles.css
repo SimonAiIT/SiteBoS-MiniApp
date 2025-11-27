@@ -276,47 +276,81 @@ input[type="checkbox"], input[type="radio"] {
    8. SPECIFIC: ONBOARDING WIZARD
    ======================================== */
 .progress-bar {
-  display: flex; justify-content: space-between; align-items: center;
-  position: relative; margin-bottom: 30px; padding: 0 10px;
+  display: flex; 
+  justify-content: space-between; 
+  align-items: flex-start; /* Allinea in alto */
+  position: relative; 
+  margin-bottom: 40px; 
+  padding: 0 15px;
 }
-.progress-line {
-  position: absolute; top: 50%; left: 0; right: 0; height: 2px;
-  background: var(--glass-border); z-index: 0; transform: translateY(-50%);
-}
-.progress-fill {
-  position: absolute; top: 50%; left: 0; height: 2px;
-  background: var(--success); z-index: 0; transform: translateY(-50%);
-  transition: width 0.3s ease;
-}
-.step-item {
-  position: relative; z-index: 1; background: var(--bg-end);
-  padding: 0 5px; text-align: center;
-}
-.step-circle {
-  width: 30px; height: 30px; border-radius: 50%;
-  background: var(--input-bg); border: 2px solid var(--glass-border);
-  display: flex; align-items: center; justify-content: center;
-  margin: 0 auto 5px; font-weight: bold; color: var(--text-muted);
-  transition: all 0.3s;
-}
-.step-item.active .step-circle { border-color: var(--primary); color: #fff; background: var(--primary); }
-.step-item.completed .step-circle { border-color: var(--success); background: var(--success); color: #fff; }
-.step-label { font-size: 11px; color: var(--text-muted); }
 
-/* Pioneer Card Special */
-.pioneer-card { border: 1px solid var(--primary); position: relative; overflow: hidden; }
-.pioneer-badge {
-  position: absolute; top: 12px; right: -30px; background: var(--primary);
-  color: #fff; padding: 4px 30px; font-size: 10px; transform: rotate(45deg);
+/* La linea grigia di sfondo */
+.progress-line {
+  position: absolute; 
+  top: 15px; /* Metà altezza del cerchio (30px/2) */
+  left: 30px; 
+  right: 30px; 
+  height: 2px;
+  background: var(--glass-border); 
+  z-index: 0; 
 }
-.pioneer-value { text-decoration: line-through; color: var(--text-muted); margin-right: 10px; }
-.pioneer-price { font-size: 20px; color: var(--success); font-weight: bold; }
-.payment-selector { display: flex; gap: 10px; margin-top: 10px; }
-.payment-option {
-  flex: 1; padding: 10px; border: 1px solid var(--glass-border); border-radius: var(--radius-sm);
-  text-align: center; cursor: pointer; transition: 0.2s; font-size: 12px;
+
+/* La linea colorata di riempimento */
+.progress-fill {
+  position: absolute; 
+  top: 15px; 
+  left: 30px; 
+  height: 2px;
+  background: var(--success); 
+  z-index: 0; 
+  transition: width 0.3s ease;
+  width: 0%; /* Parte da 0 */
 }
-.payment-option.selected { border-color: var(--success); background: rgba(76, 217, 100, 0.1); color: var(--success); }
+
+.step-item {
+  position: relative; 
+  z-index: 1; 
+  background: transparent; /* RIMOSSO LO SFONDO CHE CREAVA IL RETTANGOLO */
+  text-align: center;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.step-circle {
+  width: 32px; height: 32px; border-radius: 50%;
+  background: #2a3d5f; /* Qui mettiamo il colore di sfondo della card per coprire la linea */
+  border: 2px solid var(--glass-border);
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 8px; 
+  font-weight: bold; font-size: 14px; color: var(--text-muted);
+  transition: all 0.3s;
+  position: relative; 
+  z-index: 2; /* Sta sopra la linea */
+}
+
+.step-item.active .step-circle { 
+  border-color: var(--primary); 
+  color: #fff; 
+  background: var(--primary); 
+  box-shadow: 0 0 10px rgba(91, 111, 237, 0.4);
+}
+
+.step-item.completed .step-circle { 
+  border-color: var(--success); 
+  background: var(--success); 
+  color: #fff; 
+}
+
+.step-label { 
+  font-size: 11px; 
+  color: var(--text-muted); 
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.step-item.active .step-label { color: #fff; font-weight: 600; }
 
 /* ========================================
    9. SPECIFIC: BLUEPRINT / SORTABLE
