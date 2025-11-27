@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>SiteBoS Activation</title>
   
+  <!-- LIBS -->
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -15,150 +16,186 @@
 
   <div id="loader">
     <div class="spinner"></div>
+    <div style="margin-top:10px; font-size:12px; opacity:0.7">SECURE HANDSHAKE</div>
   </div>
 
-  <div id="access-denied" class="hidden container text-center" style="padding-top:40px;">
-    <h1>🔒</h1>
-    <h2>Accesso Riservato</h2>
-    <p class="subtitle">Configurazione disponibile solo tramite Bot.</p>
+  <div id="access-denied" class="hidden container text-center" style="padding-top:50px;">
+    <div style="font-size:50px; margin-bottom:20px;">🔒</div>
+    <h2 data-i18n="access_denied_title">Accesso Riservato</h2>
+    <p class="subtitle" data-i18n="access_denied_desc">Configurazione disponibile solo tramite Bot.</p>
+    <a href="https://t.me/TrinAi_SiteBoS_bot" class="btn btn-primary btn-block" data-i18n="open_bot">Apri Bot Telegram</a>
   </div>
 
   <div id="app-content" class="container hidden">
-    <!-- Lang Selector -->
+    <!-- LANG SELECTOR -->
     <div style="display:flex; justify-content:flex-end; margin-bottom:10px;">
-      <select id="lang-selector" onchange="changeLanguage(this.value)" style="width:auto; padding:5px; font-size:12px;">
+      <select id="lang-selector" onchange="changeLanguage(this.value)" class="lang-select" style="width:auto; padding:5px 10px; font-size:12px;">
         <option value="it">🇮🇹 IT</option>
         <option value="en">🇬🇧 EN</option>
+        <option value="fr">🇫🇷 FR</option>
+        <option value="de">🇩🇪 DE</option>
+        <option value="es">🇪🇸 ES</option>
+        <option value="pt">🇵🇹 PT</option>
       </select>
     </div>
 
-    <!-- Progress Bar -->
+    <!-- PROGRESS BAR -->
     <div class="progress-bar">
       <div class="progress-line"></div>
       <div class="progress-fill" id="progress-fill"></div>
-      
-      <div class="step-item active" id="si-1">
-        <div class="step-circle">1</div>
-        <div class="step-label">Start</div>
-      </div>
-      <div class="step-item" id="si-2">
-        <div class="step-circle">2</div>
-        <div class="step-label">Dati</div>
-      </div>
-      <div class="step-item" id="si-3">
-        <div class="step-circle">3</div>
-        <div class="step-label">Promo</div>
-      </div>
+      <div class="step-item active" id="si-1"><div class="step-circle">1</div><div class="step-label" data-i18n="step_identity">Start</div></div>
+      <div class="step-item" id="si-2"><div class="step-circle">2</div><div class="step-label" data-i18n="step_company">Dati</div></div>
+      <div class="step-item" id="si-3"><div class="step-circle">3</div><div class="step-label" data-i18n="step_plan">Promo</div></div>
     </div>
 
+    <!-- FORM (onsubmit return false per evitare reload accidentali) -->
     <form id="wizardForm" onsubmit="return false;">
       
-      <!-- STEP 1: SETUP -->
+      <!-- STEP 1 -->
       <div class="step-content fade-in" id="step-1">
-        <div class="form-section">
-            <h3 class="form-section-title">Consensi & API</h3>
+        <h2 data-i18n="h_identity">Setup & Sicurezza</h2>
+        <p class="subtitle" data-i18n="sub_identity">Consensi, Chiave API e Verifica Identità.</p>
+
+        <div class="legal-box form-section">
             <div class="checkbox-group">
                 <input type="checkbox" id="chk_privacy" onchange="checkLegalGate()">
-                <label for="chk_privacy">Privacy Policy</label>
+                <label for="chk_privacy" data-i18n="legal_privacy">Dichiaro di aver letto e accettato la Privacy Policy.</label>
             </div>
             <div class="checkbox-group">
                 <input type="checkbox" id="chk_terms" onchange="checkLegalGate()">
-                <label for="chk_terms">Termini e Condizioni</label>
+                <label for="chk_terms" data-i18n="legal_terms">Accetto i Termini e Condizioni.</label>
             </div>
-            
-            <div style="margin-top:15px;">
-                <label class="required">Gemini API Key</label>
-                <div style="display:flex; gap:10px;">
-                    <input type="text" id="gemini_key" placeholder="Incolla qui la chiave..." disabled>
-                    <a href="https://aistudio.google.com/api-keys" target="_blank" class="btn btn-sm btn-secondary" style="white-space:nowrap;">Genera</a>
-                </div>
+            <div class="checkbox-group">
+                <input type="checkbox" id="chk_ai" onchange="checkLegalGate()">
+                <label for="chk_ai" data-i18n="legal_ai">Autorizzo analisi AI per KYC.</label>
             </div>
         </div>
 
-        <div class="form-section">
-            <h3 class="form-section-title">Identità Admin</h3>
-            <div class="row">
-                <div class="col"><label class="required">Nome</label><input type="text" id="name"></div>
-                <div class="col"><label class="required">Cognome</label><input type="text" id="surname"></div>
+        <div class="api-key-card form-section" style="border-color:var(--primary);">
+            <div class="api-header" style="display:flex; justify-content:space-between; margin-bottom:10px;">
+                <div class="api-title" style="color:var(--primary); font-weight:bold;"><i class="fas fa-brain"></i> Gemini API Key</div>
+                <a href="https://aistudio.google.com/api-keys" target="_blank" class="btn btn-sm btn-secondary" style="text-decoration:none;" data-i18n="btn_get_key">Genera Gratis</a>
             </div>
-            <div class="input-group"><label class="required">Codice Fiscale</label><input type="text" id="fiscal_code"></div>
-            <div class="input-group"><label class="required">Email</label><input type="email" id="email"></div>
-            <div class="input-group"><label class="required">Cellulare</label><input type="tel" id="phone"></div>
+            <input type="text" id="gemini_key" placeholder="Incolla qui: AIzaSy..." disabled required>
+            <div class="byok-note hint" data-i18n="byok_note">⚠️ BYOK: I dati rimangono sotto il tuo controllo.</div>
         </div>
+
+        <div class="input-group">
+          <label data-i18n="lbl_id_card">Documento d'Identità (Fronte)</label>
+          <div class="upload-box" id="upload-box">
+            <input type="file" id="id_document" accept="image/*,application/pdf" disabled>
+            <div class="upload-icon" id="upload-icon"><i class="fas fa-id-card"></i></div>
+            <div class="upload-text" id="upload-text" data-i18n="upload_lock">Accetta i termini per sbloccare</div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col"><label class="required" data-i18n="lbl_name">Nome</label><input type="text" id="name" required placeholder="..."></div>
+          <div class="col"><label class="required" data-i18n="lbl_surname">Cognome</label><input type="text" id="surname" required placeholder="..."></div>
+        </div>
+        <div class="input-group"><label class="required" data-i18n="lbl_fiscal">Codice Fiscale</label><input type="text" id="fiscal_code" required placeholder="..."></div>
+        <div class="input-group"><label class="required" data-i18n="lbl_email">Email (Admin)</label><input type="email" id="email" required></div>
+        <div class="input-group"><label class="required" data-i18n="lbl_phone">Cellulare</label><input type="tel" id="phone" required></div>
 
         <div class="btn-container">
-          <button type="button" class="btn btn-primary btn-block" id="btn-step1" onclick="validateAndGo(2)" disabled>
-            Avanti <i class="fas fa-arrow-right"></i>
+          <button type="button" class="btn btn-primary btn-block" id="btn-step1" onclick="validateStep(1)" disabled>
+            <span data-i18n="btn_next">Avanti</span> <i class="fas fa-arrow-right"></i>
           </button>
         </div>
       </div>
 
-      <!-- STEP 2: AZIENDA -->
+      <!-- STEP 2 -->
       <div class="step-content hidden fade-in" id="step-2">
-        <h3 class="form-section-title">Dati Aziendali</h3>
-        
-        <div class="input-group"><label class="required">Ragione Sociale</label><input type="text" id="ragione_sociale"></div>
+        <h2 data-i18n="h_company">Profilo Aziendale</h2>
+        <p class="subtitle" data-i18n="sub_company">Configurazione operativa e fiscale.</p>
+
+        <div class="input-group"><label class="required" data-i18n="lbl_company_name">Ragione Sociale</label><input type="text" id="ragione_sociale" required></div>
         <div class="row">
-          <div class="col"><label class="required">P.IVA</label><input type="text" id="vat_number"></div>
-          <div class="col"><label>SDI / PEC</label><input type="text" id="sdi_pec"></div>
+          <div class="col"><label class="required" data-i18n="lbl_vat">P.IVA</label><input type="text" id="vat_number" required></div>
+          <div class="col"><label data-i18n="lbl_sdi">SDI / PEC</label><input type="text" id="sdi_pec"></div>
         </div>
         
-        <div class="input-group">
-           <label class="required">Sede Legale</label>
-           <div class="row">
-             <div class="col-2"><input type="text" id="addr_route" placeholder="Via/Piazza"></div>
-             <div class="col"><input type="text" id="addr_num" placeholder="N°"></div>
-           </div>
-           <div class="row">
-             <div class="col"><input type="text" id="addr_zip" placeholder="CAP"></div>
-             <div class="col-2"><input type="text" id="addr_city" placeholder="Città"></div>
-             <div class="col"><input type="text" id="addr_prov" placeholder="PR" maxlength="2"></div>
-           </div>
+        <div class="form-section">
+            <div class="section-title" data-i18n="section_identity" style="margin-top:0;">IDENTITÀ OPERATIVA</div>
+            <div class="input-group">
+                <label data-i18n="lbl_sector">Settore di Attività</label>
+                <select id="sector">
+                    <option value="services">Servizi / Consulenza</option>
+                    <option value="retail">Retail / E-commerce</option>
+                    <option value="tech">IT / Software</option>
+                    <option value="manufacturing">Produzione / Artigianato</option>
+                    <option value="horeca">HoReCa / Turismo</option>
+                    <option value="other">Altro</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label data-i18n="lbl_what_we_do">Cosa fate? (Breve descrizione)</label>
+                <textarea id="what_we_do" placeholder="..." rows="2"></textarea>
+            </div>
+            <div class="input-group">
+                <label data-i18n="lbl_goal">Obiettivo Principale con l'AI</label>
+                <select id="main_goal">
+                    <option value="automate_support">Automatizzare il Supporto Clienti</option>
+                    <option value="increase_sales">Aumentare le Vendite / Lead</option>
+                    <option value="organize_workflow">Organizzare Agenda e Processi</option>
+                    <option value="knowledge_base">Gestione Conoscenza Aziendale</option>
+                </select>
+            </div>
         </div>
 
-        <div class="input-group"><label>Settore</label>
-            <select id="sector">
-                <option value="services">Servizi</option>
-                <option value="retail">Retail</option>
-                <option value="other">Altro</option>
-            </select>
+        <div class="input-group">
+           <label class="required" data-i18n="lbl_address">Sede Legale</label>
+           <div class="row">
+             <div class="col-2"><input type="text" id="addr_route" placeholder="Via/Piazza" required></div>
+             <div class="col"><input type="text" id="addr_num" placeholder="N°" required></div>
+           </div>
+           <div class="row">
+             <div class="col"><input type="text" id="addr_zip" placeholder="CAP" required></div>
+             <div class="col-2"><input type="text" id="addr_city" placeholder="Città" required></div>
+             <div class="col"><input type="text" id="addr_prov" placeholder="PR" maxlength="2" required></div>
+           </div>
         </div>
+        <div class="input-group"><label data-i18n="lbl_site">Sito Web</label><input type="url" id="site" placeholder="https://..."></div>
+        <div class="input-group"><label>LinkedIn</label><input type="url" id="linkedin_page" placeholder="https://linkedin.com/..."></div>
+        <div class="input-group"><label>Facebook</label><input type="url" id="facebook_page" placeholder="https://facebook.com/..."></div>
 
         <div class="btn-container">
-          <button type="button" class="btn btn-secondary" onclick="goToStep(1)">Indietro</button>
-          <button type="button" class="btn btn-primary" onclick="validateAndGo(3)">Avanti <i class="fas fa-arrow-right"></i></button>
+          <button type="button" class="btn btn-secondary" onclick="goToStep(1)"><i class="fas fa-arrow-left"></i> <span data-i18n="btn_back">Indietro</span></button>
+          <!-- FIX: Validazione manuale -->
+          <button type="button" class="btn btn-primary" onclick="validateStep(2)"><span data-i18n="btn_next">Avanti</span> <i class="fas fa-arrow-right"></i></button>
         </div>
       </div>
 
-      <!-- STEP 3: PROMO -->
+      <!-- STEP 3 -->
       <div class="step-content hidden fade-in" id="step-3">
-        <h3 class="form-section-title">Attivazione</h3>
-        
+        <h2 data-i18n="h_plan">Offerta Pionieri</h2>
+        <p class="subtitle" data-i18n="sub_plan">Attivazione gratuita. Paga solo se decidi di restare.</p>
+
         <div class="pioneer-card">
-            <div class="pioneer-badge">14 GIORNI GRATIS</div>
-            <div style="font-size:18px; font-weight:bold; color:#fff;">SiteBoS Enterprise</div>
-            <p style="font-size:13px; color:rgba(255,255,255,0.7); margin-bottom:15px;">Accesso completo alle funzionalità AI.</p>
-            <div style="display:flex; justify-content:space-between; align-items:center;">
-                <span style="text-decoration:line-through; color:rgba(255,255,255,0.5);">€ 5.000 / anno</span>
-                <span style="font-size:20px; color:#4cd964; font-weight:bold;">GRATIS ORA</span>
+            <div class="pioneer-badge" data-i18n="pioneer_badge">14 GIORNI GRATIS</div>
+            <div class="pioneer-title" style="font-size:18px; font-weight:bold; margin-bottom:5px; color:#fff;">SiteBoS Enterprise</div>
+            <p class="pioneer-desc" data-i18n="pioneer_desc" style="font-size:13px; color:rgba(255,255,255,0.7);">Accedi alla potenza completa dell'AI.</p>
+            <div style="margin-top:15px; display:flex; justify-content:space-between; align-items:center;">
+                <span class="pioneer-value" style="text-decoration:line-through; color:rgba(255,255,255,0.5);">€ 5.000 / anno</span>
+                <span class="pioneer-price" data-i18n="pioneer_free" style="color:#4cd964; font-weight:bold; font-size:20px;">GRATIS ORA</span>
             </div>
         </div>
 
         <div style="margin-top:20px;">
-            <label>Metodo di pagamento preferito (Futuro):</label>
+            <label data-i18n="lbl_payment_pref">Preferenza di pagamento futura:</label>
             <div class="payment-selector">
-                <div class="payment-option selected" onclick="setPay('card', this)"><i class="fas fa-credit-card"></i> Carta</div>
-                <div class="payment-option" onclick="setPay('paypal', this)"><i class="fab fa-paypal"></i> PayPal</div>
-                <div class="payment-option" onclick="setPay('wire', this)"><i class="fas fa-university"></i> Bonifico</div>
+                <div class="payment-option selected" onclick="selectPayment('stripe', this)"><i class="fab fa-stripe-s"></i> Carta</div>
+                <div class="payment-option" onclick="selectPayment('paypal', this)"><i class="fab fa-paypal"></i> PayPal</div>
+                <div class="payment-option" onclick="selectPayment('wire', this)"><i class="fas fa-university"></i> <span data-i18n="pay_wire">Bonifico</span></div>
             </div>
-            <input type="hidden" id="payment_pref" value="card">
+            <input type="hidden" id="payment_pref" value="stripe">
         </div>
 
         <div class="btn-container">
-          <button type="button" class="btn btn-secondary" onclick="goToStep(2)">Indietro</button>
-          <!-- IL PULSANTE CRITICO -->
+          <button type="button" class="btn btn-secondary" onclick="goToStep(2)"><i class="fas fa-arrow-left"></i> <span data-i18n="btn_back">Indietro</span></button>
+          <!-- FIX: Button type="button" -->
           <button type="button" class="btn btn-success" id="finalSubmitBtn" onclick="finalizeSubmission()">
-            <i class="fas fa-rocket"></i> ATTIVA PROVA ORA
+            <i class="fas fa-rocket"></i> <span data-i18n="btn_activate">ATTIVA PROVA ORA</span>
           </button>
         </div>
       </div>
@@ -167,164 +204,277 @@
   </div>
 
   <script>
-    // URL WEBHOOK N8N
+    // WEBHOOK CORRETTO
     const WEBHOOK_URL = "https://trinai.api.workflow.dcmake.it/webhook/ef4aece4-9ec0-4026-a7a7-328562bcbdf6"; 
     
     const tg = window.Telegram.WebApp; 
     tg.ready(); tg.expand();
 
-    // DOM Elements
-    const dom = {
-        loader: document.getElementById('loader'),
-        app: document.getElementById('app-content'),
-        denied: document.getElementById('access-denied'),
-        steps: [document.getElementById('step-1'), document.getElementById('step-2'), document.getElementById('step-3')],
-        dots: [document.getElementById('si-1'), document.getElementById('si-2'), document.getElementById('si-3')],
-        progressFill: document.getElementById('progress-fill'),
-        geminiKey: document.getElementById('gemini_key'),
-        btnStep1: document.getElementById('btn-step1')
+    // 6 LINGUE RIPRISTINATE
+    const i18n = {
+      it: {
+        access_denied_title:"Accesso Negato", access_denied_desc:"Accesso consentito solo via Bot.", open_bot:"Apri Bot",
+        step_identity:"Start", step_company:"Azienda", step_plan:"Promo",
+        h_identity:"Setup & Sicurezza", sub_identity:"Consensi, Chiave API e KYC.",
+        legal_privacy:"Accetto <a href='#'>Privacy Policy</a>.", legal_terms:"Accetto <a href='#'>Termini</a>.", legal_ai:"Autorizzo analisi AI.",
+        btn_get_key:"Genera Gratis", byok_note:"⚠️ BYOK: Dati sotto il tuo controllo.",
+        lbl_id_card:"Documento (Fronte)", upload_lock:"Accetta termini per sbloccare", upload_hint:"Carica Foto/PDF",
+        lbl_name:"Nome", lbl_surname:"Cognome", lbl_fiscal:"Codice Fiscale", lbl_email:"Email (Admin)", lbl_phone:"Cellulare",
+        btn_next:"Avanti", btn_back:"Indietro",
+        h_company:"Profilo Aziendale", sub_company:"Configurazione operativa e fiscale.",
+        lbl_company_name:"Ragione Sociale", lbl_vat:"P.IVA", lbl_sdi:"SDI / PEC", lbl_address:"Sede Legale", lbl_site:"Sito Web",
+        section_identity: "IDENTITÀ OPERATIVA", lbl_sector: "Settore", lbl_what_we_do: "Cosa fate?", lbl_goal: "Obiettivo AI",
+        h_plan:"Offerta Pionieri", sub_plan:"Attiva ora, decidi dopo.", pioneer_badge:"14 GIORNI GRATIS", pioneer_desc:"Accesso completo Enterprise.", pioneer_free:"GRATIS ORA",
+        lbl_payment_pref: "Metodo pagamento preferito:", pay_wire: "Bonifico", btn_activate: "ATTIVA PROVA ORA",
+        err_missing: "Compila tutti i campi obbligatori!"
+      },
+      en: {
+        access_denied_title:"Access Denied", access_denied_desc:"Bot access only.", open_bot:"Open Bot",
+        step_identity:"Start", step_company:"Company", step_plan:"Promo",
+        h_identity:"Setup & Security", sub_identity:"Consents, API Key & KYC.",
+        legal_privacy:"Accept <a href='#'>Privacy</a>.", legal_terms:"Accept <a href='#'>Terms</a>.", legal_ai:"Auth AI check.",
+        btn_get_key:"Get Key Free", byok_note:"⚠️ BYOK: You control data.",
+        lbl_id_card:"ID Document", upload_lock:"Accept terms to unlock", upload_hint:"Upload Photo/PDF",
+        lbl_name:"Name", lbl_surname:"Surname", lbl_fiscal:"Tax ID", lbl_email:"Email", lbl_phone:"Mobile",
+        btn_next:"Next", btn_back:"Back",
+        h_company:"Company Profile", sub_company:"Operational & Tax Setup.",
+        lbl_company_name:"Company Name", lbl_vat:"VAT ID", lbl_sdi:"Tax Code", lbl_address:"Address", lbl_site:"Website",
+        section_identity: "OPERATIONAL IDENTITY", lbl_sector: "Sector", lbl_what_we_do: "What do you do?", lbl_goal: "AI Goal",
+        h_plan:"Pioneer Offer", sub_plan:"Activate now, decide later.", pioneer_badge:"14 DAYS FREE", pioneer_desc:"Full Enterprise Access.", pioneer_free:"FREE NOW",
+        lbl_payment_pref: "Preferred payment method:", pay_wire: "Wire Transfer", btn_activate: "START TRIAL NOW",
+        err_missing: "Fill in all required fields!"
+      },
+      fr: {
+        access_denied_title:"Accès Refusé", step_identity:"Début", step_company:"Entreprise", step_plan:"Promo",
+        h_identity:"Config & Sécurité", sub_identity:"Consentements, Clé API & KYC.",
+        legal_privacy:"Accepter <a href='#'>Confidentialité</a>.", legal_terms:"Accepter <a href='#'>Conditions</a>.", legal_ai:"Auth analyse IA.",
+        btn_get_key:"Clé Gratuite", lbl_id_card:"Document (Recto)", upload_lock:"Accepter termes", upload_hint:"Charger Photo/PDF",
+        lbl_name:"Prénom", lbl_surname:"Nom", lbl_fiscal:"Code Fiscal", lbl_email:"Email (Admin)", lbl_phone:"Mobile",
+        btn_next:"Suivant", btn_back:"Retour", h_company:"Profil Entreprise", sub_company:"Config opérationnelle & fiscale.",
+        lbl_company_name:"Raison Sociale", lbl_vat:"TVA", lbl_sdi:"Code TVA", lbl_address:"Siège Social", lbl_site:"Site Web",
+        section_identity: "IDENTITÉ OPÉRATIONNELLE", lbl_sector: "Secteur", lbl_what_we_do: "Que faites-vous ?", lbl_goal: "Objectif IA",
+        h_plan:"Offre Pionniers", sub_plan:"Activez maintenant, décidez plus tard.", pioneer_badge:"14 JOURS GRATUITS", pioneer_desc:"Accès Complet.", pioneer_free:"GRATUIT",
+        lbl_payment_pref: "Préférence de paiement :", pay_wire: "Virement", btn_activate: "LANCER L'ESSAI", err_missing: "Remplissez les champs obligatoires!"
+      },
+      de: {
+        access_denied_title:"Zugriff verweigert", step_identity:"Start", step_company:"Firma", step_plan:"Promo",
+        h_identity:"Setup & Sicherheit", sub_identity:"Zustimmungen, API Key & KYC.",
+        legal_privacy:"Akzeptiere <a href='#'>Datenschutz</a>.", legal_terms:"Akzeptiere <a href='#'>AGB</a>.", legal_ai:"KI-Analyse erlauben.",
+        btn_get_key:"Gratis Key", lbl_id_card:"Ausweis", upload_lock:"AGB akzeptieren", upload_hint:"Foto/PDF hochladen",
+        lbl_name:"Vorname", lbl_surname:"Nachname", lbl_fiscal:"Steuernummer", lbl_email:"E-Mail", lbl_phone:"Mobil",
+        btn_next:"Weiter", btn_back:"Zurück", h_company:"Firmenprofil", sub_company:"Operative Konfiguration.",
+        lbl_company_name:"Firmenname", lbl_vat:"USt-IdNr.", lbl_sdi:"Steuercode", lbl_address:"Firmensitz", lbl_site:"Webseite",
+        section_identity: "OPERATIVE IDENTITÄT", lbl_sector: "Branche", lbl_what_we_do: "Was machen Sie?", lbl_goal: "KI-Ziel",
+        h_plan:"Pionier-Angebot", sub_plan:"Jetzt aktivieren, später entscheiden.", pioneer_badge:"14 TAGE GRATIS", pioneer_desc:"Voller Zugriff.", pioneer_free:"JETZT GRATIS",
+        lbl_payment_pref: "Zahlungsart:", pay_wire: "Überweisung", btn_activate: "TEST STARTEN", err_missing: "Pflichtfelder ausfüllen!"
+      },
+      es: {
+        access_denied_title:"Acceso Denegado", step_identity:"Inicio", step_company:"Empresa", step_plan:"Promo",
+        h_identity:"Config y Seguridad", sub_identity:"Consentimientos y KYC.",
+        legal_privacy:"Acepto <a href='#'>Privacidad</a>.", legal_terms:"Acepto <a href='#'>Términos</a>.", legal_ai:"Autorizo IA.",
+        btn_get_key:"Clave Gratis", lbl_id_card:"Documento", upload_lock:"Aceptar términos", upload_hint:"Subir Foto/PDF",
+        lbl_name:"Nombre", lbl_surname:"Apellido", lbl_fiscal:"NIF/NIE", lbl_email:"Email", lbl_phone:"Móvil",
+        btn_next:"Siguiente", btn_back:"Atrás", h_company:"Perfil de Empresa", sub_company:"Configuración fiscal.",
+        lbl_company_name:"Razón Social", lbl_vat:"IVA", lbl_sdi:"Cód. Fiscal", lbl_address:"Sede Legal", lbl_site:"Sitio Web",
+        section_identity: "IDENTIDAD OPERATIVA", lbl_sector: "Sector", lbl_what_we_do: "¿Qué hacen?", lbl_goal: "Objetivo IA",
+        h_plan:"Oferta Pioneros", sub_plan:"Activa ahora, decide luego.", pioneer_badge:"14 DÍAS GRATIS", pioneer_desc:"Acceso Completo.", pioneer_free:"GRATIS",
+        lbl_payment_pref: "Preferencia de pago:", pay_wire: "Transferencia", btn_activate: "INICIAR PRUEBA", err_missing: "¡Rellena los campos!"
+      },
+      pt: {
+        access_denied_title:"Acesso Negado", step_identity:"Início", step_company:"Empresa", step_plan:"Promo",
+        h_identity:"Config e Segurança", sub_identity:"Consentimentos e KYC.",
+        legal_privacy:"Aceito <a href='#'>Privacidade</a>.", legal_terms:"Aceito <a href='#'>Termos</a>.", legal_ai:"Autorizo IA.",
+        btn_get_key:"Chave Grátis", lbl_id_card:"Documento", upload_lock:"Aceitar termos", upload_hint:"Carregar Foto/PDF",
+        lbl_name:"Nome", lbl_surname:"Sobrenome", lbl_fiscal:"NIF", lbl_email:"Email", lbl_phone:"Celular",
+        btn_next:"Próximo", btn_back:"Voltar", h_company:"Perfil da Empresa", sub_company:"Configuração fiscal.",
+        lbl_company_name:"Razão Social", lbl_vat:"IVA", lbl_sdi:"Cód. Fiscal", lbl_address:"Sede Legal", lbl_site:"Site Web",
+        section_identity: "IDENTIDADE OPERACIONAL", lbl_sector: "Setor", lbl_what_we_do: "O que fazem?", lbl_goal: "Objetivo IA",
+        h_plan:"Oferta Pioneiros", sub_plan:"Ative agora, decida depois.", pioneer_badge:"14 DIAS GRÁTIS", pioneer_desc:"Acesso Completo.", pioneer_free:"GRÁTIS",
+        lbl_payment_pref: "Pagamento preferido:", pay_wire: "Transferência", btn_activate: "INICIAR TESTE", err_missing: "Preencha os campos!"
+      }
     };
 
-    // URL Params
-    const urlParams = new URLSearchParams(window.location.search);
-    const chatId = urlParams.get('chat_id') || tg.initDataUnsafe?.user?.id;
-    const lang = urlParams.get('lang') || 'it';
+    const dom = {
+      denied: document.getElementById('access-denied'), app: document.getElementById('app-content'),
+      steps: [document.getElementById('step-1'), document.getElementById('step-2'), document.getElementById('step-3')],
+      dots: [document.getElementById('si-1'), document.getElementById('si-2'), document.getElementById('si-3')],
+      progressFill: document.getElementById('progress-fill'), 
+      fileInput: document.getElementById('id_document'), fileBox: document.getElementById('upload-box'),
+      fileText: document.getElementById('upload-text'), fileIcon: document.getElementById('upload-icon'),
+      chkPrivacy: document.getElementById('chk_privacy'), chkTerms: document.getElementById('chk_terms'), chkAi: document.getElementById('chk_ai'),
+      geminiKey: document.getElementById('gemini_key'), btnStep1: document.getElementById('btn-step1')
+    };
 
-    // Init
-    if(!chatId) {
-        dom.loader.classList.add('hidden');
-        dom.denied.classList.remove('hidden');
-    } else {
-        dom.loader.classList.add('hidden');
-        dom.app.classList.remove('hidden');
+    let currentStep = 1; let currentLang = 'it';
+    const urlParams = new URLSearchParams(window.location.search);
+    const GLOBAL_CHAT_ID = urlParams.get('chat_id') || tg.initDataUnsafe?.user?.id;
+
+    if (!GLOBAL_CHAT_ID) { 
+        dom.denied.classList.remove('hidden'); 
+        dom.app.classList.add('hidden'); 
+        document.getElementById('loader').style.display='none'; 
+    } else { 
+        dom.app.classList.remove('hidden'); 
+        document.getElementById('loader').style.display='none';
+        const user = tg.initDataUnsafe?.user;
+        const l = urlParams.get('lang') || user?.language_code;
+        if(l && i18n[l]) { 
+            document.getElementById('lang-selector').value = l; 
+            changeLanguage(l); 
+        }
     }
 
-    // Logic Step 1
+    function changeLanguage(lang) {
+      currentLang = lang; const dict = i18n[lang] || i18n['en'];
+      document.querySelectorAll('[data-i18n]').forEach(el => { const k = el.getAttribute('data-i18n'); if(dict[k]) el.innerHTML = dict[k]; });
+    }
+
+    // LOGICA STEP 1 (Gate legale)
     window.checkLegalGate = function() {
-        const p = document.getElementById('chk_privacy').checked;
-        const t = document.getElementById('chk_terms').checked;
-        const ok = p && t;
+        const ok = dom.chkPrivacy.checked && dom.chkTerms.checked && dom.chkAi.checked;
+        dom.fileInput.disabled = !ok;
         dom.geminiKey.disabled = !ok;
-        dom.btnStep1.disabled = !ok;
-    };
-
-    // Navigazione e Validazione Manuale
-    window.validateAndGo = function(targetStep) {
-        // Validazione Step 1
-        if(targetStep > 1) {
-            const req1 = ['gemini_key', 'name', 'surname', 'fiscal_code', 'email', 'phone'];
-            for(let id of req1) {
-                if(!document.getElementById(id).value.trim()) {
-                    alert("Compila: " + id);
-                    goToStep(1);
-                    document.getElementById(id).focus();
-                    return;
-                }
-            }
+        if(ok) {
+            dom.fileBox.classList.add('enabled');
+            dom.fileText.innerText = (i18n[currentLang]||i18n.it).upload_hint;
+            dom.btnStep1.disabled = false;
+        } else {
+            dom.fileBox.classList.remove('enabled');
+            dom.fileText.innerText = (i18n[currentLang]||i18n.it).upload_lock;
+            dom.btnStep1.disabled = true;
         }
-        // Validazione Step 2
-        if(targetStep > 2) {
-            const req2 = ['ragione_sociale', 'vat_number', 'addr_route', 'addr_city'];
-            for(let id of req2) {
-                if(!document.getElementById(id).value.trim()) {
-                    alert("Compila: " + id);
-                    goToStep(2);
-                    document.getElementById(id).focus();
-                    return;
-                }
-            }
+    }
+
+    dom.fileInput.addEventListener('change', async (e) => {
+        if(e.target.files.length > 0) {
+            const file = e.target.files[0];
+            dom.fileBox.classList.add('success');
+            dom.fileIcon.innerHTML = '<i class="fas fa-check-circle"></i>';
+            dom.fileText.innerText = file.name;
         }
-        goToStep(targetStep);
-    };
+    });
 
-    window.goToStep = function(step) {
-        dom.steps.forEach(s => s.classList.add('hidden'));
-        dom.steps[step-1].classList.remove('hidden');
-        
-        // Update Bar
-        dom.progressFill.style.width = ((step - 1) / 2) * 100 + "%";
-        dom.dots.forEach((d, i) => {
-            d.parentElement.classList.remove('active', 'completed');
-            if(i < step-1) d.parentElement.classList.add('completed');
-            if(i === step-1) d.parentElement.classList.add('active');
-        });
-    };
+    // NUOVA VALIDAZIONE STEP-BY-STEP (Sostituisce il form submit)
+    window.validateStep = function(step) {
+        let req = [];
+        if(step === 1) req = ['gemini_key', 'name', 'surname', 'fiscal_code', 'email', 'phone'];
+        if(step === 2) req = ['ragione_sociale', 'vat_number', 'addr_route', 'addr_num', 'addr_zip', 'addr_city'];
 
-    window.setPay = function(val, el) {
-        document.querySelectorAll('.payment-option').forEach(e => e.classList.remove('selected'));
-        el.classList.add('selected');
-        document.getElementById('payment_pref').value = val;
-    };
-
-    // SUBMISSION (Corretta)
-    window.finalizeSubmission = async function() {
-        const btn = document.getElementById('finalSubmitBtn');
-        
-        // 1. Controllo finale integrità (Ridondante ma sicuro)
-        const allIds = ['gemini_key', 'name', 'surname', 'email', 'ragione_sociale', 'vat_number'];
-        for(let id of allIds) {
+        for(let id of req) {
             if(!document.getElementById(id).value.trim()) {
-                alert("Dato mancante: " + id);
-                // Trova in che step è e vacci
-                if(['ragione_sociale','vat_number'].includes(id)) goToStep(2);
-                else goToStep(1);
+                alert((i18n[currentLang]||i18n.it).err_missing);
+                document.getElementById(id).focus();
                 return;
             }
         }
+        goToStep(step + 1);
+    }
 
-        // 2. UI Loading
-        btn.disabled = true;
+    window.goToStep = function(step) {
+      currentStep = step;
+      dom.steps.forEach(s => s.classList.add('hidden')); 
+      dom.steps[step-1].classList.remove('hidden');
+      
+      // Update Progress
+      dom.progressFill.style.width = ((step - 1) / 2) * 100 + "%";
+      dom.dots.forEach((d, i) => { 
+          d.parentElement.classList.remove('active','completed'); 
+          if(i < step-1) d.parentElement.classList.add('completed'); 
+          if(i === step-1) d.parentElement.classList.add('active'); 
+      });
+    }
+
+    window.selectPayment = function(type, el) {
+        document.querySelectorAll('.payment-option').forEach(c => c.classList.remove('selected')); 
+        el.classList.add('selected');
+        document.getElementById('payment_pref').value = type;
+    }
+
+    // INVIO FINALE (Fix: non usa submit del form)
+    window.finalizeSubmission = async function() {
+        const btn = document.getElementById('finalSubmitBtn');
+        
+        // Controllo finale di sicurezza
+        if(!document.getElementById('vat_number').value) {
+            alert((i18n[currentLang]||i18n.it).err_missing);
+            goToStep(2);
+            return;
+        }
+
+        btn.disabled = true; 
         btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Invio...';
-
-        // 3. Payload
-        const addr = `${document.getElementById('addr_route').value}, ${document.getElementById('addr_num').value} - ${document.getElementById('addr_zip').value} ${document.getElementById('addr_city').value}`;
+        
+        const addr = `${document.getElementById('addr_route').value} ${document.getElementById('addr_num').value}, ${document.getElementById('addr_zip').value} ${document.getElementById('addr_city').value} (${document.getElementById('addr_prov').value})`;
+        
+        let fileData = null; let mime = null;
+        if(dom.fileInput.files.length > 0) {
+             try {
+                const fd = await getFileData(dom.fileInput.files[0]);
+                fileData = fd.base64; mime = fd.mime;
+             } catch(e) {}
+        }
 
         const payload = {
-            action: 'onboarding_complete',
-            chat_id: chatId,
+            action: 'onboarding_complete', 
+            user_id: GLOBAL_CHAT_ID, 
+            chat_id: GLOBAL_CHAT_ID,
             owner_data: {
-                gemini_key: document.getElementById('gemini_key').value,
-                name: document.getElementById('name').value,
+                gemini_key: dom.geminiKey.value, 
+                name: document.getElementById('name').value, 
                 surname: document.getElementById('surname').value,
-                fiscal_code: document.getElementById('fiscal_code').value,
-                email: document.getElementById('email').value,
+                fiscal_code: document.getElementById('fiscal_code').value, 
+                email: document.getElementById('email').value, 
                 phone: document.getElementById('phone').value,
-                ragione_sociale: document.getElementById('ragione_sociale').value,
+                ragione_sociale: document.getElementById('ragione_sociale').value, 
                 vat_number: document.getElementById('vat_number').value,
-                sdi_pec: document.getElementById('sdi_pec').value,
-                indirizzo: addr,
-                sector: document.getElementById('sector').value,
-                payment_pref: document.getElementById('payment_pref').value,
-                lang: lang
+                sdi_pec: document.getElementById('sdi_pec').value, 
+                indirizzo: addr, 
+                site: document.getElementById('site').value,
+                linkedin_page: document.getElementById('linkedin_page').value, 
+                facebook_page: document.getElementById('facebook_page').value,
+                sector: document.getElementById('sector').value, 
+                what_we_do: document.getElementById('what_we_do').value, 
+                main_goal: document.getElementById('main_goal').value,
+                payment_preference: document.getElementById('payment_pref').value,
+                plan: 'pioneer_free_trial', 
+                terms_accepted: true, 
+                language: currentLang,
+                kyc_document_base64: fileData, 
+                kyc_mime_type: mime
             }
         };
 
-        // 4. Fetch
         try {
-            const res = await fetch(WEBHOOK_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+            const res = await fetch(WEBHOOK_URL, { 
+                method: 'POST', 
+                headers: {'Content-Type': 'application/json'}, 
                 body: JSON.stringify(payload)
             });
-
+            
             if(res.ok) {
-                btn.className = "btn btn-success btn-block";
-                btn.innerHTML = "✅ SUCCESSO!";
+                btn.className = 'btn btn-success btn-block';
+                btn.innerHTML = "✅ SUCCESS!";
                 tg.HapticFeedback.notificationOccurred('success');
-                setTimeout(() => { tg.close(); }, 1500);
+                setTimeout(() => tg.close(), 1500);
             } else {
                 throw new Error("Errore Server");
             }
-        } catch(e) {
-            console.error(e);
-            alert("Errore di connessione. Riprova.");
-            btn.disabled = false;
-            btn.innerHTML = '<i class="fas fa-rocket"></i> ATTIVA PROVA ORA';
+        } catch(err) { 
+            console.error(err);
+            alert("Errore di connessione."); 
+            btn.disabled = false; 
+            btn.innerHTML = (i18n[currentLang]||i18n.it).btn_activate; 
         }
     };
-    
-    // Placeholder function per compatibilità se richiamata
-    window.changeLanguage = function(l) { console.log("Lang switch to", l); }
+
+    const getFileData = file => new Promise((res, rej) => {
+        const r = new FileReader(); r.readAsDataURL(file);
+        r.onload = () => { 
+            const rs = r.result; 
+            res({ base64: rs.split(',')[1], mime: rs.match(/data:([a-zA-Z0-9]+\/[a-zA-Z0-9-.+]+).*,.*/)[1] }); 
+        }; 
+        r.onerror = rej;
+    });
   </script>
 </body>
 </html>
