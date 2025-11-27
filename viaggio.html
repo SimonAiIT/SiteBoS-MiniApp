@@ -2,144 +2,113 @@
 <html lang="it">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale-1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>Pianifica Percorso</title>
+  
+  <!-- Librerie e Font -->
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <style>
-    :root {
-      --bg-start: #4a5b8f; --bg-end: #2a3d5f; --text-primary: #ffffff;
-      --text-secondary: rgba(255, 255, 255, 0.7); --border-color: rgba(255, 255, 255, 0.2);
-      --input-bg: rgba(255, 255, 255, 0.08); --accent-color: #5B6FED;
-    }
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-      background: linear-gradient(135deg, var(--bg-start) 0%, var(--bg-end) 100%);
-      color: var(--text-primary); padding: 20px; min-height: 100vh;
-    }
-    .container { max-width: 500px; margin: 0 auto; }
-    h1 { font-size: 26px; margin-bottom: 8px; font-weight: 600; }
-    .subtitle { font-size: 14px; color: var(--text-secondary); margin-bottom: 32px; font-weight: 300; }
-    .form-group { margin-bottom: 20px; }
-    label { display: block; margin-bottom: 10px; font-size: 14px; font-weight: 500; }
-    
-    input, textarea {
-      width: 100%; padding: 14px 16px; border: 1px solid var(--border-color);
-      border-radius: 12px; background: var(--input-bg); backdrop-filter: blur(10px);
-      color: var(--text-primary); font-size: 15px; font-family: inherit;
-    }
-    input[type="date"]::-webkit-calendar-picker-indicator { cursor: pointer; filter: invert(1); transform: scale(1.2); }
-    
-    .radio-group, .checkbox-group { display: flex; gap: 10px; margin-top: 10px; }
-    .radio-group input, .checkbox-group input { display: none; }
-    .radio-group label, .checkbox-group label {
-      flex: 1; display: flex; align-items: center; justify-content: flex-start;
-      cursor: pointer; font-size: 15px; padding: 12px 16px; border-radius: 12px;
-      transition: all 0.3s ease; background-color: var(--input-bg);
-      border: 1px solid var(--border-color); color: var(--text-secondary); opacity: 0.7;
-    }
-    .radio-group input:checked + label, .checkbox-group input:checked + label {
-      border-color: var(--accent-color); color: var(--text-primary); opacity: 1;
-      background-color: rgba(91, 111, 237, 0.15);
-    }
-    .radio-group label::before {
-      content: ''; display: inline-block; width: 18px; height: 18px;
-      margin-right: 12px; border: 2px solid var(--text-secondary);
-      border-radius: 50%; transition: all 0.2s ease; flex-shrink: 0;
-    }
-    .radio-group input:checked + label::before {
-      border-color: var(--accent-color); background-color: var(--accent-color);
-      box-shadow: 0 0 8px rgba(91, 111, 237, 0.5);
-    }
-    .checkbox-group label::before {
-      content: '✓'; display: inline-block; width: 20px; height: 20px; line-height: 18px;
-      text-align: center; font-weight: bold; margin-right: 12px; 
-      border: 2px solid var(--text-secondary); border-radius: 5px; 
-      transition: all 0.2s ease; flex-shrink: 0; color: transparent;
-    }
-    .checkbox-group input:checked + label::before {
-      border-color: var(--accent-color); background-color: var(--accent-color);
-      color: var(--text-primary); box-shadow: 0 0 8px rgba(91, 111, 237, 0.5);
-    }
-
-    input:focus, textarea:focus { outline: none; border-color: rgba(255, 255, 255, 0.5); box-shadow: 0 0 15px rgba(91, 111, 237, 0.3); }
-    .required::after { content: " *"; color: #ff6b6b; }
-    .button-container { text-align: center; margin-top: 32px; }
-    #submitBtn { width: 100%; padding: 14px; background: var(--accent-color); color: var(--text-primary); border: none; border-radius: 12px; font-size: 15px; font-weight: 600; cursor: pointer; }
-    #submitBtn:disabled { background: #555; cursor: not-allowed; opacity: 0.6; }
-    .cancel-hint { text-align: center; margin-top: 16px; font-size: 13px; color: var(--text-secondary); opacity: 0.8; }
-    .row { display: flex; gap: 16px; }
-    .row .form-group { flex: 1; }
-    .hidden { display: none !important; }
-    .hint { font-size: 12px; color: rgba(255, 255, 255, 0.6); margin-top: 6px; }
-    #tripDetailsContainer { overflow: hidden; max-height: 500px; opacity: 1; transition: all 0.5s ease-in-out; margin-top: 20px; }
-    #tripDetailsContainer.hidden { max-height: 0; opacity: 0; margin: 0; padding: 0; border: 0; }
-  </style>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Stile Unificato -->
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <div class="container">
-    <h1 id="title"></h1>
+    <h1 id="title">Caricamento...</h1>
     <p class="subtitle" id="subtitle"></p>
     
     <form id="travelForm">
-      <div class="form-group checkbox-group">
-        <input type="checkbox" id="partenzaDaSede" checked>
-        <label for="partenzaDaSede"><span id="lblPartenzaSede"></span></label>
-      </div>
-      <div id="customPartenzaContainer" class="hidden" style="margin-top: -10px; margin-bottom: 20px;">
-        <label for="partenza" class="required"><span id="lblPartenza"></span></label>
-        <input type="text" id="partenza">
+      
+      <!-- SEZIONE 1: ITINERARIO -->
+      <div class="card">
+        <div class="section-title">Itinerario</div>
+        
+        <!-- Partenza -->
+        <div class="form-group checkbox-group">
+          <input type="checkbox" id="partenzaDaSede" checked>
+          <label for="partenzaDaSede"><span id="lblPartenzaSede">Partenza da Sede</span></label>
+        </div>
+        <div id="customPartenzaContainer" class="hidden input-group">
+          <label for="partenza" class="required"><span id="lblPartenza">Punto di Partenza</span></label>
+          <input type="text" id="partenza" placeholder="Es. Via Roma 1, Milano">
+        </div>
+
+        <!-- Arrivo -->
+        <div class="form-group checkbox-group">
+          <input type="checkbox" id="arrivoInSede" checked>
+          <label for="arrivoInSede"><span id="lblArrivoSede">Arrivo in Sede</span></label>
+        </div>
+        <div id="customArrivoContainer" class="hidden input-group">
+          <label for="arrivo" class="required"><span id="lblArrivo">Punto di Arrivo</span></label>
+          <input type="text" id="arrivo" placeholder="Es. Piazza Verdi, Roma">
+        </div>
       </div>
 
-      <div class="form-group checkbox-group">
-        <input type="checkbox" id="arrivoInSede" checked>
-        <label for="arrivoInSede"><span id="lblArrivoSede"></span></label>
-      </div>
-      <div id="customArrivoContainer" class="hidden" style="margin-top: -10px; margin-bottom: 20px;">
-        <label for="arrivo" class="required"><span id="lblArrivo"></span></label>
-        <input type="text" id="arrivo">
-      </div>
-
-      <div class="form-group">
-        <label><span id="lblTipoPercorso"></span></label>
-        <div class="radio-group">
+      <!-- SEZIONE 2: DETTAGLI E SCOPO -->
+      <div class="card">
+        <div class="section-title" id="lblTipoPercorso">Scopo del percorso</div>
+        
+        <div class="form-group radio-group">
           <input type="radio" name="tripType" value="interessi" id="radio-interessi" checked>
-          <label for="radio-interessi"><span id="optInteressi"></span></label>
+          <label for="radio-interessi"><span id="optInteressi">Interessi</span></label>
+          
           <input type="radio" name="tripType" value="appuntamenti" id="radio-appuntamenti">
-          <label for="radio-appuntamenti"><span id="optAppuntamenti"></span></label>
+          <label for="radio-appuntamenti"><span id="optAppuntamenti">Appuntamenti</span></label>
+        </div>
+
+        <div id="dataAppuntamentoContainer" class="form-group hidden">
+          <label for="dataAppuntamento" class="required"><span id="lblDataAppuntamento">Data Appuntamento</span></label>
+          <input type="date" id="dataAppuntamento">
+        </div>
+
+        <div id="midpointContainer" class="form-group">
+          <label for="midpoint"><span id="lblMidpoint">Tappe Intermedie</span></label>
+          <input type="text" id="midpoint" placeholder="Es. Tappa 1, Tappa 2...">
+          <div class="hint" id="hintMidpoint"></div>
+        </div>
+
+        <div class="form-group">
+          <label for="dettagli"><span id="lblDettagli">Dettagli</span></label>
+          <textarea id="dettagli" rows="2"></textarea>
+        </div>
+      </div>
+      
+      <!-- SEZIONE 3: LOGISTICA -->
+      <div class="card">
+        <div class="form-group checkbox-group">
+          <input type="checkbox" id="includeTripDetails">
+          <label for="includeTripDetails"><span id="lblPernottamento">Pianifica pernottamento</span></label>
+        </div>
+        
+        <div id="tripDetailsContainer" class="hidden">
+          <div class="row">
+            <div class="col">
+              <div class="form-group">
+                <label for="notti"><span id="lblNotti">Notti</span></label>
+                <input type="number" id="notti" min="1" value="1">
+              </div>
+            </div>
+            <div class="col">
+              <div class="form-group">
+                <label for="adulti"><span id="lblAdulti">Adulti</span></label>
+                <input type="number" id="adulti" min="1" value="2">
+              </div>
+            </div>
+            <div class="col">
+              <div class="form-group">
+                <label for="bambini"><span id="lblBambini">Bambini</span></label>
+                <input type="number" id="bambini" min="0" value="0">
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
-      <div id="dataAppuntamentoContainer" class="form-group hidden">
-        <label for="dataAppuntamento" class="required"><span id="lblDataAppuntamento"></span></label>
-        <input type="date" id="dataAppuntamento">
+      <!-- AZIONI -->
+      <div class="button-container">
+        <button type="submit" id="submitBtn" class="btn btn-primary btn-block">Crea Itinerario</button>
       </div>
-
-      <div id="midpointContainer" class="form-group">
-        <label for="midpoint"><span id="lblMidpoint"></span></label>
-        <input type="text" id="midpoint">
-        <div class="hint" id="hintMidpoint"></div>
-      </div>
-
-      <div class="form-group">
-        <label for="dettagli"><span id="lblDettagli"></span></label>
-        <input type="text" id="dettagli">
-      </div>
-      
-      <div class="form-group checkbox-group">
-        <input type="checkbox" id="includeTripDetails">
-        <label for="includeTripDetails"><span id="lblPernottamento"></span></label>
-      </div>
-      
-      <div id="tripDetailsContainer" class="hidden">
-        <div class="row">
-          <div class="form-group"><label for="notti"><span id="lblNotti"></span></label><input type="number" id="notti" min="1" value="1"></div>
-          <div class="form-group"><label for="adulti"><span id="lblAdulti"></span></label><input type="number" id="adulti" min="1" value="2"></div>
-          <div class="form-group"><label for="bambini"><span id="lblBambini"></span></label><input type="number" id="bambini" min="0" value="0"></div>
-        </div>
-      </div>
-
-      <div class="button-container"><button type="submit" id="submitBtn"></button></div>
       <p class="cancel-hint" id="cancelHint"></p>
     </form>
   </div>
@@ -152,7 +121,7 @@
         lblArrivo: "🏁 Punto di Arrivo Personalizzato", lblArrivoSede: "Arrivo in Sede",
         lblTipoPercorso: "Scopo del percorso", optInteressi: "Interessi", optAppuntamenti: "Appuntamenti",
         lblDataAppuntamento: "🗓️ Data Appuntamento",
-        lblMidpoint: "🗺️ Tappe Intermedie (Opzionale)", hintMidpoint: "Puoi elencare più destinazioni qui",
+        lblMidpoint: "🗺️ Tappe Intermedie (Opzionale)", hintMidpoint: "Separa le tappe con una virgola",
         lblDettagliApp: "Dettagli Appuntamento (es. Cliente Rossi)", lblDettagliInt: "Elenca Interessi (es. cibo, musei)",
         lblPernottamento: "Pianifica anche il pernottamento",
         lblNotti: "🌙 Notti", lblAdulti: "👥 Adulti", lblBambini: "🧒 Bambini",
@@ -275,7 +244,10 @@
           const isAppointments = tripType === 'appuntamenti';
           dom.dataAppuntamentoContainer.classList.toggle('hidden', !isAppointments);
           dom.dataAppuntamento.toggleAttribute('required', isAppointments);
+          // dom.midpointContainer.classList.toggle('hidden', isAppointments); // Lasciamo midpoint visibile per entrambi i casi se utile? Nel vecchio codice era hidden.
+          // Manteniamo logica originale:
           dom.midpointContainer.classList.toggle('hidden', isAppointments);
+          
           dom.lblDettagli.textContent = isAppointments ? t.lblDettagliApp : t.lblDettagliInt;
           validateForm();
       }
@@ -329,11 +301,23 @@
           context: { chatId: urlParams.get('chatId'), threadId: urlParams.get('threadId'), language: lang }
         };
 
+        const btn = dom.submitBtn;
+        const originalText = btn.textContent;
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i>';
+
         fetch(N8N_WEBHOOK_URL, {
             method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(tripData)
-        }).finally(() => {
-            dom.submitBtn.disabled = true; dom.submitBtn.textContent = t.btnSuccess;
+        })
+        .then(() => {
+            btn.textContent = t.btnSuccess;
+            btn.classList.add('btn-success');
             setTimeout(() => { tg.close(); }, 1200);
+        })
+        .catch(() => {
+            btn.disabled = false;
+            btn.textContent = "Errore. Riprova.";
+            setTimeout(() => { btn.textContent = originalText; }, 2000);
         });
       });
     } catch (error) {
