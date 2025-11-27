@@ -4,109 +4,66 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Nuova Categoria</title>
+    
+    <!-- Librerie Esterne -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <style>
-        :root {
-            --bg-start: #4a5b8f; --bg-end: #2a3d5f; --text-primary: #ffffff;
-            --text-secondary: rgba(255, 255, 255, 0.7); --border-color: rgba(255, 255, 255, 0.2);
-            --input-bg: rgba(255, 255, 255, 0.08); --accent-color: #5B6FED; --error-color: #ff6b6b;
-            --success-color: #28a745; --list-item-bg: rgba(255, 255, 255, 0.05);
-        }
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            background: linear-gradient(135deg, var(--bg-start) 0%, var(--bg-end) 100%);
-            color: var(--text-primary); padding: 20px; min-height: 100vh;
-        }
-        .container { max-width: 500px; margin: 0 auto; }
-        h1 { font-size: 26px; margin-bottom: 8px; font-weight: 600; }
-        h2 { font-size: 20px; margin-bottom: 16px; font-weight: 500; }
-        .subtitle { font-size: 14px; color: var(--text-secondary); margin-bottom: 32px; font-weight: 300; }
-        .form-group { margin-bottom: 20px; }
-        label { display: block; margin-bottom: 10px; font-size: 14px; font-weight: 500; }
-        input, textarea {
-            width: 100%; padding: 14px 16px; border: 1px solid var(--border-color);
-            border-radius: 12px; background: var(--input-bg); backdrop-filter: blur(10px);
-            color: var(--text-primary); font-size: 15px; font-family: inherit;
-            transition: border-color 0.3s, box-shadow 0.3s;
-        }
-        input:focus, textarea:focus { outline: none; border-color: rgba(255, 255, 255, 0.5); box-shadow: 0 0 15px rgba(91, 111, 237, 0.3); }
-        textarea { resize: vertical; min-height: 80px; }
-        .required::after { content: " *"; color: var(--error-color); }
-        
-        .button {
-            width: 100%; padding: 14px; background: var(--accent-color); color: var(--text-primary);
-            border: none; border-radius: 12px; font-size: 15px; font-weight: 600; cursor: pointer;
-            transition: background-color 0.3s, opacity 0.3s;
-        }
-        .button:disabled { background: #555; cursor: not-allowed; opacity: 0.6; }
-
-        #subcategoriesSection { margin-top: 32px; border-top: 1px solid var(--border-color); padding-top: 24px; }
-        #subcategoriesList { list-style: none; margin-bottom: 20px; }
-        #subcategoriesList li {
-            background: var(--list-item-bg); padding: 12px 16px; border-radius: 10px;
-            margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between;
-        }
-        .checkbox-container { display: flex; align-items: center; cursor: pointer; }
-        .checkbox-container input[type="checkbox"] { display: none; }
-        .custom-checkbox {
-            width: 20px; height: 20px; border: 2px solid var(--border-color);
-            border-radius: 6px; margin-right: 12px; display: flex;
-            align-items: center; justify-content: center; transition: all 0.2s;
-        }
-        .custom-checkbox::after {
-            content: '✔'; color: var(--text-primary); font-size: 14px;
-            opacity: 0; transform: scale(0.5); transition: all 0.2s;
-        }
-        .checkbox-container input[type="checkbox"]:checked + .custom-checkbox {
-            background-color: var(--accent-color); border-color: var(--accent-color);
-        }
-        .checkbox-container input[type="checkbox"]:checked + .custom-checkbox::after {
-            opacity: 1; transform: scale(1);
-        }
-        
-        .subcat-label { flex-grow: 1; }
-        
-        .hidden { display: none; }
-        #status { text-align: center; margin-top: 16px; font-size: 14px; }
-        .spinner {
-            border: 4px solid rgba(255, 255, 255, 0.3); border-radius: 50%;
-            border-top: 4px solid var(--text-primary); width: 24px; height: 24px;
-            animation: spin 1s linear infinite; margin: 16px auto;
-        }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-    </style>
+    <!-- FontAwesome per le icone -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Nostro CSS Unificato -->
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <div class="container">
+        
         <!-- SEZIONE 1: INPUT INIZIALE -->
-        <div id="initialInputSection">
+        <div id="initialInputSection" class="card">
             <h1 id="title"></h1>
             <p class="subtitle" id="subtitle"></p>
+            
             <div class="form-group">
                 <label for="categoryName" class="required"><span id="lblCatName"></span></label>
-                <input type="text" id="categoryName" required>
+                <input type="text" id="categoryName" required placeholder="...">
             </div>
+            
             <div class="form-group">
                 <label for="categoryDescription"><span id="lblCatDesc"></span></label>
-                <textarea id="categoryDescription" rows="3"></textarea>
+                <textarea id="categoryDescription" rows="3" placeholder="..."></textarea>
             </div>
-            <button id="generateBtn" class="button"></button>
+            
+            <div class="btn-container">
+                <button id="generateBtn" class="btn btn-primary btn-block">
+                    <i class="fas fa-magic"></i> <span id="btnGenText">Genera</span>
+                </button>
+            </div>
         </div>
 
         <!-- SEZIONE 2: ESPANSIONE E CURA (INIZIALMENTE NASCOSTA) -->
-        <div id="subcategoriesSection" class="hidden">
-            <h2 id="subcatTitle"></h2>
-            <ul id="subcategoriesList"></ul>
-            <div class="form-group">
-                <input type="text" id="manualSubcat" placeholder="">
+        <div id="subcategoriesSection" class="hidden card">
+            <h3 id="subcatTitle" class="section-title"></h3>
+            
+            <!-- Lista sottocategorie con stile "list-item" -->
+            <ul id="subcategoriesList" style="list-style: none; margin-bottom: 20px;"></ul>
+            
+            <div class="input-group">
+                <label>Aggiungi Manualmente</label>
+                <div class="d-flex gap-2">
+                    <input type="text" id="manualSubcat" placeholder="">
+                    <button id="addSubcatBtn" class="btn btn-secondary btn-icon" style="border-radius: var(--radius-md);">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                </div>
             </div>
-            <button id="addSubcatBtn" class="button"></button>
-            <hr style="border: none; border-top: 1px solid var(--border-color); margin: 24px 0;">
-            <button id="saveBtn" class="button"></button>
+            
+            <div class="btn-container">
+                <button id="saveBtn" class="btn btn-success btn-block">
+                    <i class="fas fa-save"></i> <span id="btnSaveText">Salva</span>
+                </button>
+            </div>
         </div>
 
-        <div id="status"></div>
+        <!-- AREA STATO / LOADING -->
+        <div id="status" class="text-center mt-2"></div>
     </div>
 
     <script>
@@ -117,60 +74,60 @@
             it: {
                 title: "➕ Nuova Categoria", subtitle: "Definisci una nuova area per i tuoi prodotti o servizi.",
                 lblCatName: "Nome Categoria", lblCatDesc: "Descrizione (Opzionale)",
-                btnGenerate: "✨ Genera Servizi Suggeriti con AI", btnGenerating: "Analisi in corso...",
+                btnGenerate: "Genera Servizi con AI", btnGenerating: "Analisi in corso...",
                 subcatTitle: "Seleziona i servizi da includere",
-                manualSubcatPlaceholder: "Aggiungi un servizio manualmente...", btnAddSubcat: "Aggiungi",
-                btnSave: "✅ Salva Categoria e Servizi", btnSaving: "Salvataggio...",
+                manualSubcatPlaceholder: "Es. Manutenzione ordinaria...", 
+                btnSave: "Salva Categoria e Servizi", btnSaving: "Salvataggio...",
                 statusGenerating: "Il tuo assistente sta pensando...", statusError: "❌ Errore, riprova.",
                 statusSuccess: "✅ Fatto! Puoi chiudere."
             },
             en: {
                 title: "➕ New Category", subtitle: "Define a new area for your products or services.",
                 lblCatName: "Category Name", lblCatDesc: "Description (Optional)",
-                btnGenerate: "✨ Generate Suggested Services with AI", btnGenerating: "Analyzing...",
+                btnGenerate: "Generate Services with AI", btnGenerating: "Analyzing...",
                 subcatTitle: "Select the services to include",
-                manualSubcatPlaceholder: "Add a service manually...", btnAddSubcat: "Add",
-                btnSave: "✅ Save Category and Services", btnSaving: "Saving...",
+                manualSubcatPlaceholder: "E.g. Standard maintenance...", 
+                btnSave: "Save Category and Services", btnSaving: "Saving...",
                 statusGenerating: "Your assistant is thinking...", statusError: "❌ Error, please try again.",
                 statusSuccess: "✅ Done! You can close now."
             },
             fr: {
                 title: "➕ Nouvelle Catégorie", subtitle: "Définissez une nouvelle zone pour vos produits ou services.",
                 lblCatName: "Nom de la Catégorie", lblCatDesc: "Description (Optionnel)",
-                btnGenerate: "✨ Générer des Services Suggérés par l'IA", btnGenerating: "Analyse en cours...",
+                btnGenerate: "Générer des Services avec IA", btnGenerating: "Analyse en cours...",
                 subcatTitle: "Sélectionnez les services à inclure",
-                manualSubcatPlaceholder: "Ajouter un service manuellement...", btnAddSubcat: "Ajouter",
-                btnSave: "✅ Enregistrer la Catégorie et les Services", btnSaving: "Enregistrement...",
+                manualSubcatPlaceholder: "Ex. Entretien courant...", 
+                btnSave: "Enregistrer Catégorie et Services", btnSaving: "Enregistrement...",
                 statusGenerating: "Votre assistant réfléchit...", statusError: "❌ Erreur, veuillez réessayer.",
                 statusSuccess: "✅ Terminé ! Vous pouvez fermer."
             },
             de: {
                 title: "➕ Neue Kategorie", subtitle: "Definieren Sie einen neuen Bereich für Ihre Produkte oder Dienstleistungen.",
                 lblCatName: "Kategoriename", lblCatDesc: "Beschreibung (Optional)",
-                btnGenerate: "✨ KI-gestützte Dienstvorschläge generieren", btnGenerating: "Analysiere...",
+                btnGenerate: "KI-gestützte Dienstvorschläge", btnGenerating: "Analysiere...",
                 subcatTitle: "Wählen Sie die einzuschließenden Dienste aus",
-                manualSubcatPlaceholder: "Dienst manuell hinzufügen...", btnAddSubcat: "Hinzufügen",
-                btnSave: "✅ Kategorie und Dienste speichern", btnSaving: "Speichern...",
+                manualSubcatPlaceholder: "Z.B. Standardwartung...", 
+                btnSave: "Kategorie und Dienste speichern", btnSaving: "Speichern...",
                 statusGenerating: "Ihr Assistent denkt nach...", statusError: "❌ Fehler, bitte erneut versuchen.",
                 statusSuccess: "✅ Fertig! Sie können schließen."
             },
             es: {
                 title: "➕ Nueva Categoría", subtitle: "Define una nueva área para tus productos o servicios.",
                 lblCatName: "Nombre de la Categoría", lblCatDesc: "Descripción (Opcional)",
-                btnGenerate: "✨ Generar Servicios Sugeridos con IA", btnGenerating: "Analizando...",
+                btnGenerate: "Generar Servicios con IA", btnGenerating: "Analizando...",
                 subcatTitle: "Selecciona los servicios a incluir",
-                manualSubcatPlaceholder: "Añadir un servicio manualmente...", btnAddSubcat: "Añadir",
-                btnSave: "✅ Guardar Categoría y Servicios", btnSaving: "Guardando...",
+                manualSubcatPlaceholder: "Ej. Mantenimiento estándar...", 
+                btnSave: "Guardar Categoría y Servicios", btnSaving: "Guardando...",
                 statusGenerating: "Tu asistente está pensando...", statusError: "❌ Error, por favor inténtalo de nuevo.",
                 statusSuccess: "✅ ¡Hecho! Ya puedes cerrar."
             },
             pt: {
                 title: "➕ Nova Categoria", subtitle: "Defina uma nova área para seus produtos ou serviços.",
                 lblCatName: "Nome da Categoria", lblCatDesc: "Descrição (Opcional)",
-                btnGenerate: "✨ Gerar Serviços Sugeridos com IA", btnGenerating: "Analisando...",
+                btnGenerate: "Gerar Serviços com IA", btnGenerating: "Analisando...",
                 subcatTitle: "Selecione os serviços a incluir",
-                manualSubcatPlaceholder: "Adicionar um serviço manualmente...", btnAddSubcat: "Adicionar",
-                btnSave: "✅ Salvar Categoria e Serviços", btnSaving: "Salvando...",
+                manualSubcatPlaceholder: "Ex. Manutenção padrão...", 
+                btnSave: "Salvar Categoria e Serviços", btnSaving: "Salvando...",
                 statusGenerating: "Seu assistente está pensando...", statusError: "❌ Erro, por favor tente novamente.",
                 statusSuccess: "✅ Feito! Pode fechar agora."
             }
@@ -188,7 +145,9 @@
             initialSection: document.getElementById('initialInputSection'),
             subcatSection: document.getElementById('subcategoriesSection'),
             generateBtn: document.getElementById('generateBtn'),
+            btnGenText: document.getElementById('btnGenText'),
             saveBtn: document.getElementById('saveBtn'),
+            btnSaveText: document.getElementById('btnSaveText'),
             subcatList: document.getElementById('subcategoriesList'),
             manualSubcatInput: document.getElementById('manualSubcat'),
             addSubcatBtn: document.getElementById('addSubcatBtn'),
@@ -197,7 +156,6 @@
             categoryDescription: document.getElementById('categoryDescription'),
         };
         
-        // Salva i dati della categoria generata dall'AI
         let generatedCategoryData = null;
 
         function applyTranslations() {
@@ -206,44 +164,45 @@
             document.getElementById('subtitle').textContent = t.subtitle;
             document.getElementById('lblCatName').textContent = t.lblCatName;
             document.getElementById('lblCatDesc').textContent = t.lblCatDesc;
-            dom.generateBtn.textContent = t.btnGenerate;
+            dom.btnGenText.textContent = t.btnGenerate;
             document.getElementById('subcatTitle').textContent = t.subcatTitle;
             dom.manualSubcatInput.placeholder = t.manualSubcatPlaceholder;
-            dom.addSubcatBtn.textContent = t.btnAddSubcat;
-            dom.saveBtn.textContent = t.btnSave;
+            dom.btnSaveText.textContent = t.btnSave;
         }
 
+        // Funzione helper per creare l'elemento lista con lo stile unificato
         function createSubcategoryItem(subcatObject, isChecked = true) {
             const li = document.createElement('li');
-            const labelEl = document.createElement('label');
-            labelEl.className = 'checkbox-container';
+            li.className = 'list-item'; // Classe da style.css
+
+            const checkboxGroup = document.createElement('div');
+            checkboxGroup.className = 'checkbox-group';
+            checkboxGroup.style.marginBottom = '0'; // Override per liste
 
             const checkbox = document.createElement('input');
             checkbox.type = 'checkbox';
+            checkbox.id = `chk_${subcatObject.name.replace(/\s/g, '_')}`;
             checkbox.checked = isChecked;
             checkbox.value = subcatObject.name;
+
+            const label = document.createElement('label');
+            label.htmlFor = checkbox.id;
+            label.textContent = subcatObject.short_name;
+
+            checkboxGroup.appendChild(checkbox);
+            checkboxGroup.appendChild(label);
+            li.appendChild(checkboxGroup);
             
-            const customCheckbox = document.createElement('div');
-            customCheckbox.className = 'custom-checkbox';
-
-            const labelText = document.createElement('span');
-            labelText.className = 'subcat-label';
-            labelText.textContent = subcatObject.short_name;
-
-            labelEl.appendChild(checkbox);
-            labelEl.appendChild(customCheckbox);
-            labelEl.appendChild(labelText);
-            li.appendChild(labelEl);
             return li;
         }
 
         dom.generateBtn.addEventListener('click', async () => {
             const categoryName = dom.categoryName.value;
-            if (!categoryName) { alert('Il nome della categoria è obbligatorio!'); return; }
+            if (!categoryName) { tg.showAlert('Il nome della categoria è obbligatorio!'); return; }
             
             dom.generateBtn.disabled = true;
-            dom.generateBtn.textContent = t.btnGenerating;
-            dom.status.innerHTML = `<div class="spinner"></div><p>${t.statusGenerating}</p>`;
+            dom.btnGenText.textContent = t.btnGenerating;
+            dom.status.innerHTML = `<div class="spinner"></div><p style="margin-top:10px">${t.statusGenerating}</p>`;
 
             try {
                 const response = await fetch(GENERATE_WEBHOOK_URL, {
@@ -257,14 +216,14 @@
                 });
                 const data = await response.json();
                 
-                generatedCategoryData = data; // Salva l'intero blocco categoria
+                generatedCategoryData = data;
                 
-                dom.categoryName.value = data.name; // Aggiorna il nome con quello raffinato dall'AI
-                dom.categoryName.readOnly = true; // Blocca la modifica del nome
-                dom.categoryDescription.readOnly = true;
+                dom.categoryName.value = data.name;
+                dom.categoryName.disabled = true; // Styling disabled input
+                dom.categoryDescription.disabled = true;
 
+                dom.subcatList.innerHTML = '';
                 if (data.subcategories && data.subcategories.length > 0) {
-                    dom.subcatList.innerHTML = '';
                     data.subcategories.forEach(subcat => {
                         dom.subcatList.appendChild(createSubcategoryItem(subcat));
                     });
@@ -273,11 +232,12 @@
                 dom.initialSection.classList.add('hidden');
                 dom.subcatSection.classList.remove('hidden');
                 dom.status.innerHTML = '';
+                
             } catch (error) {
-                console.error("Errore generazione sottocategorie:", error);
-                dom.status.textContent = t.statusError;
+                console.error("Errore:", error);
+                dom.status.innerHTML = `<span style="color:var(--error)">${t.statusError}</span>`;
                 dom.generateBtn.disabled = false;
-                dom.generateBtn.textContent = t.btnGenerate;
+                dom.btnGenText.textContent = t.btnGenerate;
             }
         });
 
@@ -292,27 +252,24 @@
 
         dom.saveBtn.addEventListener('click', async () => {
             dom.saveBtn.disabled = true;
-            dom.saveBtn.textContent = t.btnSaving;
+            dom.btnSaveText.textContent = t.btnSaving;
             dom.status.innerHTML = `<div class="spinner"></div>`;
             
             const selectedSubcatNames = Array.from(dom.subcatList.querySelectorAll('input[type="checkbox"]:checked'))
                 .map(cb => cb.value);
             
-            // Filtra le sottocategorie originali per tenere solo quelle selezionate
             const selectedSubcategories = generatedCategoryData.subcategories.filter(
                 subcat => selectedSubcatNames.includes(subcat.name)
             );
 
-            // Aggiungi le voci manuali se ci sono
-            const manualNames = Array.from(dom.subcatList.querySelectorAll('input[type="checkbox"]:checked'))
-                .map(cb => cb.value)
-                .filter(name => !generatedCategoryData.subcategories.some(s => s.name === name));
+            // Gestione voci manuali
+            const manualNames = selectedSubcatNames.filter(name => !generatedCategoryData.subcategories.some(s => s.name === name));
             
             manualNames.forEach(name => {
                 selectedSubcategories.push({
                     name: name,
-                    short_name: name, // Per le voci manuali, name e short_name coincidono
-                    callback_data: name.toUpperCase().replace(/ /g, '_') // Genera un callback base
+                    short_name: name,
+                    callback_data: name.toUpperCase().replace(/ /g, '_')
                 });
             });
 
@@ -330,21 +287,21 @@
 
             try {
                 const response = await fetch(SAVE_WEBHOOK_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(finalPayload)
                 });
+                
                 if (response.ok) {
-                    dom.status.innerHTML = `<p>${t.statusSuccess}</p>`;
+                    dom.status.innerHTML = `<div style="color:var(--success); font-weight:bold; font-size:16px;">${t.statusSuccess}</div>`;
+                    if(tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
                     setTimeout(() => tg.close(), 1500);
                 } else {
-                    throw new Error('Errore salvataggio server.');
+                    throw new Error('Server Error');
                 }
             } catch (error) {
-                console.error("Errore salvataggio categoria:", error);
-                dom.status.textContent = t.statusError;
+                dom.status.innerHTML = `<span style="color:var(--error)">${t.statusError}</span>`;
                 dom.saveBtn.disabled = false;
-                dom.saveBtn.textContent = t.btnSave;
+                dom.btnSaveText.textContent = t.btnSave;
             }
         });
 
