@@ -169,14 +169,12 @@
       </div>
     </div>
 
-<div class="button-container">
-      <button id="btnClose" class="btn btn-primary btn-block" data-i18n="btn_close">Chiudi / Close</button>
-    </div>
+    <!-- Scritta al posto del bottone -->
+    <p class="cancel-hint" data-i18n="close_hint"></p>
 
-  </div> <!-- Chiude il container -->
+  </div>
 
-<script>
-    // Inizializzazione Telegram
+  <script>
     const tg = window.Telegram.WebApp;
     tg.ready();
     tg.expand();
@@ -186,19 +184,19 @@
       it: {
         page_title: "Centro Legale", page_subtitle: "Trasparenza e Termini di Utilizzo",
         tab_privacy: "Privacy Policy", tab_terms: "Termini & Condizioni",
-        btn_close: "Chiudi e Torna al Bot"
+        close_hint: "Chiudi la pagina per tornare al bot."
       },
       en: {
         page_title: "Legal Center", page_subtitle: "Transparency and Terms of Use",
         tab_privacy: "Privacy Policy", tab_terms: "Terms & Conditions",
-        btn_close: "Close and Return to Bot"
+        close_hint: "Close the page to return to the bot."
       }
     };
 
     // Detect Language
     const urlParams = new URLSearchParams(window.location.search);
     const langParam = urlParams.get('lang') || 'it';
-    const currentLang = (['it', 'en'].includes(langParam)) ? langParam : 'en'; 
+    const currentLang = (['it', 'en'].includes(langParam)) ? langParam : 'en'; // Default to EN if not IT
 
     // Apply Static Translations
     const t = translations[currentLang];
@@ -206,7 +204,7 @@
     document.querySelector('[data-i18n="page_subtitle"]').innerText = t.page_subtitle;
     document.querySelector('[data-i18n="tab_privacy"]').innerText = t.tab_privacy;
     document.querySelector('[data-i18n="tab_terms"]').innerText = t.tab_terms;
-    document.querySelector('[data-i18n="btn_close"]').innerText = t.btn_close;
+    document.querySelector('[data-i18n="close_hint"]').innerText = t.close_hint;
 
     // Show correct language content inside cards
     document.querySelectorAll('.lang-it').forEach(el => el.classList.toggle('hidden', currentLang !== 'it'));
@@ -214,23 +212,15 @@
 
     // Tab Switching Logic
     function switchTab(tab) {
+      // Buttons
       document.querySelectorAll('.nav-tab').forEach(el => el.classList.remove('active'));
       document.getElementById('tab-' + tab).classList.add('active');
+
+      // Content
       document.getElementById('content-privacy').classList.add('hidden');
       document.getElementById('content-terms').classList.add('hidden');
       document.getElementById('content-' + tab).classList.remove('hidden');
     }
-
-    // --- LOGICA DI CHIUSURA ROBUSTA ---
-    document.getElementById('btnClose').addEventListener('click', function() {
-        if (window.Telegram && window.Telegram.WebApp) {
-            window.Telegram.WebApp.close();
-        } else {
-            // Fallback se sei su un browser normale (per capire che il click funziona)
-            alert("Il comando 'Chiudi' funziona solo dentro l'app di Telegram.");
-            window.close(); // Tenta di chiudere la tab del browser
-        }
-    });
 
   </script>
 </body>
