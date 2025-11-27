@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>SiteBoS Activation</title>
   
-  <!-- LIBS -->
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -16,193 +15,150 @@
 
   <div id="loader">
     <div class="spinner"></div>
-    <div style="margin-top:10px; font-size:12px; opacity:0.7">SECURE HANDSHAKE</div>
   </div>
 
-  <div id="access-denied" class="hidden container text-center" style="padding-top:50px;">
-    <div style="font-size:50px; margin-bottom:20px;">🔒</div>
-    <h2 data-i18n="access_denied_title">Accesso Riservato</h2>
-    <p class="subtitle" data-i18n="access_denied_desc">Configurazione disponibile solo tramite Bot.</p>
-    <a href="https://t.me/TrinAi_SiteBoS_bot" class="btn btn-primary btn-block" data-i18n="open_bot">Apri Bot Telegram</a>
+  <div id="access-denied" class="hidden container text-center" style="padding-top:40px;">
+    <h1>🔒</h1>
+    <h2>Accesso Riservato</h2>
+    <p class="subtitle">Configurazione disponibile solo tramite Bot.</p>
   </div>
 
   <div id="app-content" class="container hidden">
+    <!-- Lang Selector -->
     <div style="display:flex; justify-content:flex-end; margin-bottom:10px;">
-      <select id="lang-selector" onchange="changeLanguage(this.value)" style="width:auto; padding:5px 10px; font-size:12px;">
+      <select id="lang-selector" onchange="changeLanguage(this.value)" style="width:auto; padding:5px; font-size:12px;">
         <option value="it">🇮🇹 IT</option>
         <option value="en">🇬🇧 EN</option>
-        <option value="fr">🇫🇷 FR</option>
-        <option value="de">🇩🇪 DE</option>
-        <option value="es">🇪🇸 ES</option>
-        <option value="pt">🇵🇹 PT</option>
       </select>
     </div>
 
-    <!-- PROGRESS BAR CORRETTA VISIVAMENTE -->
+    <!-- Progress Bar -->
     <div class="progress-bar">
       <div class="progress-line"></div>
       <div class="progress-fill" id="progress-fill"></div>
       
       <div class="step-item active" id="si-1">
         <div class="step-circle">1</div>
-        <div class="step-label" data-i18n="step_identity">Start</div>
+        <div class="step-label">Start</div>
       </div>
       <div class="step-item" id="si-2">
         <div class="step-circle">2</div>
-        <div class="step-label" data-i18n="step_company">Dati</div>
+        <div class="step-label">Dati</div>
       </div>
       <div class="step-item" id="si-3">
         <div class="step-circle">3</div>
-        <div class="step-label" data-i18n="step_plan">Promo</div>
+        <div class="step-label">Promo</div>
       </div>
     </div>
 
     <form id="wizardForm" onsubmit="return false;">
       
-      <!-- STEP 1 -->
+      <!-- STEP 1: SETUP -->
       <div class="step-content fade-in" id="step-1">
-        <h2 data-i18n="h_identity">Setup & Sicurezza</h2>
-        <p class="subtitle" data-i18n="sub_identity">Consensi, Chiave API e Verifica Identità.</p>
-
-        <div class="card" style="padding:15px;">
+        <div class="form-section">
+            <h3 class="form-section-title">Consensi & API</h3>
             <div class="checkbox-group">
                 <input type="checkbox" id="chk_privacy" onchange="checkLegalGate()">
-                <label for="chk_privacy" data-i18n="legal_privacy">Privacy Policy</label>
+                <label for="chk_privacy">Privacy Policy</label>
             </div>
             <div class="checkbox-group">
                 <input type="checkbox" id="chk_terms" onchange="checkLegalGate()">
-                <label for="chk_terms" data-i18n="legal_terms">Termini e Condizioni</label>
+                <label for="chk_terms">Termini e Condizioni</label>
             </div>
-            <div class="checkbox-group">
-                <input type="checkbox" id="chk_ai" onchange="checkLegalGate()">
-                <label for="chk_ai" data-i18n="legal_ai">Autorizzo analisi AI</label>
+            
+            <div style="margin-top:15px;">
+                <label class="required">Gemini API Key</label>
+                <div style="display:flex; gap:10px;">
+                    <input type="text" id="gemini_key" placeholder="Incolla qui la chiave..." disabled>
+                    <a href="https://aistudio.google.com/api-keys" target="_blank" class="btn btn-sm btn-secondary" style="white-space:nowrap;">Genera</a>
+                </div>
             </div>
         </div>
 
-        <div class="card" style="border:1px solid var(--primary);">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-                <div style="font-weight:bold; color:var(--primary);"><i class="fas fa-brain"></i> Gemini API Key</div>
-                <a href="https://aistudio.google.com/api-keys" target="_blank" class="btn-sm btn-secondary" style="text-decoration:none;" data-i18n="btn_get_key">Genera Gratis</a>
+        <div class="form-section">
+            <h3 class="form-section-title">Identità Admin</h3>
+            <div class="row">
+                <div class="col"><label class="required">Nome</label><input type="text" id="name"></div>
+                <div class="col"><label class="required">Cognome</label><input type="text" id="surname"></div>
             </div>
-            <input type="text" id="gemini_key" placeholder="Incolla qui: AIzaSy..." disabled required>
-            <div class="hint" data-i18n="byok_note">⚠️ BYOK: I dati rimangono sotto il tuo controllo.</div>
+            <div class="input-group"><label class="required">Codice Fiscale</label><input type="text" id="fiscal_code"></div>
+            <div class="input-group"><label class="required">Email</label><input type="email" id="email"></div>
+            <div class="input-group"><label class="required">Cellulare</label><input type="tel" id="phone"></div>
         </div>
-
-        <div class="input-group">
-          <label data-i18n="lbl_id_card">Documento d'Identità (Fronte)</label>
-          <div class="upload-box" id="upload-box">
-            <input type="file" id="id_document" accept="image/*,application/pdf" disabled>
-            <div class="upload-icon" id="upload-icon"><i class="fas fa-id-card"></i></div>
-            <div class="upload-text" id="upload-text" data-i18n="upload_lock">Accetta i termini per sbloccare</div>
-          </div>
-        </div>
-
-        <div class="row">
-          <div class="col"><label class="required" data-i18n="lbl_name">Nome</label><input type="text" id="name" required placeholder="..."></div>
-          <div class="col"><label class="required" data-i18n="lbl_surname">Cognome</label><input type="text" id="surname" required placeholder="..."></div>
-        </div>
-        <div class="input-group"><label class="required" data-i18n="lbl_fiscal">Codice Fiscale</label><input type="text" id="fiscal_code" required placeholder="..."></div>
-        <div class="input-group"><label class="required" data-i18n="lbl_email">Email (Admin)</label><input type="email" id="email" required></div>
-        <div class="input-group"><label class="required" data-i18n="lbl_phone">Cellulare</label><input type="tel" id="phone" required></div>
 
         <div class="btn-container">
-          <button type="button" class="btn btn-primary btn-block" id="btn-step1" onclick="submitStep1()" disabled>
-            <span data-i18n="btn_next">Avanti</span> <i class="fas fa-arrow-right"></i>
+          <button type="button" class="btn btn-primary btn-block" id="btn-step1" onclick="validateAndGo(2)" disabled>
+            Avanti <i class="fas fa-arrow-right"></i>
           </button>
         </div>
       </div>
 
-      <!-- STEP 2 -->
+      <!-- STEP 2: AZIENDA -->
       <div class="step-content hidden fade-in" id="step-2">
-        <h2 data-i18n="h_company">Profilo Aziendale</h2>
-        <p class="subtitle" data-i18n="sub_company">Configurazione operativa e fiscale.</p>
-
-        <div class="input-group"><label class="required" data-i18n="lbl_company_name">Ragione Sociale</label><input type="text" id="ragione_sociale" required></div>
+        <h3 class="form-section-title">Dati Aziendali</h3>
+        
+        <div class="input-group"><label class="required">Ragione Sociale</label><input type="text" id="ragione_sociale"></div>
         <div class="row">
-          <div class="col"><label class="required" data-i18n="lbl_vat">P.IVA</label><input type="text" id="vat_number" required></div>
-          <div class="col"><label data-i18n="lbl_sdi">SDI / PEC</label><input type="text" id="sdi_pec"></div>
+          <div class="col"><label class="required">P.IVA</label><input type="text" id="vat_number"></div>
+          <div class="col"><label>SDI / PEC</label><input type="text" id="sdi_pec"></div>
         </div>
         
-        <div class="card">
-            <div class="section-title" data-i18n="section_identity" style="margin-top:0;">IDENTITÀ OPERATIVA</div>
-            <div class="input-group">
-                <label data-i18n="lbl_sector">Settore di Attività</label>
-                <select id="sector">
-                    <option value="services">Servizi / Consulenza</option>
-                    <option value="retail">Retail / E-commerce</option>
-                    <option value="tech">IT / Software</option>
-                    <option value="manufacturing">Produzione / Artigianato</option>
-                    <option value="horeca">HoReCa / Turismo</option>
-                    <option value="other">Altro</option>
-                </select>
-            </div>
-            <div class="input-group">
-                <label data-i18n="lbl_what_we_do">Cosa fate? (Breve descrizione)</label>
-                <textarea id="what_we_do" placeholder="..." rows="2"></textarea>
-            </div>
-            <div class="input-group">
-                <label data-i18n="lbl_goal">Obiettivo Principale con l'AI</label>
-                <select id="main_goal">
-                    <option value="automate_support">Automatizzare il Supporto Clienti</option>
-                    <option value="increase_sales">Aumentare le Vendite / Lead</option>
-                    <option value="organize_workflow">Organizzare Agenda e Processi</option>
-                    <option value="knowledge_base">Gestione Conoscenza Aziendale</option>
-                </select>
-            </div>
+        <div class="input-group">
+           <label class="required">Sede Legale</label>
+           <div class="row">
+             <div class="col-2"><input type="text" id="addr_route" placeholder="Via/Piazza"></div>
+             <div class="col"><input type="text" id="addr_num" placeholder="N°"></div>
+           </div>
+           <div class="row">
+             <div class="col"><input type="text" id="addr_zip" placeholder="CAP"></div>
+             <div class="col-2"><input type="text" id="addr_city" placeholder="Città"></div>
+             <div class="col"><input type="text" id="addr_prov" placeholder="PR" maxlength="2"></div>
+           </div>
         </div>
 
-        <div class="input-group">
-           <label class="required" data-i18n="lbl_address">Sede Legale</label>
-           <div class="row">
-             <div class="col-2"><input type="text" id="addr_route" placeholder="Via/Piazza" required></div>
-             <div class="col"><input type="text" id="addr_num" placeholder="N°" required></div>
-           </div>
-           <div class="row">
-             <div class="col"><input type="text" id="addr_zip" placeholder="CAP" required></div>
-             <div class="col-2"><input type="text" id="addr_city" placeholder="Città" required></div>
-             <div class="col"><input type="text" id="addr_prov" placeholder="PR" maxlength="2" required></div>
-           </div>
+        <div class="input-group"><label>Settore</label>
+            <select id="sector">
+                <option value="services">Servizi</option>
+                <option value="retail">Retail</option>
+                <option value="other">Altro</option>
+            </select>
         </div>
-        <div class="input-group"><label data-i18n="lbl_site">Sito Web</label><input type="url" id="site" placeholder="https://..."></div>
-        <div class="input-group"><label>LinkedIn</label><input type="url" id="linkedin_page" placeholder="https://linkedin.com/..."></div>
-        <div class="input-group"><label>Facebook</label><input type="url" id="facebook_page" placeholder="https://facebook.com/..."></div>
 
         <div class="btn-container">
-          <button type="button" class="btn btn-secondary" onclick="goToStep(1)"><i class="fas fa-arrow-left"></i> <span data-i18n="btn_back">Indietro</span></button>
-          <button type="button" class="btn btn-primary" onclick="goToStep(3)"><span data-i18n="btn_next">Avanti</span> <i class="fas fa-arrow-right"></i></button>
+          <button type="button" class="btn btn-secondary" onclick="goToStep(1)">Indietro</button>
+          <button type="button" class="btn btn-primary" onclick="validateAndGo(3)">Avanti <i class="fas fa-arrow-right"></i></button>
         </div>
       </div>
 
-      <!-- STEP 3 -->
+      <!-- STEP 3: PROMO -->
       <div class="step-content hidden fade-in" id="step-3">
-        <h2 data-i18n="h_plan">Offerta Pionieri</h2>
-        <p class="subtitle" data-i18n="sub_plan">Attivazione gratuita. Paga solo se decidi di restare.</p>
-
+        <h3 class="form-section-title">Attivazione</h3>
+        
         <div class="pioneer-card">
-            <div class="pioneer-badge" data-i18n="pioneer_badge">14 GIORNI GRATIS</div>
-            <div class="pioneer-title" style="font-size:18px; font-weight:bold; margin-bottom:5px;">SiteBoS Enterprise</div>
-            <p class="pioneer-desc" data-i18n="pioneer_desc" style="font-size:13px; color:var(--text-muted);">Accesso completo. Nessun addebito oggi.</p>
-            <div style="margin-top:15px; display:flex; justify-content:space-between; align-items:center;">
-                <span class="pioneer-value">€ 5.000 / anno</span>
-                <span class="pioneer-price" data-i18n="pioneer_free">GRATIS</span>
+            <div class="pioneer-badge">14 GIORNI GRATIS</div>
+            <div style="font-size:18px; font-weight:bold; color:#fff;">SiteBoS Enterprise</div>
+            <p style="font-size:13px; color:rgba(255,255,255,0.7); margin-bottom:15px;">Accesso completo alle funzionalità AI.</p>
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <span style="text-decoration:line-through; color:rgba(255,255,255,0.5);">€ 5.000 / anno</span>
+                <span style="font-size:20px; color:#4cd964; font-weight:bold;">GRATIS ORA</span>
             </div>
         </div>
 
         <div style="margin-top:20px;">
-            <label data-i18n="lbl_payment_pref">Preferenza di pagamento futura:</label>
+            <label>Metodo di pagamento preferito (Futuro):</label>
             <div class="payment-selector">
-                <div class="payment-option selected" onclick="selectPayment('stripe', this)"><i class="fab fa-stripe-s"></i> Carta</div>
-                <div class="payment-option" onclick="selectPayment('paypal', this)"><i class="fab fa-paypal"></i> PayPal</div>
-                <div class="payment-option" onclick="selectPayment('wire', this)"><i class="fas fa-university"></i> <span data-i18n="pay_wire">Bonifico</span></div>
+                <div class="payment-option selected" onclick="setPay('card', this)"><i class="fas fa-credit-card"></i> Carta</div>
+                <div class="payment-option" onclick="setPay('paypal', this)"><i class="fab fa-paypal"></i> PayPal</div>
+                <div class="payment-option" onclick="setPay('wire', this)"><i class="fas fa-university"></i> Bonifico</div>
             </div>
-            <input type="hidden" id="payment_pref" value="stripe">
+            <input type="hidden" id="payment_pref" value="card">
         </div>
 
         <div class="btn-container">
-          <button type="button" class="btn btn-secondary" onclick="goToStep(2)"><i class="fas fa-arrow-left"></i> <span data-i18n="btn_back">Indietro</span></button>
-          <!-- MODIFICA: type="button" e onclick="finalizeSubmission()" -->
-          <button type="button" class="btn btn-success" id="submitBtn" onclick="finalizeSubmission()">
-            <i class="fas fa-rocket"></i> <span data-i18n="btn_activate">ATTIVA PROVA ORA</span>
+          <button type="button" class="btn btn-secondary" onclick="goToStep(2)">Indietro</button>
+          <!-- IL PULSANTE CRITICO -->
+          <button type="button" class="btn btn-success" id="finalSubmitBtn" onclick="finalizeSubmission()">
+            <i class="fas fa-rocket"></i> ATTIVA PROVA ORA
           </button>
         </div>
       </div>
@@ -211,257 +167,164 @@
   </div>
 
   <script>
-    // WEBHOOK URL PER ONBOARDING
+    // URL WEBHOOK N8N
     const WEBHOOK_URL = "https://trinai.api.workflow.dcmake.it/webhook/ef4aece4-9ec0-4026-a7a7-328562bcbdf6"; 
     
-    const tg = window.Telegram.WebApp; tg.ready(); tg.expand();
+    const tg = window.Telegram.WebApp; 
+    tg.ready(); tg.expand();
 
-    // I18N
-    const i18n = {
-      it: {
-        access_denied_title:"Accesso Negato", access_denied_desc:"Accesso consentito solo via Bot.", open_bot:"Apri Bot",
-        step_identity:"Start", step_company:"Azienda", step_plan:"Promo",
-        h_identity:"Setup & Sicurezza", sub_identity:"Consensi, Chiave API e KYC.",
-        legal_privacy:"Accetto Privacy Policy", legal_terms:"Accetto Termini", legal_ai:"Autorizzo analisi AI",
-        btn_get_key:"Genera Gratis", byok_note:"⚠️ BYOK: Dati sotto il tuo controllo.",
-        lbl_id_card:"Documento (Fronte)", upload_lock:"Accetta termini per sbloccare", upload_hint:"Carica Foto/PDF",
-        lbl_name:"Nome", lbl_surname:"Cognome", lbl_fiscal:"Codice Fiscale", lbl_email:"Email (Admin)", lbl_phone:"Cellulare",
-        btn_next:"Avanti", btn_back:"Indietro",
-        h_company:"Profilo Aziendale", sub_company:"Configurazione operativa e fiscale.",
-        lbl_company_name:"Ragione Sociale", lbl_vat:"P.IVA", lbl_sdi:"SDI / PEC", lbl_address:"Sede Legale", lbl_site:"Sito Web",
-        section_identity: "IDENTITÀ OPERATIVA", lbl_sector: "Settore", lbl_what_we_do: "Cosa fate?", lbl_goal: "Obiettivo AI",
-        h_plan:"Offerta Pionieri", sub_plan:"Attiva ora, decidi dopo.", pioneer_badge:"14 GIORNI GRATIS", pioneer_desc:"Accesso completo Enterprise.", pioneer_free:"GRATIS",
-        lbl_payment_pref: "Metodo pagamento preferito:", pay_wire: "Bonifico", btn_activate: "ATTIVA PROVA ORA",
-        error_missing:"Compila tutti i campi obbligatori!"
-      },
-      en: {
-        access_denied_title:"Access Denied", access_denied_desc:"Bot access only.", open_bot:"Open Bot",
-        step_identity:"Start", step_company:"Company", step_plan:"Promo",
-        h_identity:"Setup & Security", sub_identity:"Consents, API Key & KYC.",
-        legal_privacy:"Accept Privacy", legal_terms:"Accept Terms", legal_ai:"Auth AI check",
-        btn_get_key:"Get Key Free", byok_note:"⚠️ BYOK: You control data.",
-        lbl_id_card:"ID Document", upload_lock:"Accept terms to unlock", upload_hint:"Upload Photo/PDF",
-        lbl_name:"Name", lbl_surname:"Surname", lbl_fiscal:"Tax ID", lbl_email:"Email", lbl_phone:"Mobile",
-        btn_next:"Next", btn_back:"Back",
-        h_company:"Company Profile", sub_company:"Operational & Tax Setup.",
-        lbl_company_name:"Company Name", lbl_vat:"VAT ID", lbl_sdi:"Tax Code", lbl_address:"Address", lbl_site:"Website",
-        section_identity: "OPERATIONAL IDENTITY", lbl_sector: "Sector", lbl_what_we_do: "What do you do?", lbl_goal: "AI Goal",
-        h_plan:"Pioneer Offer", sub_plan:"Activate now, decide later.", pioneer_badge:"14 DAYS FREE", pioneer_desc:"Full Enterprise Access.", pioneer_free:"FREE NOW",
-        lbl_payment_pref: "Preferred payment method:", pay_wire: "Wire Transfer", btn_activate: "START TRIAL NOW",
-        error_missing:"Fill in all required fields!"
-      }
-    };
-
+    // DOM Elements
     const dom = {
-      denied: document.getElementById('access-denied'), app: document.getElementById('app-content'),
-      steps: [document.getElementById('step-1'), document.getElementById('step-2'), document.getElementById('step-3')],
-      dots: [document.getElementById('si-1'), document.getElementById('si-2'), document.getElementById('si-3')],
-      progressFill: document.getElementById('progress-fill'), 
-      fileInput: document.getElementById('id_document'), fileBox: document.getElementById('upload-box'),
-      fileText: document.getElementById('upload-text'), fileIcon: document.getElementById('upload-icon'),
-      chkPrivacy: document.getElementById('chk_privacy'), chkTerms: document.getElementById('chk_terms'), chkAi: document.getElementById('chk_ai'),
-      geminiKey: document.getElementById('gemini_key'), btnStep1: document.getElementById('btn-step1'),
-      fName: document.getElementById('name'), fSurname: document.getElementById('surname'), fFiscal: document.getElementById('fiscal_code')
+        loader: document.getElementById('loader'),
+        app: document.getElementById('app-content'),
+        denied: document.getElementById('access-denied'),
+        steps: [document.getElementById('step-1'), document.getElementById('step-2'), document.getElementById('step-3')],
+        dots: [document.getElementById('si-1'), document.getElementById('si-2'), document.getElementById('si-3')],
+        progressFill: document.getElementById('progress-fill'),
+        geminiKey: document.getElementById('gemini_key'),
+        btnStep1: document.getElementById('btn-step1')
     };
 
-    let currentStep = 1; let currentLang = 'it';
+    // URL Params
     const urlParams = new URLSearchParams(window.location.search);
-    const GLOBAL_CHAT_ID = urlParams.get('chat_id') || tg.initDataUnsafe?.user?.id;
-    const GLOBAL_THREAD_ID = urlParams.get('thread_id');
+    const chatId = urlParams.get('chat_id') || tg.initDataUnsafe?.user?.id;
+    const lang = urlParams.get('lang') || 'it';
 
-    // INIT
-    if (!GLOBAL_CHAT_ID) { 
-        dom.denied.classList.remove('hidden'); dom.app.classList.add('hidden'); 
-        document.getElementById('loader').style.display='none'; 
-    } else { 
-        dom.app.classList.remove('hidden'); 
-        document.getElementById('loader').style.display='none';
-        const user = tg.initDataUnsafe?.user;
-        const userLang = urlParams.get('lang') || user?.language_code;
-        if(userLang && i18n[userLang]) { 
-            document.getElementById('lang-selector').value = userLang; 
-            changeLanguage(userLang); 
-        } else {
-            changeLanguage('it');
-        }
+    // Init
+    if(!chatId) {
+        dom.loader.classList.add('hidden');
+        dom.denied.classList.remove('hidden');
+    } else {
+        dom.loader.classList.add('hidden');
+        dom.app.classList.remove('hidden');
     }
 
-    function changeLanguage(lang) {
-      currentLang = lang; const dict = i18n[lang] || i18n['en'];
-      document.querySelectorAll('[data-i18n]').forEach(el => { const k = el.getAttribute('data-i18n'); if(dict[k]) el.innerHTML = dict[k]; });
-    }
-
-    // LOGICA STEP 1 (Gate legale)
+    // Logic Step 1
     window.checkLegalGate = function() {
-        const ok = dom.chkPrivacy.checked && dom.chkTerms.checked && dom.chkAi.checked;
-        dom.fileInput.disabled = !ok;
+        const p = document.getElementById('chk_privacy').checked;
+        const t = document.getElementById('chk_terms').checked;
+        const ok = p && t;
         dom.geminiKey.disabled = !ok;
-        if(ok) {
-            dom.fileBox.classList.add('enabled');
-            dom.fileText.innerText = (i18n[currentLang]||i18n.it).upload_hint;
-            dom.btnStep1.disabled = false;
-        } else {
-            dom.fileBox.classList.remove('enabled');
-            dom.fileText.innerText = (i18n[currentLang]||i18n.it).upload_lock;
-            dom.btnStep1.disabled = true;
-        }
-    }
+        dom.btnStep1.disabled = !ok;
+    };
 
-    // LOGICA UPLOAD (AI Analysis simulation)
-    dom.fileInput.addEventListener('change', async (e) => {
-        if(e.target.files.length > 0) {
-            const file = e.target.files[0];
-            const key = dom.geminiKey.value;
-            // Solo simulazione visuale qui, l'invio vero avviene alla fine se non si vuole fare OCR subito
-            // Per ora lasciamo semplice: mostra solo che è stato caricato
-            dom.fileBox.classList.add('success');
-            dom.fileIcon.innerHTML = '<i class="fas fa-check-circle"></i>'; 
-            dom.fileText.innerText = file.name;
-        }
-    });
-
-    window.submitStep1 = function() {
-        // Validazione minima campi step 1
-        const req = ['gemini_key', 'name', 'surname', 'fiscal_code', 'email', 'phone'];
-        for(let id of req) {
-            if(!document.getElementById(id).value) {
-                alert((i18n[currentLang]||i18n.it).error_missing);
-                document.getElementById(id).focus();
-                return;
+    // Navigazione e Validazione Manuale
+    window.validateAndGo = function(targetStep) {
+        // Validazione Step 1
+        if(targetStep > 1) {
+            const req1 = ['gemini_key', 'name', 'surname', 'fiscal_code', 'email', 'phone'];
+            for(let id of req1) {
+                if(!document.getElementById(id).value.trim()) {
+                    alert("Compila: " + id);
+                    goToStep(1);
+                    document.getElementById(id).focus();
+                    return;
+                }
             }
         }
-        goToStep(2);
+        // Validazione Step 2
+        if(targetStep > 2) {
+            const req2 = ['ragione_sociale', 'vat_number', 'addr_route', 'addr_city'];
+            for(let id of req2) {
+                if(!document.getElementById(id).value.trim()) {
+                    alert("Compila: " + id);
+                    goToStep(2);
+                    document.getElementById(id).focus();
+                    return;
+                }
+            }
+        }
+        goToStep(targetStep);
     };
 
     window.goToStep = function(step) {
-      // Se vado avanti al 3, controllo i campi del 2
-      if(currentStep === 2 && step === 3) {
-          const reqIds = ['ragione_sociale', 'vat_number', 'addr_route', 'addr_num', 'addr_zip', 'addr_city', 'addr_prov'];
-          for(let id of reqIds) {
-              const el = document.getElementById(id);
-              if(!el.value) { alert((i18n[currentLang]||i18n.it).error_missing); el.focus(); return; }
-          }
-      }
-      
-      currentStep = step;
-      dom.steps.forEach(s => s.classList.add('hidden')); 
-      dom.steps[step-1].classList.remove('hidden');
-      
-      // Update Progress Visuals
-      dom.progressFill.style.width = ((step - 1) / 2) * 100 + "%";
-      dom.dots.forEach((d, i) => { 
-          d.parentElement.classList.remove('active','completed'); 
-          if(i < step-1) d.parentElement.classList.add('completed'); 
-          if(i === step-1) d.parentElement.classList.add('active'); 
-      });
-    }
+        dom.steps.forEach(s => s.classList.add('hidden'));
+        dom.steps[step-1].classList.remove('hidden');
+        
+        // Update Bar
+        dom.progressFill.style.width = ((step - 1) / 2) * 100 + "%";
+        dom.dots.forEach((d, i) => {
+            d.parentElement.classList.remove('active', 'completed');
+            if(i < step-1) d.parentElement.classList.add('completed');
+            if(i === step-1) d.parentElement.classList.add('active');
+        });
+    };
 
-    window.selectPayment = function(type, el) {
-        document.querySelectorAll('.payment-option').forEach(c => c.classList.remove('selected')); 
+    window.setPay = function(val, el) {
+        document.querySelectorAll('.payment-option').forEach(e => e.classList.remove('selected'));
         el.classList.add('selected');
-        document.getElementById('payment_pref').value = type;
-    }
+        document.getElementById('payment_pref').value = val;
+    };
 
-    // FUNZIONE FINALE SICURA
+    // SUBMISSION (Corretta)
     window.finalizeSubmission = async function() {
-        const btn = document.getElementById('submitBtn');
+        const btn = document.getElementById('finalSubmitBtn');
         
-        // 1. Controllo finale integrità
-        const allRequired = [
-            'gemini_key', 'name', 'surname', 'fiscal_code', 'email', 'phone',
-            'ragione_sociale', 'vat_number', 'addr_route', 'addr_zip', 'addr_city'
-        ];
-        
-        for(let id of allRequired) {
-            const el = document.getElementById(id);
-            if(!el.value) {
-                alert("Campo mancante: " + id);
-                // Logica per tornare allo step giusto se serve
+        // 1. Controllo finale integrità (Ridondante ma sicuro)
+        const allIds = ['gemini_key', 'name', 'surname', 'email', 'ragione_sociale', 'vat_number'];
+        for(let id of allIds) {
+            if(!document.getElementById(id).value.trim()) {
+                alert("Dato mancante: " + id);
+                // Trova in che step è e vacci
                 if(['ragione_sociale','vat_number'].includes(id)) goToStep(2);
                 else goToStep(1);
-                el.focus();
                 return;
             }
         }
 
-        btn.disabled = true; 
-        btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Attendo Server...';
+        // 2. UI Loading
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Invio...';
 
-        const addr = `${document.getElementById('addr_route').value} ${document.getElementById('addr_num').value}, ${document.getElementById('addr_zip').value} ${document.getElementById('addr_city').value} (${document.getElementById('addr_prov').value})`;
-        
-        // Gestione file (se presente)
-        let fileData = null;
-        let mimeType = null;
-        if(dom.fileInput.files.length > 0) {
-            try {
-                const fData = await getFileData(dom.fileInput.files[0]);
-                fileData = fData.base64;
-                mimeType = fData.mime;
-            } catch(e) { console.error("File error", e); }
-        }
+        // 3. Payload
+        const addr = `${document.getElementById('addr_route').value}, ${document.getElementById('addr_num').value} - ${document.getElementById('addr_zip').value} ${document.getElementById('addr_city').value}`;
 
         const payload = {
-            action: 'onboarding_complete', 
-            user_id: GLOBAL_CHAT_ID, 
-            chat_id: GLOBAL_CHAT_ID,
+            action: 'onboarding_complete',
+            chat_id: chatId,
             owner_data: {
-                gemini_key: dom.geminiKey.value, 
-                name: dom.fName.value, 
-                surname: dom.fSurname.value, 
-                fiscal_code: dom.fFiscal.value,
-                email: document.getElementById('email').value, 
+                gemini_key: document.getElementById('gemini_key').value,
+                name: document.getElementById('name').value,
+                surname: document.getElementById('surname').value,
+                fiscal_code: document.getElementById('fiscal_code').value,
+                email: document.getElementById('email').value,
                 phone: document.getElementById('phone').value,
-                ragione_sociale: document.getElementById('ragione_sociale').value, 
+                ragione_sociale: document.getElementById('ragione_sociale').value,
                 vat_number: document.getElementById('vat_number').value,
-                sdi_pec: document.getElementById('sdi_pec').value, 
-                indirizzo: addr, 
-                site: document.getElementById('site').value,
-                linkedin_page: document.getElementById('linkedin_page').value, 
-                facebook_page: document.getElementById('facebook_page').value,
-                sector: document.getElementById('sector').value, 
-                what_we_do: document.getElementById('what_we_do').value, 
-                main_goal: document.getElementById('main_goal').value,
-                payment_preference: document.getElementById('payment_pref').value,
-                plan: 'pioneer_free_trial', 
-                terms_accepted: true,
-                language: currentLang,
-                kyc_document_base64: fileData,
-                kyc_mime: mimeType
+                sdi_pec: document.getElementById('sdi_pec').value,
+                indirizzo: addr,
+                sector: document.getElementById('sector').value,
+                payment_pref: document.getElementById('payment_pref').value,
+                lang: lang
             }
         };
 
+        // 4. Fetch
         try {
-            const res = await fetch(WEBHOOK_URL, { 
-                method: 'POST', 
-                headers: {'Content-Type': 'application/json'}, 
+            const res = await fetch(WEBHOOK_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
             });
-            
-            // Indipendentemente dalla risposta JSON, se è 200 OK consideriamo successo
+
             if(res.ok) {
-                btn.className = 'btn btn-success btn-block';
-                btn.innerHTML = "✅ ATTIVATO! Chiudo...";
+                btn.className = "btn btn-success btn-block";
+                btn.innerHTML = "✅ SUCCESSO!";
                 tg.HapticFeedback.notificationOccurred('success');
-                setTimeout(() => tg.close(), 2000);
+                setTimeout(() => { tg.close(); }, 1500);
             } else {
-                throw new Error("Server error");
+                throw new Error("Errore Server");
             }
-        } catch(err) { 
-            alert("Errore di connessione. Riprova."); 
-            btn.disabled = false; 
-            btn.innerHTML = (i18n[currentLang]||i18n.it).btn_activate; 
+        } catch(e) {
+            console.error(e);
+            alert("Errore di connessione. Riprova.");
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-rocket"></i> ATTIVA PROVA ORA';
         }
     };
-
-    const getFileData = file => new Promise((res, rej) => {
-        const r = new FileReader(); 
-        r.readAsDataURL(file);
-        r.onload = () => { 
-            const rs = r.result; 
-            res({ base64: rs.split(',')[1], mime: rs.match(/data:([a-zA-Z0-9]+\/[a-zA-Z0-9-.+]+).*,.*/)[1] }); 
-        }; 
-        r.onerror = rej;
-    });
+    
+    // Placeholder function per compatibilità se richiamata
+    window.changeLanguage = function(l) { console.log("Lang switch to", l); }
   </script>
 </body>
 </html>
