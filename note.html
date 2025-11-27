@@ -4,73 +4,16 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>Nuova Nota / ToDo</title>
+  
+  <!-- Telegram Web App -->
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <style>
-    :root {
-      --bg-start: #4a5b8f; --bg-end: #2a3d5f; --text-primary: #ffffff;
-      --text-secondary: rgba(255, 255, 255, 0.7); --border-color: rgba(255, 255, 255, 0.2);
-      --input-bg: rgba(255, 255, 255, 0.08); --accent-color: #5B6FED;
-    }
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-      background: linear-gradient(135deg, var(--bg-start) 0%, var(--bg-end) 100%);
-      color: var(--text-primary); padding: 20px; min-height: 100vh;
-    }
-    .container { max-width: 500px; margin: 0 auto; }
-    h1 { font-size: 26px; margin-bottom: 8px; font-weight: 600; }
-    .subtitle { font-size: 14px; color: var(--text-secondary); margin-bottom: 32px; font-weight: 300; }
-    .form-group { margin-bottom: 20px; }
-    label { display: block; margin-bottom: 10px; font-size: 14px; font-weight: 500; }
-    
-    input, textarea, select {
-      width: 100%; padding: 14px 16px; border: 1px solid var(--border-color);
-      border-radius: 12px; background: var(--input-bg); backdrop-filter: blur(10px);
-      color: var(--text-primary); font-size: 15px; font-family: inherit;
-      -webkit-appearance: none;
-      appearance: none;
-    }
-    
-    select {
-        background-image: url('data:image/svg+xml;utf8,<svg fill="white" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>');
-        background-repeat: no-repeat;
-        background-position: right 16px center;
-        padding-right: 40px;
-    }
-    
-    option {
-      background: var(--bg-end);
-      color: var(--text-primary);
-    }
-
-    input[type="date"]::-webkit-calendar-picker-indicator {
-      cursor: pointer;
-      opacity: 0.7;
-      filter: invert(1);
-      transform: scale(1.2);
-      transition: opacity 0.2s ease;
-    }
-    input[type="date"]::-webkit-calendar-picker-indicator:hover {
-      opacity: 1;
-    }
-
-    input:focus, textarea:focus, select:focus {
-      outline: none; border-color: rgba(255, 255, 255, 0.5);
-      box-shadow: 0 0 15px rgba(91, 111, 237, 0.3);
-    }
-    textarea { resize: vertical; min-height: 120px; }
-    .required::after { content: " *"; color: #ff6b6b; }
-    .button-container { text-align: center; margin-top: 32px; }
-    #submitBtn {
-      width: 100%; padding: 14px; background: var(--accent-color); color: var(--text-primary);
-      border: none; border-radius: 12px; font-size: 15px; font-weight: 600; cursor: pointer;
-    }
-    #submitBtn:disabled { background: #555; cursor: not-allowed; opacity: 0.6; }
-    .cancel-hint { text-align: center; margin-top: 16px; font-size: 13px; color: var(--text-secondary); opacity: 0.8; }
-    .hint { font-size: 12px; color: rgba(255, 255, 255, 0.6); margin-top: 6px; }
-    .row { display: flex; gap: 16px; }
-    .row .form-group { flex: 1; }
-  </style>
+  
+  <!-- Fonts & Icons -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Unified Style -->
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <div class="container">
@@ -80,21 +23,27 @@
     <form id="noteForm">
       <div class="form-group">
         <label for="noteContent" class="required"><span id="lblContent"></span></label>
-        <textarea id="noteContent" required></textarea>
+        <!-- Aggiunto placeholder generico per UX -->
+        <textarea id="noteContent" required placeholder="..."></textarea>
       </div>
       
+      <!-- Layout a griglia aggiornato per style.css -->
       <div class="row">
-        <div class="form-group">
-          <label for="notePriority"><span id="lblPriority"></span></label>
-          <select id="notePriority">
-            <option value="LOW" id="optLow"></option>
-            <option value="MEDIUM" id="optMedium" selected></option>
-            <option value="HIGH" id="optHigh"></option>
-          </select>
+        <div class="col">
+          <div class="form-group">
+            <label for="notePriority"><span id="lblPriority"></span></label>
+            <select id="notePriority">
+              <option value="LOW" id="optLow"></option>
+              <option value="MEDIUM" id="optMedium" selected></option>
+              <option value="HIGH" id="optHigh"></option>
+            </select>
+          </div>
         </div>
-        <div class="form-group">
-          <label for="noteDueDate"><span id="lblDueDate"></span></label>
-          <input type="date" id="noteDueDate">
+        <div class="col">
+          <div class="form-group">
+            <label for="noteDueDate"><span id="lblDueDate"></span></label>
+            <input type="date" id="noteDueDate">
+          </div>
         </div>
       </div>
       
@@ -105,7 +54,9 @@
       </div>
       
       <div class="button-container">
-        <button type="submit" id="submitBtn"></button>
+        <button type="submit" id="submitBtn" class="btn btn-primary btn-block" disabled>
+          <i class="fas fa-plus-circle"></i> <span id="btnText"></span>
+        </button>
       </div>
       <p class="cancel-hint" id="cancelHint"></p>
     </form>
@@ -121,7 +72,7 @@
         optLow: "🔵 Bassa",
         optMedium: "🟡 Media",
         optHigh: "🔴 Alta",
-        lblDueDate: "🗓️ Scadenza (Opzionale)",
+        lblDueDate: "🗓️ Scadenza",
         lblTags: "🏷️ Tag (Opzionale)",
         hintTags: "Separa i tag con una virgola (es. fatture, urgente)",
         btnSubmit: "Aggiungi ToDo",
@@ -136,7 +87,7 @@
         optLow: "🔵 Low",
         optMedium: "🟡 Medium",
         optHigh: "🔴 High",
-        lblDueDate: "🗓️ Due Date (Optional)",
+        lblDueDate: "🗓️ Due Date",
         lblTags: "🏷️ Tags (Optional)",
         hintTags: "Separate tags with a comma (e.g., invoices, urgent)",
         btnSubmit: "Add ToDo",
@@ -151,9 +102,9 @@
         optLow: "🔵 Basse",
         optMedium: "🟡 Moyenne",
         optHigh: "🔴 Élevée",
-        lblDueDate: "🗓️ Échéance (Optionnel)",
+        lblDueDate: "🗓️ Échéance",
         lblTags: "🏷️ Étiquettes (Optionnel)",
-        hintTags: "Séparez les étiquettes par une virgule (ex: factures, urgent)",
+        hintTags: "Séparez par une virgule (ex: factures, urgent)",
         btnSubmit: "Ajouter ToDo",
         btnSuccess: "Ajouté ! Vous pouvez fermer.",
         cancelHint: "Pour annuler, fermez simplement cette fenêtre."
@@ -166,9 +117,9 @@
         optLow: "🔵 Niedrig",
         optMedium: "🟡 Mittel",
         optHigh: "🔴 Hoch",
-        lblDueDate: "🗓️ Fälligkeitsdatum (Optional)",
+        lblDueDate: "🗓️ Fälligkeit",
         lblTags: "🏷️ Tags (Optional)",
-        hintTags: "Trennen Sie Tags mit einem Komma (z.B. rechnungen, dringend)",
+        hintTags: "Mit Komma trennen (z.B. rechnungen, dringend)",
         btnSubmit: "ToDo hinzufügen",
         btnSuccess: "Hinzugefügt! Du kannst jetzt schließen.",
         cancelHint: "Zum Abbrechen einfach dieses Fenster schließen."
@@ -181,9 +132,9 @@
         optLow: "🔵 Baja",
         optMedium: "🟡 Media",
         optHigh: "🔴 Alta",
-        lblDueDate: "🗓️ Fecha de Vencimiento (Opcional)",
+        lblDueDate: "🗓️ Vencimiento",
         lblTags: "🏷️ Etiquetas (Opcional)",
-        hintTags: "Separa las etiquetas con una coma (ej: facturas, urgente)",
+        hintTags: "Separa con coma (ej: facturas, urgente)",
         btnSubmit: "Añadir ToDo",
         btnSuccess: "¡Añadido! Ya puedes cerrar.",
         cancelHint: "Para cancelar, simplemente cierra esta ventana."
@@ -196,9 +147,9 @@
         optLow: "🔵 Baixa",
         optMedium: "🟡 Média",
         optHigh: "🔴 Alta",
-        lblDueDate: "🗓️ Data de Vencimento (Opcional)",
+        lblDueDate: "🗓️ Vencimento",
         lblTags: "🏷️ Tags (Opcional)",
-        hintTags: "Separe as tags com uma vírgula (ex: faturas, urgente)",
+        hintTags: "Separe com vírgula (ex: faturas, urgente)",
         btnSubmit: "Adicionar ToDo",
         btnSuccess: "Adicionado! Pode fechar agora.",
         cancelHint: "Para cancelar, basta fechar esta janela."
@@ -213,7 +164,7 @@
       
       const urlParams = new URLSearchParams(window.location.search);
       const lang = urlParams.get('lang') || 'it';
-      const t = translations[lang] || translations.it;
+      const t = translations[lang] || translations.it; // Default to Italian if lang not found
       
       function applyTranslations() {
         document.title = t.title.replace(/<[^>]*>?/gm, '');
@@ -227,20 +178,19 @@
         document.getElementById('lblDueDate').textContent = t.lblDueDate;
         document.getElementById('lblTags').textContent = t.lblTags;
         document.getElementById('hintTags').textContent = t.hintTags;
-        document.getElementById('submitBtn').textContent = t.btnSubmit;
+        // Aggiorno lo span dentro il bottone, non il bottone intero (per preservare l'icona)
+        document.getElementById('btnText').textContent = t.btnSubmit;
         document.getElementById('cancelHint').textContent = t.cancelHint;
       }
       applyTranslations();
 
-      // NUOVO BLOCCO: Imposta la data minima per il campo della scadenza
+      // Data minima oggi
       function setMinDate() {
         const dueDateInput = document.getElementById('noteDueDate');
         const today = new Date();
         const year = today.getFullYear();
-        // getMonth() è 0-based, quindi aggiungiamo 1. Aggiungiamo '0' se è un numero singolo.
         const month = String(today.getMonth() + 1).padStart(2, '0');
         const day = String(today.getDate()).padStart(2, '0');
-        
         const minDate = `${year}-${month}-${day}`;
         dueDateInput.setAttribute('min', minDate);
       }
@@ -248,16 +198,23 @@
       
       const form = document.getElementById('noteForm');
       const submitBtn = document.getElementById('submitBtn');
+      const btnText = document.getElementById('btnText');
       const noteContent = document.getElementById('noteContent');
       
       function validateForm() {
         submitBtn.disabled = noteContent.value.trim() === '';
       }
       noteContent.addEventListener('input', validateForm);
+      // Run validation on load in case of browser autofill
       validateForm();
       
       form.addEventListener('submit', (e) => {
         e.preventDefault();
+        
+        // UI Feedback immediato
+        submitBtn.disabled = true;
+        const originalBtnText = btnText.textContent;
+        btnText.textContent = "Invio in corso...";
         
         const tagsValue = document.getElementById('noteTags').value.trim();
         const tagsArray = tagsValue ? tagsValue.split(',').map(tag => tag.trim()).filter(Boolean) : [];
@@ -283,14 +240,27 @@
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(noteData)
         })
-        .finally(() => {
-            submitBtn.disabled = true;
-            submitBtn.textContent = t.btnSuccess;
-            setTimeout(() => { tg.close(); }, 1200);
+        .then(response => {
+            if (response.ok) {
+                btnText.textContent = t.btnSuccess;
+                submitBtn.classList.remove('btn-primary');
+                submitBtn.classList.add('btn-success');
+                setTimeout(() => { tg.close(); }, 1200);
+            } else {
+                throw new Error('Network response was not ok');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            btnText.textContent = "Errore. Riprova.";
+            submitBtn.disabled = false;
+            setTimeout(() => { btnText.textContent = originalBtnText; }, 2000);
         });
       });
 
-    } catch (error) { /* ... */ }
+    } catch (error) {
+        console.error("Critical error:", error);
+    }
   </script>
 </body>
 </html>
