@@ -454,26 +454,34 @@ tr:hover { background: rgba(255, 255, 255, 0.03); }
 }
 
 /* ===========================
-   EDIT BLUEPRINT – STAGE CLEAN
+   EDIT BLUEPRINT – CARD STAGE SEPARATA
    =========================== */
 
-/* Contenitore di stage più leggero, senza effetto “scatola dentro scatola” */
 .stage-card {
-  background: transparent;
-  border: none;
-  padding: 8px 0 20px;
-  margin-bottom: 18px;
+  background: rgba(0, 0, 0, 0.30);
+  border-radius: 22px;
+  border: 1px solid rgba(255,255,255,0.22);
+  padding: 14px 16px 16px;
+  margin: 18px 0;              /* spazio tra uno stage e l'altro */
+  box-shadow: 0 12px 32px rgba(0,0,0,0.35);
 }
 
-/* Header stage: handle + contenuto + icona cestino allineati */
+/* header un filo staccato dalla parte bassa (steps) */
 .stage-header {
   display: flex;
   align-items: flex-start;
   gap: 10px;
-  margin-bottom: 6px;
-  padding-bottom: 0;
-  border-bottom: none;
+  margin-bottom: 8px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid rgba(255,255,255,0.16);
 }
+
+/* area dove andranno gli step, leggermente rientrata */
+.step-list-container {
+  margin-top: 10px;
+  padding-top: 6px;
+}
+
 
 .stage-header .drag-handle {
   padding: 8px;
