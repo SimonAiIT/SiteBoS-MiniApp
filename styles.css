@@ -452,3 +452,82 @@ tr:hover { background: rgba(255, 255, 255, 0.03); }
   .step-item { padding: 10px 10px; }
   .step-header { align-items: stretch; }
 }
+
+/* ===========================
+   EDIT BLUEPRINT – STAGE CLEAN
+   =========================== */
+
+/* Contenitore di stage più leggero, senza effetto “scatola dentro scatola” */
+.stage-card {
+  background: transparent;
+  border: none;
+  padding: 8px 0 20px;
+  margin-bottom: 18px;
+}
+
+/* Header stage: handle + contenuto + icona cestino allineati */
+.stage-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 6px;
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+.stage-header .drag-handle {
+  padding: 8px;
+  font-size: 18px;
+  opacity: 0.7;
+}
+
+/* Colonna centrale con ID + “pill” titolo/descrizione */
+.stage-content {
+  flex: 1;
+}
+
+/* ID STAGE_01 come label sopra le pill */
+.stage-content > div:first-child {
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  color: var(--accent-color) !important;
+  margin-bottom: 6px !important;
+}
+
+/* Pill superiore: input titolo */
+.stage-title-input {
+  width: 100%;
+  background: rgba(0, 0, 0, 0.35);
+  border-radius: 18px 18px 0 0;
+  border: 1px solid rgba(255,255,255,0.16);
+  color: #fff;
+  padding: 12px 16px;
+  font-size: 15px;
+  font-weight: 600;
+  margin: 0;
+}
+.stage-title-input:focus {
+  outline: none;
+  border-color: rgba(255,255,255,0.45);
+}
+
+/* Pill inferiore: textarea descrizione (stesso blocco visivo del titolo) */
+.stage-content textarea {
+  width: 100% !important;
+  margin-top: 0 !important;
+  background: rgba(0, 0, 0, 0.35) !important;
+  border-radius: 0 0 18px 18px !important;
+  border: 1px solid rgba(255,255,255,0.16) !important;
+  border-top: none !important;
+  padding: 12px 16px !important;
+  min-height: 56px !important;
+  font-size: 14px !important;
+  line-height: 1.5 !important;
+  color: var(--text-secondary) !important;
+}
+
+/* Colonna destra: cestino allineato in alto come negli step */
+.stage-header > .btn-icon.btn-delete {
+  margin-top: 4px;
+}
+
