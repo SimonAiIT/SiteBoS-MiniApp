@@ -4,121 +4,67 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>TrinAI Product Manager</title>
+    
+    <!-- Librerie -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <style>
-        :root {
-            --bg-start: #4a5b8f; --bg-end: #2a3d5f; --text-primary: #ffffff;
-            --text-secondary: rgba(255, 255, 255, 0.7); --border-color: rgba(255, 255, 255, 0.2);
-            --input-bg: rgba(255, 255, 255, 0.08); --accent-color: #5B6FED; --error-color: #ff6b6b;
-            --warning-color: #ffcc00; --warning-bg: rgba(255, 204, 0, 0.15);
-            --section-bg: rgba(0, 0, 0, 0.2);
-        }
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            background: linear-gradient(135deg, var(--bg-start) 0%, var(--bg-end) 100%);
-            color: var(--text-primary); padding: 20px; min-height: 100vh; padding-bottom: 80px;
-        }
-        .container { max-width: 600px; margin: 0 auto; }
-        
-        h1 { font-size: 24px; margin-bottom: 5px; font-weight: 600; }
-        h2 { font-size: 18px; margin-bottom: 15px; font-weight: 500; color: var(--accent-color); text-transform: uppercase; letter-spacing: 1px; margin-top: 25px;}
-        .subtitle { font-size: 13px; color: var(--text-secondary); margin-bottom: 25px; }
-
-        .form-section {
-            background: var(--section-bg); padding: 15px; border-radius: 16px; margin-bottom: 20px;
-            border: 1px solid var(--border-color);
-        }
-
-        .form-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 8px; font-size: 13px; font-weight: 500; color: var(--text-secondary); }
-        
-        input, textarea, select {
-            width: 100%; padding: 12px; border: 1px solid var(--border-color);
-            border-radius: 10px; background: var(--input-bg);
-            color: var(--text-primary); font-size: 14px; font-family: inherit;
-            transition: all 0.3s;
-        }
-        input:focus, textarea:focus { outline: none; border-color: var(--accent-color); background: rgba(255,255,255,0.1); }
-        
-        .row { display: flex; gap: 12px; }
-        .col { flex: 1; }
-
-        /* Checkbox Style */
-        .checkbox-group { display: flex; align-items: center; gap: 10px; margin-bottom: 15px; background: var(--input-bg); padding: 10px; border-radius: 10px; border: 1px solid var(--border-color); }
-        .checkbox-group input { width: 20px; height: 20px; margin: 0; }
-        .checkbox-group label { margin: 0; color: var(--text-primary); cursor: pointer; }
-
-        .button {
-            width: 100%; padding: 16px; background: var(--accent-color); color: var(--text-primary);
-            border: none; border-radius: 12px; font-size: 16px; font-weight: 600; cursor: pointer;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-        }
-        .button:disabled { opacity: 0.6; cursor: not-allowed; }
-
-        .hidden { display: none !important; }
-        
-        /* Status & Warning */
-        .warning-box {
-            background: var(--warning-bg); border: 1px solid var(--warning-color);
-            color: var(--warning-color); padding: 12px; border-radius: 10px;
-            margin-bottom: 20px; font-size: 13px; display: flex; align-items: center; gap: 10px;
-        }
-        #status { text-align: center; margin-top: 20px; }
-        .spinner {
-            border: 3px solid rgba(255,255,255,0.3); border-top: 3px solid #fff;
-            border-radius: 50%; width: 20px; height: 20px; animation: spin 1s linear infinite; display: inline-block; vertical-align: middle; margin-right: 8px;
-        }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
-        /* File Upload */
-        .file-label {
-            border: 1px dashed var(--border-color); padding: 20px; text-align: center;
-            border-radius: 12px; color: var(--text-secondary); cursor: pointer;
-        }
-        .file-label:hover { border-color: var(--accent-color); color: #fff; }
-        #filePreview img { max-width: 100%; border-radius: 8px; margin-top: 10px; }
-    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Stile Unificato -->
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <div class="container">
         
-        <!-- SECTION 1: INPUT -->
-        <div id="inputSection">
+        <!-- SECTION 1: INPUT INIZIALE -->
+        <div id="inputSection" class="fade-in">
             <h1 id="mainTitle"></h1>
             <p class="subtitle" id="subTitle"></p>
             
-            <div class="form-group">
-                <label id="lblInName"></label>
-                <input type="text" id="inName" required autocomplete="off">
+            <div class="card">
+                <div class="form-group">
+                    <label id="lblInName"></label>
+                    <input type="text" id="inName" required autocomplete="off" placeholder="...">
+                </div>
+                
+                <div class="form-group">
+                    <label id="lblInDesc"></label>
+                    <textarea id="inDesc" rows="3" placeholder="..."></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label id="lblInFile"></label>
+                    <!-- Nuovo stile Upload Box -->
+                    <div class="upload-box" id="uploadBox">
+                        <input type="file" id="inFile" accept="image/*,application/pdf">
+                        <div class="upload-icon"><i class="fas fa-cloud-upload-alt"></i></div>
+                        <span id="lblFileBtn" class="upload-text"></span>
+                        <div id="filePreview" class="mt-2"></div>
+                    </div>
+                </div>
+                
+                <div class="btn-container">
+                    <button id="btnEnrich" class="btn btn-primary btn-block">
+                        <i class="fas fa-magic"></i> <span id="txtEnrich"></span>
+                    </button>
+                </div>
             </div>
-            <div class="form-group">
-                <label id="lblInDesc"></label>
-                <textarea id="inDesc" rows="3"></textarea>
-            </div>
-            <div class="form-group">
-                <label id="lblInFile"></label>
-                <label for="inFile" class="file-label" id="lblFileBtn"></label>
-                <input type="file" id="inFile" hidden accept="image/*,application/pdf">
-                <div id="filePreview"></div>
-            </div>
-            
-            <button id="btnEnrich" class="button"></button>
         </div>
 
-        <!-- SECTION 2: EDIT FORM -->
-        <form id="editForm" class="hidden">
-            <div id="duplicateBanner" class="warning-box hidden">
+        <!-- SECTION 2: EDIT FORM (Generato da AI) -->
+        <form id="editForm" class="hidden fade-in">
+            
+            <div id="duplicateBanner" class="note note-warning hidden">
                 <span>⚠️</span> <span id="dupText"></span>
             </div>
 
             <!-- IDENTITÀ -->
-            <h2 id="secIdentity"></h2>
+            <div class="section-title" id="secIdentity"></div>
             <div class="form-section">
                 <div class="form-group">
                     <label id="lblOutName"></label>
                     <input type="text" id="outName" required>
                 </div>
+                
                 <div class="row">
                     <div class="col">
                         <label id="lblOutSku"></label>
@@ -132,22 +78,25 @@
                         </select>
                     </div>
                 </div>
+                
                 <div class="form-group">
                     <label id="lblOutShortDesc"></label>
                     <input type="text" id="outShortDesc">
                 </div>
+                
                 <div class="form-group">
                     <label id="lblOutLongDesc"></label>
                     <textarea id="outLongDesc" rows="4"></textarea>
                 </div>
+                
                 <div class="form-group">
                     <label id="lblOutInternal"></label>
-                    <textarea id="outInternal" rows="2" style="font-family: monospace; font-size: 12px;"></textarea>
+                    <textarea id="outInternal" rows="2" class="monospace"></textarea>
                 </div>
             </div>
 
             <!-- PRICING & OPS -->
-            <h2 id="secPricing"></h2>
+            <div class="section-title" id="secPricing"></div>
             <div class="form-section">
                 <div class="row">
                     <div class="col">
@@ -159,18 +108,20 @@
                         <input type="text" id="outUnit" placeholder="es. hour, item">
                     </div>
                 </div>
+                
                 <div class="checkbox-group">
                     <input type="checkbox" id="outDynamicPrice">
-                    <label for="outDynamicPrice" id="lblOutDynamic"></label>
+                    <label for="outDynamicPrice"><span id="lblOutDynamic"></span></label>
                 </div>
+                
                 <div class="checkbox-group">
                     <input type="checkbox" id="outBooking">
-                    <label for="outBooking" id="lblOutBooking"></label>
+                    <label for="outBooking"><span id="lblOutBooking"></span></label>
                 </div>
             </div>
 
             <!-- MARKETING -->
-            <h2 id="secMarketing"></h2>
+            <div class="section-title" id="secMarketing"></div>
             <div class="form-section">
                 <div class="form-group">
                     <label id="lblOutTags"></label>
@@ -182,23 +133,27 @@
                 </div>
             </div>
 
-            <button type="submit" id="btnSave" class="button"></button>
+            <div class="btn-container">
+                <button type="submit" id="btnSave" class="btn btn-success btn-block">
+                    <i class="fas fa-check"></i> <span id="txtSave"></span>
+                </button>
+            </div>
         </form>
 
-        <div id="status"></div>
+        <div id="status" class="text-center mt-2"></div>
     </div>
 
     <script>
         // CONFIG
         const ENRICH_URL = "https://trinai.api.workflow.dcmake.it/webhook/31f89350-4d7f-44b7-9aaf-e7d9e3655b6c";
-        const SAVE_URL = "https://trinai.api.workflow.dcmake.it/webhook/20fd95c0-4218-400e-ae2a-cd881a757b80"; // AGGIORNARE
+        const SAVE_URL = "https://trinai.api.workflow.dcmake.it/webhook/20fd95c0-4218-400e-ae2a-cd881a757b80"; 
 
-        // TRADUZIONI COMPLETE (RICH DATA)
+        // TRADUZIONI COMPLETE
         const tr = {
             it: {
                 title: "Nuovo Prodotto", sub: "Categoria:", 
-                lName: "Nome Richiesta", lDesc: "Istruzioni Base", lFile: "Allegato", lFileBtn: "📷 Carica File",
-                btnEnrich: "✨ Genera Bozza AI", btnSave: "✅ Salva Definitivo",
+                lName: "Nome Richiesta", lDesc: "Istruzioni Base", lFile: "Allegato", lFileBtn: "Carica Foto/PDF",
+                btnEnrich: "Genera Bozza AI", btnSave: "Salva Definitivo",
                 secId: "Identità Prodotto", secPrice: "Prezzi & Operazioni", secMark: "Marketing & Target",
                 outName: "Nome Ufficiale", outSku: "SKU", outType: "Tipo",
                 outShort: "Descrizione Breve (x UI)", outLong: "Descrizione Estesa", outInt: "Note Interne (Staff)",
@@ -209,8 +164,8 @@
             },
             en: {
                 title: "New Product", sub: "Category:", 
-                lName: "Request Name", lDesc: "Basic Instructions", lFile: "Attachment", lFileBtn: "📷 Upload File",
-                btnEnrich: "✨ Generate AI Draft", btnSave: "✅ Save Final",
+                lName: "Request Name", lDesc: "Basic Instructions", lFile: "Attachment", lFileBtn: "Upload Photo/PDF",
+                btnEnrich: "Generate AI Draft", btnSave: "Save Final",
                 secId: "Identity", secPrice: "Pricing & Ops", secMark: "Marketing & Target",
                 outName: "Official Name", outSku: "SKU", outType: "Type",
                 outShort: "Short Desc (UI)", outLong: "Full Description", outInt: "Internal Notes",
@@ -221,8 +176,8 @@
             },
             fr: {
                 title: "Nouveau Produit", sub: "Catégorie:", 
-                lName: "Nom Requête", lDesc: "Instructions", lFile: "Pièce Jointe", lFileBtn: "📷 Charger",
-                btnEnrich: "✨ Générer Ébauche", btnSave: "✅ Enregistrer",
+                lName: "Nom Requête", lDesc: "Instructions", lFile: "Pièce Jointe", lFileBtn: "Charger Photo/PDF",
+                btnEnrich: "Générer Ébauche", btnSave: "Enregistrer",
                 secId: "Identité", secPrice: "Prix & Ops", secMark: "Marketing",
                 outName: "Nom Officiel", outSku: "SKU", outType: "Type",
                 outShort: "Desc. Courte", outLong: "Desc. Complète", outInt: "Notes Internes",
@@ -231,13 +186,16 @@
                 dup: "⚠️ Doublon Possible!",
                 load: "Chargement...", err: "Erreur", ok: "Enregistré!"
             },
-            de: { title: "Neues Produkt", sub: "Kategorie:", lName: "Name", lDesc: "Anweisungen", lFile: "Anhang", lFileBtn: "📷 Laden", btnEnrich: "✨ Entwurf", btnSave: "✅ Speichern", secId: "Identität", secPrice: "Preise", secMark: "Marketing", outName: "Name", outSku: "SKU", outType: "Typ", outShort: "Kurz", outLong: "Lang", outInt: "Interne Notizen", outPrice: "Preis", outUnit: "Einheit", outDyn: "Dynamisch?", outBook: "Buchung?", outTags: "Tags", outTarget: "Zielgruppe", dup: "⚠️ Duplikat!", load: "...", err: "Fehler", ok: "OK" },
-            es: { title: "Nuevo Producto", sub: "Categoría:", lName: "Nombre", lDesc: "Instrucciones", lFile: "Adjunto", lFileBtn: "📷 Cargar", btnEnrich: "✨ Borrador", btnSave: "✅ Guardar", secId: "Identidad", secPrice: "Precios", secMark: "Marketing", outName: "Nombre", outSku: "SKU", outType: "Tipo", outShort: "Desc. Corta", outLong: "Desc. Larga", outInt: "Notas Internas", outPrice: "Precio", outUnit: "Unidad", outDyn: "Dinámico?", outBook: "Reserva?", outTags: "Tags", outTarget: "Audiencia", dup: "⚠️ Duplicado!", load: "...", err: "Error", ok: "OK" },
-            pt: { title: "Novo Produto", sub: "Categoria:", lName: "Nome", lDesc: "Instruções", lFile: "Anexo", lFileBtn: "📷 Carregar", btnEnrich: "✨ Rascunho", btnSave: "✅ Salvar", secId: "Identidade", secPrice: "Preços", secMark: "Marketing", outName: "Nome", outSku: "SKU", outType: "Tipo", outShort: "Curta", outLong: "Longa", outInt: "Notas Internas", outPrice: "Preço", outUnit: "Unidade", outDyn: "Dinâmico?", outBook: "Reserva?", outTags: "Tags", outTarget: "Público-alvo", dup: "⚠️ Duplicado!", load: "...", err: "Erro", ok: "OK" }
+            de: { title: "Neues Produkt", sub: "Kategorie:", lName: "Name", lDesc: "Anweisungen", lFile: "Anhang", lFileBtn: "Laden", btnEnrich: "Entwurf", btnSave: "Speichern", secId: "Identität", secPrice: "Preise", secMark: "Marketing", outName: "Name", outSku: "SKU", outType: "Typ", outShort: "Kurz", outLong: "Lang", outInt: "Interne Notizen", outPrice: "Preis", outUnit: "Einheit", outDyn: "Dynamisch?", outBook: "Buchung?", outTags: "Tags", outTarget: "Zielgruppe", dup: "⚠️ Duplikat!", load: "...", err: "Fehler", ok: "OK" },
+            es: { title: "Nuevo Producto", sub: "Categoría:", lName: "Nombre", lDesc: "Instrucciones", lFile: "Adjunto", lFileBtn: "Cargar", btnEnrich: "Borrador", btnSave: "Guardar", secId: "Identidad", secPrice: "Precios", secMark: "Marketing", outName: "Nombre", outSku: "SKU", outType: "Tipo", outShort: "Desc. Corta", outLong: "Desc. Larga", outInt: "Notas Internas", outPrice: "Precio", outUnit: "Unidad", outDyn: "Dinámico?", outBook: "Reserva?", outTags: "Tags", outTarget: "Audiencia", dup: "⚠️ Duplicado!", load: "...", err: "Error", ok: "OK" },
+            pt: { title: "Novo Produto", sub: "Categoria:", lName: "Nome", lDesc: "Instruções", lFile: "Anexo", lFileBtn: "Carregar", btnEnrich: "Rascunho", btnSave: "Salvar", secId: "Identidade", secPrice: "Preços", secMark: "Marketing", outName: "Nome", outSku: "SKU", outType: "Tipo", outShort: "Curta", outLong: "Longa", outInt: "Notas Internas", outPrice: "Preço", outUnit: "Unidade", outDyn: "Dinâmico?", outBook: "Reserva?", outTags: "Tags", outTarget: "Público-alvo", dup: "⚠️ Duplicado!", load: "...", err: "Erro", ok: "OK" }
         };
 
         // INIT
-        const tg = window.Telegram.WebApp; tg.ready(); tg.expand();
+        const tg = window.Telegram.WebApp; 
+        tg.ready(); 
+        tg.expand();
+        
         const p = new URLSearchParams(location.search);
         const lang = p.get('language') || 'it';
         const catId = p.get('category_id');
@@ -250,14 +208,34 @@
         let fileData = null;
 
         // UI SETUP
-        el('mainTitle').innerText = t.title; el('subTitle').innerText = `${t.sub} ${catName}`;
-        el('lblInName').innerText = t.lName; el('lblInDesc').innerText = t.lDesc; el('lblInFile').innerText = t.lFile; el('lblFileBtn').innerText = t.lFileBtn;
-        el('btnEnrich').innerText = t.btnEnrich; el('btnSave').innerText = t.btnSave;
-        el('secIdentity').innerText = t.secId; el('secPricing').innerText = t.secPrice; el('secMarketing').innerText = t.secMark;
-        el('lblOutName').innerText = t.outName; el('lblOutSku').innerText = t.outSku; el('lblOutType').innerText = t.outType;
-        el('lblOutShortDesc').innerText = t.outShort; el('lblOutLongDesc').innerText = t.outLong; el('lblOutInternal').innerText = t.outInt;
-        el('lblOutPrice').innerText = t.outPrice; el('lblOutUnit').innerText = t.outUnit; el('lblOutDynamic').innerText = t.outDyn; el('lblOutBooking').innerText = t.outBook;
-        el('lblOutTags').innerText = t.outTags; el('lblOutTarget').innerText = t.outTarget;
+        el('mainTitle').innerText = t.title; 
+        el('subTitle').innerText = `${t.sub} ${catName}`;
+        el('lblInName').innerText = t.lName; 
+        el('lblInDesc').innerText = t.lDesc; 
+        el('lblInFile').innerText = t.lFile; 
+        el('lblFileBtn').innerText = t.lFileBtn;
+        
+        el('txtEnrich').innerText = t.btnEnrich; 
+        el('txtSave').innerText = t.btnSave;
+        
+        el('secIdentity').innerText = t.secId; 
+        el('secPricing').innerText = t.secPrice; 
+        el('secMarketing').innerText = t.secMark;
+        
+        el('lblOutName').innerText = t.outName; 
+        el('lblOutSku').innerText = t.outSku; 
+        el('lblOutType').innerText = t.outType;
+        el('lblOutShortDesc').innerText = t.outShort; 
+        el('lblOutLongDesc').innerText = t.outLong; 
+        el('lblOutInternal').innerText = t.outInt;
+        
+        el('lblOutPrice').innerText = t.outPrice; 
+        el('lblOutUnit').innerText = t.outUnit; 
+        el('lblOutDynamic').innerText = t.outDyn; 
+        el('lblOutBooking').innerText = t.outBook;
+        
+        el('lblOutTags').innerText = t.outTags; 
+        el('lblOutTarget').innerText = t.outTarget;
         el('dupText').innerText = t.dup;
 
         // FILE HANDLE
@@ -267,14 +245,27 @@
             const r = new FileReader();
             r.onload = (ev) => {
                 fileData = { b64: ev.target.result.split(',')[1], mime: f.type };
-                el('filePreview').innerHTML = f.type.startsWith('image/') ? `<img src="${ev.target.result}" width="100">` : `📄 ${f.name}`;
+                
+                const box = el('uploadBox');
+                box.classList.add('enabled'); // Aggiunge bordo colorato se supportato
+                
+                // Visualizza preview
+                if (f.type.startsWith('image/')) {
+                    el('filePreview').innerHTML = `<img src="${ev.target.result}" style="max-height:100px; border-radius:8px;">`;
+                } else {
+                    el('filePreview').innerHTML = `<div class="tag"><i class="fas fa-file"></i> ${f.name}</div>`;
+                }
+                el('lblFileBtn').innerText = f.name;
             };
             r.readAsDataURL(f);
         };
 
         // ENRICH ACTION
         el('btnEnrich').onclick = async () => {
-            if(!el('inName').value) return alert(t.lName);
+            if(!el('inName').value) {
+                tg.showAlert(t.lName + ' required');
+                return;
+            }
             setLoad(true, t.btnEnrich);
             
             try {
@@ -314,16 +305,20 @@
                 // DUPLICATE
                 if(data.is_duplicate) {
                     el('duplicateBanner').classList.remove('hidden');
-                    el('outName').style.borderColor = 'var(--warning-color)';
+                    el('outName').style.borderColor = 'var(--warning)';
                 }
 
                 el('inputSection').classList.add('hidden');
                 el('editForm').classList.remove('hidden');
+                
+                // Scorri in alto
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                
                 setLoad(false);
 
             } catch(e) {
                 console.error(e);
-                alert(t.err);
+                tg.showAlert(t.err);
                 setLoad(false, t.btnEnrich);
             }
         };
@@ -365,11 +360,12 @@
                     })
                 });
                 if(res.ok) {
-                    el('status').innerHTML = `<b style="color:#4cd964">${t.ok}</b>`;
-                    setTimeout(()=>tg.close(), 1000);
+                    el('status').innerHTML = `<div class="note note-success">${t.ok}</div>`;
+                    if(tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
+                    setTimeout(()=>tg.close(), 1500);
                 } else throw new Error();
             } catch(e) {
-                alert(t.err);
+                tg.showAlert(t.err);
                 setLoad(false, t.btnSave);
             }
         };
@@ -377,8 +373,17 @@
         function setLoad(isLoading, txt) {
             el('status').innerHTML = isLoading ? `<div class="spinner"></div> ${t.load}` : '';
             if(txt) {
-                if(el('inputSection').classList.contains('hidden')) el('btnSave').disabled = isLoading;
-                else el('btnEnrich').disabled = isLoading;
+                const btn = el('inputSection').classList.contains('hidden') ? el('btnSave') : el('btnEnrich');
+                const span = el('inputSection').classList.contains('hidden') ? el('txtSave') : el('txtEnrich');
+                
+                btn.disabled = isLoading;
+                if(isLoading) {
+                    span.innerText = t.load;
+                    btn.querySelector('i').className = "fas fa-circle-notch fa-spin";
+                } else {
+                    span.innerText = txt;
+                    btn.querySelector('i').className = el('inputSection').classList.contains('hidden') ? "fas fa-check" : "fas fa-magic";
+                }
             }
         }
     </script>
