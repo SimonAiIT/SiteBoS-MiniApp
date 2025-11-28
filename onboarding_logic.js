@@ -371,11 +371,15 @@ function submitFinalForm() {
     btn.disabled = true;
     btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Avvio...';
 
-    // RACCOLTA COMPLETA DEI DATI DAL FORM
     const addr = `${document.getElementById('addr_route').value} ${document.getElementById('addr_num').value}, ${document.getElementById('addr_zip').value} ${document.getElementById('addr_city').value} (${document.getElementById('addr_prov').value})`;
     const vatNumber = document.getElementById('vat_number').value;
 
+    // --- COSTRUZIONE DEL PAYLOAD COMPLETO ---
+    // Questo è il pacchetto che verrà messo nello "zaino" (sessionStorage)
     const payload = {
+        // L'AZIONE ORIGINALE CHE IL TUO WORKFLOW SI ASPETTA
+        action: 'payment_checkout', 
+        
         user_id: GLOBAL_CHAT_ID, 
         chat_id: GLOBAL_CHAT_ID, 
         thread_id: GLOBAL_THREAD_ID,
