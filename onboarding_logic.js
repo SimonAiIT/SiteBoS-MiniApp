@@ -5,19 +5,20 @@
  */
 
 // --- CONFIG ---
-// CORREZIONE: MANTENIAMO IL WEBHOOK_URL ORIGINALE, USATO PER L'ANALISI DOCUMENTO (KYC)
 const WEBHOOK_URL = "https://trinai.api.workflow.dcmake.it/webhook/83acc670-15ae-4da0-ae0e-3587c85bd5f4"; 
 
 const tg = window.Telegram.WebApp; 
 tg.ready(); tg.expand();
 
-// --- I18N DICTIONARY (COMPLETO) ---
+// --- I18N DICTIONARY (COMPLETO E CORRETTO) ---
 const i18n = {
     it: {
         access_denied_title:"Accesso Negato", access_denied_desc:"Accesso solo via Bot.", open_bot:"Apri Bot",
         step_identity:"Start", step_company:"Azienda", step_plan:"Promo",
         h_identity:"Setup & Sicurezza", sub_identity:"Consensi, Chiave API e KYC.",
-        legal_privacy:"Accetto Privacy", legal_terms:"Accetto Termini", legal_ai:"Autorizzo analisi AI",
+        legal_privacy: "Dichiaro di aver letto e accettato la <a href='legal.html?lang=it' target='_blank'>Privacy Policy</a>.",
+        legal_terms: "Accetto i <a href='legal.html?lang=it' target='_blank'>Termini e Condizioni</a>.",
+        legal_ai:"Autorizzo analisi AI per KYC.",
         btn_get_key:"Genera Gratis", byok_note:"⚠️ BYOK: Dati sotto il tuo controllo.",
         lbl_id_card:"Documento (Fronte)", upload_lock:"Accetta termini per sbloccare", upload_hint:"Carica Foto/PDF",
         lbl_name:"Nome", lbl_surname:"Cognome", lbl_fiscal:"Codice Fiscale", lbl_email:"Email (Admin)", lbl_phone:"Cellulare",
@@ -33,7 +34,9 @@ const i18n = {
         access_denied_title:"Access Denied", access_denied_desc:"Bot access only.", open_bot:"Open Bot",
         step_identity:"Start", step_company:"Company", step_plan:"Promo",
         h_identity:"Setup & Security", sub_identity:"Consents, API Key & KYC.",
-        legal_privacy:"Accept Privacy", legal_terms:"Accept Terms", legal_ai:"Auth AI check",
+        legal_privacy: "I declare I have read and accept the <a href='legal.html?lang=en' target='_blank'>Privacy Policy</a>.",
+        legal_terms: "I accept the <a href='legal.html?lang=en' target='_blank'>Terms and Conditions</a>.",
+        legal_ai:"I authorize AI analysis for KYC.",
         btn_get_key:"Get Key Free", byok_note:"⚠️ BYOK: You control data.",
         lbl_id_card:"ID Document", upload_lock:"Accept terms to unlock", upload_hint:"Upload Photo/PDF",
         lbl_name:"Name", lbl_surname:"Surname", lbl_fiscal:"Tax ID", lbl_email:"Email", lbl_phone:"Mobile",
@@ -49,7 +52,9 @@ const i18n = {
         access_denied_title:"Accès Refusé", access_denied_desc:"Accès via Bot uniquement.", open_bot:"Ouvrir Bot",
         step_identity:"Début", step_company:"Entreprise", step_plan:"Promo",
         h_identity:"Config & Sécurité", sub_identity:"Consentements, Clé API & KYC.",
-        legal_privacy:"Accepter Confidentialité", legal_terms:"Accepter Conditions", legal_ai:"Auth analyse IA",
+        legal_privacy: "Je déclare avoir lu et accepté la <a href='legal.html?lang=fr' target='_blank'>Politique de Confidentialité</a>.",
+        legal_terms: "J'accepte les <a href='legal.html?lang=fr' target='_blank'>Termes et Conditions</a>.",
+        legal_ai:"J'autorise l'analyse par IA pour le KYC.",
         btn_get_key:"Clé Gratuite", byok_note:"⚠️ BYOK: Vous contrôlez les données.",
         lbl_id_card:"Document (Recto)", upload_lock:"Accepter pour débloquer", upload_hint:"Charger Photo/PDF",
         lbl_name:"Prénom", lbl_surname:"Nom", lbl_fiscal:"Code Fiscal", lbl_email:"Email (Admin)", lbl_phone:"Mobile",
@@ -65,7 +70,9 @@ const i18n = {
         access_denied_title:"Zugriff verweigert", access_denied_desc:"Nur über Bot.", open_bot:"Bot öffnen",
         step_identity:"Start", step_company:"Firma", step_plan:"Promo",
         h_identity:"Setup & Sicherheit", sub_identity:"Zustimmungen, API Key & KYC.",
-        legal_privacy:"Akzeptiere Datenschutz", legal_terms:"Akzeptiere AGB", legal_ai:"KI-Analyse erlauben",
+        legal_privacy: "Ich habe die <a href='legal.html?lang=de' target='_blank'>Datenschutzrichtlinie</a> gelesen und akzeptiere sie.",
+        legal_terms: "Ich akzeptiere die <a href='legal.html?lang=de' target='_blank'>Allgemeinen Geschäftsbedingungen</a>.",
+        legal_ai:"Ich erlaube die KI-Analyse für KYC.",
         btn_get_key:"Gratis Key", byok_note:"⚠️ BYOK: Ihre Datenkontrolle.",
         lbl_id_card:"Ausweis", upload_lock:"AGB akzeptieren", upload_hint:"Foto/PDF hochladen",
         lbl_name:"Vorname", lbl_surname:"Nachname", lbl_fiscal:"Steuernummer", lbl_email:"E-Mail", lbl_phone:"Mobil",
@@ -81,7 +88,9 @@ const i18n = {
         access_denied_title:"Acceso Denegado", access_denied_desc:"Acceso solo vía Bot.", open_bot:"Abrir Bot",
         step_identity:"Inicio", step_company:"Empresa", step_plan:"Promo",
         h_identity:"Config y Seguridad", sub_identity:"Consentimientos, Clave API y KYC.",
-        legal_privacy:"Acepto Privacidad", legal_terms:"Acepto Términos", legal_ai:"Autorizo IA",
+        legal_privacy: "Declaro haber leído y aceptado la <a href='legal.html?lang=es' target='_blank'>Política de Privacidad</a>.",
+        legal_terms: "Acepto los <a href='legal.html?lang=es' target='_blank'>Términos y Condiciones</a>.",
+        legal_ai:"Autorizo el análisis de IA para KYC.",
         btn_get_key:"Clave Gratis", byok_note:"⚠️ BYOK: Tú controlas los datos.",
         lbl_id_card:"Documento", upload_lock:"Aceptar para desbloquear", upload_hint:"Subir Foto/PDF",
         lbl_name:"Nombre", lbl_surname:"Apellido", lbl_fiscal:"NIF", lbl_email:"Email", lbl_phone:"Móvil",
@@ -97,7 +106,9 @@ const i18n = {
         access_denied_title:"Acesso Negado", access_denied_desc:"Acesso via Bot.", open_bot:"Abrir Bot",
         step_identity:"Início", step_company:"Empresa", step_plan:"Promo",
         h_identity:"Config e Segurança", sub_identity:"Consentimentos, Chave API e KYC.",
-        legal_privacy:"Aceito Privacidade", legal_terms:"Aceito Termos", legal_ai:"Autorizo IA",
+        legal_privacy: "Declaro que li e aceito a <a href='legal.html?lang=pt' target='_blank'>Política de Privacidade</a>.",
+        legal_terms: "Aceito os <a href='legal.html?lang=pt' target='_blank'>Termos e Condições</a>.",
+        legal_ai:"Autorizo a análise de IA para KYC.",
         btn_get_key:"Chave Grátis", byok_note:"⚠️ BYOK: Você controla os dados.",
         lbl_id_card:"Documento", upload_lock:"Aceitar para desbloquear", upload_hint:"Carregar Foto/PDF",
         lbl_name:"Nome", lbl_surname:"Sobrenome", lbl_fiscal:"NIF", lbl_email:"Email", lbl_phone:"Celular",
@@ -172,7 +183,7 @@ function checkLegalGate() {
     dom.fileBox.classList.toggle('enabled', ok);
     dom.geminiKey.disabled = !ok;
     const dict = i18n[currentLang] || i18n.it;
-    dom.fileText.innerText = ok ? dict.upload_hint : dict.upload_lock;
+    dom.fileText.innerHTML = ok ? dict.upload_hint : dict.upload_lock;
     document.getElementById('btn-step1').disabled = !ok;
 }
 
@@ -188,7 +199,6 @@ async function analyzeId() {
     
     try {
         const { base64, mime } = await getFileData(file);
-        // La chiamata per l'analisi usa il WEBHOOK_URL definito in cima
         const res = await fetch(WEBHOOK_URL, {
             method: 'POST', headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({ action: 'analyze_id', user_id: GLOBAL_CHAT_ID, file_data: base64, mime_type: mime, gemini_key: key })
@@ -246,10 +256,7 @@ function submitFinalForm() {
         return;
     }
 
-    // CORREZIONE: L'ID del WF pesante viene definito qui, non è più una costante globale.
-    // L'URL del webhook del workflow pesante (quello da 4-5 minuti)
     const processorWebhookId = "83acc670-15ae-4da0-ae0e-3587c85bd5f4";
-
     window.location.href = `processor.html?wh=${processorWebhookId}`;
 }
 
