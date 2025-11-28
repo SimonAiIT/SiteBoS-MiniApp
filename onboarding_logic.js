@@ -1,6 +1,6 @@
 /**
- * ONBOARDING LOGIC - SITEBOS (v3.4 - Final, Complete, No More Bullshit)
- * 1. USA IL WEBHOOK_URL CORRETTO PER L'ANALISI DOCUMENTO.
+ * ONBOARDING LOGIC - SITEBOS (v3.5 - FINAL, WORKING, NO MORE BULLSHIT)
+ * 1. analyzeId CHIAMA CORRETTAMENTE IL WEBHOOK.
  * 2. Gestisce la risposta array di n8n.
  * 3. Blocca l'utente se il documento non è valido.
  * 4. CONSERVA i dati KYC estratti e li include nel payload finale.
@@ -126,7 +126,7 @@ const i18n = {
         sector_group_commerce: "Commerce",
             sector_retail: "Commerce de Détail / Magasin",
             sector_ecommerce: "E-commerce / Ventes en Ligne",
-            sector_wholesale: "Commerce de Gros / Distribuzione",
+            sector_wholesale: "Commerce de Gros / Distribution",
         sector_group_craft: "Production & Artisanat",
             sector_manufacturing: "Production Industrielle",
             sector_artisan: "Artisanat (Alimentaire, Manufacturier...)",
@@ -330,8 +330,7 @@ function changeLanguage(lang) {
 function goToStep(step) {
     const dict = i18n[currentLang] || i18n.it;
     if (currentStep === 1 && step === 2) {
-        // Aggiunto controllo per assicurarsi che i campi KYC siano stati popolati
-        if (!dom.fName.value || !dom.fSurname.value) {
+        if (!dom.fName.value || !dom.fSurname.value || !kycData) {
             tg.showAlert("È necessario completare la verifica del documento prima di procedere.");
             return;
         }
