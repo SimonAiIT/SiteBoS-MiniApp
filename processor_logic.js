@@ -1,5 +1,5 @@
 /**
- * PROCESSOR CORE - LOGIC ONLY (v2.4 - Bonus Credits Edition)
+ * PROCESSOR CORE - LOGIC ONLY (v2.5 - SYNTAX FIX)
  * 1. Chiama il webhook.
  * 2. Gestisce il redirect passando anche i CREDITI GUADAGNATI GIOCANDO.
  */
@@ -12,7 +12,7 @@ const PROCESSOR_WEBHOOK_URL = "https://trinai.api.workflow.dcmake.it/webhook/356
 
 async function runProcessor() {
     
-    // 2. RECUPERA INCARICO
+    // 1. RECUPERA PARAMETRI URL
     const params = new URLSearchParams(window.location.search);
     const callAction = params.get('call');
     const ownerKey = params.get('owner_key');
@@ -20,12 +20,17 @@ async function runProcessor() {
     
     if(!callAction || !ownerKey) return showError("CONFIG ERROR: CALL or OWNER_KEY missing");
 
-    // 3. RECUPERA PAYLOAD
+    // 2. RECUPERA PAYLOAD DA SESSION STORAGE
     const sessionKey = `pending_payload_${ownerKey}`;
     const payloadStr = sessionStorage.getItem(sessionKey);
-    if(!payloadStr) return showError("DATA ERROR: NO PAYLOAD FOUND");
     
-    sessionStorage.removeItem(sessionKey);
+    if(!payloadStr) {
+        // Fallback: se non c'è payload, forse è un reload o accesso diretto errato
+        return showError(`DATA ERROR: Nessun dato trovato per ${ownerKey}. Riprova la procedura.`);
+    }
+    
+    // Pulizia immediata per sicurezza (opzionale, meglio tenerlo se serve retry)
+    // sessionStorage.removeItem(sessionKey); 
     
     const originalPayload = JSON.parse(payloadStr);
 
@@ -45,16 +50,19 @@ async function runProcessor() {
         });
 
         if(!response.ok) throw new Error(`HTTP ${response.status}`);
+        
         const result = await response.json();
         
-        // 6. SUCCESSO -> FERMA GIOCO E SALVA SCORE
+        // 3. GESTIONE RISPOSTA
+        
+        // SUCCESSO -> FERMA GIOCO E SALVA SCORE
         if(window.SiteBoSGame) SiteBoSGame.stop();
         
-        // CHECKOUT REDIRECT
+        // CASO A: CHECKOUT URL (Pagamento)
         if (result.checkout_url) {
             window.location.href = result.checkout_url;
         } 
-        // SUCCESS REDIRECT (DASHBOARD)
+        // CASO B: SUCCESSO COMPLETO (Dashboard)
         else if (result.owner_data) {
             const vat = result.owner_data.vat_number;
             const ownerId = result.owner_data.chat_id;
@@ -68,49 +76,51 @@ async function runProcessor() {
             const score = sessionStorage.getItem('last_game_score');
             if(score && parseInt(score) > 0) {
                 finalUrl += `&bonus_credits=${score}`;
-                sessionStorage.removeItem('last_game_score'); // Clean
+                sessionStorage.removeItem('last_game_score'); 
             }
-            // --------------------------
             
-            console.log("Redirecting:", finalUrl);
+            console.log("Redirecting to:", finalUrl);
             window.location.href = finalUrl;
         } 
-               } else if (result.status === 'error') {
+        // CASO C: ERRORE GESTITO
+        else if (result.status === 'error') {
             
-            // --- LOGICA RECOVERY ---
-            if (result.error.code === 'SETUP_FAILED_RETRYABLE') {
-                // Errore recuperabile -> Offri il reset
+            // Gestione errore recuperabile (es. dati mancanti)
+            if (result.error && result.error.code === 'SETUP_FAILED_RETRYABLE') {
                 if(window.SiteBoSGame) SiteBoSGame.stop();
                 
-                // Mostra overlay custom con bottone Reset
                 const overlay = document.getElementById('error-overlay');
                 overlay.innerHTML = `
                     <div style="font-size:40px; color:#f59e0b; margin-bottom:20px;"><i class="fas fa-tools"></i></div>
                     <p class="error-msg">${result.error.message}</p>
-                    <button class="retry-btn" onclick="location.href='reset.html?vat=${originalPayload.owner_data.vat_number}'">
-                        RESETTA ISTANZA
+                    <button class="btn-game" onclick="history.back()">
+                        TORNA INDIETRO E CORREGGI
                     </button>
                 `;
                 overlay.classList.remove('hidden');
                 return;
             }
             
-            // Errore standard
-            showError(`${result.error.title}\n${result.error.message}`);
+            // Errore generico dal backend
+            showError(`${result.error ? result.error.title : 'Errore'}\n${result.error ? result.error.message : 'Errore sconosciuto'}`);
         }
         else {
-            showError("SERVER RESPONSE ERROR: Invalid data.");
+            showError("SERVER RESPONSE ERROR: Invalid data format.");
         }
 
     } catch (err) {
         if(window.SiteBoSGame) SiteBoSGame.stop();
-        showError("SERVER ERROR: " + err.message);
+        showError("CONNECTION ERROR: " + err.message);
     }
 }
 
 function showError(msg) {
-    document.getElementById('error-text').innerText = msg;
-    document.getElementById('error-overlay').classList.remove('hidden');
+    const el = document.getElementById('error-text');
+    if(el) el.innerText = msg;
+    const overlay = document.getElementById('error-overlay');
+    if(overlay) overlay.classList.remove('hidden');
+    console.error(msg);
 }
 
+// Avvio automatico al caricamento
 document.addEventListener('DOMContentLoaded', runProcessor);
