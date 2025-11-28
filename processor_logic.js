@@ -8,7 +8,7 @@ const tg = window.Telegram.WebApp;
 tg.ready(); tg.expand();
 
 // CONFIGURAZIONE API (L'unica cosa da cambiare qui se sposti i webhook)
-const API_BASE = "https://trinai.api.workflow.dcmake.it/webhook/";
+const API_BASE = "https://trinai.api.workflow.dcmake.it/webhook/35667aed-ee1c-4074-92df-d4334967a1b3";
 
 async function runProcessor() {
     
