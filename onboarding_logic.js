@@ -5,7 +5,7 @@
  */
 
 // --- CONFIG ---
-const WEBHOOK_URL = "https://trinai.api.workflow.dcmake.it/webhook/83acc670-15ae-4da0-ae0e-3587c85bd5f4"; 
+const WEBHOOK_URL = "https://trinai.api.workflow.dcmake.it/webhook/1211a23e-ff91-4d3c-8938-aa273555bd8e"; 
 
 const tg = window.Telegram.WebApp; 
 tg.ready(); tg.expand();
