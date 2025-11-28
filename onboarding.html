@@ -26,9 +26,9 @@
   </div>
 
   <div id="app-content" class="container hidden">
-    <!-- Lang Selector Compatto -->
+    <!-- Lang Selector -->
     <div style="display:flex; justify-content:flex-end; margin-bottom:10px;">
-      <select id="lang-selector" onchange="changeLanguage(this.value)" class="lang-select">
+      <select id="lang-selector" class="lang-select">
         <option value="it">🇮🇹 IT</option>
         <option value="en">🇬🇧 EN</option>
         <option value="fr">🇫🇷 FR</option>
@@ -59,33 +59,24 @@
 
     <form id="wizardForm" onsubmit="return false;">
       
-      <!-- STEP 1 -->
+      <!-- STEP 1: Sicurezza -->
       <div class="step-content fade-in" id="step-1">
         <h2 data-i18n="h_identity">Setup & Sicurezza</h2>
         <p class="subtitle" data-i18n="sub_identity">Consensi, Chiave API e Verifica Identità.</p>
 
         <div class="legal-box form-section">
-            <div class="checkbox-group">
-                <input type="checkbox" id="chk_privacy" onchange="checkLegalGate()">
-                <label for="chk_privacy" class="checkbox-label" data-i18n="legal_privacy">Dichiaro di aver letto e accettato la Privacy Policy.</label>
-            </div>
-            <div class="checkbox-group">
-                <input type="checkbox" id="chk_terms" onchange="checkLegalGate()">
-                <label for="chk_terms" class="checkbox-label" data-i18n="legal_terms">Accetto i Termini e Condizioni.</label>
-            </div>
-            <div class="checkbox-group">
-                <input type="checkbox" id="chk_ai" onchange="checkLegalGate()">
-                <label for="chk_ai" class="checkbox-label" data-i18n="legal_ai">Autorizzo analisi AI per KYC.</label>
-            </div>
+            <div class="checkbox-group"><input type="checkbox" id="chk_privacy"><label for="chk_privacy" data-i18n="legal_privacy">Accetto Privacy</label></div>
+            <div class="checkbox-group"><input type="checkbox" id="chk_terms"><label for="chk_terms" data-i18n="legal_terms">Accetto Termini</label></div>
+            <div class="checkbox-group"><input type="checkbox" id="chk_ai"><label for="chk_ai" data-i18n="legal_ai">Autorizzo analisi AI</label></div>
         </div>
 
         <div class="api-key-card form-section">
-            <div class="api-header" style="display:flex; justify-content:space-between; margin-bottom:10px;">
-                <div class="api-title" style="color:var(--primary); font-weight:bold;"><i class="fas fa-brain"></i> Gemini API Key</div>
+            <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+                <div style="color:var(--primary); font-weight:bold;"><i class="fas fa-brain"></i> Gemini API Key</div>
                 <a href="https://aistudio.google.com/api-keys" target="_blank" class="btn btn-sm btn-secondary" style="text-decoration:none;" data-i18n="btn_get_key">Genera Gratis</a>
             </div>
             <input type="text" id="gemini_key" placeholder="Incolla qui: AIzaSy..." disabled required>
-            <div class="byok-note hint" data-i18n="byok_note">⚠️ BYOK: I dati rimangono sotto il tuo controllo.</div>
+            <div class="hint" data-i18n="byok_note">⚠️ BYOK: I dati rimangono sotto il tuo controllo.</div>
         </div>
 
         <div class="input-group">
@@ -106,13 +97,13 @@
         <div class="input-group"><label class="required" data-i18n="lbl_phone">Cellulare</label><input type="tel" id="phone" required></div>
 
         <div class="btn-container">
-          <button type="button" class="btn btn-primary btn-block" id="btn-step1" onclick="submitStep1()" disabled>
+          <button type="button" class="btn btn-primary btn-block" id="btn-step1" disabled>
             <span data-i18n="btn_next">Avanti</span> <i class="fas fa-arrow-right"></i>
           </button>
         </div>
       </div>
 
-      <!-- STEP 2 -->
+      <!-- STEP 2: Azienda -->
       <div class="step-content hidden fade-in" id="step-2">
         <h2 data-i18n="h_company">Profilo Aziendale</h2>
         <p class="subtitle" data-i18n="sub_company">Configurazione operativa e fiscale.</p>
@@ -125,30 +116,9 @@
         
         <div>
             <div class="section-title" data-i18n="section_identity" style="margin-top:0;">IDENTITÀ OPERATIVA</div>
-            <div class="input-group">
-                <label data-i18n="lbl_sector">Settore di Attività</label>
-                <select id="sector">
-                    <option value="services">Servizi / Consulenza</option>
-                    <option value="retail">Retail / E-commerce</option>
-                    <option value="tech">IT / Software</option>
-                    <option value="manufacturing">Produzione / Artigianato</option>
-                    <option value="horeca">HoReCa / Turismo</option>
-                    <option value="other">Altro</option>
-                </select>
-            </div>
-            <div class="input-group">
-                <label data-i18n="lbl_what_we_do">Cosa fate? (Breve descrizione)</label>
-                <textarea id="what_we_do" placeholder="..." rows="2"></textarea>
-            </div>
-            <div class="input-group">
-                <label data-i18n="lbl_goal">Obiettivo Principale con l'AI</label>
-                <select id="main_goal">
-                    <option value="automate_support">Automatizzare il Supporto Clienti</option>
-                    <option value="increase_sales">Aumentare le Vendite / Lead</option>
-                    <option value="organize_workflow">Organizzare Agenda e Processi</option>
-                    <option value="knowledge_base">Gestione Conoscenza Aziendale</option>
-                </select>
-            </div>
+            <div class="input-group"><label data-i18n="lbl_sector">Settore</label><select id="sector"><option value="services">Servizi</option><option value="retail">Retail</option><option value="tech">IT</option><option value="other">Altro</option></select></div>
+            <div class="input-group"><label data-i18n="lbl_what_we_do">Cosa fate?</label><textarea id="what_we_do" rows="2"></textarea></div>
+            <div class="input-group"><label data-i18n="lbl_goal">Obiettivo AI</label><select id="main_goal"><option value="automate_support">Supporto</option><option value="increase_sales">Vendite</option><option value="organize_workflow">Processi</option><option value="knowledge_base">KB</option></select></div>
         </div>
 
         <div class="input-group">
@@ -164,244 +134,50 @@
            </div>
         </div>
         <div class="input-group"><label data-i18n="lbl_site">Sito Web</label><input type="url" id="site" placeholder="https://..."></div>
-        <div class="input-group"><label>LinkedIn</label><input type="url" id="linkedin_page" placeholder="https://linkedin.com/..."></div>
-        <div class="input-group"><label>Facebook</label><input type="url" id="facebook_page" placeholder="https://facebook.com/..."></div>
+        <div class="input-group"><label>LinkedIn</label><input type="url" id="linkedin_page"></div>
+        <div class="input-group"><label>Facebook</label><input type="url" id="facebook_page"></div>
 
         <div class="btn-container">
-          <button type="button" class="btn btn-secondary" onclick="goToStep(1)"><i class="fas fa-arrow-left"></i> <span data-i18n="btn_back">Indietro</span></button>
-          <button type="button" class="btn btn-primary" onclick="goToStep(3)"><span data-i18n="btn_next">Avanti</span> <i class="fas fa-arrow-right"></i></button>
+          <button type="button" class="btn btn-secondary" id="btn-back-s2"><i class="fas fa-arrow-left"></i> <span data-i18n="btn_back">Indietro</span></button>
+          <button type="button" class="btn btn-primary" id="btn-next-s2"><span data-i18n="btn_next">Avanti</span> <i class="fas fa-arrow-right"></i></button>
         </div>
       </div>
 
-      <!-- STEP 3 -->
+      <!-- STEP 3: Promo -->
       <div class="step-content hidden fade-in" id="step-3">
         <h2 data-i18n="h_plan">Offerta Pionieri</h2>
-        <p class="subtitle" data-i18n="sub_plan">Attivazione gratuita. Paga solo se decidi di restare.</p>
+        <p class="subtitle" data-i18n="sub_plan">Attivazione gratuita.</p>
 
         <div class="pioneer-card">
-            <!-- RIMOSSO BADGE 14 GIORNI -->
-            <div class="pioneer-title" style="font-size:18px; font-weight:bold; color:#fff; margin-bottom:5px;">SiteBoS Enterprise</div>
-            <p class="pioneer-desc" data-i18n="pioneer_desc" style="font-size:13px; color:rgba(255,255,255,0.7);">Accedi alla potenza completa dell'AI per la tua azienda. Nessun addebito oggi.</p>
+            <div style="font-size:18px; font-weight:bold; color:#fff;">SiteBoS Enterprise</div>
+            <p data-i18n="pioneer_desc" style="font-size:13px; color:rgba(255,255,255,0.7);">Accesso completo.</p>
             <div style="margin-top:15px; display:flex; justify-content:space-between; align-items:center;">
-                <span class="pioneer-value" style="text-decoration:line-through; color:rgba(255,255,255,0.5);">€ 5.000 / anno</span>
-                <span class="pioneer-price" data-i18n="pioneer_free" style="color:#4cd964; font-weight:bold; font-size:20px;">GRATIS ORA</span>
+                <span style="text-decoration:line-through; color:rgba(255,255,255,0.5);">€ 5.000 / anno</span>
+                <span data-i18n="pioneer_free" style="color:#4cd964; font-weight:bold; font-size:20px;">GRATIS ORA</span>
             </div>
         </div>
 
         <div style="margin-top:20px;">
-            <label data-i18n="lbl_payment_pref">Preferenza di pagamento futura:</label>
+            <label data-i18n="lbl_payment_pref">Preferenza pagamento futuro:</label>
             <div class="payment-selector">
-                <div class="payment-option" onclick="selectPayment('stripe', this)"><i class="fab fa-stripe-s"></i> Carta</div>
-                <div class="payment-option" onclick="selectPayment('paypal', this)"><i class="fab fa-paypal"></i> PayPal</div>
-                <!-- Bonifico PRE-SELECTED e ID univoco -->
-                <div class="payment-option selected" id="opt-wire" onclick="selectPayment('wire', this)"><i class="fas fa-university"></i> <span data-i18n="pay_wire">Bonifico</span></div>
+                <div class="payment-option" data-value="stripe"><i class="fab fa-stripe-s"></i> Carta</div>
+                <div class="payment-option" data-value="paypal"><i class="fab fa-paypal"></i> PayPal</div>
+                <div class="payment-option selected" data-value="wire"><i class="fas fa-university"></i> <span data-i18n="pay_wire">Bonifico</span></div>
             </div>
             <input type="hidden" id="payment_pref" value="wire">
         </div>
 
         <div class="btn-container">
-          <button type="button" class="btn btn-secondary" onclick="goToStep(2)"><i class="fas fa-arrow-left"></i> <span data-i18n="btn_back">Indietro</span></button>
-          <button type="button" class="btn btn-success" id="submitBtn" onclick="submitFinalForm()">
-            <i class="fas fa-rocket"></i> <span data-i18n="btn_activate">ATTIVA PROVA ORA</span>
+          <button type="button" class="btn btn-secondary" id="btn-back-s3"><i class="fas fa-arrow-left"></i> <span data-i18n="btn_back">Indietro</span></button>
+          <button type="button" class="btn btn-primary" id="submitBtn">
+            <i class="fas fa-cogs"></i> <span data-i18n="btn_build">AVVIA CONFIGURAZIONE</span>
           </button>
         </div>
       </div>
 
     </form>
   </div>
-
-  <script>
-    const WEBHOOK_URL = "https://trinai.api.workflow.dcmake.it/webhook/83acc670-15ae-4da0-ae0e-3587c85bd5f4"; 
-    const tg = window.Telegram.WebApp; tg.ready(); tg.expand();
-
-    // I18N
-    const i18n = {
-      it: {
-        access_denied_title:"Accesso Negato", access_denied_desc:"Accesso consentito solo via Bot.", open_bot:"Apri Bot",
-        step_identity:"Start", step_company:"Azienda", step_plan:"Promo",
-        h_identity:"Setup & Sicurezza", sub_identity:"Consensi, Chiave API e KYC.",
-        legal_privacy:"Accetto Privacy", legal_terms:"Accetto Termini", legal_ai:"Autorizzo analisi AI",
-        btn_get_key:"Genera Gratis", byok_note:"⚠️ BYOK: Dati sotto il tuo controllo.",
-        lbl_id_card:"Documento (Fronte)", upload_lock:"Accetta termini per sbloccare", upload_hint:"Carica Foto/PDF",
-        lbl_name:"Nome", lbl_surname:"Cognome", lbl_fiscal:"Codice Fiscale", lbl_email:"Email (Admin)", lbl_phone:"Cellulare",
-        btn_next:"Avanti", btn_back:"Indietro",
-        h_company:"Profilo Aziendale", sub_company:"Configurazione operativa e fiscale.",
-        lbl_company_name:"Ragione Sociale", lbl_vat:"P.IVA", lbl_sdi:"SDI / PEC", lbl_address:"Sede Legale", lbl_site:"Sito Web",
-        section_identity: "IDENTITÀ OPERATIVA", lbl_sector: "Settore", lbl_what_we_do: "Cosa fate?", lbl_goal: "Obiettivo AI",
-        h_plan:"Offerta Pionieri", sub_plan:"Attiva ora, decidi dopo.", pioneer_desc:"Accesso completo Enterprise.", pioneer_free:"GRATIS ORA",
-        lbl_payment_pref: "Preferenza di pagamento futura:", pay_wire: "Bonifico", btn_activate: "ATTIVA PROVA ORA",
-        msg_success: "CHIUDI E TORNA AL BOT"
-      },
-      en: {
-        access_denied_title:"Access Denied", access_denied_desc:"Bot access only.", open_bot:"Open Bot",
-        step_identity:"Start", step_company:"Company", step_plan:"Promo",
-        h_identity:"Setup & Security", sub_identity:"Consents, API Key & KYC.",
-        legal_privacy:"Accept Privacy", legal_terms:"Accept Terms", legal_ai:"Auth AI check",
-        btn_get_key:"Get Key Free", byok_note:"⚠️ BYOK: You control data.",
-        lbl_id_card:"ID Document", upload_lock:"Accept terms to unlock", upload_hint:"Upload Photo/PDF",
-        lbl_name:"Name", lbl_surname:"Surname", lbl_fiscal:"Tax ID", lbl_email:"Email", lbl_phone:"Mobile",
-        btn_next:"Next", btn_back:"Back",
-        h_company:"Company Profile", sub_company:"Operational & Tax Setup.",
-        lbl_company_name:"Company Name", lbl_vat:"VAT ID", lbl_sdi:"Tax Code", lbl_address:"Address", lbl_site:"Website",
-        section_identity: "OPERATIONAL IDENTITY", lbl_sector: "Sector", lbl_what_we_do: "What do you do?", lbl_goal: "AI Goal",
-        h_plan:"Pioneer Offer", sub_plan:"Activate now, decide later.", pioneer_desc:"Full Enterprise Access.", pioneer_free:"FREE NOW",
-        lbl_payment_pref: "Future payment preference:", pay_wire: "Wire Transfer", btn_activate: "START TRIAL NOW",
-        msg_success: "CLOSE AND RETURN TO BOT"
-      }
-    };
-
-    const dom = {
-      denied: document.getElementById('access-denied'), app: document.getElementById('app-content'),
-      steps: [document.getElementById('step-1'), document.getElementById('step-2'), document.getElementById('step-3')],
-      dots: [document.getElementById('si-1'), document.getElementById('si-2'), document.getElementById('si-3')],
-      progressFill: document.getElementById('progress-fill'), 
-      fileInput: document.getElementById('id_document'), fileBox: document.getElementById('upload-box'),
-      fileText: document.getElementById('upload-text'), fileIcon: document.getElementById('upload-icon'),
-      chkPrivacy: document.getElementById('chk_privacy'), chkTerms: document.getElementById('chk_terms'), chkAi: document.getElementById('chk_ai'),
-      geminiKey: document.getElementById('gemini_key'), btnStep1: document.getElementById('btn-step1'),
-      fName: document.getElementById('name'), fSurname: document.getElementById('surname'), fFiscal: document.getElementById('fiscal_code')
-    };
-
-    let currentStep = 1; let currentLang = 'it';
-    const urlParams = new URLSearchParams(window.location.search);
-    const GLOBAL_CHAT_ID = urlParams.get('chat_id') || tg.initDataUnsafe?.user?.id;
-    const GLOBAL_THREAD_ID = urlParams.get('thread_id');
-
-    if (!GLOBAL_CHAT_ID) { dom.denied.classList.remove('hidden'); dom.app.classList.add('hidden'); document.getElementById('loader').style.display='none'; } 
-    else { 
-        dom.app.classList.remove('hidden'); 
-        document.getElementById('loader').style.display='none';
-        const user = tg.initDataUnsafe?.user;
-        const l = urlParams.get('lang') || user?.language_code;
-        if(l && i18n[l]) { document.getElementById('lang-selector').value = l; changeLanguage(l); }
-    }
-
-    function changeLanguage(lang) {
-      currentLang = lang; const dict = i18n[lang] || i18n['en'];
-      document.querySelectorAll('[data-i18n]').forEach(el => { const k = el.getAttribute('data-i18n'); if(dict[k]) el.innerHTML = dict[k]; });
-    }
-
-    window.checkLegalGate = function() {
-        const ok = dom.chkPrivacy.checked && dom.chkTerms.checked && dom.chkAi.checked;
-        dom.fileBox.classList.toggle('enabled', ok);
-        dom.geminiKey.disabled = !ok;
-        dom.fileText.innerText = ok ? (i18n[currentLang]||i18n.it).upload_hint : (i18n[currentLang]||i18n.it).upload_lock;
-        dom.btnStep1.disabled = !ok;
-    }
-
-    dom.fileInput.addEventListener('change', async (e) => {
-        if(e.target.files.length > 0) {
-            const file = e.target.files[0];
-            const key = dom.geminiKey.value;
-            if(!key) { alert("Inserisci Gemini Key prima dell'upload"); return; }
-            dom.fileBox.classList.add('analyzing'); dom.fileIcon.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i>';
-            dom.fileText.innerText = "AI Analysis..."; dom.btnStep1.disabled = true; 
-            try {
-                const fileData = await getFileData(file);
-                const res = await fetch(WEBHOOK_URL, {
-                    method: 'POST', headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ action: 'analyze_id', user_id: GLOBAL_CHAT_ID, file_data: fileData.base64, mime_type: fileData.mime, file_name: file.name, gemini_key: key })
-                });
-                const data = await res.json();
-                if(data.status === 'error') throw new Error(data.code);
-                dom.fileBox.classList.remove('analyzing'); dom.fileBox.classList.add('success');
-                dom.fileIcon.innerHTML = '<i class="fas fa-check-circle"></i>'; dom.fileText.innerText = "OK!";
-                if(data.data.name) dom.fName.value = data.data.name;
-                if(data.data.surname) dom.fSurname.value = data.data.surname;
-                if(data.data.fiscal_code) dom.fFiscal.value = data.data.fiscal_code;
-                dom.fName.removeAttribute('readonly'); dom.fSurname.removeAttribute('readonly'); dom.fFiscal.removeAttribute('readonly');
-                dom.btnStep1.disabled = false;
-            } catch(err) {
-                dom.fileBox.classList.remove('analyzing'); dom.fileText.innerText = "Error. Manual input.";
-                dom.fName.removeAttribute('readonly'); dom.fSurname.removeAttribute('readonly'); dom.fFiscal.removeAttribute('readonly');
-                dom.btnStep1.disabled = false;
-            }
-        }
-    });
-
-    window.submitStep1 = async function() {
-        if(!dom.fName.value || !dom.fSurname.value || !document.getElementById('email').value) { alert("Dati mancanti"); return; }
-        const btn = dom.btnStep1; btn.disabled = true; btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Saving...';
-        let idFile = { base64: null, mime: null }; if(dom.fileInput.files.length > 0) idFile = await getFileData(dom.fileInput.files[0]);
-        const payload = {
-            action: 'save_step_1', user_id: GLOBAL_CHAT_ID,
-            owner_data: {
-                name: dom.fName.value, surname: dom.fSurname.value, fiscal_code: dom.fFiscal.value,
-                email: document.getElementById('email').value, phone: document.getElementById('phone').value,
-                gemini_key: dom.geminiKey.value, kyc_document: idFile.base64, kyc_mime_type: idFile.mime, terms_accepted: true
-            }
-        };
-        try { await fetch(WEBHOOK_URL, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload)}); goToStep(2); }
-        catch (e) { alert("Error saving."); } finally { btn.disabled = false; btn.innerHTML = 'Avanti <i class="fas fa-arrow-right"></i>'; }
-    };
-
-    window.goToStep = function(step) {
-      if(currentStep === 2 && step === 3) {
-          const req = dom.steps[1].querySelectorAll('input[required]'); for(let i of req) if(!i.value) { i.focus(); return; }
-      }
-      currentStep = step;
-      dom.steps.forEach(s => s.classList.add('hidden')); dom.steps[step-1].classList.remove('hidden');
-      
-      // Update Progress
-      dom.progressFill.style.width = ((step - 1) / 2) * 100 + "%";
-      
-      // FIX ACCENSIONE PALLINI
-      dom.dots.forEach((d, i) => { 
-          const parent = d.parentElement;
-          parent.classList.remove('active','completed'); 
-          if(i < step-1) parent.classList.add('completed'); 
-          if(i === step-1) parent.classList.add('active'); 
-      });
-    }
-
-    window.selectPayment = function(type, el) {
-        document.querySelectorAll('.payment-option').forEach(c => c.classList.remove('selected')); el.classList.add('selected');
-        document.getElementById('payment_pref').value = type;
-    }
-
-    window.submitFinalForm = async function() {
-      const btn = document.getElementById('submitBtn'); 
-      btn.disabled = true; btn.innerHTML = '<i class="fas fa-rocket fa-spin"></i> Activating...';
-      const addr = `${document.getElementById('addr_route').value} ${document.getElementById('addr_num').value}, ${document.getElementById('addr_zip').value} ${document.getElementById('addr_city').value} (${document.getElementById('addr_prov').value})`;
-      
-      const payload = {
-        action: 'payment_checkout', 
-        user_id: GLOBAL_CHAT_ID, 
-        chat_id: GLOBAL_CHAT_ID, 
-        thread_id: GLOBAL_THREAD_ID,
-        owner_data: {
-            gemini_key: dom.geminiKey.value, name: dom.fName.value, surname: dom.fSurname.value, fiscal_code: dom.fFiscal.value,
-            email: document.getElementById('email').value, phone: document.getElementById('phone').value,
-            ragione_sociale: document.getElementById('ragione_sociale').value, vat_number: document.getElementById('vat_number').value,
-            sdi_pec: document.getElementById('sdi_pec').value, indirizzo: addr, site: document.getElementById('site').value,
-            linkedin_page: document.getElementById('linkedin_page').value, facebook_page: document.getElementById('facebook_page').value,
-            sector: document.getElementById('sector').value, what_we_do: document.getElementById('what_we_do').value, main_goal: document.getElementById('main_goal').value,
-            payment_preference: document.getElementById('payment_pref').value || 'wire',
-            plan: 'pioneer_free_trial', terms_accepted: true,
-            lenguage: currentLang
-        }
-      };
-
-      try {
-        const res = await fetch(WEBHOOK_URL, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload)});
-        const data = await res.json();
-        
-        if(data.checkout_url) {
-            window.location.href = data.checkout_url; 
-        } else { 
-            const t = i18n[currentLang] || i18n.it;
-            btn.className = 'btn btn-success btn-block'; 
-            btn.innerHTML = `✅ ${t.msg_success}`;
-            tg.HapticFeedback.notificationOccurred('success');
-            setTimeout(() => tg.close(), 2500); 
-        }
-      } catch(err) { alert("Conn Error."); btn.disabled = false; btn.innerHTML = '<i class="fas fa-rocket"></i> ATTIVA PROVA ORA'; }
-    };
-
-    const getFileData = file => new Promise((res, rej) => {
-        const r = new FileReader(); r.readAsDataURL(file);
-        r.onload = () => { const rs = r.result; res({ base64: rs.split(',')[1], mime: rs.match(/data:([a-zA-Z0-9]+\/[a-zA-Z0-9-.+]+).*,.*/)[1] }); }; r.onerror = rej;
-    });
-  </script>
+  
+  <script src="onboarding_logic.js"></script>
 </body>
 </html>
