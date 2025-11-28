@@ -5,13 +5,13 @@
  */
 
 // --- CONFIG ---
+// CORREZIONE: MANTENIAMO IL WEBHOOK_URL ORIGINALE, USATO PER L'ANALISI DOCUMENTO (KYC)
 const WEBHOOK_URL = "https://trinai.api.workflow.dcmake.it/webhook/83acc670-15ae-4da0-ae0e-3587c85bd5f4"; 
-const ONBOARDING_WEBHOOK_ID = "83acc670-15ae-4da0-ae0e-3587c85bd5f4"; // L'ID del WF pesante
 
 const tg = window.Telegram.WebApp; 
 tg.ready(); tg.expand();
 
-// --- I18N DICTIONARY ---
+// --- I18N DICTIONARY (COMPLETO) ---
 const i18n = {
     it: {
         access_denied_title:"Accesso Negato", access_denied_desc:"Accesso solo via Bot.", open_bot:"Apri Bot",
@@ -29,7 +29,86 @@ const i18n = {
         lbl_payment_pref: "Preferenza pagamento futuro:", pay_wire: "Bonifico", btn_build: "AVVIA CONFIGURAZIONE",
         alert_missing_fields: "Compila tutti i campi obbligatori.", alert_browser_error: "Errore Browser: impossibile salvare dati. Disattiva modalità privata."
     },
-    en: { /* ... Aggiungi altre lingue se necessario ... */ }
+    en: {
+        access_denied_title:"Access Denied", access_denied_desc:"Bot access only.", open_bot:"Open Bot",
+        step_identity:"Start", step_company:"Company", step_plan:"Promo",
+        h_identity:"Setup & Security", sub_identity:"Consents, API Key & KYC.",
+        legal_privacy:"Accept Privacy", legal_terms:"Accept Terms", legal_ai:"Auth AI check",
+        btn_get_key:"Get Key Free", byok_note:"⚠️ BYOK: You control data.",
+        lbl_id_card:"ID Document", upload_lock:"Accept terms to unlock", upload_hint:"Upload Photo/PDF",
+        lbl_name:"Name", lbl_surname:"Surname", lbl_fiscal:"Tax ID", lbl_email:"Email", lbl_phone:"Mobile",
+        btn_next:"Next", btn_back:"Back",
+        h_company:"Company Profile", sub_company:"Operational & Tax Setup.",
+        lbl_company_name:"Company Name", lbl_vat:"VAT ID", lbl_sdi:"Tax Code", lbl_address:"Address", lbl_site:"Website",
+        section_identity: "OPERATIONAL IDENTITY", lbl_sector: "Sector", lbl_what_we_do: "What do you do?", lbl_goal: "AI Goal",
+        h_plan:"Pioneer Offer", sub_plan:"Activate now, decide later.", pioneer_desc:"Full Enterprise Access.", pioneer_free:"FREE NOW",
+        lbl_payment_pref: "Future payment preference:", pay_wire: "Wire Transfer", btn_build: "START CONFIGURATION",
+        alert_missing_fields: "Please fill all required fields.", alert_browser_error: "Browser Error: cannot save data. Disable strict private mode."
+    },
+    fr: {
+        access_denied_title:"Accès Refusé", access_denied_desc:"Accès via Bot uniquement.", open_bot:"Ouvrir Bot",
+        step_identity:"Début", step_company:"Entreprise", step_plan:"Promo",
+        h_identity:"Config & Sécurité", sub_identity:"Consentements, Clé API & KYC.",
+        legal_privacy:"Accepter Confidentialité", legal_terms:"Accepter Conditions", legal_ai:"Auth analyse IA",
+        btn_get_key:"Clé Gratuite", byok_note:"⚠️ BYOK: Vous contrôlez les données.",
+        lbl_id_card:"Document (Recto)", upload_lock:"Accepter pour débloquer", upload_hint:"Charger Photo/PDF",
+        lbl_name:"Prénom", lbl_surname:"Nom", lbl_fiscal:"Code Fiscal", lbl_email:"Email (Admin)", lbl_phone:"Mobile",
+        btn_next:"Suivant", btn_back:"Retour",
+        h_company:"Profil Entreprise", sub_company:"Config opérationnelle & fiscale.",
+        lbl_company_name:"Raison Sociale", lbl_vat:"TVA", lbl_sdi:"Code TVA", lbl_address:"Siège Social", lbl_site:"Site Web",
+        section_identity: "IDENTITÉ OPÉRATIONNELLE", lbl_sector: "Secteur", lbl_what_we_do: "Que faites-vous ?", lbl_goal: "Objectif IA",
+        h_plan:"Offre Pionniers", sub_plan:"Activez maintenant.", pioneer_desc:"Accès Complet.", pioneer_free:"GRATUIT",
+        lbl_payment_pref: "Préférence de paiement:", pay_wire: "Virement", btn_build: "LANCER CONFIGURATION",
+        alert_missing_fields: "Veuillez remplir tous les champs.", alert_browser_error: "Erreur navigateur."
+    },
+    de: {
+        access_denied_title:"Zugriff verweigert", access_denied_desc:"Nur über Bot.", open_bot:"Bot öffnen",
+        step_identity:"Start", step_company:"Firma", step_plan:"Promo",
+        h_identity:"Setup & Sicherheit", sub_identity:"Zustimmungen, API Key & KYC.",
+        legal_privacy:"Akzeptiere Datenschutz", legal_terms:"Akzeptiere AGB", legal_ai:"KI-Analyse erlauben",
+        btn_get_key:"Gratis Key", byok_note:"⚠️ BYOK: Ihre Datenkontrolle.",
+        lbl_id_card:"Ausweis", upload_lock:"AGB akzeptieren", upload_hint:"Foto/PDF hochladen",
+        lbl_name:"Vorname", lbl_surname:"Nachname", lbl_fiscal:"Steuernummer", lbl_email:"E-Mail", lbl_phone:"Mobil",
+        btn_next:"Weiter", btn_back:"Zurück",
+        h_company:"Firmenprofil", sub_company:"Operative Konfiguration.",
+        lbl_company_name:"Firmenname", lbl_vat:"USt-IdNr.", lbl_sdi:"Steuercode", lbl_address:"Adresse", lbl_site:"Webseite",
+        section_identity: "OPERATIVE IDENTITÄT", lbl_sector: "Branche", lbl_what_we_do: "Was machen Sie?", lbl_goal: "KI-Ziel",
+        h_plan:"Pionier-Angebot", sub_plan:"Jetzt aktivieren.", pioneer_desc:"Voller Zugriff.", pioneer_free:"JETZT GRATIS",
+        lbl_payment_pref: "Zahlungsart:", pay_wire: "Überweisung", btn_build: "KONFIGURATION STARTEN",
+        alert_missing_fields: "Füllen Sie alle Felder aus.", alert_browser_error: "Browser-Fehler."
+    },
+    es: {
+        access_denied_title:"Acceso Denegado", access_denied_desc:"Acceso solo vía Bot.", open_bot:"Abrir Bot",
+        step_identity:"Inicio", step_company:"Empresa", step_plan:"Promo",
+        h_identity:"Config y Seguridad", sub_identity:"Consentimientos, Clave API y KYC.",
+        legal_privacy:"Acepto Privacidad", legal_terms:"Acepto Términos", legal_ai:"Autorizo IA",
+        btn_get_key:"Clave Gratis", byok_note:"⚠️ BYOK: Tú controlas los datos.",
+        lbl_id_card:"Documento", upload_lock:"Aceptar para desbloquear", upload_hint:"Subir Foto/PDF",
+        lbl_name:"Nombre", lbl_surname:"Apellido", lbl_fiscal:"NIF", lbl_email:"Email", lbl_phone:"Móvil",
+        btn_next:"Siguiente", btn_back:"Atrás",
+        h_company:"Perfil de Empresa", sub_company:"Configuración operativa.",
+        lbl_company_name:"Razón Social", lbl_vat:"IVA", lbl_sdi:"Cód. Fiscal", lbl_address:"Dirección", lbl_site:"Sitio Web",
+        section_identity: "IDENTIDAD OPERATIVA", lbl_sector: "Sector", lbl_what_we_do: "¿Qué hacen?", lbl_goal: "Objetivo IA",
+        h_plan:"Oferta Pioneros", sub_plan:"Activa ahora.", pioneer_desc:"Acceso Completo.", pioneer_free:"GRATIS AHORA",
+        lbl_payment_pref: "Preferencia de pago:", pay_wire: "Transferencia", btn_build: "INICIAR CONFIGURACIÓN",
+        alert_missing_fields: "Complete todos los campos.", alert_browser_error: "Error del navegador."
+    },
+    pt: {
+        access_denied_title:"Acesso Negado", access_denied_desc:"Acesso via Bot.", open_bot:"Abrir Bot",
+        step_identity:"Início", step_company:"Empresa", step_plan:"Promo",
+        h_identity:"Config e Segurança", sub_identity:"Consentimentos, Chave API e KYC.",
+        legal_privacy:"Aceito Privacidade", legal_terms:"Aceito Termos", legal_ai:"Autorizo IA",
+        btn_get_key:"Chave Grátis", byok_note:"⚠️ BYOK: Você controla os dados.",
+        lbl_id_card:"Documento", upload_lock:"Aceitar para desbloquear", upload_hint:"Carregar Foto/PDF",
+        lbl_name:"Nome", lbl_surname:"Sobrenome", lbl_fiscal:"NIF", lbl_email:"Email", lbl_phone:"Celular",
+        btn_next:"Próximo", btn_back:"Voltar",
+        h_company:"Perfil da Empresa", sub_company:"Configuração operacional.",
+        lbl_company_name:"Razão Social", lbl_vat:"NIF", lbl_sdi:"Cód. Fiscal", lbl_address:"Endereço", lbl_site:"Site Web",
+        section_identity: "IDENTIDADE OPERACIONAL", lbl_sector: "Setor", lbl_what_we_do: "O que fazem?", lbl_goal: "Objetivo IA",
+        h_plan:"Oferta Pioneiros", sub_plan:"Ative agora.", pioneer_desc:"Acesso Completo.", pioneer_free:"GRÁTIS AGORA",
+        lbl_payment_pref: "Preferência de pagamento:", pay_wire: "Transferência", btn_build: "INICIAR CONFIGURAÇÃO",
+        alert_missing_fields: "Preencha todos os campos.", alert_browser_error: "Erro do navegador."
+    }
 };
 
 // --- DOM & STATE ---
@@ -65,11 +144,12 @@ function changeLanguage(lang) {
 }
 
 function goToStep(step) {
+    const dict = i18n[currentLang] || i18n.it;
     if (currentStep === 2 && step === 3) {
         const required = dom.steps[1].querySelectorAll('[required]');
         for (let input of required) {
             if (!input.value) {
-                tg.showAlert(t.alert_missing_fields);
+                tg.showAlert(dict.alert_missing_fields);
                 input.focus();
                 return;
             }
@@ -91,7 +171,8 @@ function checkLegalGate() {
     const ok = dom.chkPrivacy.checked && dom.chkTerms.checked && dom.chkAi.checked;
     dom.fileBox.classList.toggle('enabled', ok);
     dom.geminiKey.disabled = !ok;
-    dom.fileText.innerText = ok ? t.upload_hint : t.upload_lock;
+    const dict = i18n[currentLang] || i18n.it;
+    dom.fileText.innerText = ok ? dict.upload_hint : dict.upload_lock;
     document.getElementById('btn-step1').disabled = !ok;
 }
 
@@ -107,6 +188,7 @@ async function analyzeId() {
     
     try {
         const { base64, mime } = await getFileData(file);
+        // La chiamata per l'analisi usa il WEBHOOK_URL definito in cima
         const res = await fetch(WEBHOOK_URL, {
             method: 'POST', headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({ action: 'analyze_id', user_id: GLOBAL_CHAT_ID, file_data: base64, mime_type: mime, gemini_key: key })
@@ -158,12 +240,17 @@ function submitFinalForm() {
     try {
         sessionStorage.setItem('pending_payload', JSON.stringify(payload));
     } catch (e) {
-        tg.showAlert(t.alert_browser_error);
+        const dict = i18n[currentLang] || i18n.it;
+        tg.showAlert(dict.alert_browser_error);
         btn.disabled = false; btn.innerHTML = 'Riprova';
         return;
     }
 
-    window.location.href = `processor.html?wh=${ONBOARDING_WEBHOOK_ID}`;
+    // CORREZIONE: L'ID del WF pesante viene definito qui, non è più una costante globale.
+    // L'URL del webhook del workflow pesante (quello da 4-5 minuti)
+    const processorWebhookId = "83acc670-15ae-4da0-ae0e-3587c85bd5f4";
+
+    window.location.href = `processor.html?wh=${processorWebhookId}`;
 }
 
 // --- HELPER ---
