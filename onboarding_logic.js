@@ -1,10 +1,6 @@
 /**
- * ONBOARDING LOGIC - SITEBOS (v3.5 - FINAL, WORKING, NO MORE BULLSHIT)
- * 1. analyzeId CHIAMA CORRETTAMENTE IL WEBHOOK.
- * 2. Gestisce la risposta array di n8n.
- * 3. Blocca l'utente se il documento non è valido.
- * 4. CONSERVA i dati KYC estratti e li include nel payload finale.
- * 5. TRADUZIONI COMPLETE.
+ * ONBOARDING LOGIC - SITEBOS (v3.7 - ABSOLUTE FINAL)
+ * COMPLETE CODE. NO PLACEHOLDERS.
  */
 
 // --- CONFIG ---
@@ -54,11 +50,12 @@ const i18n = {
         lbl_what_we_do: "Cosa fate?", lbl_goal: "Obiettivo AI",
         h_plan:"Offerta Pionieri", sub_plan:"Attivazione gratuita.", pioneer_desc:"Accesso completo.", pioneer_free:"GRATIS ORA",
         lbl_payment_pref: "Preferenza pagamento futuro:", pay_wire: "Bonifico", btn_build: "AVVIA CONFIGURAZIONE",
-        alert_missing_fields: "Compila tutti i campi obbligatori.", alert_browser_error: "Errore Browser: impossibile salvare dati.",
+        alert_missing_fields: "Compila tutti i campi obbligatori.", alert_browser_error: "Errore Browser: impossibile salvare dati. Disattiva modalità privata.",
         alert_invalid_doc_title: "Documento Non Valido",
         alert_invalid_doc_body: "L'immagine caricata non sembra essere un documento d'identità valido o non è leggibile. Per favore, riprova con una foto chiara.",
         upload_error_manual: "Errore AI. Inserisci a mano.",
-        upload_error_invalid: "Documento non valido. Riprova."
+        upload_error_invalid: "Documento non valido. Riprova.",
+        alert_key_missing: "Inserisci la Gemini Key prima di caricare il documento."
     },
     en: {
         access_denied_title:"Access Denied", access_denied_desc:"Bot access only.", open_bot:"Open Bot",
@@ -99,11 +96,12 @@ const i18n = {
         lbl_what_we_do: "What do you do?", lbl_goal: "AI Goal",
         h_plan:"Pioneer Offer", sub_plan:"Activate now, decide later.", pioneer_desc:"Full Enterprise Access.", pioneer_free:"FREE NOW",
         lbl_payment_pref: "Future payment preference:", pay_wire: "Wire Transfer", btn_build: "START CONFIGURATION",
-        alert_missing_fields: "Please fill all required fields.", alert_browser_error: "Browser Error: cannot save data.",
+        alert_missing_fields: "Please fill all required fields.", alert_browser_error: "Browser Error: cannot save data. Disable strict private mode.",
         alert_invalid_doc_title: "Invalid Document",
         alert_invalid_doc_body: "The uploaded image does not appear to be a valid or readable ID document. Please try again with a clear photo.",
         upload_error_manual: "AI Error. Please enter manually.",
-        upload_error_invalid: "Invalid document. Please try again."
+        upload_error_invalid: "Invalid document. Please try again.",
+        alert_key_missing: "Enter your Gemini Key before uploading the document."
     },
     fr: {
         access_denied_title:"Accès Refusé", access_denied_desc:"Accès via Bot uniquement.", open_bot:"Ouvrir Bot",
@@ -148,7 +146,8 @@ const i18n = {
         alert_invalid_doc_title: "Document Invalide",
         alert_invalid_doc_body: "L'image ne semble pas être un document valide. Veuillez réessayer.",
         upload_error_manual: "Erreur IA. Entrez manuellement.",
-        upload_error_invalid: "Document invalide. Réessayez."
+        upload_error_invalid: "Document invalide. Réessayez.",
+        alert_key_missing: "Entrez votre clé Gemini avant de télécharger le document."
     },
     de: {
         access_denied_title:"Zugriff verweigert", access_denied_desc:"Nur über Bot.", open_bot:"Bot öffnen",
@@ -193,7 +192,8 @@ const i18n = {
         alert_invalid_doc_title: "Ungültiges Dokument",
         alert_invalid_doc_body: "Das Bild ist kein gültiges Dokument. Bitte versuchen Sie es erneut.",
         upload_error_manual: "KI-Fehler. Manuell eingeben.",
-        upload_error_invalid: "Ungültiges Dokument. Erneut versuchen."
+        upload_error_invalid: "Ungültiges Dokument. Erneut versuchen.",
+        alert_key_missing: "Geben Sie Ihren Gemini-Schlüssel ein, bevor Sie das Dokument hochladen."
     },
     es: {
         access_denied_title:"Acceso Denegado", access_denied_desc:"Acceso solo vía Bot.", open_bot:"Abrir Bot",
@@ -238,7 +238,8 @@ const i18n = {
         alert_invalid_doc_title: "Documento no Válido",
         alert_invalid_doc_body: "La imagen no es un documento válido. Inténtalo de nuevo.",
         upload_error_manual: "Error de IA. Introduce manualmente.",
-        upload_error_invalid: "Documento no válido. Inténtalo de nuevo."
+        upload_error_invalid: "Documento no válido. Inténtalo de nuevo.",
+        alert_key_missing: "Ingrese su clave Gemini antes de cargar el documento."
     },
     pt: {
         access_denied_title:"Acesso Negado", access_denied_desc:"Acesso via Bot.", open_bot:"Abrir Bot",
@@ -283,7 +284,8 @@ const i18n = {
         alert_invalid_doc_title: "Documento Inválido",
         alert_invalid_doc_body: "A imagem não é um documento válido. Tente novamente.",
         upload_error_manual: "Erro de IA. Insira manualmente.",
-        upload_error_invalid: "Documento inválido. Tente novamente."
+        upload_error_invalid: "Documento inválido. Tente novamente.",
+        alert_key_missing: "Insira sua chave Gemini antes de enviar o documento."
     }
 };
 
@@ -308,7 +310,7 @@ const urlParams = new URLSearchParams(window.location.search);
 const GLOBAL_CHAT_ID = urlParams.get('chat_id') || tg.initDataUnsafe?.user?.id;
 const GLOBAL_THREAD_ID = urlParams.get('thread_id');
 
-let kycData = null;
+let kycData = null; // Variabile per conservare i dati del documento
 
 // --- CORE FUNCTIONS ---
 
@@ -330,7 +332,8 @@ function changeLanguage(lang) {
 function goToStep(step) {
     const dict = i18n[currentLang] || i18n.it;
     if (currentStep === 1 && step === 2) {
-        if (!dom.fName.value || !dom.fSurname.value || !kycData) {
+        // Verifica se i campi KYC sono popolati
+        if (!dom.fName.value || !dom.fSurname.value) {
             tg.showAlert("È necessario completare la verifica del documento prima di procedere.");
             return;
         }
@@ -363,15 +366,24 @@ function checkLegalGate() {
     dom.geminiKey.disabled = !ok;
     const dict = i18n[currentLang] || i18n.it;
     dom.fileText.innerHTML = ok ? dict.upload_hint : dict.upload_lock;
+    // Il bottone rimane disabilitato finché non c'è il KYC
+    dom.btnStep1.disabled = true; 
 }
 
 async function analyzeId() {
-    if (dom.fileInput.files.length === 0) return;
-    const file = dom.fileInput.files[0];
-    const key = dom.geminiKey.value;
     const dict = i18n[currentLang] || i18n.it;
 
-    if (!key) { tg.showAlert("Inserisci la Gemini Key."); return; }
+    // Hard Gate: Controllo Consensi e Chiave
+    const isLegalOk = dom.chkPrivacy.checked && dom.chkTerms.checked && dom.chkAi.checked;
+    const key = dom.geminiKey.value;
+    
+    if (!isLegalOk) return; 
+    if (!key) { 
+        tg.showAlert(dict.alert_key_missing);
+        dom.fileInput.value = ''; // Resetta input
+        return; 
+    }
+    if (dom.fileInput.files.length === 0) return;
 
     kycData = null;
     dom.fileBox.classList.remove('success', 'error');
@@ -381,7 +393,9 @@ async function analyzeId() {
     dom.btnStep1.disabled = true;
     
     try {
+        const file = dom.fileInput.files[0];
         const { base64, mime } = await getFileData(file);
+        
         const res = await fetch(WEBHOOK_URL, {
             method: 'POST', headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({ action: 'analyze_id', user_id: GLOBAL_CHAT_ID, file_data: base64, mime_type: mime, gemini_key: key })
@@ -390,9 +404,11 @@ async function analyzeId() {
         if (!res.ok) throw new Error(`Network Error: ${res.status}`);
         
         const data = await res.json();
+        // Gestione risposta n8n (Array)
         const responseData = data[0]; 
         if (!responseData) throw new Error("Risposta del server vuota.");
 
+        // Controllo Validità Documento
         if (responseData.data && responseData.data.error === 'invalid_document') {
             tg.showAlert(dict.alert_invalid_doc_body, () => {});
             dom.fileBox.classList.remove('analyzing');
@@ -400,9 +416,10 @@ async function analyzeId() {
             dom.fileText.innerText = dict.upload_error_invalid;
             dom.fileIcon.innerHTML = '<i class="fas fa-exclamation-triangle"></i>';
             dom.fileInput.value = '';
-            return;
+            return; // Blocca tutto qui
         }
 
+        // Successo: Salvataggio e Popolamento
         kycData = responseData.data;
 
         dom.fileBox.classList.remove('analyzing');
@@ -410,11 +427,29 @@ async function analyzeId() {
         dom.fileIcon.innerHTML = '<i class="fas fa-check-circle"></i>';
         dom.fileText.innerText = "OK!";
         
-        if (kycData.name) dom.fName.value = kycData.name;
-        if (kycData.surname) dom.fSurname.value = kycData.surname;
-        if (kycData.fiscal_code) dom.fFiscal.value = kycData.fiscal_code;
+        // Logica Readonly Condizionale
+        if (kycData.name) {
+            dom.fName.value = kycData.name;
+            dom.fName.setAttribute('readonly', true);
+        } else {
+            dom.fName.removeAttribute('readonly');
+        }
+
+        if (kycData.surname) {
+            dom.fSurname.value = kycData.surname;
+            dom.fSurname.setAttribute('readonly', true);
+        } else {
+            dom.fSurname.removeAttribute('readonly');
+        }
+
+        if (kycData.fiscal_code) {
+            dom.fFiscal.value = kycData.fiscal_code;
+            dom.fFiscal.setAttribute('readonly', true);
+        } else {
+            dom.fFiscal.removeAttribute('readonly');
+        }
         
-        [dom.fName, dom.fSurname, dom.fFiscal].forEach(el => el.removeAttribute('readonly'));
+        // Abilita passaggio successivo
         dom.btnStep1.disabled = false;
 
     } catch (err) {
@@ -422,6 +457,7 @@ async function analyzeId() {
         tg.showAlert(dict.upload_error_manual);
         dom.fileBox.classList.remove('analyzing');
         dom.fileText.innerText = dict.upload_error_manual;
+        // Fallback manuale
         [dom.fName, dom.fSurname, dom.fFiscal].forEach(el => el.removeAttribute('readonly'));
         dom.btnStep1.disabled = false;
     }
@@ -461,6 +497,8 @@ function submitFinalForm() {
             plan: 'pioneer_free_trial',
             terms_accepted: true,
             lenguage: currentLang,
+            
+            // Dati KYC inclusi nel payload finale
             kyc_details: kycData
         }
     };
