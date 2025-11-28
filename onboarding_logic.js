@@ -371,26 +371,54 @@ function submitFinalForm() {
     btn.disabled = true;
     btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Avvio...';
 
+    // RACCOLTA COMPLETA DEI DATI DAL FORM
     const addr = `${document.getElementById('addr_route').value} ${document.getElementById('addr_num').value}, ${document.getElementById('addr_zip').value} ${document.getElementById('addr_city').value} (${document.getElementById('addr_prov').value})`;
-    
+    const vatNumber = document.getElementById('vat_number').value;
+
     const payload = {
-        action: 'payment_checkout', 
         user_id: GLOBAL_CHAT_ID, 
         chat_id: GLOBAL_CHAT_ID, 
         thread_id: GLOBAL_THREAD_ID,
         owner_data: {
-            gemini_key: dom.geminiKey.value, name: dom.fName.value, surname: dom.fSurname.value, fiscal_code: dom.fFiscal.value,
-            email: document.getElementById('email').value, phone: document.getElementById('phone').value,
-            ragione_sociale: document.getElementById('ragione_sociale').value, vat_number: document.getElementById('vat_number').value,
-            sdi_pec: document.getElementById('sdi_pec').value, indirizzo: addr, site: document.getElementById('site').value,
-            linkedin_page: document.getElementById('linkedin_page').value, facebook_page: document.getElementById('facebook_page').value,
-            sector: document.getElementById('sector').value, what_we_do: document.getElementById('what_we_do').value, main_goal: document.getElementById('main_goal').value,
+            gemini_key: document.getElementById('gemini_key').value,
+            name: document.getElementById('name').value,
+            surname: document.getElementById('surname').value,
+            fiscal_code: document.getElementById('fiscal_code').value,
+            email: document.getElementById('email').value,
+            phone: document.getElementById('phone').value,
+            ragione_sociale: document.getElementById('ragione_sociale').value,
+            vat_number: vatNumber,
+            sdi_pec: document.getElementById('sdi_pec').value,
+            indirizzo: addr,
+            site: document.getElementById('site').value,
+            linkedin_page: document.getElementById('linkedin_page').value,
+            facebook_page: document.getElementById('facebook_page').value,
+            sector: document.getElementById('sector').value,
+            what_we_do: document.getElementById('what_we_do').value,
+            main_goal: document.getElementById('main_goal').value,
             payment_preference: document.getElementById('payment_pref').value || 'wire',
-            plan: 'pioneer_free_trial', terms_accepted: true,
+            plan: 'pioneer_free_trial',
+            terms_accepted: true,
             lenguage: currentLang
         }
     };
 
+    const sessionKey = `pending_payload_${vatNumber}`;
+    
+    try {
+        sessionStorage.setItem(sessionKey, JSON.stringify(payload));
+    } catch (e) {
+        const dict = i18n[currentLang] || i18n.it;
+        tg.showAlert(dict.alert_browser_error);
+        btn.disabled = false;
+        btn.innerHTML = 'Riprova';
+        return;
+    }
+
+    const commandForDashboard = "onboarding_complete";
+
+    window.location.href = `processor.html?call=onboarding&owner_key=${vatNumber}&cmd=${commandForDashboard}`;
+}
     try {
         sessionStorage.setItem('pending_payload', JSON.stringify(payload));
     } catch (e) {
