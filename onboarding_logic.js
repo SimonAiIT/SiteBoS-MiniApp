@@ -1,6 +1,8 @@
 /**
- * ONBOARDING LOGIC - SITEBOS (v3.7 - ABSOLUTE FINAL)
- * COMPLETE CODE. NO PLACEHOLDERS.
+ * ONBOARDING LOGIC - SITEBOS (v3.7 - UI UPDATE FIX)
+ * 1. FIX: Aggiornamento immediato e visibile dei campi input dopo l'analisi AI.
+ * 2. Logica di sicurezza e validazione completa.
+ * 3. Traduzioni complete.
  */
 
 // --- CONFIG ---
@@ -332,8 +334,7 @@ function changeLanguage(lang) {
 function goToStep(step) {
     const dict = i18n[currentLang] || i18n.it;
     if (currentStep === 1 && step === 2) {
-        // Verifica se i campi KYC sono popolati
-        if (!dom.fName.value || !dom.fSurname.value) {
+        if (!dom.fName.value || !dom.fSurname.value || !kycData) {
             tg.showAlert("È necessario completare la verifica del documento prima di procedere.");
             return;
         }
@@ -366,7 +367,7 @@ function checkLegalGate() {
     dom.geminiKey.disabled = !ok;
     const dict = i18n[currentLang] || i18n.it;
     dom.fileText.innerHTML = ok ? dict.upload_hint : dict.upload_lock;
-    // Il bottone rimane disabilitato finché non c'è il KYC
+    // Il bottone rimane disabilitato finché non c'è il KYC completato
     dom.btnStep1.disabled = true; 
 }
 
@@ -404,11 +405,14 @@ async function analyzeId() {
         if (!res.ok) throw new Error(`Network Error: ${res.status}`);
         
         const data = await res.json();
-        // Gestione risposta n8n (Array)
-        const responseData = data[0]; 
+        
+        // --- FIX CRITICO: GESTIONE RISPOSTA ARRAY ---
+        // Se la risposta è un array, prendiamo il primo elemento.
+        // Se è un oggetto, usiamo quello.
+        const responseData = Array.isArray(data) ? data[0] : data; 
+        
         if (!responseData) throw new Error("Risposta del server vuota.");
 
-        // Controllo Validità Documento
         if (responseData.data && responseData.data.error === 'invalid_document') {
             tg.showAlert(dict.alert_invalid_doc_body, () => {});
             dom.fileBox.classList.remove('analyzing');
@@ -419,19 +423,23 @@ async function analyzeId() {
             return; // Blocca tutto qui
         }
 
-        // Successo: Salvataggio e Popolamento
+        // SALVA I DATI KYC
         kycData = responseData.data;
 
+        // AGGIORNA UI VISIVA (Stato Box)
         dom.fileBox.classList.remove('analyzing');
         dom.fileBox.classList.add('success');
         dom.fileIcon.innerHTML = '<i class="fas fa-check-circle"></i>';
         dom.fileText.innerText = "OK!";
         
-        // Logica Readonly Condizionale
+        // --- AGGIORNAMENTO CAMPI INPUT VISIBILI ---
+        // Popola i campi del form con i dati ricevuti
         if (kycData.name) {
             dom.fName.value = kycData.name;
+            // Se il campo è pieno, lo blocchiamo in readonly
             dom.fName.setAttribute('readonly', true);
         } else {
+            // Se è vuoto, lo lasciamo editabile
             dom.fName.removeAttribute('readonly');
         }
 
@@ -449,7 +457,7 @@ async function analyzeId() {
             dom.fFiscal.removeAttribute('readonly');
         }
         
-        // Abilita passaggio successivo
+        // SBLOCCA IL BOTTONE PER ANDARE AVANTI
         dom.btnStep1.disabled = false;
 
     } catch (err) {
@@ -457,7 +465,8 @@ async function analyzeId() {
         tg.showAlert(dict.upload_error_manual);
         dom.fileBox.classList.remove('analyzing');
         dom.fileText.innerText = dict.upload_error_manual;
-        // Fallback manuale
+        
+        // In caso di errore, sblocca tutto per inserimento manuale
         [dom.fName, dom.fSurname, dom.fFiscal].forEach(el => el.removeAttribute('readonly'));
         dom.btnStep1.disabled = false;
     }
@@ -498,7 +507,7 @@ function submitFinalForm() {
             terms_accepted: true,
             lenguage: currentLang,
             
-            // Dati KYC inclusi nel payload finale
+            // --- DATI KYC INCLUSI NEL PAYLOAD FINALE ---
             kyc_details: kycData
         }
     };
