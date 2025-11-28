@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Reset Istanza</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="container">
+    <div style="text-align:center; padding-top:40px;">
+      <div style="font-size:50px; color:var(--warning); margin-bottom:20px;"><i class="fas fa-sync-alt"></i></div>
+      <h2>Ripristino Sicuro</h2>
+      <p class="subtitle">L'attivazione non è andata a buon fine. Inserisci il numero del tuo documento per resettare e riprovare.</p>
+      
+      <div class="card">
+        <div class="form-group">
+          <label>Numero Documento (KYC)</label>
+          <input type="text" id="doc_number" placeholder="Es. CA12345AB" style="text-transform:uppercase;">
+        </div>
+        <input type="hidden" id="vat_number">
+        
+        <button class="btn btn-primary btn-block" onclick="performReset()">
+          <i class="fas fa-recycle"></i> RESETTA E RIPROVA
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const tg = window.Telegram.WebApp; tg.ready(); tg.expand();
+    const urlParams = new URLSearchParams(window.location.search);
+    const vat = urlParams.get('vat');
+    document.getElementById('vat_number').value = vat;
+
+    function performReset() {
+        const docNum = document.getElementById('doc_number').value.trim().toUpperCase();
+        if(!docNum) return alert("Inserisci il numero del documento.");
+        
+        const btn = document.querySelector('button');
+        btn.disabled = true; btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Reset in corso...';
+
+        // Costruiamo un payload di reset
+        const payload = {
+            action: 'reset_instance', // NUOVA AZIONE PER IL PROCESSOR
+            owner_key: vat, // P.IVA come chiave
+            doc_number: docNum // La "password" di sicurezza
+        };
+        
+        // Salviamo in sessione per processor.html
+        const sessionKey = `pending_payload_${vat}`;
+        sessionStorage.setItem(sessionKey, JSON.stringify(payload));
+        
+        // Redirect al processore
+        window.location.href = `processor.html?call=reset_instance&owner_key=${vat}&cmd=reset_complete`;
+    }
+  </script>
+</body>
+</html>
