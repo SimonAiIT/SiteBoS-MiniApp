@@ -1,57 +1,34 @@
 /**
- * PROCESSOR CORE - LOGIC ONLY (v2.3 - Final)
- * 
- * 1. Legge l'azione ('call'), la chiave ('owner_key') e il comando finale ('cmd') dall'URL.
- * 2. Recupera il payload completo dalla memoria di sessione usando la 'owner_key'.
- * 3. Chiama l'UNICO webhook processore passandogli l'azione e il payload.
- * 4. Aspetta la risposta del backend (mentre il gioco intrattiene l'utente).
- * 5. Esegue il redirect finale alla dashboard, accodando il 'cmd' per la pagina di destinazione.
+ * PROCESSOR CORE - LOGIC ONLY (v2.4 - Bonus Credits Edition)
+ * 1. Chiama il webhook.
+ * 2. Gestisce il redirect passando anche i CREDITI GUADAGNATI GIOCANDO.
  */
 
 const tg = window.Telegram.WebApp; 
 tg.ready(); tg.expand();
 
-// L'UNICO WEBHOOK CHE GESTISCE TUTTE LE PIPE LUNGHE
+// CONFIG: UNICO WEBHOOK PROCESSORE
 const PROCESSOR_WEBHOOK_URL = "https://trinai.api.workflow.dcmake.it/webhook/35667aed-ee1c-4074-92df-d4334967a1b3";
 
 async function runProcessor() {
     
-    // 1. Avvia l'interfaccia di attesa (Gioco e Timer)
-    if(window.SiteBoSGame) { 
-        SiteBoSGame.init();
-        SiteBoSGame.start();
-    }
-    let sec = 0;
-    setInterval(() => { 
-        sec++; 
-        const m = Math.floor(sec/60).toString().padStart(2,'0');
-        const s = (sec%60).toString().padStart(2,'0');
-        document.getElementById('timer').innerText = `${m}:${s}`; 
-    }, 1000);
-
-    // 2. Recupera l'incarico e i parametri dall'URL
+    // 2. RECUPERA INCARICO
     const params = new URLSearchParams(window.location.search);
     const callAction = params.get('call');
     const ownerKey = params.get('owner_key');
     const finalCommand = params.get('cmd');
     
-    if(!callAction || !ownerKey) {
-        return showError("CONFIG ERROR: Manca 'call' o 'owner_key' nell'URL.");
-    }
+    if(!callAction || !ownerKey) return showError("CONFIG ERROR: CALL or OWNER_KEY missing");
 
-    // 3. Recupera il payload completo dalla memoria di sessione
+    // 3. RECUPERA PAYLOAD
     const sessionKey = `pending_payload_${ownerKey}`;
     const payloadStr = sessionStorage.getItem(sessionKey);
-    if(!payloadStr) {
-        return showError("DATA ERROR: Nessun payload in attesa trovato. Riprova dall'inizio.");
-    }
+    if(!payloadStr) return showError("DATA ERROR: NO PAYLOAD FOUND");
     
-    // Pulisci subito la memoria per sicurezza
     sessionStorage.removeItem(sessionKey);
     
     const originalPayload = JSON.parse(payloadStr);
 
-    // 4. Costruisci il payload finale per il Webhook Processore
     const processorPayload = {
         action: callAction,
         owner_key: ownerKey,
@@ -59,68 +36,62 @@ async function runProcessor() {
     };
 
     try {
-        console.log("Calling Processor Webhook with action:", callAction);
+        console.log("Calling Processor...");
         
-        // 5. Esegui la chiamata al backend e attendi la risposta
         const response = await fetch(PROCESSOR_WEBHOOK_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(processorPayload)
         });
 
-        if(!response.ok) {
-            throw new Error(`Errore di rete: ${response.status} ${response.statusText}`);
-        }
-        
+        if(!response.ok) throw new Error(`HTTP ${response.status}`);
         const result = await response.json();
         
-        // 6. Chiamata terminata: ferma il gioco
-        if(window.SiteBoSGame) {
-            SiteBoSGame.stop();
-        }
+        // 6. SUCCESSO -> FERMA GIOCO E SALVA SCORE
+        if(window.SiteBoSGame) SiteBoSGame.stop();
         
-        // 7. Esegui il redirect in base alla risposta del backend
+        // CHECKOUT REDIRECT
         if (result.checkout_url) {
-            // Caso A: Il backend richiede un pagamento
             window.location.href = result.checkout_url;
         } 
+        // SUCCESS REDIRECT (DASHBOARD)
         else if (result.owner_data) {
-            // Caso B: Successo, vai alla dashboard
-            const responseData = result.owner_data; 
-            
-            const vat = responseData.vat_number;
-            const ownerId = responseData.chat_id;
-            const name = encodeURIComponent(responseData.ragione_sociale || "Company");
-            const token = responseData.access_token;
+            const vat = result.owner_data.vat_number;
+            const ownerId = result.owner_data.chat_id;
+            const name = encodeURIComponent(result.owner_data.ragione_sociale || "Company");
+            const token = result.owner_data.access_token;
             
             let finalUrl = `dashboard.html?vat=${vat}&owner=${ownerId}&ragione_sociale=${name}&token=${token}`;
-            if (finalCommand) {
-                finalUrl += `&cmd=${finalCommand}`;
-            }
+            if (finalCommand) finalUrl += `&cmd=${finalCommand}`;
             
-            console.log("Redirecting to:", finalUrl);
+            // --- BONUS CREDITS LOGIC ---
+            const score = sessionStorage.getItem('last_game_score');
+            if(score && parseInt(score) > 0) {
+                finalUrl += `&bonus_credits=${score}`;
+                sessionStorage.removeItem('last_game_score'); // Clean
+            }
+            // --------------------------
+            
+            console.log("Redirecting:", finalUrl);
             window.location.href = finalUrl;
         } 
+        // ERROR FROM N8N
+        else if (result.status === 'error' && result.error) {
+            showError(`${result.error.title}\n${result.error.message}`);
+        }
         else {
-            // Caso C: Risposta non valida dal backend
-            showError("ERRORE RISPOSTA SERVER: Formato dati non valido.");
+            showError("SERVER RESPONSE ERROR: Invalid data.");
         }
 
     } catch (err) {
-        if(window.SiteBoSGame) {
-            SiteBoSGame.stop();
-        }
-        showError("ERRORE CRITICO: " + err.message);
+        if(window.SiteBoSGame) SiteBoSGame.stop();
+        showError("SERVER ERROR: " + err.message);
     }
 }
 
-// Funzione Helper per mostrare errori a schermo
 function showError(msg) {
-    const errorText = document.getElementById('error-text');
-    const errorOverlay = document.getElementById('error-overlay');
-    if (errorText) errorText.innerText = msg;
-    if (errorOverlay) errorOverlay.classList.remove('hidden');
+    document.getElementById('error-text').innerText = msg;
+    document.getElementById('error-overlay').classList.remove('hidden');
 }
 
-// Avvia tutto quando la pagina è pronta
 document.addEventListener('DOMContentLoaded', runProcessor);
