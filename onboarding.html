@@ -65,64 +65,93 @@
         <p class="subtitle" data-i18n="sub_identity">Consensi, Chiave API e Verifica Identità.</p>
 
         <div class="legal-box form-section">
-            <div class="checkbox-group"><input type="checkbox" id="chk_privacy"><label for="chk_privacy" data-i18n="legal_privacy">Accetto Privacy</label></div>
-            <div class="checkbox-group"><input type="checkbox" id="chk_terms"><label for="chk_terms" data-i18n="legal_terms">Accetto Termini</label></div>
-            <div class="checkbox-group"><input type="checkbox" id="chk_ai"><label for="chk_ai" data-i18n="legal_ai">Autorizzo analisi AI</label></div>
+            <div class="checkbox-group"><input type="checkbox" id="chk_privacy"><label for="chk_privacy" data-i18n="legal_privacy"></label></div>
+            <div class="checkbox-group"><input type="checkbox" id="chk_terms"><label for="chk_terms" data-i18n="legal_terms"></label></div>
+            <div class="checkbox-group"><input type="checkbox" id="chk_ai"><label for="chk_ai" data-i18n="legal_ai"></label></div>
         </div>
 
         <div class="api-key-card form-section">
             <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
                 <div style="color:var(--primary); font-weight:bold;"><i class="fas fa-brain"></i> Gemini API Key</div>
-                <a href="https://aistudio.google.com/api-keys" target="_blank" class="btn btn-sm btn-secondary" style="text-decoration:none;" data-i18n="btn_get_key">Genera Gratis</a>
+                <a href="https://aistudio.google.com/api-keys" target="_blank" class="btn btn-sm btn-secondary" style="text-decoration:none;" data-i18n="btn_get_key"></a>
             </div>
             <input type="text" id="gemini_key" placeholder="Incolla qui: AIzaSy..." disabled required>
-            <div class="hint" data-i18n="byok_note">⚠️ BYOK: I dati rimangono sotto il tuo controllo.</div>
+            <div class="hint" data-i18n="byok_note"></div>
         </div>
 
         <div class="input-group">
-          <label data-i18n="lbl_id_card">Documento d'Identità (Fronte)</label>
+          <label data-i18n="lbl_id_card"></label>
           <div class="upload-box" id="upload-box">
             <input type="file" id="id_document" accept="image/*,application/pdf">
             <div class="upload-icon" id="upload-icon"><i class="fas fa-id-card"></i></div>
-            <div class="upload-text" id="upload-text" data-i18n="upload_lock">Accetta i termini per sbloccare</div>
+            <div class="upload-text" id="upload-text" data-i18n="upload_lock"></div>
           </div>
         </div>
 
         <div class="row">
-          <div class="col"><label data-i18n="lbl_name">Nome</label><input type="text" id="name" readonly placeholder="..."></div>
-          <div class="col"><label data-i18n="lbl_surname">Cognome</label><input type="text" id="surname" readonly placeholder="..."></div>
+          <div class="col"><label data-i18n="lbl_name"></label><input type="text" id="name" readonly placeholder="..."></div>
+          <div class="col"><label data-i18n="lbl_surname"></label><input type="text" id="surname" readonly placeholder="..."></div>
         </div>
-        <div class="input-group"><label data-i18n="lbl_fiscal">Codice Fiscale</label><input type="text" id="fiscal_code" readonly placeholder="..."></div>
-        <div class="input-group"><label class="required" data-i18n="lbl_email">Email (Admin)</label><input type="email" id="email" required></div>
-        <div class="input-group"><label class="required" data-i18n="lbl_phone">Cellulare</label><input type="tel" id="phone" required></div>
+        <div class="input-group"><label data-i18n="lbl_fiscal"></label><input type="text" id="fiscal_code" readonly placeholder="..."></div>
+        <div class="input-group"><label class="required" data-i18n="lbl_email"></label><input type="email" id="email" required></div>
+        <div class="input-group"><label class="required" data-i18n="lbl_phone"></label><input type="tel" id="phone" required></div>
 
         <div class="btn-container">
           <button type="button" class="btn btn-primary btn-block" id="btn-step1" disabled>
-            <span data-i18n="btn_next">Avanti</span> <i class="fas fa-arrow-right"></i>
+            <span data-i18n="btn_next"></span> <i class="fas fa-arrow-right"></i>
           </button>
         </div>
       </div>
 
       <!-- STEP 2: Azienda -->
       <div class="step-content hidden fade-in" id="step-2">
-        <h2 data-i18n="h_company">Profilo Aziendale</h2>
-        <p class="subtitle" data-i18n="sub_company">Configurazione operativa e fiscale.</p>
+        <h2 data-i18n="h_company"></h2>
+        <p class="subtitle" data-i18n="sub_company"></p>
 
-        <div class="input-group"><label class="required" data-i18n="lbl_company_name">Ragione Sociale</label><input type="text" id="ragione_sociale" required></div>
+        <div class="input-group"><label class="required" data-i18n="lbl_company_name"></label><input type="text" id="ragione_sociale" required></div>
         <div class="row">
-          <div class="col"><label class="required" data-i18n="lbl_vat">P.IVA</label><input type="text" id="vat_number" required></div>
-          <div class="col"><label data-i18n="lbl_sdi">SDI / PEC</label><input type="text" id="sdi_pec"></div>
+          <div class="col"><label class="required" data-i18n="lbl_vat"></label><input type="text" id="vat_number" required></div>
+          <div class="col"><label data-i18n="lbl_sdi"></label><input type="text" id="sdi_pec"></div>
         </div>
         
         <div>
-            <div class="section-title" data-i18n="section_identity" style="margin-top:0;">IDENTITÀ OPERATIVA</div>
-            <div class="input-group"><label data-i18n="lbl_sector">Settore</label><select id="sector"><option value="services">Servizi</option><option value="retail">Retail</option><option value="tech">IT</option><option value="other">Altro</option></select></div>
-            <div class="input-group"><label data-i18n="lbl_what_we_do">Cosa fate?</label><textarea id="what_we_do" rows="2"></textarea></div>
-            <div class="input-group"><label data-i18n="lbl_goal">Obiettivo AI</label><select id="main_goal"><option value="automate_support">Supporto</option><option value="increase_sales">Vendite</option><option value="organize_workflow">Processi</option><option value="knowledge_base">KB</option></select></div>
+            <div class="section-title" data-i18n="section_identity" style="margin-top:0;"></div>
+            
+            <!-- NUOVA LISTA SETTORI COMPLETA -->
+            <div class="input-group">
+                <label data-i18n="lbl_sector"></label>
+                <select id="sector">
+                    <optgroup data-i18n="sector_group_services"></optgroup>
+                    <option value="services_professional" data-i18n="sector_pro"></option>
+                    <option value="services_consulting" data-i18n="sector_consulting"></option>
+                    <option value="services_personal" data-i18n="sector_personal"></option>
+                    <optgroup data-i18n="sector_group_commerce"></optgroup>
+                    <option value="commerce_retail" data-i18n="sector_retail"></option>
+                    <option value="commerce_ecommerce" data-i18n="sector_ecommerce"></option>
+                    <option value="commerce_wholesale" data-i18n="sector_wholesale"></option>
+                    <optgroup data-i18n="sector_group_craft"></optgroup>
+                    <option value="craft_manufacturing" data-i18n="sector_manufacturing"></option>
+                    <option value="craft_artisan" data-i18n="sector_artisan"></option>
+                    <option value="craft_construction" data-i18n="sector_construction"></option>
+                    <optgroup data-i18n="sector_group_hospitality"></optgroup>
+                    <option value="hospitality_horeca" data-i18n="sector_horeca"></option>
+                    <option value="hospitality_tourism" data-i18n="sector_tourism"></option>
+                    <optgroup data-i18n="sector_group_other"></optgroup>
+                    <option value="tech_software" data-i18n="sector_tech"></option>
+                    <option value="healthcare" data-i18n="sector_healthcare"></option>
+                    <option value="real_estate" data-i18n="sector_realestate"></option>
+                    <option value="agriculture" data-i18n="sector_agriculture"></option>
+                    <option value="transport" data-i18n="sector_transport"></option>
+                    <option value="other" data-i18n="sector_other"></option>
+                </select>
+            </div>
+
+            <div class="input-group"><label data-i18n="lbl_what_we_do"></label><textarea id="what_we_do" rows="2"></textarea></div>
+            <div class="input-group"><label data-i18n="lbl_goal"></label><select id="main_goal"><option value="automate_support">Supporto</option><option value="increase_sales">Vendite</option><option value="organize_workflow">Processi</option><option value="knowledge_base">KB</option></select></div>
         </div>
 
         <div class="input-group">
-           <label class="required" data-i18n="lbl_address">Sede Legale</label>
+           <label class="required" data-i18n="lbl_address"></label>
            <div class="row">
              <div class="col-2"><input type="text" id="addr_route" placeholder="Via/Piazza" required></div>
              <div class="col"><input type="text" id="addr_num" placeholder="N°" required></div>
@@ -133,44 +162,44 @@
              <div class="col"><input type="text" id="addr_prov" placeholder="PR" maxlength="2" required></div>
            </div>
         </div>
-        <div class="input-group"><label data-i18n="lbl_site">Sito Web</label><input type="url" id="site" placeholder="https://..."></div>
+        <div class="input-group"><label data-i18n="lbl_site"></label><input type="url" id="site" placeholder="https://..."></div>
         <div class="input-group"><label>LinkedIn</label><input type="url" id="linkedin_page"></div>
         <div class="input-group"><label>Facebook</label><input type="url" id="facebook_page"></div>
 
         <div class="btn-container">
-          <button type="button" class="btn btn-secondary" id="btn-back-s2"><i class="fas fa-arrow-left"></i> <span data-i18n="btn_back">Indietro</span></button>
-          <button type="button" class="btn btn-primary" id="btn-next-s2"><span data-i18n="btn_next">Avanti</span> <i class="fas fa-arrow-right"></i></button>
+          <button type="button" class="btn btn-secondary" id="btn-back-s2"><i class="fas fa-arrow-left"></i> <span data-i18n="btn_back"></span></button>
+          <button type="button" class="btn btn-primary" id="btn-next-s2"><span data-i18n="btn_next"></span> <i class="fas fa-arrow-right"></i></button>
         </div>
       </div>
 
       <!-- STEP 3: Promo -->
       <div class="step-content hidden fade-in" id="step-3">
-        <h2 data-i18n="h_plan">Offerta Pionieri</h2>
-        <p class="subtitle" data-i18n="sub_plan">Attivazione gratuita.</p>
+        <h2 data-i18n="h_plan"></h2>
+        <p class="subtitle" data-i18n="sub_plan"></p>
 
         <div class="pioneer-card">
             <div style="font-size:18px; font-weight:bold; color:#fff;">SiteBoS Enterprise</div>
-            <p data-i18n="pioneer_desc" style="font-size:13px; color:rgba(255,255,255,0.7);">Accesso completo.</p>
+            <p data-i18n="pioneer_desc" style="font-size:13px; color:rgba(255,255,255,0.7);"></p>
             <div style="margin-top:15px; display:flex; justify-content:space-between; align-items:center;">
                 <span style="text-decoration:line-through; color:rgba(255,255,255,0.5);">€ 5.000 / anno</span>
-                <span data-i18n="pioneer_free" style="color:#4cd964; font-weight:bold; font-size:20px;">GRATIS ORA</span>
+                <span data-i18n="pioneer_free" style="color:#4cd964; font-weight:bold; font-size:20px;"></span>
             </div>
         </div>
 
         <div style="margin-top:20px;">
-            <label data-i18n="lbl_payment_pref">Preferenza pagamento futuro:</label>
+            <label data-i18n="lbl_payment_pref"></label>
             <div class="payment-selector">
                 <div class="payment-option" data-value="stripe"><i class="fab fa-stripe-s"></i> Carta</div>
                 <div class="payment-option" data-value="paypal"><i class="fab fa-paypal"></i> PayPal</div>
-                <div class="payment-option selected" data-value="wire"><i class="fas fa-university"></i> <span data-i18n="pay_wire">Bonifico</span></div>
+                <div class="payment-option selected" data-value="wire"><i class="fas fa-university"></i> <span data-i18n="pay_wire"></span></div>
             </div>
             <input type="hidden" id="payment_pref" value="wire">
         </div>
 
         <div class="btn-container">
-          <button type="button" class="btn btn-secondary" id="btn-back-s3"><i class="fas fa-arrow-left"></i> <span data-i18n="btn_back">Indietro</span></button>
+          <button type="button" class="btn btn-secondary" id="btn-back-s3"><i class="fas fa-arrow-left"></i> <span data-i18n="btn_back"></span></button>
           <button type="button" class="btn btn-primary" id="submitBtn">
-            <i class="fas fa-cogs"></i> <span data-i18n="btn_build">AVVIA CONFIGURAZIONE</span>
+            <i class="fas fa-cogs"></i> <span data-i18n="btn_build"></span>
           </button>
         </div>
       </div>
