@@ -75,8 +75,27 @@ async function runProcessor() {
             console.log("Redirecting:", finalUrl);
             window.location.href = finalUrl;
         } 
-        // ERROR FROM N8N
-        else if (result.status === 'error' && result.error) {
+               } else if (result.status === 'error') {
+            
+            // --- LOGICA RECOVERY ---
+            if (result.error.code === 'SETUP_FAILED_RETRYABLE') {
+                // Errore recuperabile -> Offri il reset
+                if(window.SiteBoSGame) SiteBoSGame.stop();
+                
+                // Mostra overlay custom con bottone Reset
+                const overlay = document.getElementById('error-overlay');
+                overlay.innerHTML = `
+                    <div style="font-size:40px; color:#f59e0b; margin-bottom:20px;"><i class="fas fa-tools"></i></div>
+                    <p class="error-msg">${result.error.message}</p>
+                    <button class="retry-btn" onclick="location.href='reset.html?vat=${originalPayload.owner_data.vat_number}'">
+                        RESETTA ISTANZA
+                    </button>
+                `;
+                overlay.classList.remove('hidden');
+                return;
+            }
+            
+            // Errore standard
             showError(`${result.error.title}\n${result.error.message}`);
         }
         else {
