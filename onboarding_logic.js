@@ -10,7 +10,7 @@ const WEBHOOK_URL = "https://trinai.api.workflow.dcmake.it/webhook/83acc670-15ae
 const tg = window.Telegram.WebApp; 
 tg.ready(); tg.expand();
 
-// --- I18N DICTIONARY (COMPLETO E CORRETTO) ---
+// --- I18N DICTIONARY (COMPLETO CON NUOVI SETTORI) ---
 const i18n = {
     it: {
         access_denied_title:"Accesso Negato", access_denied_desc:"Accesso solo via Bot.", open_bot:"Apri Bot",
@@ -25,7 +25,30 @@ const i18n = {
         btn_next:"Avanti", btn_back:"Indietro",
         h_company:"Profilo Aziendale", sub_company:"Configurazione operativa e fiscale.",
         lbl_company_name:"Ragione Sociale", lbl_vat:"P.IVA", lbl_sdi:"SDI / PEC", lbl_address:"Sede Legale", lbl_site:"Sito Web",
-        section_identity: "IDENTITÀ OPERATIVA", lbl_sector: "Settore", lbl_what_we_do: "Cosa fate?", lbl_goal: "Obiettivo AI",
+        section_identity: "IDENTITÀ OPERATIVA", lbl_sector: "Settore di Attività",
+        sector_group_services: "Servizi",
+            sector_pro: "Servizi Professionali (Avvocato, Commercialista...)",
+            sector_consulting: "Consulenza (IT, Marketing, HR...)",
+            sector_personal: "Servizi alla Persona (Benessere, Estetica, Fitness...)",
+        sector_group_commerce: "Commercio",
+            sector_retail: "Commercio al Dettaglio / Negozio Fisico",
+            sector_ecommerce: "E-commerce / Vendite Online",
+            sector_wholesale: "Commercio all'Ingrosso / Distribuzione",
+        sector_group_craft: "Produzione & Artigianato",
+            sector_manufacturing: "Produzione Industriale",
+            sector_artisan: "Artigianato (Alimentare, Manifatturiero...)",
+            sector_construction: "Edilizia e Costruzioni",
+        sector_group_hospitality: "Turismo & Ristorazione",
+            sector_horeca: "Ho.Re.Ca. (Hotel, Ristoranti, Bar...)",
+            sector_tourism: "Turismo e Intrattenimento (Agenzie Viaggi, Eventi...)",
+        sector_group_other: "Altro",
+            sector_tech: "IT / Sviluppo Software",
+            sector_healthcare: "Sanità e Assistenza Medica",
+            sector_realestate: "Immobiliare",
+            sector_agriculture: "Agricoltura e Allevamento",
+            sector_transport: "Trasporti e Logistica",
+            sector_other: "Altro",
+        lbl_what_we_do: "Cosa fate?", lbl_goal: "Obiettivo AI",
         h_plan:"Offerta Pionieri", sub_plan:"Attivazione gratuita.", pioneer_desc:"Accesso completo.", pioneer_free:"GRATIS ORA",
         lbl_payment_pref: "Preferenza pagamento futuro:", pay_wire: "Bonifico", btn_build: "AVVIA CONFIGURAZIONE",
         alert_missing_fields: "Compila tutti i campi obbligatori.", alert_browser_error: "Errore Browser: impossibile salvare dati. Disattiva modalità privata."
@@ -43,7 +66,30 @@ const i18n = {
         btn_next:"Next", btn_back:"Back",
         h_company:"Company Profile", sub_company:"Operational & Tax Setup.",
         lbl_company_name:"Company Name", lbl_vat:"VAT ID", lbl_sdi:"Tax Code", lbl_address:"Address", lbl_site:"Website",
-        section_identity: "OPERATIONAL IDENTITY", lbl_sector: "Sector", lbl_what_we_do: "What do you do?", lbl_goal: "AI Goal",
+        section_identity: "OPERATIONAL IDENTITY", lbl_sector: "Business Sector",
+        sector_group_services: "Services",
+            sector_pro: "Professional Services (Lawyer, Accountant...)",
+            sector_consulting: "Consulting (IT, Marketing, HR...)",
+            sector_personal: "Personal Services (Wellness, Beauty, Fitness...)",
+        sector_group_commerce: "Commerce",
+            sector_retail: "Retail / Physical Store",
+            sector_ecommerce: "E-commerce / Online Sales",
+            sector_wholesale: "Wholesale / Distribution",
+        sector_group_craft: "Manufacturing & Crafts",
+            sector_manufacturing: "Industrial Manufacturing",
+            sector_artisan: "Craftsmanship (Food, Goods...)",
+            sector_construction: "Building and Construction",
+        sector_group_hospitality: "Tourism & Hospitality",
+            sector_horeca: "Ho.Re.Ca. (Hotels, Restaurants, Bars...)",
+            sector_tourism: "Tourism and Entertainment (Travel Agencies, Events...)",
+        sector_group_other: "Other",
+            sector_tech: "IT / Software Development",
+            sector_healthcare: "Healthcare and Medical Assistance",
+            sector_realestate: "Real Estate",
+            sector_agriculture: "Agriculture and Farming",
+            sector_transport: "Transport and Logistics",
+            sector_other: "Other",
+        lbl_what_we_do: "What do you do?", lbl_goal: "AI Goal",
         h_plan:"Pioneer Offer", sub_plan:"Activate now, decide later.", pioneer_desc:"Full Enterprise Access.", pioneer_free:"FREE NOW",
         lbl_payment_pref: "Future payment preference:", pay_wire: "Wire Transfer", btn_build: "START CONFIGURATION",
         alert_missing_fields: "Please fill all required fields.", alert_browser_error: "Browser Error: cannot save data. Disable strict private mode."
@@ -61,7 +107,30 @@ const i18n = {
         btn_next:"Suivant", btn_back:"Retour",
         h_company:"Profil Entreprise", sub_company:"Config opérationnelle & fiscale.",
         lbl_company_name:"Raison Sociale", lbl_vat:"TVA", lbl_sdi:"Code TVA", lbl_address:"Siège Social", lbl_site:"Site Web",
-        section_identity: "IDENTITÉ OPÉRATIONNELLE", lbl_sector: "Secteur", lbl_what_we_do: "Que faites-vous ?", lbl_goal: "Objectif IA",
+        section_identity: "IDENTITÉ OPÉRATIONNELLE", lbl_sector: "Secteur d'Activité",
+        sector_group_services: "Services",
+            sector_pro: "Services Professionnels (Avocat, Comptable...)",
+            sector_consulting: "Conseil (Informatique, Marketing...)",
+            sector_personal: "Services à la Personne (Bien-être, Beauté...)",
+        sector_group_commerce: "Commerce",
+            sector_retail: "Commerce de Détail / Magasin",
+            sector_ecommerce: "E-commerce / Ventes en Ligne",
+            sector_wholesale: "Commerce de Gros / Distribution",
+        sector_group_craft: "Production & Artisanat",
+            sector_manufacturing: "Production Industrielle",
+            sector_artisan: "Artisanat (Alimentaire, Manufacturier...)",
+            sector_construction: "Bâtiment et Construction",
+        sector_group_hospitality: "Tourisme & Restauration",
+            sector_horeca: "Ho.Re.Ca. (Hôtels, Restaurants...)",
+            sector_tourism: "Tourisme et Loisirs (Agences de voyages...)",
+        sector_group_other: "Autre",
+            sector_tech: "IT / Développement Logiciel",
+            sector_healthcare: "Santé et Soins Médicaux",
+            sector_realestate: "Immobilier",
+            sector_agriculture: "Agriculture et Élevage",
+            sector_transport: "Transport et Logistique",
+            sector_other: "Autre",
+        lbl_what_we_do: "Que faites-vous ?", lbl_goal: "Objectif IA",
         h_plan:"Offre Pionniers", sub_plan:"Activez maintenant.", pioneer_desc:"Accès Complet.", pioneer_free:"GRATUIT",
         lbl_payment_pref: "Préférence de paiement:", pay_wire: "Virement", btn_build: "LANCER CONFIGURATION",
         alert_missing_fields: "Veuillez remplir tous les champs.", alert_browser_error: "Erreur navigateur."
@@ -79,7 +148,30 @@ const i18n = {
         btn_next:"Weiter", btn_back:"Zurück",
         h_company:"Firmenprofil", sub_company:"Operative Konfiguration.",
         lbl_company_name:"Firmenname", lbl_vat:"USt-IdNr.", lbl_sdi:"Steuercode", lbl_address:"Adresse", lbl_site:"Webseite",
-        section_identity: "OPERATIVE IDENTITÄT", lbl_sector: "Branche", lbl_what_we_do: "Was machen Sie?", lbl_goal: "KI-Ziel",
+        section_identity: "OPERATIVE IDENTITÄT", lbl_sector: "Geschäftsbereich",
+        sector_group_services: "Dienstleistungen",
+            sector_pro: "Freie Berufe (Anwalt, Steuerberater...)",
+            sector_consulting: "Beratung (IT, Marketing...)",
+            sector_personal: "Persönliche Dienstleistungen (Wellness, Schönheit...)",
+        sector_group_commerce: "Handel",
+            sector_retail: "Einzelhandel / Ladengeschäft",
+            sector_ecommerce: "E-Commerce / Online-Verkauf",
+            sector_wholesale: "Großhandel / Vertrieb",
+        sector_group_craft: "Produktion & Handwerk",
+            sector_manufacturing: "Industrielle Produktion",
+            sector_artisan: "Handwerk (Lebensmittel, Waren...)",
+            sector_construction: "Bauwesen",
+        sector_group_hospitality: "Tourismus & Gastgewerbe",
+            sector_horeca: "Ho.Re.Ca. (Hotels, Restaurants...)",
+            sector_tourism: "Tourismus und Unterhaltung",
+        sector_group_other: "Andere",
+            sector_tech: "IT / Softwareentwicklung",
+            sector_healthcare: "Gesundheitswesen",
+            sector_realestate: "Immobilien",
+            sector_agriculture: "Landwirtschaft",
+            sector_transport: "Transport und Logistik",
+            sector_other: "Andere",
+        lbl_what_we_do: "Was machen Sie?", lbl_goal: "KI-Ziel",
         h_plan:"Pionier-Angebot", sub_plan:"Jetzt aktivieren.", pioneer_desc:"Voller Zugriff.", pioneer_free:"JETZT GRATIS",
         lbl_payment_pref: "Zahlungsart:", pay_wire: "Überweisung", btn_build: "KONFIGURATION STARTEN",
         alert_missing_fields: "Füllen Sie alle Felder aus.", alert_browser_error: "Browser-Fehler."
@@ -97,7 +189,30 @@ const i18n = {
         btn_next:"Siguiente", btn_back:"Atrás",
         h_company:"Perfil de Empresa", sub_company:"Configuración operativa.",
         lbl_company_name:"Razón Social", lbl_vat:"IVA", lbl_sdi:"Cód. Fiscal", lbl_address:"Dirección", lbl_site:"Sitio Web",
-        section_identity: "IDENTIDAD OPERATIVA", lbl_sector: "Sector", lbl_what_we_do: "¿Qué hacen?", lbl_goal: "Objetivo IA",
+        section_identity: "IDENTIDAD OPERATIVA", lbl_sector: "Sector de Actividad",
+        sector_group_services: "Servicios",
+            sector_pro: "Servicios Profesionales (Abogado, Contador...)",
+            sector_consulting: "Consultoría (TI, Marketing...)",
+            sector_personal: "Servicios Personales (Bienestar, Belleza...)",
+        sector_group_commerce: "Comercio",
+            sector_retail: "Comercio Minorista / Tienda Física",
+            sector_ecommerce: "E-commerce / Ventas Online",
+            sector_wholesale: "Comercio Mayorista / Distribución",
+        sector_group_craft: "Producción & Artesanía",
+            sector_manufacturing: "Producción Industrial",
+            sector_artisan: "Artesanía (Alimentos, Manufactura...)",
+            sector_construction: "Construcción",
+        sector_group_hospitality: "Turismo & Hostelería",
+            sector_horeca: "Ho.Re.Ca. (Hoteles, Restaurantes...)",
+            sector_tourism: "Turismo y Entretenimiento",
+        sector_group_other: "Otro",
+            sector_tech: "TI / Desarrollo de Software",
+            sector_healthcare: "Salud y Asistencia Médica",
+            sector_realestate: "Inmobiliaria",
+            sector_agriculture: "Agricultura y Ganadería",
+            sector_transport: "Transporte y Logística",
+            sector_other: "Otro",
+        lbl_what_we_do: "¿Qué hacen?", lbl_goal: "Objetivo IA",
         h_plan:"Oferta Pioneros", sub_plan:"Activa ahora.", pioneer_desc:"Acceso Completo.", pioneer_free:"GRATIS AHORA",
         lbl_payment_pref: "Preferencia de pago:", pay_wire: "Transferencia", btn_build: "INICIAR CONFIGURACIÓN",
         alert_missing_fields: "Complete todos los campos.", alert_browser_error: "Error del navegador."
@@ -115,12 +230,36 @@ const i18n = {
         btn_next:"Próximo", btn_back:"Voltar",
         h_company:"Perfil da Empresa", sub_company:"Configuração operacional.",
         lbl_company_name:"Razão Social", lbl_vat:"NIF", lbl_sdi:"Cód. Fiscal", lbl_address:"Endereço", lbl_site:"Site Web",
-        section_identity: "IDENTIDADE OPERACIONAL", lbl_sector: "Setor", lbl_what_we_do: "O que fazem?", lbl_goal: "Objetivo IA",
+        section_identity: "IDENTIDADE OPERACIONAL", lbl_sector: "Setor de Atividade",
+        sector_group_services: "Serviços",
+            sector_pro: "Serviços Profissionais (Advogado, Contador...)",
+            sector_consulting: "Consultoria (TI, Marketing...)",
+            sector_personal: "Serviços Pessoais (Bem-estar, Beleza...)",
+        sector_group_commerce: "Comércio",
+            sector_retail: "Varejo / Loja Física",
+            sector_ecommerce: "E-commerce / Vendas Online",
+            sector_wholesale: "Atacado / Distribuição",
+        sector_group_craft: "Produção & Artesanato",
+            sector_manufacturing: "Produção Industrial",
+            sector_artisan: "Artesanato (Alimentar, Manufatura...)",
+            sector_construction: "Construção Civil",
+        sector_group_hospitality: "Turismo & Hotelaria",
+            sector_horeca: "Ho.Re.Ca. (Hotéis, Restaurantes...)",
+            sector_tourism: "Turismo e Entretenimento",
+        sector_group_other: "Outro",
+            sector_tech: "TI / Desenvolvimento de Software",
+            sector_healthcare: "Saúde e Assistência Médica",
+            sector_realestate: "Imobiliário",
+            sector_agriculture: "Agricultura e Pecuária",
+            sector_transport: "Transportes e Logística",
+            sector_other: "Outro",
+        lbl_what_we_do: "O que fazem?", lbl_goal: "Objetivo IA",
         h_plan:"Oferta Pioneiros", sub_plan:"Ative agora.", pioneer_desc:"Acesso Completo.", pioneer_free:"GRÁTIS AGORA",
         lbl_payment_pref: "Preferência de pagamento:", pay_wire: "Transferência", btn_build: "INICIAR CONFIGURAÇÃO",
         alert_missing_fields: "Preencha todos os campos.", alert_browser_error: "Erro do navegador."
     }
 };
+
 
 // --- DOM & STATE ---
 const dom = {
@@ -141,7 +280,6 @@ let currentLang = 'it';
 const urlParams = new URLSearchParams(window.location.search);
 const GLOBAL_CHAT_ID = urlParams.get('chat_id') || tg.initDataUnsafe?.user?.id;
 const GLOBAL_THREAD_ID = urlParams.get('thread_id');
-const t = i18n[currentLang] || i18n.it;
 
 // --- CORE FUNCTIONS ---
 
@@ -150,7 +288,13 @@ function changeLanguage(lang) {
     const dict = i18n[lang] || i18n.it;
     document.querySelectorAll('[data-i18n]').forEach(el => {
         const key = el.getAttribute('data-i18n');
-        if(dict[key]) el.innerHTML = dict[key];
+        if(dict[key]) {
+            if (el.tagName === 'OPTGROUP') {
+                el.label = dict[key];
+            } else {
+                el.innerHTML = dict[key];
+            }
+        }
     });
 }
 
