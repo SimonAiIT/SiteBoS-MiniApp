@@ -1,16 +1,17 @@
 /**
- * ONBOARDING LOGIC - SITEBOS
- * Gestisce l'interfaccia a step, la validazione, l'analisi AI del documento
- * e il passaggio dei dati alla pagina processor.html.
+ * ONBOARDING LOGIC - SITEBOS (v3.2 - Final Correct Logic)
+ * 1. USA IL WEBHOOK_URL CORRETTO PER L'ANALISI DOCUMENTO (analyzeId).
+ * 2. Al submit finale, passa i dati a processor.html per l'esecuzione della pipe lunga.
  */
 
 // --- CONFIG ---
+// QUESTO E' IL WEBHOOK PER L'ONBOARDING, USATO DALLA FUNZIONE analyzeId
 const WEBHOOK_URL = "https://trinai.api.workflow.dcmake.it/webhook/1211a23e-ff91-4d3c-8938-aa273555bd8e"; 
 
 const tg = window.Telegram.WebApp; 
 tg.ready(); tg.expand();
 
-// --- I18N DICTIONARY (COMPLETO CON NUOVI SETTORI) ---
+// --- I18N DICTIONARY (COMPLETO) ---
 const i18n = {
     it: {
         access_denied_title:"Accesso Negato", access_denied_desc:"Accesso solo via Bot.", open_bot:"Apri Bot",
@@ -260,7 +261,6 @@ const i18n = {
     }
 };
 
-
 // --- DOM & STATE ---
 const dom = {
     loader: document.getElementById('loader'),
@@ -374,12 +374,8 @@ function submitFinalForm() {
     const addr = `${document.getElementById('addr_route').value} ${document.getElementById('addr_num').value}, ${document.getElementById('addr_zip').value} ${document.getElementById('addr_city').value} (${document.getElementById('addr_prov').value})`;
     const vatNumber = document.getElementById('vat_number').value;
 
-    // --- COSTRUZIONE DEL PAYLOAD COMPLETO ---
-    // Questo è il pacchetto che verrà messo nello "zaino" (sessionStorage)
     const payload = {
-        // L'AZIONE ORIGINALE CHE IL TUO WORKFLOW SI ASPETTA
         action: 'payment_checkout', 
-        
         user_id: GLOBAL_CHAT_ID, 
         chat_id: GLOBAL_CHAT_ID, 
         thread_id: GLOBAL_THREAD_ID,
@@ -419,21 +415,10 @@ function submitFinalForm() {
         return;
     }
 
+    const processorWebhookId = "35667aed-ee1c-4074-92df-d4334967a1b3";
     const commandForDashboard = "onboarding_complete";
 
     window.location.href = `processor.html?call=onboarding&owner_key=${vatNumber}&cmd=${commandForDashboard}`;
-}
-    try {
-        sessionStorage.setItem('pending_payload', JSON.stringify(payload));
-    } catch (e) {
-        const dict = i18n[currentLang] || i18n.it;
-        tg.showAlert(dict.alert_browser_error);
-        btn.disabled = false; btn.innerHTML = 'Riprova';
-        return;
-    }
-
-    const processorWebhookId = "83acc670-15ae-4da0-ae0e-3587c85bd5f4";
-    window.location.href = `processor.html?wh=${processorWebhookId}`;
 }
 
 // --- HELPER ---
