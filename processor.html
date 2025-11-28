@@ -3,96 +3,269 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>Processing...</title>
+  <title>Configurazione in corso...</title>
   
-  <!-- LIBRERIE -->
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <!-- Font Professionali -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Orbitron:wght@700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
-  <!-- IL TUO CSS UNIFICATO -->
-  <link rel="stylesheet" href="styles.css">
+  <!-- CSS Unificato (o inline per semplicità in questo file standalone) -->
+  <style>
+    :root { 
+      --bg: #0f172a; 
+      --card-bg: #1e293b;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --primary: #5B6FED; 
+      --accent: #4cd964;
+    }
+    
+    body { 
+      margin: 0; background: var(--bg); color: var(--text); 
+      font-family: 'Inter', sans-serif; height: 100vh; 
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      padding: 20px; text-align: center;
+    }
+
+    /* MAIN LOADER UI */
+    .loader-container {
+      background: var(--card-bg); padding: 40px; border-radius: 20px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.3); width: 100%; max-width: 400px;
+      border: 1px solid rgba(255,255,255,0.05); position: relative; z-index: 10;
+    }
+
+    .spinner-ring {
+      width: 60px; height: 60px; margin: 0 auto 20px;
+      border: 4px solid rgba(255,255,255,0.1); border-top-color: var(--primary);
+      border-radius: 50%; animation: spin 1s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    h1 { font-size: 18px; margin-bottom: 10px; font-weight: 600; }
+    p { font-size: 13px; color: var(--text-muted); line-height: 1.5; margin-bottom: 25px; }
+
+    .status-log {
+      font-family: 'Courier New', monospace; font-size: 11px; color: var(--accent);
+      background: rgba(0,0,0,0.3); padding: 10px; border-radius: 8px;
+      margin-bottom: 20px; min-height: 20px; text-align: left;
+    }
+
+    /* PULSANTE GIOCO */
+    .btn-game {
+      background: rgba(91, 111, 237, 0.1); border: 1px solid var(--primary);
+      color: #8ba1ff; padding: 12px 20px; border-radius: 12px;
+      font-size: 13px; font-weight: 600; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+      width: 100%; transition: all 0.2s;
+    }
+    .btn-game:hover { background: var(--primary); color: white; }
+
+    /* GAME OVERLAY (Hidden by default) */
+    #game-layer {
+      position: fixed; inset: 0; background: #000; z-index: 100;
+      display: flex; flex-direction: column;
+    }
+    #game-container { flex: 1; position: relative; }
+    canvas { display: block; width: 100%; height: 100%; }
+    
+    .game-header {
+      position: absolute; top: 0; left: 0; width: 100%; padding: 15px;
+      display: flex; justify-content: space-between; align-items: center; z-index: 110;
+      background: linear-gradient(180deg, rgba(0,0,0,0.8), transparent);
+    }
+    .score { font-family: 'Orbitron', sans-serif; font-size: 20px; color: var(--accent); }
+    .close-game { 
+      background: rgba(255,255,255,0.1); border: none; color: #fff; 
+      width: 36px; height: 36px; border-radius: 50%; font-size: 16px; cursor: pointer;
+    }
+
+    /* ERROR OVERLAY */
+    #error-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 200;
+      display: flex; flex-direction: column; justify-content: center; align-items: center;
+      padding: 30px;
+    }
+    .hidden { display: none !important; }
+  </style>
 </head>
 <body>
 
-  <div class="status-bar">
-    <div class="status-text"><span class="spinner"></span> PROCESSING...</div>
-    <div class="status-text" id="timer">00:00</div>
+  <!-- BUSINESS UI (Default) -->
+  <div class="loader-container">
+    <div class="spinner-ring"></div>
+    <h1>Configurazione in corso</h1>
+    <p>L'AI sta costruendo la tua istanza. <br>Questa operazione richiede circa <b>4-5 minuti</b>.</p>
+    
+    <div class="status-log">
+      > <span id="log-text">Inizializzazione...</span><span class="blink">_</span>
+    </div>
+
+    <button class="btn-game" onclick="openGame()">
+      <i class="fas fa-gamepad"></i> Inganna l'attesa (Mini-Game)
+    </button>
+    <p style="font-size:10px; margin-top:10px; opacity:0.5;">Puoi chiudere il gioco in qualsiasi momento.</p>
   </div>
 
-  <div id="game-container">
-    <div class="game-ui">BUGS FIXED: <span id="score">0</span></div>
-    <canvas id="gameCanvas"></canvas>
-    
-    <div id="error-overlay" class="hidden">
-        <div class="error-msg" id="error-text">ERROR</div>
-        <button class="retry-btn" onclick="window.location.reload()">RETRY</button>
+  <!-- GAME OVERLAY (Hidden) -->
+  <div id="game-layer" class="hidden">
+    <div class="game-header">
+      <div class="score" id="score">0</div>
+      <button class="close-game" onclick="closeGame()"><i class="fas fa-times"></i></button>
+    </div>
+    <div id="game-container">
+      <canvas id="gameCanvas"></canvas>
+    </div>
+    <div style="padding:20px; text-align:center; color:#555; font-size:10px; font-family:'Inter';">
+      Tap to Jump • Avoid Obstacles
     </div>
   </div>
 
-  <div class="mobile-controls">
-    <div class="ctrl-btn" id="btn-left"><i class="fas fa-arrow-left"></i></div>
-    <div class="ctrl-btn fire-btn" id="btn-fire"><i class="fas fa-crosshairs"></i></div>
-    <div class="ctrl-btn" id="btn-right"><i class="fas fa-arrow-right"></i></div>
+  <!-- ERROR OVERLAY -->
+  <div id="error-overlay" class="hidden">
+    <div style="font-size:40px; color:#ff6b6b; margin-bottom:20px;"><i class="fas fa-exclamation-triangle"></i></div>
+    <p id="error-text" style="color:#fff; font-size:14px; margin-bottom:20px;">Errore sconosciuto.</p>
+    <button class="btn-game" onclick="window.location.reload()">Riprova</button>
   </div>
 
-  <!-- MOTORE DI GIOCO (Statico) -->
+  <!-- ENGINE GIOCO (Il tuo Neon Runner) -->
   <script>
-    // Questo è l'unico pezzo di JS che rimane qui.
     const SiteBoSGame = {
         canvas: null, ctx: null, loopId: null, active: false,
-        state: { pX: 0, bullets: [], enemies: [], score: 0 },
-        inputs: { l: false, r: false },
+        frames: 0, score: 0, speed: 6,
+        player: { x: 50, y: 0, w: 30, h: 30, dy: 0, gravity: 0.6, jumpPower: -12, grounded: false, color: '#00f3ff' },
+        floorY: 0, width: 0, height: 0,
+        obstacles: [], particles: [],
+
         init: function() {
-            this.canvas = document.getElementById('gameCanvas'); if(!this.canvas) return;
+            this.canvas = document.getElementById('gameCanvas');
             this.ctx = this.canvas.getContext('2d');
-            this.resize(); window.addEventListener('resize', () => this.resize());
-            this.bindControls();
-        },
-        start: function() { this.active = true; this.state.score = 0; this.state.bullets = []; this.spawnEnemies(); this.loop(); },
-        stop: function() { this.active = false; if(this.loopId) cancelAnimationFrame(this.loopId); },
-        resize: function() { this.canvas.width = window.innerWidth > 400 ? 360 : window.innerWidth - 20; this.canvas.height = window.innerHeight - 160; this.state.pX = this.canvas.width/2 - 15; },
-        spawnEnemies: function() { this.state.enemies = []; for(let r=0; r<3; r++) for(let c=0; c<6; c++) this.state.enemies.push({ x: 30 + c*40, y: 30 + r*30, w: 20, h: 20, dir: 1, alive: true }); },
-        update: function() {
-            const s = this.state, w = this.canvas.width;
-            if(this.inputs.r && s.pX < w-30) s.pX += 4; if(this.inputs.l && s.pX > 0) s.pX -= 4;
-            s.bullets.forEach((b,i) => { b.y -= 7; if(b.y<0) s.bullets.splice(i,1); });
-            let drop = false;
-            s.enemies.forEach(e => { if(!e.alive) return; e.x += e.dir; if(e.x > w-30 || e.x < 10) drop = true; });
-            if(drop) s.enemies.forEach(e => { e.dir *= -1; e.y += 10; });
-            s.bullets.forEach((b, bi) => {
-                s.enemies.forEach(e => {
-                    if(e.alive && b.x > e.x && b.x < e.x+e.w && b.y > e.y && b.y < e.y+e.h) {
-                        e.alive = false; s.bullets.splice(bi,1);
-                        s.score += 10; document.getElementById('score').innerText = s.score;
-                    }
-                });
-            });
-            if(s.enemies.every(e => !e.alive)) this.spawnEnemies();
-        },
-        draw: function() {
-            const c = this.ctx, s = this.state;
-            c.fillStyle = '#000'; c.fillRect(0,0,this.canvas.width,this.canvas.height);
-            c.fillStyle = '#4cd964'; c.fillRect(s.pX, this.canvas.height-30, 30, 10); c.fillRect(s.pX+10, this.canvas.height-40, 10, 10);
-            c.fillStyle = '#ff6b6b'; s.enemies.forEach(e => { if(e.alive) c.fillRect(e.x, e.y, 20, 20); });
-            c.fillStyle = '#fff'; s.bullets.forEach(b => c.fillRect(b.x, b.y, 4, 10));
-        },
-        loop: function() { if(!this.active) return; this.update(); this.draw(); this.loopId = requestAnimationFrame(() => this.loop()); },
-        shoot: function() { this.state.bullets.push({x: this.state.pX+13, y: this.canvas.height-40}); },
-        bindControls: function() {
-            const b = (id, k) => {
-                const el = document.getElementById(id); if(!el) return;
-                el.addEventListener('touchstart', (e)=>{ e.preventDefault(); this.inputs[k]=true; if(k==='f') this.shoot(); });
-                el.addEventListener('touchend', (e)=>{ e.preventDefault(); this.inputs[k]=false });
-                el.addEventListener('mousedown', ()=>{ this.inputs[k]=true; if(k==='f') this.shoot(); });
-                el.addEventListener('mouseup', ()=>{ this.inputs[k]=false });
+            this.resize();
+            window.addEventListener('resize', () => this.resize());
+            
+            const jump = (e) => {
+                if(!this.active) return;
+                if(e.type !== 'keydown') e.preventDefault();
+                if(this.player.grounded) {
+                    this.player.dy = this.player.jumpPower;
+                    this.player.grounded = false;
+                    this.createExplosion(this.player.x, this.player.y+30, 5, '#fff');
+                    if(window.Telegram?.WebApp?.HapticFeedback) window.Telegram.WebApp.HapticFeedback.impactOccurred('light');
+                }
             };
-            b('btn-left','l'); b('btn-right','r'); b('btn-fire','f');
+            this.canvas.addEventListener('touchstart', jump, {passive:false});
+            this.canvas.addEventListener('mousedown', jump);
+            window.addEventListener('keydown', (e) => { if(e.code==='Space') jump(e); });
+        },
+
+        start: function() {
+            if(this.active) return;
+            this.active = true;
+            this.score = 0; this.obstacles = [];
+            this.player.y = this.floorY - 30; this.player.dy = 0;
+            this.loop();
+        },
+
+        stop: function() {
+            this.active = false;
+            cancelAnimationFrame(this.loopId);
+        },
+
+        resize: function() {
+            this.width = this.canvas.width = window.innerWidth;
+            this.height = this.canvas.height = window.innerHeight; // Fullscreen in overlay
+            this.floorY = this.height * 0.6; // Pavimento al 60% altezza
+        },
+
+        createExplosion: function(x, y, count, color) {
+            for(let i=0; i<count; i++) this.particles.push({x, y, vx:(Math.random()-0.5)*5, vy:(Math.random()-0.5)*5, life:1, color});
+        },
+
+        update: function() {
+            this.frames++;
+            if(this.frames%10===0) { this.score++; document.getElementById('score').innerText = this.score; }
+            
+            // Physics
+            this.player.dy += this.player.gravity;
+            this.player.y += this.player.dy;
+            if(this.player.y + 30 > this.floorY) { this.player.y = this.floorY - 30; this.player.dy = 0; this.player.grounded = true; }
+
+            // Obstacles
+            if(this.frames % 90 === 0) {
+                this.obstacles.push({ x: this.width, y: this.floorY - 40, w: 20, h: 40, color: '#ff00ff' });
+            }
+            
+            for(let i=this.obstacles.length-1; i>=0; i--) {
+                let o = this.obstacles[i];
+                o.x -= this.speed;
+                // Collision check simple
+                if (this.player.x < o.x + o.w && this.player.x + 30 > o.x && this.player.y < o.y + o.h && this.player.y + 30 > o.y) {
+                    this.createExplosion(this.player.x, this.player.y, 20, '#ff0000');
+                    if(window.Telegram?.WebApp?.HapticFeedback) window.Telegram.WebApp.HapticFeedback.notificationOccurred('error');
+                    this.obstacles.splice(i, 1);
+                    this.score = Math.max(0, this.score - 50);
+                }
+                if(o.x + o.w < 0) this.obstacles.splice(i, 1);
+            }
+
+            // Particles
+            for(let i=this.particles.length-1; i>=0; i--) {
+                let p = this.particles[i]; p.x += p.vx; p.y += p.vy; p.life -= 0.05;
+                if(p.life <= 0) this.particles.splice(i, 1);
+            }
+        },
+
+        draw: function() {
+            this.ctx.fillStyle = '#0f172a'; this.ctx.fillRect(0,0,this.width,this.height);
+            
+            // Floor
+            this.ctx.beginPath(); this.ctx.moveTo(0, this.floorY); this.ctx.lineTo(this.width, this.floorY);
+            this.ctx.strokeStyle = '#00f3ff'; this.ctx.lineWidth = 2; this.ctx.stroke();
+
+            // Player
+            this.ctx.fillStyle = this.player.color; this.ctx.fillRect(this.player.x, this.player.y, 30, 30);
+
+            // Obstacles
+            this.obstacles.forEach(o => { this.ctx.fillStyle = o.color; this.ctx.fillRect(o.x, o.y, o.w, o.h); });
+
+            // Particles
+            this.particles.forEach(p => { this.ctx.fillStyle = p.color; this.ctx.globalAlpha = p.life; this.ctx.fillRect(p.x, p.y, 3, 3); });
+            this.ctx.globalAlpha = 1;
+        },
+
+        loop: function() {
+            if(!this.active) return;
+            this.update(); this.draw();
+            this.loopId = requestAnimationFrame(() => this.loop());
         }
     };
+
+    // UI CONTROLS
+    function openGame() {
+        document.getElementById('game-layer').classList.remove('hidden');
+        if(!SiteBoSGame.ctx) SiteBoSGame.init();
+        SiteBoSGame.start();
+        // Resize after display block to get correct dimensions
+        setTimeout(() => SiteBoSGame.resize(), 100);
+    }
+
+    function closeGame() {
+        document.getElementById('game-layer').classList.add('hidden');
+        SiteBoSGame.stop();
+    }
+
+    // FAKE LOGS
+    const logs = ["Analisi requisiti...", "Allocazione cloud...", "Generazione chiavi...", "Setup database...", "Configurazione AI...", "Ottimizzazione...", "Quasi pronto..."];
+    let lIdx = 0;
+    setInterval(() => {
+        if(lIdx < logs.length) {
+            document.getElementById('log-text').innerText = logs[lIdx];
+            lIdx++;
+        }
+    }, 15000);
   </script>
 
-  <!-- LOGICA DINAMICA (A PARTE) -->
+  <!-- LOGICA DI RETE -->
   <script src="processor_logic.js"></script>
 </body>
 </html>
