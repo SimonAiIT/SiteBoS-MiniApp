@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Processing...</title>
+  
+  <!-- LIBRERIE -->
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- IL TUO CSS UNIFICATO -->
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <div class="status-bar">
+    <div class="status-text"><span class="spinner"></span> PROCESSING...</div>
+    <div class="status-text" id="timer">00:00</div>
+  </div>
+
+  <div id="game-container">
+    <div class="game-ui">BUGS FIXED: <span id="score">0</span></div>
+    <canvas id="gameCanvas"></canvas>
+    
+    <div id="error-overlay" class="hidden">
+        <div class="error-msg" id="error-text">ERROR</div>
+        <button class="retry-btn" onclick="window.location.reload()">RETRY</button>
+    </div>
+  </div>
+
+  <div class="mobile-controls">
+    <div class="ctrl-btn" id="btn-left"><i class="fas fa-arrow-left"></i></div>
+    <div class="ctrl-btn fire-btn" id="btn-fire"><i class="fas fa-crosshairs"></i></div>
+    <div class="ctrl-btn" id="btn-right"><i class="fas fa-arrow-right"></i></div>
+  </div>
+
+  <!-- MOTORE DI GIOCO (Statico) -->
+  <script>
+    // Questo è l'unico pezzo di JS che rimane qui.
+    const SiteBoSGame = {
+        canvas: null, ctx: null, loopId: null, active: false,
+        state: { pX: 0, bullets: [], enemies: [], score: 0 },
+        inputs: { l: false, r: false },
+        init: function() {
+            this.canvas = document.getElementById('gameCanvas'); if(!this.canvas) return;
+            this.ctx = this.canvas.getContext('2d');
+            this.resize(); window.addEventListener('resize', () => this.resize());
+            this.bindControls();
+        },
+        start: function() { this.active = true; this.state.score = 0; this.state.bullets = []; this.spawnEnemies(); this.loop(); },
+        stop: function() { this.active = false; if(this.loopId) cancelAnimationFrame(this.loopId); },
+        resize: function() { this.canvas.width = window.innerWidth > 400 ? 360 : window.innerWidth - 20; this.canvas.height = window.innerHeight - 160; this.state.pX = this.canvas.width/2 - 15; },
+        spawnEnemies: function() { this.state.enemies = []; for(let r=0; r<3; r++) for(let c=0; c<6; c++) this.state.enemies.push({ x: 30 + c*40, y: 30 + r*30, w: 20, h: 20, dir: 1, alive: true }); },
+        update: function() {
+            const s = this.state, w = this.canvas.width;
+            if(this.inputs.r && s.pX < w-30) s.pX += 4; if(this.inputs.l && s.pX > 0) s.pX -= 4;
+            s.bullets.forEach((b,i) => { b.y -= 7; if(b.y<0) s.bullets.splice(i,1); });
+            let drop = false;
+            s.enemies.forEach(e => { if(!e.alive) return; e.x += e.dir; if(e.x > w-30 || e.x < 10) drop = true; });
+            if(drop) s.enemies.forEach(e => { e.dir *= -1; e.y += 10; });
+            s.bullets.forEach((b, bi) => {
+                s.enemies.forEach(e => {
+                    if(e.alive && b.x > e.x && b.x < e.x+e.w && b.y > e.y && b.y < e.y+e.h) {
+                        e.alive = false; s.bullets.splice(bi,1);
+                        s.score += 10; document.getElementById('score').innerText = s.score;
+                    }
+                });
+            });
+            if(s.enemies.every(e => !e.alive)) this.spawnEnemies();
+        },
+        draw: function() {
+            const c = this.ctx, s = this.state;
+            c.fillStyle = '#000'; c.fillRect(0,0,this.canvas.width,this.canvas.height);
+            c.fillStyle = '#4cd964'; c.fillRect(s.pX, this.canvas.height-30, 30, 10); c.fillRect(s.pX+10, this.canvas.height-40, 10, 10);
+            c.fillStyle = '#ff6b6b'; s.enemies.forEach(e => { if(e.alive) c.fillRect(e.x, e.y, 20, 20); });
+            c.fillStyle = '#fff'; s.bullets.forEach(b => c.fillRect(b.x, b.y, 4, 10));
+        },
+        loop: function() { if(!this.active) return; this.update(); this.draw(); this.loopId = requestAnimationFrame(() => this.loop()); },
+        shoot: function() { this.state.bullets.push({x: this.state.pX+13, y: this.canvas.height-40}); },
+        bindControls: function() {
+            const b = (id, k) => {
+                const el = document.getElementById(id); if(!el) return;
+                el.addEventListener('touchstart', (e)=>{ e.preventDefault(); this.inputs[k]=true; if(k==='f') this.shoot(); });
+                el.addEventListener('touchend', (e)=>{ e.preventDefault(); this.inputs[k]=false });
+                el.addEventListener('mousedown', ()=>{ this.inputs[k]=true; if(k==='f') this.shoot(); });
+                el.addEventListener('mouseup', ()=>{ this.inputs[k]=false });
+            };
+            b('btn-left','l'); b('btn-right','r'); b('btn-fire','f');
+        }
+    };
+  </script>
+
+  <!-- LOGICA DINAMICA (A PARTE) -->
+  <script src="processor_logic.js"></script>
+</body>
+</html>
