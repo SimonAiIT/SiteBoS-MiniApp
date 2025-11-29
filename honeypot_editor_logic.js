@@ -475,10 +475,11 @@ const App = {
 
                 // Feedback Visivo
                 DOM.saveBtn.innerHTML = `<i class="fas fa-rocket"></i> ${I18n.get('launching_process')}`;
-                
-                // REDIRECT
+
+                // REDIRECT A PROCESSOR
                 setTimeout(() => {
-                    window.location.replace(`processing.html?call=honeypot_build_trigger&owner_key=${ownerKey}`);
+                    // Corretto da processing.html a processor.html
+                    window.location.replace(`processor.html?call=honeypot_build_trigger&owner_key=${ownerKey}`);
                 }, 500);
 
                 return; 
