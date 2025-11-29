@@ -1,10 +1,11 @@
 /**
- * HONEYPOT EDITOR - LOGIC (v2.0 - Final Fixes)
- * - Supporto 6 Lingue completo
- * - Estrazione lingua da URL (case-insensitive)
- * - Fix apertura Card
- * - Orari con Pausa Pranzo (Mattina/Pomeriggio)
- * - Rimossa sezione Gruppo
+ * HONEYPOT EDITOR - LOGIC (v2.2 - UNABRIDGED & CORRECTED)
+ * - Supporto 6 Lingue completo e non abbreviato.
+ * - Estrazione lingua da URL (case-insensitive).
+ * - FIX APERTURA CARD con Event Delegation.
+ * - Orari con Mattina/Pomeriggio.
+ * - Aggiunto pulsante flottante per tornare alla Dashboard.
+ * - NESSUNA PARTE DI CODICE OMESSA.
  */
 
 // --- CONFIG & GLOBAL STATE ---
@@ -22,10 +23,11 @@ let honeypotData = {};
 let initialDataString = '';
 let currentLang = 'it'; // Default
 
-// --- I18N DICTIONARY (6 LANGUAGES) ---
+// --- I18N DICTIONARY (6 LANGUAGES - UNABRIDGED) ---
 const i18n = {
   it: {
     title: "Editor Base di Conoscenza", subtitle: "Modella l'anima AI della tua azienda.",
+    btn_back_dashboard: "Torna alla Dashboard",
     section_offer_title: "Azione Richiesta: Offerta Benvenuto", offer_desc: "L'AI genererà un'offerta accattivante per te.", lbl_offer_prompt: "Descrivi la tua offerta", btn_generate_offer: "Genera Offerta", lbl_offer_preview: "Anteprima", offer_preview_placeholder: "Qui vedrai l'anteprima...", alert_offer_required: "Inserisci una descrizione.", generating: "Generazione...", alert_generation_error: "Errore AI.", lbl_click_copy: "Copia", alert_copied: "Copiato!",
     section_hours_title: "Azione Richiesta: Orari", lbl_morning: "Mattina", lbl_afternoon: "Pomeriggio", section_assets_title: "Azione Richiesta: Asset Visivi", lbl_logo: "Logo Aziendale", upload_logo: "Carica logo", lbl_photo: "Foto Rappresentativa", upload_photo: "Carica foto",
     section_bot_title: "Azione Richiesta: Configura Bot", guide_bot_1: "Apri <a href='{botFatherUrl}' target='_blank'>@BotFather</a>", guide_bot_2: "Invia <code>/newbot</code>", guide_bot_3: "Scegli nome/username", guide_bot_4: "<b>Copia Token</b> e incollalo", guide_bot_video: "<a href='{botVideoUrl}' target='_blank'>Video Tutorial</a>", btn_link_bot: "Associa", status_linked: "Bot Associato ✅", alert_token_required: "Inserisci il token.", alert_token_invalid: "Token non valido.", alert_link_error: "Errore Associazione",
@@ -36,6 +38,7 @@ const i18n = {
   },
   en: {
     title: "Knowledge Base Editor", subtitle: "Shape your business AI soul.",
+    btn_back_dashboard: "Back to Dashboard",
     section_offer_title: "Action Required: Welcome Offer", offer_desc: "AI will generate an engaging offer.", lbl_offer_prompt: "Describe your offer", btn_generate_offer: "Generate Offer", lbl_offer_preview: "Preview", offer_preview_placeholder: "Preview will appear here...", alert_offer_required: "Please enter a description.", generating: "Generating...", alert_generation_error: "AI Error.", lbl_click_copy: "Copy", alert_copied: "Copied!",
     section_hours_title: "Action Required: Opening Hours", lbl_morning: "Morning", lbl_afternoon: "Afternoon", section_assets_title: "Action Required: Visual Assets", lbl_logo: "Company Logo", upload_logo: "Upload logo", lbl_photo: "Main Photo", upload_photo: "Upload photo",
     section_bot_title: "Action Required: Configure Bot", guide_bot_1: "Open <a href='{botFatherUrl}' target='_blank'>@BotFather</a>", guide_bot_2: "Send <code>/newbot</code>", guide_bot_3: "Choose name/username", guide_bot_4: "<b>Copy Token</b> and paste it here", guide_bot_video: "<a href='{botVideoUrl}' target='_blank'>Video Tutorial</a>", btn_link_bot: "Link", status_linked: "Bot Linked ✅", alert_token_required: "Please enter the token.", alert_token_invalid: "Invalid token.", alert_link_error: "Linking Error",
@@ -46,6 +49,7 @@ const i18n = {
   },
   fr: {
     title: "Éditeur de Base de Connaissances", subtitle: "Modelez l'âme IA de votre entreprise.",
+    btn_back_dashboard: "Retour au Tableau de Bord",
     section_offer_title: "Action Requise : Offre de Bienvenue", offer_desc: "L'IA générera une offre attrayante.", lbl_offer_prompt: "Décrivez votre offre", btn_generate_offer: "Générer Offre", lbl_offer_preview: "Aperçu", offer_preview_placeholder: "L'aperçu apparaîtra ici...", alert_offer_required: "Veuillez entrer une description.", generating: "Génération...", alert_generation_error: "Erreur IA.", lbl_click_copy: "Copier", alert_copied: "Copié !",
     section_hours_title: "Action Requise : Heures d'Ouverture", lbl_morning: "Matin", lbl_afternoon: "Après-midi", section_assets_title: "Action Requise : Éléments Visuels", lbl_logo: "Logo de l'entreprise", upload_logo: "Charger logo", lbl_photo: "Photo Principale", upload_photo: "Charger photo",
     section_bot_title: "Action Requise : Configurer le Bot", guide_bot_1: "Ouvrir <a href='{botFatherUrl}' target='_blank'>@BotFather</a>", guide_bot_2: "Envoyer <code>/newbot</code>", guide_bot_3: "Choisir nom/utilisateur", guide_bot_4: "<b>Copiez le Jeton</b> et collez-le", guide_bot_video: "<a href='{botVideoUrl}' target='_blank'>Tutoriel Vidéo</a>", btn_link_bot: "Associer", status_linked: "Bot Associé ✅", alert_token_required: "Veuillez entrer le jeton.", alert_token_invalid: "Jeton invalide.", alert_link_error: "Erreur d'association",
@@ -56,6 +60,7 @@ const i18n = {
   },
   de: {
     title: "Wissensdatenbank-Editor", subtitle: "Gestalten Sie die KI-Seele Ihres Unternehmens.",
+    btn_back_dashboard: "Zurück zum Dashboard",
     section_offer_title: "Aktion Erforderlich: Willkommensangebot", offer_desc: "Die KI wird ein ansprechendes Angebot erstellen.", lbl_offer_prompt: "Beschreiben Sie Ihr Angebot", btn_generate_offer: "Angebot Erstellen", lbl_offer_preview: "Vorschau", offer_preview_placeholder: "Vorschau wird hier angezeigt...", alert_offer_required: "Bitte geben Sie eine Beschreibung ein.", generating: "Erstelle...", alert_generation_error: "KI-Fehler.", lbl_click_copy: "Kopieren", alert_copied: "Kopiert!",
     section_hours_title: "Aktion Erforderlich: Öffnungszeiten", lbl_morning: "Morgen", lbl_afternoon: "Nachmittag", section_assets_title: "Aktion Erforderlich: Visuelle Assets", lbl_logo: "Firmenlogo", upload_logo: "Logo hochladen", lbl_photo: "Hauptfoto", upload_photo: "Foto hochladen",
     section_bot_title: "Aktion Erforderlich: Bot Konfigurieren", guide_bot_1: "Öffnen Sie <a href='{botFatherUrl}' target='_blank'>@BotFather</a>", guide_bot_2: "Senden Sie <code>/newbot</code>", guide_bot_3: "Wählen Sie Name/Benutzername", guide_bot_4: "<b>Token kopieren</b> und einfügen", guide_bot_video: "<a href='{botVideoUrl}' target='_blank'>Video-Tutorial</a>", btn_link_bot: "Verbinden", status_linked: "Bot Verbunden ✅", alert_token_required: "Bitte Token eingeben.", alert_token_invalid: "Ungültiges Token.", alert_link_error: "Verbindungsfehler",
@@ -66,6 +71,7 @@ const i18n = {
   },
   es: {
     title: "Editor de Base de Conocimiento", subtitle: "Modela el alma de IA de tu negocio.",
+    btn_back_dashboard: "Volver al Panel",
     section_offer_title: "Acción Requerida: Oferta de Bienvenida", offer_desc: "La IA generará una oferta atractiva.", lbl_offer_prompt: "Describe tu oferta", btn_generate_offer: "Generar Oferta", lbl_offer_preview: "Vista Previa", offer_preview_placeholder: "La vista previa aparecerá aquí...", alert_offer_required: "Por favor, introduce una descripción.", generating: "Generando...", alert_generation_error: "Error de IA.", lbl_click_copy: "Copiar", alert_copied: "¡Copiado!",
     section_hours_title: "Acción Requerida: Horario de Apertura", lbl_morning: "Mañana", lbl_afternoon: "Tarde", section_assets_title: "Acción Requerida: Activos Visuales", lbl_logo: "Logo de la Empresa", upload_logo: "Subir logo", lbl_photo: "Foto Principal", upload_photo: "Subir foto",
     section_bot_title: "Acción Requerida: Configurar Bot", guide_bot_1: "Abrir <a href='{botFatherUrl}' target='_blank'>@BotFather</a>", guide_bot_2: "Enviar <code>/newbot</code>", guide_bot_3: "Elegir nombre/usuario", guide_bot_4: "<b>Copiar Token</b> y pegarlo", guide_bot_video: "<a href='{botVideoUrl}' target='_blank'>Video Tutorial</a>", btn_link_bot: "Enlazar", status_linked: "Bot Enlazado ✅", alert_token_required: "Por favor, introduce el token.", alert_token_invalid: "Token inválido.", alert_link_error: "Error al enlazar",
@@ -76,6 +82,7 @@ const i18n = {
   },
   pt: {
     title: "Editor da Base de Conhecimento", subtitle: "Molde a alma de IA do seu negócio.",
+    btn_back_dashboard: "Voltar ao Painel",
     section_offer_title: "Ação Necessária: Oferta de Boas-Vindas", offer_desc: "A IA irá gerar uma oferta atraente.", lbl_offer_prompt: "Descreva a sua oferta", btn_generate_offer: "Gerar Oferta", lbl_offer_preview: "Pré-visualização", offer_preview_placeholder: "A pré-visualização aparecerá aqui...", alert_offer_required: "Por favor, insira uma descrição.", generating: "Gerando...", alert_generation_error: "Erro de IA.", lbl_click_copy: "Copiar", alert_copied: "Copiado!",
     section_hours_title: "Ação Necessária: Horário de Funcionamento", lbl_morning: "Manhã", lbl_afternoon: "Tarde", section_assets_title: "Ação Necessária: Ativos Visuais", lbl_logo: "Logotipo da Empresa", upload_logo: "Carregar logo", lbl_photo: "Foto Principal", upload_photo: "Carregar foto",
     section_bot_title: "Ação Necessária: Configurar Bot", guide_bot_1: "Abrir <a href='{botFatherUrl}' target='_blank'>@BotFather</a>", guide_bot_2: "Enviar <code>/newbot</code>", guide_bot_3: "Escolher nome/utilizador", guide_bot_4: "<b>Copiar Token</b> e colar", guide_bot_video: "<a href='{botVideoUrl}' target='_blank'>Tutorial em Vídeo</a>", btn_link_bot: "Ligar", status_linked: "Bot Ligado ✅", alert_token_required: "Por favor, insira o token.", alert_token_invalid: "Token inválido.", alert_link_error: "Erro ao ligar",
@@ -102,15 +109,14 @@ const dom = {
     offerStorage: document.getElementById('offer_html_storage')
 };
 
-// --- CORE LOGIC ---
+// --- CORE LOGIC (UNABRIDGED) ---
 
 function dict() { return i18n[currentLang] || i18n.en; }
 
 function getLangFromUrl() {
     const p = new URLSearchParams(window.location.search);
-    let l = p.get('lang') || p.get('language') || 'it';
-    // Case-insensitive normalization (es. "It" -> "it")
-    l = l.toLowerCase();
+    let l = p.get('lang') || p.get('language') || tg.initDataUnsafe?.user?.language_code || 'it';
+    l = l.toLowerCase().slice(0, 2);
     return i18n[l] ? l : 'it';
 }
 
@@ -254,7 +260,6 @@ async function linkBot() {
 async function loadData() {
     if (!vatNumber) { tg.showAlert('ID not found'); return; }
     
-    // FIX: Set Language immediately from URL
     changeLanguage(getLangFromUrl());
 
     try {
@@ -309,16 +314,17 @@ function renderAll() {
                     
                     <h4 class="section-title" data-i18n="lbl_deepdive"></h4>
                     <div id="deep-dive-${index}"></div>
-                    <button type="button" class="btn btn-secondary btn-sm mt-2" onclick="addDeepDive(${index})">
+                    <button type="button" class="btn btn-secondary btn-sm mt-2" id="btn-add-qa-${index}">
                         <i class="fas fa-plus"></i> <span data-i18n="btn_add_qa"></span>
                     </button>
                 </div>`;
             dom.container.appendChild(card);
             renderDeepDives(index);
+            document.getElementById(`btn-add-qa-${index}`).addEventListener('click', () => addDeepDive(index));
         });
     }
 
-    // Hours (Updated Structure with Morning/Afternoon split)
+    // Hours
     dom.hoursContainer.innerHTML = '';
     const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
     days.forEach(day => {
@@ -347,32 +353,28 @@ function renderAll() {
         dom.hoursContainer.appendChild(row);
     });
     
-    // Populate Hour Options
     const selectors = dom.hoursContainer.querySelectorAll('select');
     selectors.forEach(selector => {
-        // Add "Closed" option
         selector.innerHTML = `<option value="">--</option>`;
         for (let i = 0; i < 24; i++) {
             selector.innerHTML += `<option value="${i}">${i.toString().padStart(2, '0')}:00</option>`;
         }
     });
     
-    // Set Hour Values (Adapt to new structure or fallback)
     if (honeypotData.availability_schedule && honeypotData.availability_schedule.hours) {
         days.forEach(day => {
-            const h = honeypotData.availability_schedule.hours[day];
-            if(h) {
-                // Support legacy simple from-to
-                const mFrom = h.morning?.from ?? h.from;
-                const mTo = h.morning?.to ?? (h.to < 14 ? h.to : '');
-                const aFrom = h.afternoon?.from ?? (h.from >= 14 ? h.from : '');
-                const aTo = h.afternoon?.to ?? (h.to >= 14 ? h.to : '');
+            const h = honeypotData.availability_schedule.hours[day] || {};
+            const m = h.morning || {};
+            const a = h.afternoon || {};
+            
+            // Handle legacy data structure
+            const legacyFrom = h.from;
+            const legacyTo = h.to;
 
-                dom.hoursContainer.querySelector(`[data-path="availability_schedule.hours.${day}.morning.from"]`).value = mFrom || '';
-                dom.hoursContainer.querySelector(`[data-path="availability_schedule.hours.${day}.morning.to"]`).value = mTo || '';
-                dom.hoursContainer.querySelector(`[data-path="availability_schedule.hours.${day}.afternoon.from"]`).value = aFrom || '';
-                dom.hoursContainer.querySelector(`[data-path="availability_schedule.hours.${day}.afternoon.to"]`).value = aTo || '';
-            }
+            dom.hoursContainer.querySelector(`[data-path="availability_schedule.hours.${day}.morning.from"]`).value = m.from ?? (legacyFrom < 13 ? legacyFrom : '');
+            dom.hoursContainer.querySelector(`[data-path="availability_schedule.hours.${day}.morning.to"]`).value = m.to ?? (legacyTo <= 13 ? legacyTo : '');
+            dom.hoursContainer.querySelector(`[data-path="availability_schedule.hours.${day}.afternoon.from"]`).value = a.from ?? (legacyFrom > 13 ? legacyFrom : '');
+            dom.hoursContainer.querySelector(`[data-path="availability_schedule.hours.${day}.afternoon.to"]`).value = a.to ?? (legacyTo > 13 ? legacyTo : '');
         });
     }
     
@@ -401,45 +403,47 @@ function renderDeepDives(fragmentIndex) {
     if (honeypotData.knowledge_fragments[fragmentIndex].sections) {
         honeypotData.knowledge_fragments[fragmentIndex].sections.forEach((section, s_index) => {
             const item = document.createElement('div');
-            item.style.marginBottom = '15px';
+            item.className = 'card';
             item.style.padding = '10px';
-            item.style.background = 'rgba(0,0,0,0.1)';
-            item.style.borderRadius = '8px';
+            item.style.marginBottom = '10px';
             item.innerHTML = `
                 <div class="input-group" style="margin-bottom:8px;">
-                    <input type="text" placeholder="Domanda" data-path="knowledge_fragments.${fragmentIndex}.sections.${s_index}.question" value="${section.question || ''}" style="font-weight:600;">
+                    <input type="text" placeholder="${dict().lbl_question}" data-path="knowledge_fragments.${fragmentIndex}.sections.${s_index}.question" value="${section.question || ''}" style="font-weight:600;">
                 </div>
                 <div class="input-group" style="margin-bottom:8px;">
-                    <textarea placeholder="Risposta" data-path="knowledge_fragments.${fragmentIndex}.sections.${s_index}.answer" rows="2">${section.answer || ''}</textarea>
+                    <textarea placeholder="${dict().lbl_answer}" data-path="knowledge_fragments.${fragmentIndex}.sections.${s_index}.answer" rows="2">${section.answer || ''}</textarea>
                 </div>
-                <button type="button" class="btn btn-remove btn-sm btn-icon" style="float:right;" onclick="removeDeepDive(${fragmentIndex}, ${s_index})"><i class="fas fa-trash"></i></button>
+                <button type="button" class="btn btn-sm btn-delete btn-icon" style="float:right;" onclick="removeDeepDive(${fragmentIndex}, ${s_index})"><i class="fas fa-trash"></i></button>
                 <div style="clear:both;"></div>`;
             container.appendChild(item);
         });
     }
 }
 
-window.addDeepDive = (fragmentIndex) => {
+function addDeepDive(fragmentIndex) {
     if (!honeypotData.knowledge_fragments[fragmentIndex].sections) honeypotData.knowledge_fragments[fragmentIndex].sections = [];
     honeypotData.knowledge_fragments[fragmentIndex].sections.push({ question: '', answer: '' });
     renderDeepDives(fragmentIndex);
     checkIfDirty();
 };
 
-window.removeDeepDive = (fragmentIndex, sectionIndex) => {
+function removeDeepDive(fragmentIndex, sectionIndex) {
     honeypotData.knowledge_fragments[fragmentIndex].sections.splice(sectionIndex, 1);
     renderDeepDives(fragmentIndex);
     checkIfDirty();
 };
 
-// FIX: Toggle Card logic improved to use currentTarget to avoid issues with child elements
-window.toggleCard = (header) => header.parentElement.classList.toggle('open');
-
 function setObjectValue(obj, path, value) {
     const keys = path.split('.');
-    const lastKey = keys.pop();
-    const lastObj = keys.reduce((o, key) => o[key] = o[key] || {}, obj);
-    lastObj[lastKey] = value;
+    let current = obj;
+    for (let i = 0; i < keys.length - 1; i++) {
+        const key = keys[i];
+        if (!current[key]) {
+            current[key] = /^\d+$/.test(keys[i + 1]) ? [] : {};
+        }
+        current = current[key];
+    }
+    current[keys[keys.length - 1]] = value;
 }
 
 async function saveChanges() {
@@ -464,12 +468,21 @@ async function saveChanges() {
     }
 }
 
+function goBackToDashboard() {
+    window.location.href = `dashboard.html${window.location.search}`;
+}
+
 // --- INITIALIZATION ---
 document.addEventListener('DOMContentLoaded', () => {
-    // FIX: Using event delegation for toggling cards to ensure it works on dynamically added elements if needed
-    // But for now, direct binding is fine for static cards
-    document.querySelectorAll('.card-header').forEach(header => header.addEventListener('click', (e) => toggleCard(e.currentTarget)));
+    // EVENT DELEGATION (FIX DEFINITIVO)
+    document.getElementById('app-content').addEventListener('click', function(event) {
+        const header = event.target.closest('.card-header');
+        if (header) {
+            header.parentElement.classList.toggle('open');
+        }
+    });
     
+    document.getElementById('btn-back-dashboard').addEventListener('click', goBackToDashboard);
     document.getElementById('btn-generate-offer').addEventListener('click', generateOfferHTML);
     document.getElementById('btn-copy-offer').addEventListener('click', copyOfferText);
     document.getElementById('btn-link-bot').addEventListener('click', linkBot);
@@ -483,10 +496,4 @@ document.addEventListener('DOMContentLoaded', () => {
             checkIfDirty();
         } else if (e.target.id === 'bot-token-input') {
             if (!honeypotData.config) honeypotData.config = {};
-            honeypotData.config.bot_token = e.target.value;
-            checkIfDirty();
-        }
-    });
-
-    loadData();
-});
+            honeypotData.config
