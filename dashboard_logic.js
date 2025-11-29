@@ -166,7 +166,6 @@ function updateDashboardStatus(status) {
         if(hpCard) {
             hpCard.style.border = '2px solid var(--warning)';
             hpCard.style.animation = 'pulse-border 2s infinite'; // Richiede keyframes nel CSS
-            hpBadge.classList.remove('hidden'); // Mostra "!"
             hpSub.innerText = "⛔ DA CONFIGURARE";
             hpSub.classList.add('error');
         }
