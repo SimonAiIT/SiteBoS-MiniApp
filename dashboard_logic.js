@@ -37,22 +37,19 @@ function applyTranslations() {
 // ---------------------------------------------------------
 async function startDashboard() {
     
-    // 1. Applica Lingua
     applyTranslations();
 
-    // 2. Prendi Parametri
     const p = new URLSearchParams(window.location.search);
     const vat = p.get('vat');
     const ownerId = p.get('owner');
     const token = p.get('token');
 
-    // 3. Fallback UI se mancano i dati (Ma proviamo a caricare comunque se c'è almeno la PIVA)
     if (!vat || !ownerId) {
         document.body.innerHTML = "<h3 style='color:white;text-align:center;margin-top:50px'>⛔ ERRORE URL: Parametri mancanti</h3>";
         return;
     }
 
-try {
+    try {
         console.log("🚀 AVVIO CHIAMATA DASHBOARD...");
         
         const response = await fetch(DASHBOARD_API, {
@@ -66,52 +63,74 @@ try {
             })
         });
 
-        if (!response.ok) throw new Error("Network response was not ok");
-        
-        const data = await response.json();
-        console.log("📥 RISPOSTA:", data);
+        // 1. NON lanciamo errore subito se !response.ok.
+        // Proviamo PRIMA a leggere il JSON, perché n8n manda l'errore lì dentro.
+        let data;
+        try {
+            const rawData = await response.json();
+            // Gestione array n8n
+            data = Array.isArray(rawData) ? rawData[0] : rawData;
+        } catch (jsonError) {
+            // Se fallisce il parsing JSON, allora è un vero crash del server (es. timeout Nginx)
+            throw new Error(`HTTP ${response.status}: Errore Server non gestito.`);
+        }
 
-        // 🛑 GESTIONE ERRORE CRITICO (Ghost User / Data Loss)
-        if (data.status === 'error' || data.webhookResponse?.status === 'error') {
-            const err = data.error || data.webhookResponse?.error || {};
-            
-            // Nascondi il loader
+        console.log("📥 DATI/ERRORE RICEVUTI:", data);
+
+        // 2. CONTROLLO ERRORI (HTTP 500 o Logical Error)
+        // Cerchiamo l'errore ovunque possa essersi nascosto
+        const isError = !response.ok || data.status === 'error' || data.webhookResponse?.status === 'error';
+
+        if (isError) {
+            // Estraiamo i dettagli dell'errore
+            const errObj = data.error || data.webhookResponse?.error || { 
+                title: "Errore Sconosciuto", 
+                message: "Il server ha risposto con codice " + response.status 
+            };
+
+            // Nascondiamo il loader
             document.getElementById('loader').classList.add('hidden');
-            
-            // Mostra Errore Fatale in pagina
+
+            // 3. MOSTRIAMO L'OVERLAY DI ERRORE (Invece di crashare)
             document.body.innerHTML = `
-                <div class="container" style="padding-top: 100px; text-align: center;">
-                    <div style="font-size: 50px; margin-bottom: 20px;">⚠️</div>
-                    <h2 style="color: #ff6b6b;">${err.title || "Errore Critico"}</h2>
-                    <p style="color: #ccc; margin-bottom: 30px;">${err.message || "Impossibile recuperare i dati dell'account."}</p>
+                <div class="container" style="padding-top: 80px; text-align: center; color: white;">
+                    <div style="font-size: 60px; margin-bottom: 20px;">⚠️</div>
+                    <h2 style="color: #ff6b6b; font-family: sans-serif;">${errObj.title || "Attenzione"}</h2>
+                    <p style="font-size: 16px; line-height: 1.5; margin-bottom: 30px;">${errObj.message}</p>
                     
-                    <div style="background: rgba(0,0,0,0.3); padding: 15px; border-radius: 8px; text-align: left; margin-bottom: 20px; font-family: monospace; font-size: 12px; color: #ff6b6b;">
-                        CODE: ${err.type || "UNKNOWN"}<br>
-                        ID: ${err.user_id || "N/A"}
+                    <div style="background: rgba(255,255,255,0.1); padding: 15px; border-radius: 8px; text-align: left; margin: 0 auto 30px; max-width: 90%; font-family: monospace; font-size: 12px; border-left: 3px solid #ff6b6b;">
+                        TYPE: ${errObj.type || "SERVER_ERROR"}<br>
+                        ID: ${errObj.user_id || vat}
                     </div>
 
-                    <a href="https://t.me/TrinAi_TecSupport_bot" class="btn btn-primary btn-block">
+                    <a href="https://t.me/TrinAi_TecSupport_bot" class="btn btn-primary" style="text-decoration: none; padding: 12px 25px; border-radius: 8px; display: inline-block;">
                         <i class="fas fa-life-ring"></i> Contatta Supporto
                     </a>
                 </div>
             `;
-            return; // Ferma l'esecuzione qui
+            return; // STOP QUI
         }
 
-        // ... Se arriva qui, è un successo: renderizza la dashboard ...
+        // 4. SUCCESSO - Renderizziamo la Dashboard
         const companyName = data.company_profile?.name || data.owner_data?.ragione_sociale || "Azienda";
         document.getElementById('companyName').innerText = companyName;
         document.getElementById('vatDisplay').innerText = `P.IVA: ${vat}`;
+
+        // Aggiorna eventuali badge se presenti
+        if(data.status) updateDashboardStatus(data.status);
 
         document.getElementById('loader').classList.add('hidden');
         document.getElementById('app-content').classList.remove('hidden');
 
     } catch (error) {
-        console.error("❌ ERRORE FETCH:", error);
-        // Fallback minimale per non lasciare lo schermo nero
-        document.getElementById('companyName').innerText = "Errore Connessione";
-        document.getElementById('loader').classList.add('hidden');
-        document.getElementById('app-content').classList.remove('hidden');
+        console.error("❌ ERRORE CRITICO JS:", error);
+        // Fallback estremo se proprio non riusciamo a leggere nulla
+        document.getElementById('loader').innerHTML = `
+            <div style='color:#ff6b6b; padding:20px; text-align:center;'>
+                <h3>Errore Connessione</h3>
+                <p>${error.message}</p>
+                <button class='btn btn-secondary' onclick='location.reload()'>Ricarica</button>
+            </div>`;
     }
 }
 
