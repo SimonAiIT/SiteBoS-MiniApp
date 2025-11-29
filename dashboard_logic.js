@@ -1,5 +1,5 @@
 /**
- * DASHBOARD LOGIC (v4.1 - Multilanguage Support)
+ * DASHBOARD LOGIC (v4.2 - Full Context Propagation)
  */
 
 const tg = window.Telegram.WebApp;
@@ -8,13 +8,6 @@ tg.expand();
 
 // CONFIG
 const DASHBOARD_API = "https://trinai.api.workflow.dcmake.it/webhook/ef4aece4-9ec0-4026-a7a7-328562bcbdf6"; 
-
-// STATE
-const state = {
-    vat: null,
-    ownerId: null,
-    companyName: "Azienda"
-};
 
 // I18N DICTIONARY
 const i18n = {
@@ -95,7 +88,9 @@ const i18n = {
 function getLang() {
     const p = new URLSearchParams(window.location.search);
     const l = p.get('lang') || tg.initDataUnsafe?.user?.language_code || 'it';
-    return i18n[l] ? l : 'en'; // Fallback EN
+    // Normalizza 'It' -> 'it' se necessario
+    const normL = l.toLowerCase();
+    return i18n[normL] ? normL : 'en'; 
 }
 
 function applyTranslations() {
@@ -109,38 +104,39 @@ function applyTranslations() {
 
 // INIT
 document.addEventListener('DOMContentLoaded', async () => {
-    applyTranslations(); // Applica subito le traduzioni
+    applyTranslations();
     
     const p = new URLSearchParams(window.location.search);
-    state.vat = p.get('vat');
-    state.ownerId = p.get('owner');
+    const vat = p.get('vat');
+    const ownerId = p.get('owner');
     
     // Fallback UI
-    if(!state.vat) {
+    if(!vat) {
         const t = i18n[getLang()];
         document.body.innerHTML = `<div class='container text-center' style='padding-top:50px'><h3>${t.err_title}</h3><p>${t.err_msg}</p></div>`;
         return;
     }
 
+    // Caricamento Dati
     try {
         const urlName = p.get('ragione_sociale');
         if(urlName) {
-            updateHeader(decodeURIComponent(urlName), state.vat);
+            updateHeader(decodeURIComponent(urlName), vat);
             hideLoader();
         } else {
+            // Fetch fallback se manca il nome nell'URL
             const res = await fetch(DASHBOARD_API, {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ action: 'get_header_data', vat_number: state.vat, chat_id: state.ownerId })
+                body: JSON.stringify({ action: 'get_header_data', vat_number: vat, chat_id: ownerId })
             });
             const data = await res.json();
-            updateHeader(data.company_profile.name, state.vat);
-            state.companyName = data.company_profile.name;
+            updateHeader(data.company_profile.name, vat);
             hideLoader();
         }
     } catch (e) {
         console.error(e);
-        updateHeader("My Company", state.vat);
+        updateHeader("My Company", vat);
         hideLoader();
     }
 });
@@ -156,11 +152,21 @@ function hideLoader() {
     document.getElementById('app-content').classList.remove('hidden');
 }
 
-// NAVIGATION
+// NAVIGATION: IL CUORE DELLA FIX
 window.navTo = function(page) {
-    const l = getLang();
-    const target = `${page}?vat=${state.vat}&owner=${state.ownerId}&ragione_sociale=${encodeURIComponent(state.companyName)}&lang=${l}`;
-    window.location.href = target;
+    // 1. Prendi la query string attuale intera (es: ?vat=...&owner=...&token=...&lang=...)
+    const currentQuery = window.location.search;
+    
+    // 2. Costruisci il target preservando TUTTO
+    // Se la pagina target ha già parametri (raro nel tuo caso, ma possibile), gestiamo con '&'
+    const separator = page.includes('?') ? '&' : '?';
+    
+    // Rimuoviamo il '?' iniziale dalla currentQuery perché lo mette il separator o è già lì
+    const queryToAppend = currentQuery.substring(1); 
+    
+    const targetUrl = `${page}${separator}${queryToAppend}`;
+    
+    window.location.href = targetUrl;
 }
 
 window.openWidget = function() {
