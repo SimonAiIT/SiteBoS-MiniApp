@@ -1,5 +1,8 @@
 /**
- * DASHBOARD LOGIC (v4.2 - Full Context Propagation)
+ * DASHBOARD LOGIC (v5.0 - Final Integration)
+ * - Supporto I18N Completo
+ * - Chiamata Webhook Corretta (Token incluso)
+ * - Navigazione con Propagazione Contesto
  */
 
 const tg = window.Telegram.WebApp;
@@ -9,7 +12,15 @@ tg.expand();
 // CONFIG
 const DASHBOARD_API = "https://trinai.api.workflow.dcmake.it/webhook/ef4aece4-9ec0-4026-a7a7-328562bcbdf6"; 
 
-// I18N DICTIONARY
+// STATO
+const state = {
+    vat: null,
+    ownerId: null,
+    token: null,
+    companyName: "Caricamento..."
+};
+
+// I18N DICTIONARY (Completo)
 const i18n = {
     it: {
         btn_widget: "Widget", btn_site: "Sito",
@@ -88,9 +99,9 @@ const i18n = {
 function getLang() {
     const p = new URLSearchParams(window.location.search);
     const l = p.get('lang') || tg.initDataUnsafe?.user?.language_code || 'it';
-    // Normalizza 'It' -> 'it' se necessario
-    const normL = l.toLowerCase();
-    return i18n[normL] ? normL : 'en'; 
+    // Normalizza e fallback
+    const norm = l.toLowerCase().slice(0, 2); 
+    return i18n[norm] ? norm : 'en';
 }
 
 function applyTranslations() {
@@ -107,44 +118,63 @@ document.addEventListener('DOMContentLoaded', async () => {
     applyTranslations();
     
     const p = new URLSearchParams(window.location.search);
-    const vat = p.get('vat');
-    const ownerId = p.get('owner');
+    state.vat = p.get('vat');
+    state.ownerId = p.get('owner');
+    state.token = p.get('token'); // TOKEN RECUPERATO
     
-    // Fallback UI
-    if(!vat) {
+    // Check Parametri
+    if(!state.vat || !state.ownerId) {
         const t = i18n[getLang()];
         document.body.innerHTML = `<div class='container text-center' style='padding-top:50px'><h3>${t.err_title}</h3><p>${t.err_msg}</p></div>`;
         return;
     }
 
-    // Caricamento Dati
     try {
-        const urlName = p.get('ragione_sociale');
-        if(urlName) {
-            updateHeader(decodeURIComponent(urlName), vat);
-            hideLoader();
-        } else {
-            // Fetch fallback se manca il nome nell'URL
-            const res = await fetch(DASHBOARD_API, {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ action: 'get_header_data', vat_number: vat, chat_id: ownerId })
-            });
-            const data = await res.json();
-            updateHeader(data.company_profile.name, vat);
-            hideLoader();
-        }
+        // CHIAMATA WEBHOOK (Payload Corretto)
+        const res = await fetch(DASHBOARD_API, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ 
+                action: 'get_dashboard_data', 
+                vat_number: state.vat, 
+                chat_id: state.ownerId,
+                token: state.token // TOKEN INVIATO
+            })
+        });
+
+        if (!res.ok) throw new Error("Network Error");
+        const data = await res.json();
+
+        // Mappatura Dati (Gestione Flessibile)
+        const name = data.company_profile?.name || data.owner_data?.ragione_sociale || "Azienda";
+        const vatDisplay = data.company_profile?.vat || data.owner_data?.vat_number || state.vat;
+
+        // Update UI
+        updateHeader(name, vatDisplay);
+        state.companyName = name;
+
+        // Se ci sono status/kpi, aggiornali (Placeholder per futura implementazione)
+        if(data.status) updateDashboardStatus(data.status);
+
+        hideLoader();
+
     } catch (e) {
         console.error(e);
-        updateHeader("My Company", vat);
+        // Fallback minimale per non bloccare l'utente in caso di errore non critico
+        updateHeader("My Company", state.vat); 
         hideLoader();
     }
 });
 
-// UI FUNCTIONS
+// UI HELPER
 function updateHeader(name, vat) {
     document.getElementById('companyName').innerText = name;
     document.getElementById('vatDisplay').innerText = `P.IVA: ${vat}`;
+}
+
+function updateDashboardStatus(status) {
+    // Logica per badge/counter futuri
+    // Esempio: if(status.catalog_count) ...
 }
 
 function hideLoader() {
@@ -152,31 +182,17 @@ function hideLoader() {
     document.getElementById('app-content').classList.remove('hidden');
 }
 
-// NAVIGATION: IL CUORE DELLA FIX
+// NAVIGATION (Con Propagazione Totale)
 window.navTo = function(page) {
-    // 1. Prendi la query string attuale intera (es: ?vat=...&owner=...&token=...&lang=...)
     const currentQuery = window.location.search;
-    
-    // 2. Costruisci il target preservando TUTTO
-    // Se la pagina target ha già parametri (raro nel tuo caso, ma possibile), gestiamo con '&'
     const separator = page.includes('?') ? '&' : '?';
-    
-    // Rimuoviamo il '?' iniziale dalla currentQuery perché lo mette il separator o è già lì
-    const queryToAppend = currentQuery.substring(1); 
-    
-    const targetUrl = `${page}${separator}${queryToAppend}`;
-    
-    window.location.href = targetUrl;
+    const queryToAppend = currentQuery.startsWith('?') ? currentQuery.substring(1) : currentQuery;
+    window.location.href = `${page}${separator}${queryToAppend}`;
 }
 
-window.openWidget = function() {
-    navTo('SiteBos.html');
-}
+window.openWidget = function() { navTo('SiteBos.html'); }
 
 window.openSite = function() {
     const t = i18n[getLang()];
-    tg.showPopup({
-        title: t.popup_site_title,
-        message: t.popup_site_msg
-    });
+    tg.showPopup({ title: t.popup_site_title, message: t.popup_site_msg });
 }
