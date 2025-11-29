@@ -421,27 +421,34 @@ const App = {
         UI.setLoading(true, DOM.saveBtn, 'saving_progress');
         
         try {
+            // 1. DATI & CHECK COMPLETEZZA
             const hp = STATE.data || {};
             const assets = hp.assets || {};
-            const offer = hp.offer || {};
             
-            const isComplete = (
-                !!assets.logo?.url && 
-                !!assets.representative_image?.url && 
-                !!offer.description && offer.description.length > 5
-            );
+            // Controllo robusto che supporta diverse strutture dati (legacy/new)
+            const hasLogo = !!assets.logo?.url;
+            const hasPhoto = !!assets.photo?.url || !!assets.representative_image?.url;
+            const hasOffer = (hp.offer_text && hp.offer_text.length > 10) || 
+                             (hp.offer?.description && hp.offer.description.length > 5);
 
-            const isFirstRun = hp.config?.onboarding_completed === false || !hp.config?.onboarding_completed;
+            const isComplete = hasLogo && hasPhoto && hasOffer;
 
-            // --- SCENARIO A: PRIMA VOLTA COMPLETO -> LANCIA ---
+            // 2. CHECK ONBOARDING STATUS
+            // È la prima volta? (flag false o inesistente)
+            const isFirstRun = !hp.config?.onboarding_completed;
+
+            // --- SCENARIO A: TUTTO COMPLETO + PRIMA VOLTA -> LANCIA SITO ---
             if (isComplete && isFirstRun) {
                 
+                // Update Flag e Timestamp
                 if (!STATE.data.config) STATE.data.config = {};
                 STATE.data.config.onboarding_completed = true;
                 STATE.data.config.completed_at = new Date().toISOString();
 
+                // Salva su DB prima di partire
                 await Api.saveData(STATE.data);
 
+                // Prepara Payload per Processor (SessionStorage)
                 const ownerKey = STATE.ownerId;
                 const fullPayload = {
                     vat_number: STATE.vatNumber,
@@ -453,29 +460,43 @@ const App = {
 
                 sessionStorage.setItem(`pending_payload_${ownerKey}`, JSON.stringify(fullPayload));
 
+                // Feedback Visivo "Lancio"
                 DOM.saveBtn.innerHTML = `<i class="fas fa-rocket"></i> ${I18n.get('launching_process')}`;
+                
+                // REDIRECT A PROCESSING (Il trigger reale)
                 setTimeout(() => {
                     window.location.href = `processing.html?call=honeypot_build_trigger&owner_key=${ownerKey}`;
                 }, 800);
 
-                return;
+                return; // Stop esecuzione, stiamo navigando via
             }
 
-            // --- SCENARIO B: SOLO SALVA ---
+            // --- SCENARIO B: INCOMPLETO O GIÀ FATTO -> SOLO SALVATAGGIO DATI ---
             else {
                 await Api.saveData(STATE.data);
+                
                 tg.HapticFeedback.notificationOccurred('success');
                 STATE.initialString = JSON.stringify(STATE.data);
+                
                 DOM.saveBtn.innerHTML = `<i class="fas fa-check"></i> ${I18n.get('saving_success')}`;
+                
+                // Messaggio differenziato: Successo vs Warning Incompletezza
                 const alertMsg = isComplete ? 'msg_saved_success' : 'msg_saved_incomplete';
                 tg.showAlert(I18n.get(alertMsg));
-                setTimeout(() => { UI.setLoading(false, DOM.saveBtn); UI.toggleDirty(); }, 2000);
+
+                setTimeout(() => {
+                    UI.setLoading(false, DOM.saveBtn);
+                    UI.toggleDirty();
+                }, 2000);
             }
+
         } catch (e) {
+            console.error("Save Error:", e);
             UI.setLoading(false, DOM.saveBtn);
             tg.showAlert(I18n.get('alert_saving_error'));
         }
     },
+
 
     generateOffer: async () => {
         const prompt = DOM.offerPrompt.value.trim();
