@@ -1,10 +1,11 @@
 /**
- * HONEYPOT EDITOR - LOGIC (v2.2 - UNABRIDGED & CORRECTED)
+ * HONEYPOT EDITOR - LOGIC (v2.3 - DEFINITIVE)
  * - Supporto 6 Lingue completo e non abbreviato.
  * - Estrazione lingua da URL (case-insensitive).
  * - FIX APERTURA CARD con Event Delegation.
  * - Orari con Mattina/Pomeriggio.
  * - Aggiunto pulsante flottante per tornare alla Dashboard.
+ * - REINTEGRATA action 'get_honeypot_data'.
  * - NESSUNA PARTE DI CODICE OMESSA.
  */
 
@@ -258,13 +259,21 @@ async function linkBot() {
 }
 
 async function loadData() {
-    if (!vatNumber) { tg.showAlert('ID not found'); return; }
+    if (!vatNumber) {
+        tg.showAlert('ID (VAT) not found in URL.');
+        return;
+    }
     
     changeLanguage(getLangFromUrl());
 
     try {
-        const res = await fetch(WEBHOOK_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'get_honeypot_data', vat_number: vatNumber }) });
-        if (!res.ok) throw new Error('Network error');
+        const res = await fetch(WEBHOOK_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'get_honeypot_data', vat_number: vatNumber }) // CHIAMATA CORRETTA
+        });
+        if (!res.ok) throw new Error(`Network error: ${res.status}`);
+        
         const data = await res.json();
         honeypotData = data.oHONEYPOT.HoneyPot;
         renderAll();
@@ -273,7 +282,8 @@ async function loadData() {
         dom.loader.classList.add('hidden');
         dom.app.classList.remove('hidden');
     } catch (error) {
-        tg.showAlert(dict().alert_loading_error);
+        console.error("Load Data Error:", error);
+        tg.showAlert(`${dict().alert_loading_error} (${error.message})`);
     }
 }
 
@@ -367,14 +377,10 @@ function renderAll() {
             const m = h.morning || {};
             const a = h.afternoon || {};
             
-            // Handle legacy data structure
-            const legacyFrom = h.from;
-            const legacyTo = h.to;
-
-            dom.hoursContainer.querySelector(`[data-path="availability_schedule.hours.${day}.morning.from"]`).value = m.from ?? (legacyFrom < 13 ? legacyFrom : '');
-            dom.hoursContainer.querySelector(`[data-path="availability_schedule.hours.${day}.morning.to"]`).value = m.to ?? (legacyTo <= 13 ? legacyTo : '');
-            dom.hoursContainer.querySelector(`[data-path="availability_schedule.hours.${day}.afternoon.from"]`).value = a.from ?? (legacyFrom > 13 ? legacyFrom : '');
-            dom.hoursContainer.querySelector(`[data-path="availability_schedule.hours.${day}.afternoon.to"]`).value = a.to ?? (legacyTo > 13 ? legacyTo : '');
+            dom.hoursContainer.querySelector(`[data-path="availability_schedule.hours.${day}.morning.from"]`).value = m.from ?? '';
+            dom.hoursContainer.querySelector(`[data-path="availability_schedule.hours.${day}.morning.to"]`).value = m.to ?? '';
+            dom.hoursContainer.querySelector(`[data-path="availability_schedule.hours.${day}.afternoon.from"]`).value = a.from ?? '';
+            dom.hoursContainer.querySelector(`[data-path="availability_schedule.hours.${day}.afternoon.to"]`).value = a.to ?? '';
         });
     }
     
@@ -399,6 +405,7 @@ function renderAll() {
 
 function renderDeepDives(fragmentIndex) {
     const container = document.getElementById(`deep-dive-${fragmentIndex}`);
+    if(!container) return; // Safety check
     container.innerHTML = '';
     if (honeypotData.knowledge_fragments[fragmentIndex].sections) {
         honeypotData.knowledge_fragments[fragmentIndex].sections.forEach((section, s_index) => {
@@ -496,4 +503,10 @@ document.addEventListener('DOMContentLoaded', () => {
             checkIfDirty();
         } else if (e.target.id === 'bot-token-input') {
             if (!honeypotData.config) honeypotData.config = {};
-            honeypotData.config
+            honeypotData.config.bot_token = e.target.value;
+            checkIfDirty();
+        }
+    });
+
+    loadData();
+});
