@@ -15,6 +15,8 @@ const i18n = {
     pt: { btn_widget: "Widget", btn_site: "Site", section_operations: "Operações", card_hp: "HoneyPot", sub_hp: "Gerir Respostas", card_catalog: "Catálogo", sub_catalog: "Produtos e Serviços", card_agenda: "Agenda", sub_agenda: "Compromissos", card_team: "Equipa", sub_team: "Pessoal e Funções", card_company: "Empresa", sub_company: "Configuração", card_knowledge: "Conhecimento", sub_knowledge: "Docs e Ativos", err_title: "⛔ Erro Param", err_msg: "Abrir via Bot Telegram.", popup_site_title: "Website", popup_site_msg: "Módulo Website em desenvolvimento." }
 };
 
+// ... (codice precedente con i18n) ...
+
 // HELPER LINGUA
 function getLang() {
     const p = new URLSearchParams(window.location.search);
@@ -44,6 +46,7 @@ async function startDashboard() {
     const ownerId = p.get('owner');
     const token = p.get('token');
 
+    // Controllo parametri critici
     if (!vat || !ownerId) {
         document.body.innerHTML = "<h3 style='color:white;text-align:center;margin-top:50px'>⛔ ERRORE URL: Parametri mancanti</h3>";
         return;
@@ -52,6 +55,7 @@ async function startDashboard() {
     try {
         console.log("🚀 AVVIO CHIAMATA DASHBOARD...");
         
+        // 1. CHIAMATA AL BACKEND
         const response = await fetch(DASHBOARD_API, {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
@@ -63,35 +67,30 @@ async function startDashboard() {
             })
         });
 
-        // 1. NON lanciamo errore subito se !response.ok.
-        // Proviamo PRIMA a leggere il JSON, perché n8n manda l'errore lì dentro.
+        // 2. PARSING JSON SICURO (Gestisce anche errori server 500 che ritornano JSON)
         let data;
         try {
             const rawData = await response.json();
-            // Gestione array n8n
+            // Normalizzazione Array n8n -> Oggetto
             data = Array.isArray(rawData) ? rawData[0] : rawData;
         } catch (jsonError) {
-            // Se fallisce il parsing JSON, allora è un vero crash del server (es. timeout Nginx)
             throw new Error(`HTTP ${response.status}: Errore Server non gestito.`);
         }
 
-        console.log("📥 DATI/ERRORE RICEVUTI:", data);
+        console.log("📥 DATI RICEVUTI:", data);
 
-        // 2. CONTROLLO ERRORI (HTTP 500 o Logical Error)
-        // Cerchiamo l'errore ovunque possa essersi nascosto
+        // 3. GESTIONE ERRORE CRITICO (Ghost User / Data Loss)
         const isError = !response.ok || data.status === 'error' || data.webhookResponse?.status === 'error';
 
         if (isError) {
-            // Estraiamo i dettagli dell'errore
             const errObj = data.error || data.webhookResponse?.error || { 
                 title: "Errore Sconosciuto", 
                 message: "Il server ha risposto con codice " + response.status 
             };
 
-            // Nascondiamo il loader
             document.getElementById('loader').classList.add('hidden');
 
-            // 3. MOSTRIAMO L'OVERLAY DI ERRORE (Invece di crashare)
+            // Overlay Errore
             document.body.innerHTML = `
                 <div class="container" style="padding-top: 80px; text-align: center; color: white;">
                     <div style="font-size: 60px; margin-bottom: 20px;">⚠️</div>
@@ -108,23 +107,26 @@ async function startDashboard() {
                     </a>
                 </div>
             `;
-            return; // STOP QUI
+            return; // STOP
         }
 
-        // 4. SUCCESSO - Renderizziamo la Dashboard
+        // 4. SUCCESSO: Update UI
         const companyName = data.company_profile?.name || data.owner_data?.ragione_sociale || "Azienda";
         document.getElementById('companyName').innerText = companyName;
         document.getElementById('vatDisplay').innerText = `P.IVA: ${vat}`;
 
-        // Aggiorna eventuali badge se presenti
-        if(data.status) updateDashboardStatus(data.status);
+        // Applica logica di controllo stato (Lockdown)
+        if(data.status) {
+            updateDashboardStatus(data.status);
+        } else {
+            console.warn("Nessun oggetto 'status' ricevuto dal backend.");
+        }
 
         document.getElementById('loader').classList.add('hidden');
         document.getElementById('app-content').classList.remove('hidden');
 
     } catch (error) {
-        console.error("❌ ERRORE CRITICO JS:", error);
-        // Fallback estremo se proprio non riusciamo a leggere nulla
+        console.error("❌ ERRORE JS:", error);
         document.getElementById('loader').innerHTML = `
             <div style='color:#ff6b6b; padding:20px; text-align:center;'>
                 <h3>Errore Connessione</h3>
@@ -135,18 +137,83 @@ async function startDashboard() {
 }
 
 // ---------------------------------------------------------
-// ESECUZIONE IMMEDIATA
+// LOGICA DI CONTROLLO (LOCKDOWN & BADGE)
 // ---------------------------------------------------------
-// Non aspettiamo eventi strani. Appena il browser legge questa riga, parte.
-startDashboard();
+function updateDashboardStatus(status) {
+    
+    // --- A. HONEYPOT CHECK (IL BLOCCO) ---
+    // Logica: Se non è esplicitamente 'READY', blocca tutto.
+    const isHpReady = (status.honeypot === 'READY' || status.honeypot === true); 
+    
+    // Elementi da bloccare se HP non è pronto
+    const idsToLock = [
+        'card-catalog', 'card-agenda', 'card-team', 'card-knowledge',
+        'btn-widget', 'btn-site'
+    ];
 
+    if (!isHpReady) {
+        // 1. Applica classe locked (grigio + no click)
+        idsToLock.forEach(id => {
+            const el = document.getElementById(id);
+            if(el) el.classList.add('locked-item');
+        });
+
+        // 2. Evidenzia HoneyPot (Pulse)
+        const hpCard = document.getElementById('card-hp');
+        const hpBadge = document.getElementById('badge-hp');
+        const hpSub = document.getElementById('sub-hp');
+
+        if(hpCard) {
+            hpCard.style.border = '2px solid var(--warning)';
+            hpCard.style.animation = 'pulse-border 2s infinite'; // Richiede keyframes nel CSS
+            hpBadge.classList.remove('hidden'); // Mostra "!"
+            hpSub.innerText = "⛔ DA CONFIGURARE";
+            hpSub.classList.add('error');
+        }
+    } else {
+        // SBLOCCO (Caso normale)
+        idsToLock.forEach(id => {
+            const el = document.getElementById(id);
+            if(el) el.classList.remove('locked-item');
+        });
+        
+        const hpSub = document.getElementById('sub-hp');
+        if(hpSub) {
+            hpSub.innerText = "✅ Attivo";
+            hpSub.classList.add('dynamic');
+        }
+    }
+
+    // --- B. BADGE CONFIGURAZIONE ---
+    if (status.profile_completion < 100) {
+        document.getElementById('badge-config').classList.remove('hidden');
+        const sub = document.getElementById('sub-config');
+        sub.innerText = `${status.profile_completion}% Completo`;
+        sub.classList.add('warning');
+    }
+
+    // --- C. CONTATORI (Visualizza sempre i numeri se ci sono) ---
+    if (status.catalog_count > 0) {
+        const el = document.getElementById('count-catalog');
+        if(el) { el.innerText = status.catalog_count; el.classList.remove('hidden'); }
+    }
+    if (status.appointments_today > 0) {
+        const el = document.getElementById('count-agenda');
+        if(el) { el.innerText = status.appointments_today; el.classList.remove('hidden'); }
+    }
+    if (status.knowledge_docs > 0) {
+        const el = document.getElementById('count-docs');
+        if(el) { el.innerText = status.knowledge_docs; el.classList.remove('hidden'); }
+    }
+}
 
 // ---------------------------------------------------------
-// NAVIGAZIONE (Mantiene il Token)
+// NAVIGAZIONE (Propagazione Totale Token)
 // ---------------------------------------------------------
 window.navTo = function(page) {
     const currentQuery = window.location.search;
     const separator = page.includes('?') ? '&' : '?';
+    // Rimuovi eventuale '?' iniziale duplicato
     const queryToAppend = currentQuery.startsWith('?') ? currentQuery.substring(1) : currentQuery;
     window.location.href = `${page}${separator}${queryToAppend}`;
 }
@@ -157,3 +224,6 @@ window.openSite = function() {
     const t = i18n[getLang()];
     tg.showPopup({ title: t.popup_site_title, message: t.popup_site_msg });
 }
+
+// AVVIO
+startDashboard();
