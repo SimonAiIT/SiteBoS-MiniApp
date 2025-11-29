@@ -1,8 +1,9 @@
 /**
- * HONEYPOT EDITOR - LOGIC (v2.7 - URL PARAM FIX)
- * - Allineato al backend n8n.
- * - SECURITY: Legge 'token' dall'URL -> Invia 'access_token' al Backend.
- * - Gestione corretta dei parametri URL (vat, token, owner, lang).
+ * HONEYPOT EDITOR - LOGIC (v3.0 FINAL - MULTILANGUAGE AI ERROR HANDLER)
+ * - Supporto ibrido Immagini (URL GitHub + Base64 Legacy)
+ * - Risposta API Piatta (No oHONEYPOT wrapper)
+ * - Gestione Errore 501 (AI Failure) localizzata in 6 lingue
+ * - Sicurezza Token/VAT su ogni chiamata
  */
 
 'use strict';
@@ -16,24 +17,19 @@ const CONFIG = {
     BOTFATHER_TG: "https://t.me/BotFather"
 };
 
-// Inizializzazione Parametri URL
 const urlParams = new URLSearchParams(window.location.search);
 
 const STATE = {
     vatNumber: urlParams.get('vat'),
-    // FIX: Leggo 'token' dall'URL (come da tuo link esempio)
-    accessToken: urlParams.get('token'), 
-    // Dati extra utili per navigazione
+    accessToken: urlParams.get('token'),
     ownerId: urlParams.get('owner'),
     companyName: urlParams.get('ragione_sociale'),
-    
     currentLang: 'it',
     data: {},          
     initialString: '', 
     isDirty: false
 };
 
-// Riferimenti DOM
 const DOM = {
     loader: document.getElementById('loader'),
     app: document.getElementById('app-content'),
@@ -68,6 +64,7 @@ const I18n = {
         it: {
             title: "Editor Base di Conoscenza", subtitle: "Modella l'anima AI della tua azienda.",
             btn_back_dashboard: "Torna alla Dashboard",
+            // ... (altre traduzioni esistenti) ...
             section_offer_title: "Azione Richiesta: Offerta Benvenuto", offer_desc: "L'AI genererà un'offerta accattivante per te.", lbl_offer_prompt: "Descrivi la tua offerta", btn_generate_offer: "Genera Offerta", lbl_offer_preview: "Anteprima", offer_preview_placeholder: "Qui vedrai l'anteprima...", alert_offer_required: "Inserisci una descrizione.", generating: "Generazione...", alert_generation_error: "Errore AI.", lbl_click_copy: "Copia", alert_copied: "Copiato!",
             section_hours_title: "Azione Richiesta: Orari", lbl_morning: "Mattina", lbl_afternoon: "Pomeriggio", section_assets_title: "Azione Richiesta: Asset Visivi", lbl_logo: "Logo Aziendale", upload_logo: "Carica logo", lbl_photo: "Foto Rappresentativa", upload_photo: "Carica foto",
             section_bot_title: "Azione Richiesta: Configura Bot", guide_bot_1: "Apri <a href='{botFatherUrl}' target='_blank'>@BotFather</a>", guide_bot_2: "Invia de>/newbot</code>", guide_bot_3: "Scegli nome/username", guide_bot_4: "<b>Copia Token</b> e incollalo", guide_bot_video: "<a href='{botVideoUrl}' target='_blank'>Video Tutorial</a>", btn_link_bot: "Associa", status_linked: "Bot Associato ✅", alert_token_required: "Inserisci il token.", alert_token_invalid: "Token non valido.", alert_link_error: "Errore Associazione",
@@ -75,7 +72,12 @@ const I18n = {
             day_monday: "Lunedì", day_tuesday: "Martedì", day_wednesday: "Mercoledì", day_thursday: "Giovedì", day_friday: "Venerdì", day_saturday: "Sabato", day_sunday: "Domenica",
             btn_save: "Salva Modifiche", saving_progress: "Salvataggio...", saving_success: "Salvato!",
             alert_loading_error: "Errore caricamento.", alert_saving_error: "Errore salvataggio.",
-            access_denied: "Accesso Negato: Token mancante."
+            access_denied: "Accesso Negato: Token mancante.",
+            
+            // NUOVI MESSAGGI AI ERROR (501)
+            ai_error_title: "Ops! L'IA ha fatto cilecca 🤖",
+            ai_error_msg: "La chiamata all'Intelligenza Artificiale non è andata a buon fine.\n\nPotrebbe essere un problema momentaneo. Per favore, riprova tra qualche secondo.",
+            btn_retry: "Riprova"
         },
         en: {
             title: "Knowledge Base Editor", subtitle: "Shape your business AI soul.",
@@ -87,7 +89,11 @@ const I18n = {
             day_monday: "Monday", day_tuesday: "Tuesday", day_wednesday: "Wednesday", day_thursday: "Thursday", day_friday: "Friday", day_saturday: "Saturday", day_sunday: "Sunday",
             btn_save: "Save Changes", saving_progress: "Saving...", saving_success: "Saved!",
             alert_loading_error: "Loading error.", alert_saving_error: "Saving error.",
-            access_denied: "Access Denied: Missing Token."
+            access_denied: "Access Denied: Missing Token.",
+            
+            ai_error_title: "Oops! AI hiccup 🤖",
+            ai_error_msg: "The Artificial Intelligence call failed.\n\nIt might be a temporary issue. Please try again in a few seconds.",
+            btn_retry: "Retry"
         },
         fr: {
             title: "Éditeur de Base de Connaissances", subtitle: "Modelez l'âme IA de votre entreprise.",
@@ -99,7 +105,11 @@ const I18n = {
             day_monday: "Lundi", day_tuesday: "Mardi", day_wednesday: "Mercredi", day_thursday: "Jeudi", day_friday: "Vendredi", day_saturday: "Samedi", day_sunday: "Dimanche",
             btn_save: "Enregistrer", saving_progress: "Enregistrement...", saving_success: "Enregistré !",
             alert_loading_error: "Erreur de chargement.", alert_saving_error: "Erreur d'enregistrement.",
-            access_denied: "Accès Refusé : Jeton manquant."
+            access_denied: "Accès Refusé : Jeton manquant.",
+            
+            ai_error_title: "Oups ! Raté de l'IA 🤖",
+            ai_error_msg: "L'appel à l'Intelligence Artificielle a échoué.\n\nCela pourrait être un problème temporaire. Veuillez réessayer dans quelques secondes.",
+            btn_retry: "Réessayer"
         },
         de: {
             title: "Wissensdatenbank-Editor", subtitle: "Gestalten Sie die KI-Seele Ihres Unternehmens.",
@@ -111,7 +121,11 @@ const I18n = {
             day_monday: "Montag", day_tuesday: "Dienstag", day_wednesday: "Mittwoch", day_thursday: "Donnerstag", day_friday: "Freitag", day_saturday: "Samstag", day_sunday: "Sonntag",
             btn_save: "Änderungen Speichern", saving_progress: "Speichern...", saving_success: "Gespeichert!",
             alert_loading_error: "Ladefehler.", alert_saving_error: "Speicherfehler.",
-            access_denied: "Zugriff Verweigert: Token fehlt."
+            access_denied: "Zugriff Verweigert: Token fehlt.",
+            
+            ai_error_title: "Hoppla! KI-Fehler 🤖",
+            ai_error_msg: "Der Aufruf der Künstlichen Intelligenz ist fehlgeschlagen.\n\nDies könnte ein vorübergehendes Problem sein. Bitte versuchen Sie es in einigen Sekunden erneut.",
+            btn_retry: "Erneut versuchen"
         },
         es: {
             title: "Editor de Base de Conocimiento", subtitle: "Modela el alma de IA de tu negocio.",
@@ -123,7 +137,11 @@ const I18n = {
             day_monday: "Lunes", day_tuesday: "Martes", day_wednesday: "Miércoles", day_thursday: "Jueves", day_friday: "Viernes", day_saturday: "Sábado", day_sunday: "Domingo",
             btn_save: "Guardar Cambios", saving_progress: "Guardando...", saving_success: "¡Guardado!",
             alert_loading_error: "Error al cargar.", alert_saving_error: "Error al guardar.",
-            access_denied: "Acceso Denegado: Token faltante."
+            access_denied: "Acceso Denegado: Token faltante.",
+            
+            ai_error_title: "¡Vaya! Fallo de IA 🤖",
+            ai_error_msg: "La llamada a la Inteligencia Artificial ha fallado.\n\nPodría ser un problema temporal. Por favor, inténtalo de nuevo en unos segundos.",
+            btn_retry: "Reintentar"
         },
         pt: {
             title: "Editor da Base de Conhecimento", subtitle: "Molde a alma de IA do seu negócio.",
@@ -135,12 +153,15 @@ const I18n = {
             day_monday: "Segunda-feira", day_tuesday: "Terça-feira", day_wednesday: "Quarta-feira", day_thursday: "Quinta-feira", day_friday: "Sexta-feira", day_saturday: "Sábado", day_sunday: "Domingo",
             btn_save: "Salvar Alterações", saving_progress: "Salvando...", saving_success: "Salvo!",
             alert_loading_error: "Erro ao carregar.", alert_saving_error: "Erro ao salvar.",
-            access_denied: "Acesso Negado: Token em falta."
+            access_denied: "Acesso Negado: Token em falta.",
+            
+            ai_error_title: "Ops! Soluço da IA 🤖",
+            ai_error_msg: "A chamada para a Inteligência Artificial falhou.\n\nPode ser um problema temporário. Por favor, tente novamente em alguns segundos.",
+            btn_retry: "Tentar Novamente"
         }
     },
 
     init: function() {
-        // Fallback più robusto per la lingua
         let l = urlParams.get('lang') || urlParams.get('language') || tg.initDataUnsafe?.user?.language_code || 'it';
         STATE.currentLang = this.dict[l.toLowerCase().slice(0, 2)] ? l.toLowerCase().slice(0, 2) : 'it';
         if (!this.dict[STATE.currentLang]) STATE.currentLang = 'it';
@@ -164,14 +185,13 @@ const I18n = {
 };
 
 const Api = {
-    // Helper Generico - INIEZIONE SECURITY AUTOMATICA
     async request(payload) {
         try {
-            // Mappo il 'token' dell'URL nella chiave 'access_token' per il backend
             const securePayload = {
                 ...payload,
                 vat_number: STATE.vatNumber,
-                access_token: STATE.accessToken, // <<< CHIAVE RICHIESTA DAL BACKEND
+                access_token: STATE.accessToken,
+                owner_id: STATE.ownerId, 
                 lang: STATE.currentLang
             };
 
@@ -181,18 +201,36 @@ const Api = {
                 body: JSON.stringify(securePayload)
             });
             
+            // --- GESTIONE ERRORI AI (501) ---
+            if (res.status === 501) {
+                tg.showPopup({
+                    title: I18n.get('ai_error_title'),
+                    message: I18n.get('ai_error_msg'),
+                    buttons: [{type: 'ok', text: I18n.get('btn_retry')}]
+                });
+                throw new Error("AI_ERROR_501_HANDLED");
+            }
+
             if (!res.ok) {
                 if (res.status === 401 || res.status === 403) throw new Error("Unauthorized Access");
+                if (res.status === 500) throw new Error("Server Error (Possible Ghost User)");
                 throw new Error(`HTTP ${res.status}`);
             }
+            
             return await res.json();
+
         } catch (e) {
+            if (e.message === "AI_ERROR_501_HANDLED") {
+                return null; // Stop graceful
+            }
             console.error("API Error:", e);
+            if (e.message !== "Unauthorized Access") {
+                 tg.showAlert(I18n.get('alert_loading_error') + (e.message ? ` (${e.message})` : ''));
+            }
             throw e;
         }
     },
 
-    // Actions (Dati iniettati automaticamente da Api.request)
     getData: () => Api.request({ action: 'get_honeypot_data' }),
     saveData: (data) => Api.request({ action: 'save_honeypot_data', honeypot_update: data }),
     linkBot: (token) => Api.request({ action: 'link_telegram_bot', bot_token: token }),
@@ -207,10 +245,6 @@ const Api = {
 
 const UI = {
     renderAll: () => {
-        if (STATE.companyName) {
-            // Mostra il nome azienda se presente nell'URL per personalizzare l'header (opzionale)
-            // document.querySelector('h1').innerText = `${STATE.companyName} - ${I18n.get('title')}`;
-        }
         UI.renderOffer();
         UI.renderKnowledge();
         UI.renderHours();
@@ -353,9 +387,10 @@ const UI = {
         const updatePreview = (id, data) => {
             const el = document.getElementById(`${id}-preview`);
             if (data && el) {
+                // SUPPORTO IBRIDO: URL (GitHub) o Base64 (Legacy)
                 let imgSrc = '';
                 if (data.url) {
-                    imgSrc = `${data.url}?t=${new Date().getTime()}`;
+                    imgSrc = `${data.url}?t=${new Date().getTime()}`; // Anti-cache
                 } else if (data.base64) {
                     imgSrc = `data:${data.mime};base64,${data.base64}`;
                 }
@@ -411,7 +446,6 @@ const UI = {
 
 const App = {
     init: async () => {
-        // SECURITY CHECK: Verifico presenza 'token' e 'vat' nell'URL
         if (!STATE.vatNumber || !STATE.accessToken) {
             document.body.innerHTML = `
                 <div style="display:flex;justify-content:center;align-items:center;height:100vh;flex-direction:column;text-align:center;padding:20px;">
@@ -426,7 +460,9 @@ const App = {
         
         try {
             const data = await Api.getData();
-            STATE.data = data.HoneyPot;
+            // MODIFICA: Parsing della risposta piatta (senza wrapper oHONEYPOT)
+            // Fallback di compatibilità incluso
+            STATE.data = data.HoneyPot || data.oHONEYPOT?.HoneyPot || {};
             STATE.initialString = JSON.stringify(STATE.data);
             
             UI.renderAll();
@@ -435,9 +471,8 @@ const App = {
         } catch (e) {
             if (e.message === "Unauthorized Access") {
                 tg.showAlert("Security Error: Invalid Token.");
-            } else {
-                tg.showAlert(I18n.get('alert_loading_error'));
-            }
+            } 
+            // Altri errori sono già gestiti da Api.request (Ghost User, etc.)
         }
 
         App.attachEvents();
@@ -463,10 +498,9 @@ const App = {
         });
 
         DOM.btnBack.addEventListener('click', () => {
-            // Ricostruzione sicura dell'URL per la dashboard
             const params = new URLSearchParams();
             if (STATE.vatNumber) params.set('vat', STATE.vatNumber);
-            if (STATE.accessToken) params.set('token', STATE.accessToken); // Mantengo 'token'
+            if (STATE.accessToken) params.set('token', STATE.accessToken);
             if (STATE.ownerId) params.set('owner', STATE.ownerId);
             if (STATE.companyName) params.set('ragione_sociale', STATE.companyName);
             if (STATE.currentLang) params.set('lang', STATE.currentLang);
@@ -522,7 +556,7 @@ const App = {
                 UI.toggleDirty();
             }, 2000);
         } catch (e) {
-            tg.showAlert(I18n.get('alert_saving_error'));
+            // Errori gestiti da API (es 501 AI non si applica qui, ma 500 sì)
             UI.setLoading(false, DOM.saveBtn);
         }
     },
@@ -534,13 +568,13 @@ const App = {
         UI.setLoading(true, DOM.btnGenerateOffer, 'generating');
         try {
             const res = await Api.generateOffer(prompt);
-            if (res.html_content) {
+            if (res && res.html_content) {
                 STATE.data.offer_text = res.html_content;
                 UI.renderOffer();
                 UI.toggleDirty();
             }
         } catch (e) {
-            tg.showAlert(I18n.get('alert_generation_error'));
+            // Gestito da API (501)
         } finally {
             UI.setLoading(false, DOM.btnGenerateOffer);
         }
@@ -553,7 +587,7 @@ const App = {
         UI.setLoading(true, DOM.btnLinkBot);
         try {
             const res = await Api.linkBot(token);
-            if (res.ok === true) {
+            if (res && res.ok === true) {
                 if (!STATE.data.config) STATE.data.config = {};
                 STATE.data.config.bot_token = token;
                 STATE.data.config.bot_linked = true;
@@ -564,7 +598,7 @@ const App = {
                 throw new Error(res.description || 'Unknown Error');
             }
         } catch (e) {
-            tg.showAlert(`${I18n.get('alert_link_error')}: ${e.message}`);
+             if (e.message !== "AI_ERROR_501_HANDLED") tg.showAlert(`${I18n.get('alert_link_error')}: ${e.message}`);
         } finally {
             if(!STATE.data.config?.bot_linked) UI.setLoading(false, DOM.btnLinkBot);
         }
@@ -582,21 +616,32 @@ const App = {
                 const base64 = reader.result.split(',')[1];
                 const mime = reader.result.match(/:(.*?);/)[1];
                 
+                // La chiamata API ora può restituire URL o AI Error 501
                 const res = await Api.analyzeAsset(type, base64, mime);
                 
-                const description = res.response_data?.description || res.description || "Analisi completata";
+                if (res) {
+                    const description = res.response_data?.description || res.description || "Analisi completata";
+                    // Supporto per il nuovo formato URL se il backend è stato aggiornato a GitHub
+                    const assetData = {
+                        description: description,
+                        mime: mime,
+                        // Se il backend restituisce URL, usiamo quello, altrimenti fallback al base64 locale
+                        url: res.url || null, 
+                        base64: res.url ? null : base64 
+                    };
 
-                if (!STATE.data.assets) STATE.data.assets = {};
-                STATE.data.assets[type] = {
-                    description: description,
-                    base64: base64,
-                    mime: mime
-                };
-                UI.renderAssets();
-                UI.toggleDirty();
+                    if (!STATE.data.assets) STATE.data.assets = {};
+                    STATE.data.assets[type] = assetData;
+                    
+                    UI.renderAssets();
+                    UI.toggleDirty();
+                } else {
+                    // Errore gestito (es. 501), resetto preview
+                    previewEl.innerHTML = ''; 
+                }
             };
         } catch (e) {
-            tg.showAlert('Error analyzing asset');
+            // Errori non gestiti
             previewEl.innerHTML = '';
         }
     },
@@ -614,10 +659,6 @@ const App = {
         });
     }
 };
-
-// ==========================================
-// 5. INIT & EXPORTS
-// ==========================================
 
 window.App = {
     addDeepDive: App.addDeepDive,
