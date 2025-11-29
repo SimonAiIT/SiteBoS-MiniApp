@@ -51,15 +51,16 @@
 
   <div id="app-content" class="hidden container">
     
-    <!-- HEADER -->
+<!-- HEADER -->
     <div class="dashboard-header">
       <div class="header-info">
         <h1 id="companyName">...</h1>
         <small id="vatDisplay">P.IVA: ...</small>
       </div>
       <div class="header-actions">
-        <button class="btn-mini" onclick="openWidget()"><i class="fas fa-eye"></i> <span data-i18n="btn_widget">Widget</span></button>
-        <button class="btn-mini" onclick="openSite()"><i class="fas fa-globe"></i> <span data-i18n="btn_site">Site</span></button>
+        <!-- AGGIUNTI ID QUI -->
+        <button id="btn-widget" class="btn-mini" onclick="openWidget()"><i class="fas fa-eye"></i> <span data-i18n="btn_widget">Widget</span></button>
+        <button id="btn-site" class="btn-mini" onclick="openSite()"><i class="fas fa-globe"></i> <span data-i18n="btn_site">Site</span></button>
       </div>
     </div>
 
@@ -68,57 +69,63 @@
     
     <div class="dash-grid">
       
-      <!-- 1. HoneyPot -->
-      <div class="dash-card" onclick="navTo('honeypot_editor.html')">
+      <!-- 1. HoneyPot (ID: card-hp) -->
+      <div id="card-hp" class="dash-card" onclick="navTo('honeypot_editor.html')">
+        <div id="badge-hp" class="card-alert hidden">!</div>
         <div class="dash-icon"><i class="fas fa-brain"></i></div>
         <div>
             <div class="dash-label" data-i18n="card_hp">HoneyPot</div>
-            <div class="dash-sub" data-i18n="sub_hp">Gestisci Risposte</div>
+            <div id="sub-hp" class="dash-sub" data-i18n="sub_hp">Gestisci Risposte</div>
         </div>
       </div>
 
-      <!-- 2. Catalogo -->
-      <div class="dash-card" onclick="navTo('catalog.html')">
+      <!-- 2. Catalogo (ID: card-catalog) -->
+      <div id="card-catalog" class="dash-card" onclick="navTo('catalog.html')">
+        <div id="count-catalog" class="card-counter hidden">0</div>
         <div class="dash-icon"><i class="fas fa-box-open"></i></div>
         <div>
             <div class="dash-label" data-i18n="card_catalog">Catalogo</div>
-            <div class="dash-sub" data-i18n="sub_catalog">Prodotti & Servizi</div>
+            <div id="sub-catalog" class="dash-sub" data-i18n="sub_catalog">Prodotti & Servizi</div>
         </div>
       </div>
 
-      <!-- 3. Agenda -->
-      <div class="dash-card" onclick="navTo('calendar.html')">
+      <!-- 3. Agenda (ID: card-agenda) -->
+      <div id="card-agenda" class="dash-card" onclick="navTo('calendar.html')">
+        <div id="count-agenda" class="card-counter hidden">0</div>
         <div class="dash-icon"><i class="fas fa-calendar-alt"></i></div>
         <div>
             <div class="dash-label" data-i18n="card_agenda">Agenda</div>
-            <div class="dash-sub" data-i18n="sub_agenda">Appuntamenti</div>
+            <div id="sub-agenda" class="dash-sub" data-i18n="sub_agenda">Appuntamenti</div>
         </div>
       </div>
 
-      <!-- 4. Collaboratori -->
-      <div class="dash-card" onclick="navTo('team.html')">
+      <!-- 4. Collaboratori (ID: card-team) -->
+      <div id="card-team" class="dash-card" onclick="navTo('team.html')">
+        <div id="count-team" class="card-counter hidden">0</div>
         <div class="dash-icon"><i class="fas fa-users"></i></div>
         <div>
             <div class="dash-label" data-i18n="card_team">Collaboratori</div>
-            <div class="dash-sub" data-i18n="sub_team">Team & Ruoli</div>
+            <div id="sub-team" class="dash-sub" data-i18n="sub_team">Team & Ruoli</div>
         </div>
       </div>
 
-      <!-- 5. Dati Aziendali -->
-      <div class="dash-card" onclick="navTo('edit_owner.html')">
+      <!-- 5. Dati Aziendali (ID: card-config) -->
+      <div id="card-config" class="dash-card" onclick="navTo('edit_owner.html')">
+        <div id="badge-config" class="card-alert hidden">!</div>
         <div class="dash-icon"><i class="fas fa-building"></i></div>
         <div>
             <div class="dash-label" data-i18n="card_company">Dati Aziendali</div>
-            <div class="dash-sub" data-i18n="sub_company">Configurazione</div>
+            <div id="sub-config" class="dash-sub" data-i18n="sub_company">Configurazione</div>
         </div>
       </div>
 
-      <!-- 6. Conoscenza -->
-      <div class="dash-card" onclick="navTo('knowledge.html')">
+      <!-- 6. Conoscenza (ID: card-knowledge) -->
+      <div id="card-knowledge" class="dash-card" onclick="navTo('knowledge.html')">
+        <div id="count-docs" class="card-counter hidden">0</div>
         <div class="dash-icon"><i class="fas fa-folder-open"></i></div>
         <div>
             <div class="dash-label" data-i18n="card_knowledge">Conoscenza</div>
-            <div class="dash-sub" data-i18n="sub_knowledge">Documenti & Asset</div>
+            <div id="sub-knowledge" class="dash-sub" data-i18n="sub_knowledge">Documenti & Asset</div>
         </div>
       </div>
 
