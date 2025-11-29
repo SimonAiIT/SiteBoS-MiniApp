@@ -353,9 +353,19 @@ const UI = {
         const updatePreview = (id, data) => {
             const el = document.getElementById(`${id}-preview`);
             if (data && el) {
-                el.innerHTML = `<img src="data:${data.mime};base64,${data.base64}"><p class="asset-description">${data.description}</p>`;
+                let imgSrc = '';
+                if (data.url) {
+                    imgSrc = `${data.url}?t=${new Date().getTime()}`;
+                } else if (data.base64) {
+                    imgSrc = `data:${data.mime};base64,${data.base64}`;
+                }
+
+                if (imgSrc) {
+                    el.innerHTML = `<img src="${imgSrc}"><p class="asset-description">${data.description || ''}</p>`;
+                }
             }
         };
+        
         if (STATE.data.assets) {
             updatePreview('logo', STATE.data.assets.logo);
             updatePreview('photo', STATE.data.assets.photo);
