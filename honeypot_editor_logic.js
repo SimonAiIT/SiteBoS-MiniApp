@@ -19,7 +19,6 @@ let honeypotData = {};
 let initialDataString = '';
 let currentLang = 'it';
 
-// --- I18N DICTIONARY ---
 const i18n = {
   it: {
     title: "Editor Base di Conoscenza", subtitle: "Modella l'anima AI della tua azienda.",
@@ -34,14 +33,58 @@ const i18n = {
   },
   en: {
     title: "Knowledge Base Editor", subtitle: "Shape your business AI soul.",
-    section_offer_title: "Action Required: Welcome Offer", offer_desc: "AI will generate an engaging offer.", lbl_offer_prompt: "Describe offer", btn_generate_offer: "Generate Offer", lbl_offer_preview: "Preview", offer_preview_placeholder: "Preview here...", alert_offer_required: "Enter description.", generating: "Generating...", alert_generation_error: "AI Error.", lbl_click_copy: "Copy", alert_copied: "Copied!",
-    section_hours_title: "Opening Hours", section_assets_title: "Visual Assets", lbl_logo: "Logo", upload_logo: "Upload logo", lbl_photo: "Main Photo", upload_photo: "Upload photo",
-    section_bot_title: "Action Required: Bot Config", guide_bot_1: "Open <a href='{botFatherUrl}' target='_blank'>@BotFather</a>", guide_bot_2: "Send <code>/newbot</code>", guide_bot_3: "Choose name/username", guide_bot_4: "<b>Copy Token</b> and paste", guide_bot_video: "<a href='{botVideoUrl}' target='_blank'>Tutorial</a>", btn_link_bot: "Link", status_linked: "Bot Linked ✅", alert_token_required: "Enter token.", alert_token_invalid: "Invalid token.", alert_link_error: "Link Error",
-    section_group_title: "Action Required: Group", guide_group_1: "Create private group", guide_group_2: "Add your bot and <code>@TrinAi_SiteBoS_bot</code>", guide_group_3: "Make them Admin", guide_group_video: "<a href='{groupVideoUrl}' target='_blank'>Tutorial</a>",
-    lbl_utterances: "Sample Questions", lbl_answer: "Answer", lbl_summary: "Summary", lbl_deepdive: "Deep Dives (Specific Q&A)", lbl_question: "Question", btn_add_qa: "Add Q&A",
+    section_offer_title: "Action Required: Welcome Offer", offer_desc: "AI will generate an engaging offer.", lbl_offer_prompt: "Describe your offer", btn_generate_offer: "Generate Offer", lbl_offer_preview: "Preview", offer_preview_placeholder: "Preview will appear here...", alert_offer_required: "Please enter a description.", generating: "Generating...", alert_generation_error: "AI Error.", lbl_click_copy: "Copy", alert_copied: "Copied!",
+    section_hours_title: "Opening Hours", section_assets_title: "Visual Assets", lbl_logo: "Company Logo", upload_logo: "Upload logo", lbl_photo: "Main Photo", upload_photo: "Upload photo",
+    section_bot_title: "Action Required: Configure Bot", guide_bot_1: "Open <a href='{botFatherUrl}' target='_blank'>@BotFather</a>", guide_bot_2: "Send <code>/newbot</code>", guide_bot_3: "Choose name/username", guide_bot_4: "<b>Copy Token</b> and paste it here", guide_bot_video: "<a href='{botVideoUrl}' target='_blank'>Video Tutorial</a>", btn_link_bot: "Link", status_linked: "Bot Linked ✅", alert_token_required: "Please enter the token.", alert_token_invalid: "Invalid token.", alert_link_error: "Linking Error",
+    section_group_title: "Action Required: Group", guide_group_1: "Create a private group", guide_group_2: "Add your bot and <code>@TrinAi_SiteBoS_bot</code>", guide_group_3: "Make them Admins", guide_group_video: "<a href='{groupVideoUrl}' target='_blank'>Video Tutorial</a>",
+    lbl_utterances: "Sample Questions", lbl_answer: "Main Answer", lbl_summary: "Summary", lbl_deepdive: "Deep Dives (Specific Q&A)", lbl_question: "Question", btn_add_qa: "Add Q&A",
     day_monday: "Monday", day_tuesday: "Tuesday", day_wednesday: "Wednesday", day_thursday: "Thursday", day_friday: "Friday", day_saturday: "Saturday", day_sunday: "Sunday",
     btn_save: "Save Changes", saving_progress: "Saving...", saving_success: "Saved!",
-    alert_loading_error: "Load error.", alert_saving_error: "Save error."
+    alert_loading_error: "Loading error.", alert_saving_error: "Saving error."
+  },
+  fr: {
+    title: "Éditeur de Base de Connaissances", subtitle: "Modelez l'âme IA de votre entreprise.",
+    section_offer_title: "Action Requise : Offre de Bienvenue", offer_desc: "L'IA générera une offre attrayante.", lbl_offer_prompt: "Décrivez votre offre", btn_generate_offer: "Générer Offre", lbl_offer_preview: "Aperçu", offer_preview_placeholder: "L'aperçu apparaîtra ici...", alert_offer_required: "Veuillez entrer une description.", generating: "Génération...", alert_generation_error: "Erreur IA.", lbl_click_copy: "Copier", alert_copied: "Copié !",
+    section_hours_title: "Heures d'Ouverture", section_assets_title: "Éléments Visuels", lbl_logo: "Logo de l'entreprise", upload_logo: "Charger logo", lbl_photo: "Photo Principale", upload_photo: "Charger photo",
+    section_bot_title: "Action Requise : Configurer le Bot", guide_bot_1: "Ouvrir <a href='{botFatherUrl}' target='_blank'>@BotFather</a>", guide_bot_2: "Envoyer <code>/newbot</code>", guide_bot_3: "Choisir nom/utilisateur", guide_bot_4: "<b>Copiez le Jeton</b> et collez-le", guide_bot_video: "<a href='{botVideoUrl}' target='_blank'>Tutoriel Vidéo</a>", btn_link_bot: "Associer", status_linked: "Bot Associé ✅", alert_token_required: "Veuillez entrer le jeton.", alert_token_invalid: "Jeton invalide.", alert_link_error: "Erreur d'association",
+    section_group_title: "Action Requise : Groupe", guide_group_1: "Créer un groupe privé", guide_group_2: "Ajoutez votre bot et <code>@TrinAi_SiteBoS_bot</code>", guide_group_3: "Nommez-les Admin", guide_group_video: "<a href='{groupVideoUrl}' target='_blank'>Tutoriel Vidéo</a>",
+    lbl_utterances: "Questions Exemples", lbl_answer: "Réponse Principale", lbl_summary: "Résumé", lbl_deepdive: "Détails (Q&R Spécifiques)", lbl_question: "Question", btn_add_qa: "Ajouter Q&R",
+    day_monday: "Lundi", day_tuesday: "Mardi", day_wednesday: "Mercredi", day_thursday: "Jeudi", day_friday: "Vendredi", day_saturday: "Samedi", day_sunday: "Dimanche",
+    btn_save: "Enregistrer", saving_progress: "Enregistrement...", saving_success: "Enregistré !",
+    alert_loading_error: "Erreur de chargement.", alert_saving_error: "Erreur d'enregistrement."
+  },
+  de: {
+    title: "Wissensdatenbank-Editor", subtitle: "Gestalten Sie die KI-Seele Ihres Unternehmens.",
+    section_offer_title: "Aktion Erforderlich: Willkommensangebot", offer_desc: "Die KI wird ein ansprechendes Angebot erstellen.", lbl_offer_prompt: "Beschreiben Sie Ihr Angebot", btn_generate_offer: "Angebot Erstellen", lbl_offer_preview: "Vorschau", offer_preview_placeholder: "Vorschau wird hier angezeigt...", alert_offer_required: "Bitte geben Sie eine Beschreibung ein.", generating: "Erstelle...", alert_generation_error: "KI-Fehler.", lbl_click_copy: "Kopieren", alert_copied: "Kopiert!",
+    section_hours_title: "Öffnungszeiten", section_assets_title: "Visuelle Assets", lbl_logo: "Firmenlogo", upload_logo: "Logo hochladen", lbl_photo: "Hauptfoto", upload_photo: "Foto hochladen",
+    section_bot_title: "Aktion Erforderlich: Bot Konfigurieren", guide_bot_1: "Öffnen Sie <a href='{botFatherUrl}' target='_blank'>@BotFather</a>", guide_bot_2: "Senden Sie <code>/newbot</code>", guide_bot_3: "Wählen Sie Name/Benutzername", guide_bot_4: "<b>Token kopieren</b> und einfügen", guide_bot_video: "<a href='{botVideoUrl}' target='_blank'>Video-Tutorial</a>", btn_link_bot: "Verbinden", status_linked: "Bot Verbunden ✅", alert_token_required: "Bitte Token eingeben.", alert_token_invalid: "Ungültiges Token.", alert_link_error: "Verbindungsfehler",
+    section_group_title: "Aktion Erforderlich: Gruppe", guide_group_1: "Private Gruppe erstellen", guide_group_2: "Fügen Sie Ihren Bot und <code>@TrinAi_SiteBoS_bot</code> hinzu", guide_group_3: "Machen Sie sie zu Admins", guide_group_video: "<a href='{groupVideoUrl}' target='_blank'>Video-Tutorial</a>",
+    lbl_utterances: "Beispielfragen", lbl_answer: "Hauptantwort", lbl_summary: "Zusammenfassung", lbl_deepdive: "Details (Spezifische F&A)", lbl_question: "Frage", btn_add_qa: "F&A Hinzufügen",
+    day_monday: "Montag", day_tuesday: "Dienstag", day_wednesday: "Mittwoch", day_thursday: "Donnerstag", day_friday: "Freitag", day_saturday: "Samstag", day_sunday: "Sonntag",
+    btn_save: "Änderungen Speichern", saving_progress: "Speichern...", saving_success: "Gespeichert!",
+    alert_loading_error: "Ladefehler.", alert_saving_error: "Speicherfehler."
+  },
+  es: {
+    title: "Editor de Base de Conocimiento", subtitle: "Modela el alma de IA de tu negocio.",
+    section_offer_title: "Acción Requerida: Oferta de Bienvenida", offer_desc: "La IA generará una oferta atractiva.", lbl_offer_prompt: "Describe tu oferta", btn_generate_offer: "Generar Oferta", lbl_offer_preview: "Vista Previa", offer_preview_placeholder: "La vista previa aparecerá aquí...", alert_offer_required: "Por favor, introduce una descripción.", generating: "Generando...", alert_generation_error: "Error de IA.", lbl_click_copy: "Copiar", alert_copied: "¡Copiado!",
+    section_hours_title: "Horario de Apertura", section_assets_title: "Activos Visuales", lbl_logo: "Logo de la Empresa", upload_logo: "Subir logo", lbl_photo: "Foto Principal", upload_photo: "Subir foto",
+    section_bot_title: "Acción Requerida: Configurar Bot", guide_bot_1: "Abrir <a href='{botFatherUrl}' target='_blank'>@BotFather</a>", guide_bot_2: "Enviar <code>/newbot</code>", guide_bot_3: "Elegir nombre/usuario", guide_bot_4: "<b>Copiar Token</b> y pegarlo", guide_bot_video: "<a href='{botVideoUrl}' target='_blank'>Video Tutorial</a>", btn_link_bot: "Enlazar", status_linked: "Bot Enlazado ✅", alert_token_required: "Por favor, introduce el token.", alert_token_invalid: "Token inválido.", alert_link_error: "Error al enlazar",
+    section_group_title: "Acción Requerida: Grupo", guide_group_1: "Crear grupo privado", guide_group_2: "Añade tu bot y <code>@TrinAi_SiteBoS_bot</code>", guide_group_3: "Hazlos Administradores", guide_group_video: "<a href='{groupVideoUrl}' target='_blank'>Video Tutorial</a>",
+    lbl_utterances: "Preguntas de Ejemplo", lbl_answer: "Respuesta Principal", lbl_summary: "Resumen", lbl_deepdive: "Detalles (P&R Específicas)", lbl_question: "Pregunta", btn_add_qa: "Añadir P&R",
+    day_monday: "Lunes", day_tuesday: "Martes", day_wednesday: "Miércoles", day_thursday: "Jueves", day_friday: "Viernes", day_saturday: "Sábado", day_sunday: "Domingo",
+    btn_save: "Guardar Cambios", saving_progress: "Guardando...", saving_success: "¡Guardado!",
+    alert_loading_error: "Error al cargar.", alert_saving_error: "Error al guardar."
+  },
+  pt: {
+    title: "Editor da Base de Conhecimento", subtitle: "Molde a alma de IA do seu negócio.",
+    section_offer_title: "Ação Necessária: Oferta de Boas-Vindas", offer_desc: "A IA irá gerar uma oferta atraente.", lbl_offer_prompt: "Descreva a sua oferta", btn_generate_offer: "Gerar Oferta", lbl_offer_preview: "Pré-visualização", offer_preview_placeholder: "A pré-visualização aparecerá aqui...", alert_offer_required: "Por favor, insira uma descrição.", generating: "Gerando...", alert_generation_error: "Erro de IA.", lbl_click_copy: "Copiar", alert_copied: "Copiado!",
+    section_hours_title: "Horário de Funcionamento", section_assets_title: "Ativos Visuais", lbl_logo: "Logotipo da Empresa", upload_logo: "Carregar logo", lbl_photo: "Foto Principal", upload_photo: "Carregar foto",
+    section_bot_title: "Ação Necessária: Configurar Bot", guide_bot_1: "Abrir <a href='{botFatherUrl}' target='_blank'>@BotFather</a>", guide_bot_2: "Enviar <code>/newbot</code>", guide_bot_3: "Escolher nome/utilizador", guide_bot_4: "<b>Copiar Token</b> e colar", guide_bot_video: "<a href='{botVideoUrl}' target='_blank'>Tutorial em Vídeo</a>", btn_link_bot: "Ligar", status_linked: "Bot Ligado ✅", alert_token_required: "Por favor, insira o token.", alert_token_invalid: "Token inválido.", alert_link_error: "Erro ao ligar",
+    section_group_title: "Ação Necessária: Grupo", guide_group_1: "Criar grupo privado", guide_group_2: "Adicione o seu bot e <code>@TrinAi_SiteBoS_bot</code>", guide_group_3: "Torne-os Administradores", guide_group_video: "<a href='{groupVideoUrl}' target='_blank'>Tutorial em Vídeo</a>",
+    lbl_utterances: "Perguntas de Exemplo", lbl_answer: "Resposta Principal", lbl_summary: "Resumo", lbl_deepdive: "Detalhes (P&R Específicas)", lbl_question: "Pergunta", btn_add_qa: "Adicionar P&R",
+    day_monday: "Segunda-feira", day_tuesday: "Terça-feira", day_wednesday: "Quarta-feira", day_thursday: "Quinta-feira", day_friday: "Sexta-feira", day_saturday: "Sábado", day_sunday: "Domingo",
+    btn_save: "Salvar Alterações", saving_progress: "Salvando...", saving_success: "Salvo!",
+    alert_loading_error: "Erro ao carregar.", alert_saving_error: "Erro ao salvar."
   }
 };
 
