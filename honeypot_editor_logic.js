@@ -426,7 +426,7 @@ const App = {
         
         try {
             const data = await Api.getData();
-            STATE.data = data.oHONEYPOT.HoneyPot;
+            STATE.data = data.HoneyPot;
             STATE.initialString = JSON.stringify(STATE.data);
             
             UI.renderAll();
