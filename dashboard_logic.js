@@ -52,10 +52,9 @@ async function startDashboard() {
         return;
     }
 
-    try {
+try {
         console.log("🚀 AVVIO CHIAMATA DASHBOARD...");
         
-        // 4. CHIAMATA AL BACKEND (QUESTA PARTE ORA E' SICURA)
         const response = await fetch(DASHBOARD_API, {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
@@ -70,15 +69,40 @@ async function startDashboard() {
         if (!response.ok) throw new Error("Network response was not ok");
         
         const data = await response.json();
-        console.log("✅ DATI RICEVUTI:", data);
+        console.log("📥 RISPOSTA:", data);
 
-        // 5. AGGIORNAMENTO UI
-        // Nome Azienda
+        // 🛑 GESTIONE ERRORE CRITICO (Ghost User / Data Loss)
+        if (data.status === 'error' || data.webhookResponse?.status === 'error') {
+            const err = data.error || data.webhookResponse?.error || {};
+            
+            // Nascondi il loader
+            document.getElementById('loader').classList.add('hidden');
+            
+            // Mostra Errore Fatale in pagina
+            document.body.innerHTML = `
+                <div class="container" style="padding-top: 100px; text-align: center;">
+                    <div style="font-size: 50px; margin-bottom: 20px;">⚠️</div>
+                    <h2 style="color: #ff6b6b;">${err.title || "Errore Critico"}</h2>
+                    <p style="color: #ccc; margin-bottom: 30px;">${err.message || "Impossibile recuperare i dati dell'account."}</p>
+                    
+                    <div style="background: rgba(0,0,0,0.3); padding: 15px; border-radius: 8px; text-align: left; margin-bottom: 20px; font-family: monospace; font-size: 12px; color: #ff6b6b;">
+                        CODE: ${err.type || "UNKNOWN"}<br>
+                        ID: ${err.user_id || "N/A"}
+                    </div>
+
+                    <a href="https://t.me/TrinAi_TecSupport_bot" class="btn btn-primary btn-block">
+                        <i class="fas fa-life-ring"></i> Contatta Supporto
+                    </a>
+                </div>
+            `;
+            return; // Ferma l'esecuzione qui
+        }
+
+        // ... Se arriva qui, è un successo: renderizza la dashboard ...
         const companyName = data.company_profile?.name || data.owner_data?.ragione_sociale || "Azienda";
         document.getElementById('companyName').innerText = companyName;
         document.getElementById('vatDisplay').innerText = `P.IVA: ${vat}`;
 
-        // Nascondi Loader
         document.getElementById('loader').classList.add('hidden');
         document.getElementById('app-content').classList.remove('hidden');
 
