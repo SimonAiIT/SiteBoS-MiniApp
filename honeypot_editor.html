@@ -26,6 +26,15 @@
     .offer-preview { background: rgba(0,0,0,0.3); border: 1px dashed var(--glass-border); padding: 15px; border-radius: 12px; font-size: 13px; line-height: 1.5; color: var(--text-secondary); margin-top: 10px; cursor: pointer; transition: all 0.2s; }
     .offer-preview:hover { background: rgba(0,0,0,0.4); border-color: var(--primary); color: var(--text-main); }
     .click-hint { font-size: 10px; color: var(--primary); float: right; cursor: pointer; }
+
+    /* Stili per Orari (Mattina/Pomeriggio) */
+    .hours-row { display: flex; flex-direction: column; margin-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 10px; }
+    .hours-row label { font-weight: bold; color: var(--primary); margin-bottom: 5px; display: block;}
+    .shifts-container { display: flex; gap: 10px; flex-wrap: wrap; }
+    .shift-block { flex: 1; min-width: 140px; }
+    .shift-label { font-size: 10px; color: var(--text-muted); margin-bottom: 2px; display: block; }
+    .time-inputs { display: flex; align-items: center; gap: 5px; }
+    .time-inputs select { padding: 5px; border-radius: 6px; font-size: 13px; }
   </style>
 </head>
 <body>
@@ -48,7 +57,7 @@
         <p class="subtitle" data-i18n="offer_desc" style="margin-bottom: 15px;"></p>
         <div class="input-group">
             <label data-i18n="lbl_offer_prompt"></label>
-            <textarea id="offer-prompt" placeholder="Es: 10% di sconto sul primo acquisto..." rows="2"></textarea>
+            <textarea id="offer-prompt" placeholder="..." rows="2"></textarea>
         </div>
         <button type="button" class="btn btn-primary btn-block" id="btn-generate-offer">
             <i class="fas fa-magic"></i> <span data-i18n="btn_generate_offer"></span>
@@ -64,61 +73,8 @@
       </div>
     </div>
 
-    <!-- SEZIONE 2: Configurazione Bot -->
-    <div class="knowledge-card">
-      <div class="card-header">
-        <h3><i class="fas fa-rocket"></i> <span data-i18n="section_bot_title"></span></h3>
-        <i class="fas fa-chevron-down chevron"></i>
-      </div>
-      <div class="card-content">
-          <div class="guide-step"><i class="fab fa-telegram"></i> <span data-i18n="guide_bot_1"></span></div>
-          <div class="guide-step"><i class="fas fa-plus-circle"></i> <span data-i18n="guide_bot_2"></span></div>
-          <div class="guide-step"><i class="fas fa-pen"></i> <span data-i18n="guide_bot_3"></span></div>
-          <div class="guide-step"><i class="fas fa-key"></i> <span data-i18n="guide_bot_4"></span></div>
-          <div class="guide-step"><i class="fas fa-video"></i> <span data-i18n="guide_bot_video"></span></div>
-          <div class="input-group mt-2">
-            <label>Telegram Bot Token</label>
-            <div class="d-flex gap-2">
-                <input type="text" id="bot-token-input" placeholder="123456:ABC-...">
-                <button type="button" class="btn btn-primary btn-sm" id="btn-link-bot">
-                    <i class="fas fa-link"></i> <span data-i18n="btn_link_bot"></span>
-                </button>
-            </div>
-            <div id="bot-status" class="hint" style="margin-top: 8px; font-weight: 600;"></div>
-          </div>
-      </div>
-    </div>
-
-    <!-- SEZIONE 3: Configurazione Gruppo -->
-    <div class="knowledge-card">
-      <div class="card-header">
-        <h3><i class="fas fa-users"></i> <span data-i18n="section_group_title"></span></h3>
-        <i class="fas fa-chevron-down chevron"></i>
-      </div>
-      <div class="card-content">
-          <div class="guide-step"><i class="fas fa-plus-circle"></i> <span data-i18n="guide_group_1"></span></div>
-          <div class="guide-step"><i class="fas fa-user-plus"></i> <span data-i18n="guide_group_2"></span></div>
-          <div class="guide-step"><i class="fas fa-user-shield"></i> <span data-i18n="guide_group_3"></span></div>
-          <div class="guide-step"><i class="fas fa-video"></i> <span data-i18n="guide_group_video"></span></div>
-      </div>
-    </div>
-
-    <!-- SEZIONE 4: HoneyPot (Contenitore Dinamico) -->
-    <div id="honeypot-container"></div>
-
-    <!-- SEZIONE 5: Orari -->
-    <div class="knowledge-card">
-        <div class="card-header">
-            <h3><i class="fas fa-clock"></i> <span data-i18n="section_hours_title"></span></h3>
-            <i class="fas fa-chevron-down chevron"></i>
-        </div>
-        <div class="card-content">
-            <div id="hours-container"></div>
-        </div>
-    </div>
-
-    <!-- SEZIONE 6: Asset Visivi -->
-    <div class="knowledge-card">
+    <!-- SEZIONE 2: Asset Visivi (Action Required) -->
+    <div class="knowledge-card highlight">
         <div class="card-header">
             <h3><i class="fas fa-photo-video"></i> <span data-i18n="section_assets_title"></span></h3>
             <i class="fas fa-chevron-down chevron"></i>
@@ -146,6 +102,46 @@
             </div>
         </div>
     </div>
+
+    <!-- SEZIONE 3: Orari (Action Required) -->
+    <div class="knowledge-card highlight">
+        <div class="card-header">
+            <h3><i class="fas fa-clock"></i> <span data-i18n="section_hours_title"></span></h3>
+            <i class="fas fa-chevron-down chevron"></i>
+        </div>
+        <div class="card-content">
+            <div id="hours-container"></div>
+        </div>
+    </div>
+
+    <!-- SEZIONE 4: Configurazione Bot -->
+    <div class="knowledge-card">
+      <div class="card-header">
+        <h3><i class="fas fa-rocket"></i> <span data-i18n="section_bot_title"></span></h3>
+        <i class="fas fa-chevron-down chevron"></i>
+      </div>
+      <div class="card-content">
+          <div class="guide-step"><i class="fab fa-telegram"></i> <span data-i18n="guide_bot_1"></span></div>
+          <div class="guide-step"><i class="fas fa-plus-circle"></i> <span data-i18n="guide_bot_2"></span></div>
+          <div class="guide-step"><i class="fas fa-pen"></i> <span data-i18n="guide_bot_3"></span></div>
+          <div class="guide-step"><i class="fas fa-key"></i> <span data-i18n="guide_bot_4"></span></div>
+          <div class="guide-step"><i class="fas fa-video"></i> <span data-i18n="guide_bot_video"></span></div>
+          <div class="input-group mt-2">
+            <label>Telegram Bot Token</label>
+            <div class="d-flex gap-2">
+                <input type="text" id="bot-token-input" placeholder="123456:ABC-...">
+                <button type="button" class="btn btn-primary btn-sm" id="btn-link-bot">
+                    <i class="fas fa-link"></i> <span data-i18n="btn_link_bot"></span>
+                </button>
+            </div>
+            <div id="bot-status" class="hint" style="margin-top: 8px; font-weight: 600;"></div>
+          </div>
+      </div>
+    </div>
+
+    <!-- SEZIONE 5: HoneyPot (Contenitore Dinamico) -->
+    <div id="honeypot-container"></div>
+
   </div>
 
   <!-- FLOATING SAVE BUTTON -->
@@ -155,7 +151,6 @@
     </button>
   </div>
 
-  <!-- COLLEGAMENTO AL NUOVO FILE JAVASCRIPT -->
   <script src="honeypot_editor_logic.js"></script>
 
 </body>
