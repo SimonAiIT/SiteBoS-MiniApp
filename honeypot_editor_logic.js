@@ -416,14 +416,15 @@ const App = {
         current[keys[keys.length - 1]] = value;
     },
 
-// --- LOGICA DI SALVATAGGIO E COMPLETAMENTO ---
-    save: async (e) => { // 1. Aggiungi 'e' qui
-        if (e) e.preventDefault(); // 2. Blocca il refresh della pagina
+// ... dentro App ...
+
+    save: async (e) => { 
+        if (e) e.preventDefault(); // BLOCCHIAMO IL REFRESH
         
         UI.setLoading(true, DOM.saveBtn, 'saving_progress');
         
         try {
-            // 1. DATI & CHECK COMPLETEZZA
+            // 1. PREPARAZIONE DATI LOCALI
             const hp = STATE.data || {};
             const assets = hp.assets || {};
             
@@ -433,28 +434,36 @@ const App = {
                              (hp.offer?.description && hp.offer.description.length > 5);
 
             const isComplete = hasLogo && hasPhoto && hasOffer;
-
-            // 2. CHECK ONBOARDING STATUS
+            
+            // Check se è la prima volta (flag locale)
             const isFirstRun = !hp.config?.onboarding_completed;
 
             // --- SCENARIO A: TUTTO COMPLETO + PRIMA VOLTA -> LANCIA SITO ---
             if (isComplete && isFirstRun) {
                 
-                // Update Flag e Timestamp
+                // Aggiorniamo flag locali prima dell'invio
                 if (!STATE.data.config) STATE.data.config = {};
                 STATE.data.config.onboarding_completed = true;
                 STATE.data.config.completed_at = new Date().toISOString();
 
-                // Salva su DB
-                await Api.saveData(STATE.data);
+                // >>> QUI LA MODIFICA: CATTURIAMO LA RISPOSTA DEL SERVER <<<
+                // Il tuo webhook deve restituire il JSON dell'HoneyPot aggiornato
+                const serverResponse = await Api.saveData(STATE.data);
 
-                // Prepara Payload
+                // Determiniamo quale dato usare per il payload successivo.
+                // Se il server risponde con l'oggetto, usiamo quello (è più affidabile).
+                // Se per caso risponde vuoto, usiamo il locale STATE.data come fallback.
+                const finalHoneypotData = serverResponse && Object.keys(serverResponse).length > 0 
+                                          ? (serverResponse.HoneyPot || serverResponse) 
+                                          : STATE.data;
+
+                // Prepara Payload usando i dati definitivi
                 const ownerKey = STATE.ownerId;
                 const fullPayload = {
                     vat_number: STATE.vatNumber,
                     access_token: STATE.accessToken,
                     owner_id: STATE.ownerId,
-                    honeypot_data: STATE.data,
+                    honeypot_data: finalHoneypotData, // Usiamo i dati tornati dal server
                     command: "BUILD_SITE"
                 };
 
@@ -467,8 +476,7 @@ const App = {
                 // Feedback Visivo
                 DOM.saveBtn.innerHTML = `<i class="fas fa-rocket"></i> ${I18n.get('launching_process')}`;
                 
-                // REDIRECT A PROCESSING
-                // Ridotto timeout a 500ms per essere più reattivi, window.location.replace evita problemi con la history
+                // REDIRECT
                 setTimeout(() => {
                     window.location.replace(`processing.html?call=honeypot_build_trigger&owner_key=${ownerKey}`);
                 }, 500);
@@ -476,10 +484,16 @@ const App = {
                 return; 
             }
 
-            // --- SCENARIO B: INCOMPLETO O GIÀ FATTO ---
+            // --- SCENARIO B: SALVATAGGIO STANDARD ---
             else {
-                await Api.saveData(STATE.data);
+                // Anche qui catturiamo la risposta per tenere la UI sincronizzata
+                const res = await Api.saveData(STATE.data);
                 
+                // Opzionale: aggiorniamo lo stato locale se il server ha cambiato qualcosa
+                if(res && (res.HoneyPot || Object.keys(res).length > 0)) {
+                    STATE.data = res.HoneyPot || res;
+                }
+
                 tg.HapticFeedback.notificationOccurred('success');
                 STATE.initialString = JSON.stringify(STATE.data);
                 
