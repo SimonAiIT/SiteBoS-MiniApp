@@ -1,10 +1,11 @@
 const tg = window.Telegram.WebApp;
-tg.ready(); tg.expand();
+tg.ready(); 
+tg.expand();
 
 // CONFIG
 const DASHBOARD_API = "https://trinai.api.workflow.dcmake.it/webhook/ef4aece4-9ec0-4026-a7a7-328562bcbdf6"; 
 
-// I18N COMPLETO (6 Lingue)
+// I18N COMPLETO (6 LINGUE)
 const i18n = {
     it: { 
         btn_widget: "Widget", btn_site: "Sito", 
@@ -16,7 +17,7 @@ const i18n = {
         card_company: "Dati Aziendali", sub_company: "Configurazione", 
         card_knowledge: "Conoscenza", sub_knowledge: "Documenti & Asset", 
         err_title: "⛔ Errore Parametri", err_msg: "Apri dal Bot Telegram.", 
-        popup_site_title: "Site Builder", popup_site_msg: "Reindirizzamento al Site Builder...",
+        popup_site_title: "Site Builder", popup_site_msg: "Il modulo Sito Web Statico è in fase di sviluppo.",
         game_title: "🎮 GAME OVER!", game_msg: "Hai guadagnato {points} Crediti AI nell'attesa!",
         status_hp_lock: "⛔ DA CONFIGURARE", status_hp_ok: "✅ Attivo",
         status_no_op: "Nessun Operatore", status_active: "Attivi", status_blueprint_req: "⚠️ Crea Blueprint"
@@ -31,7 +32,7 @@ const i18n = {
         card_company: "Company Data", sub_company: "Configuration", 
         card_knowledge: "Knowledge", sub_knowledge: "Docs & Assets", 
         err_title: "⛔ Param Error", err_msg: "Open from Telegram Bot.", 
-        popup_site_title: "Site Builder", popup_site_msg: "Redirecting...",
+        popup_site_title: "Site Builder", popup_site_msg: "Static Website module under development.",
         game_title: "🎮 GAME OVER!", game_msg: "You earned {points} AI Credits while waiting!",
         status_hp_lock: "⛔ SETUP REQUIRED", status_hp_ok: "✅ Active",
         status_no_op: "No Operators", status_active: "Active", status_blueprint_req: "⚠️ Create Blueprint"
@@ -46,7 +47,7 @@ const i18n = {
         card_company: "Données Entreprise", sub_company: "Configuration", 
         card_knowledge: "Connaissances", sub_knowledge: "Docs & Actifs", 
         err_title: "⛔ Erreur Param", err_msg: "Ouvrir via Bot Telegram.", 
-        popup_site_title: "Site Builder", popup_site_msg: "Redirection...",
+        popup_site_title: "Site Builder", popup_site_msg: "Module Site Web en développement.",
         game_title: "🎮 GAME OVER !", game_msg: "Vous avez gagné {points} Crédits IA !",
         status_hp_lock: "⛔ À CONFIGURER", status_hp_ok: "✅ Actif",
         status_no_op: "Aucun Opérateur", status_active: "Actifs", status_blueprint_req: "⚠️ Créer Blueprint"
@@ -61,7 +62,7 @@ const i18n = {
         card_company: "Firmendaten", sub_company: "Konfiguration", 
         card_knowledge: "Wissen", sub_knowledge: "Dokumente & Assets", 
         err_title: "⛔ Parameterfehler", err_msg: "Über Telegram Bot öffnen.", 
-        popup_site_title: "Site Builder", popup_site_msg: "Weiterleitung...",
+        popup_site_title: "Site Builder", popup_site_msg: "Webseiten-Modul in Entwicklung.",
         game_title: "🎮 GAME OVER!", game_msg: "Du hast {points} KI-Credits verdient!",
         status_hp_lock: "⛔ SETUP NÖTIG", status_hp_ok: "✅ Aktiv",
         status_no_op: "Keine Mitarbeiter", status_active: "Aktiv", status_blueprint_req: "⚠️ Blueprint erstellen"
@@ -76,7 +77,7 @@ const i18n = {
         card_company: "Datos Empresa", sub_company: "Configuración", 
         card_knowledge: "Conocimiento", sub_knowledge: "Docs y Activos", 
         err_title: "⛔ Error Param", err_msg: "Abrir desde Bot Telegram.", 
-        popup_site_title: "Site Builder", popup_site_msg: "Redirigiendo...",
+        popup_site_title: "Site Builder", popup_site_msg: "Módulo Sitio Web en desarrollo.",
         game_title: "🎮 ¡JUEGO TERMINADO!", game_msg: "¡Has ganado {points} Créditos IA!",
         status_hp_lock: "⛔ A CONFIGURAR", status_hp_ok: "✅ Activo",
         status_no_op: "Sin Operadores", status_active: "Activos", status_blueprint_req: "⚠️ Crear Blueprint"
@@ -91,7 +92,7 @@ const i18n = {
         card_company: "Dados da Empresa", sub_company: "Configuração", 
         card_knowledge: "Conhecimento", sub_knowledge: "Docs e Ativos", 
         err_title: "⛔ Erro Param", err_msg: "Abrir via Bot Telegram.", 
-        popup_site_title: "Site Builder", popup_site_msg: "A redirecionar...",
+        popup_site_title: "Site Builder", popup_site_msg: "Módulo Website em desenvolvimento.",
         game_title: "🎮 FIM DE JOGO!", game_msg: "Ganhou {points} Créditos de IA!",
         status_hp_lock: "⛔ CONFIGURAR", status_hp_ok: "✅ Ativo",
         status_no_op: "Sem Operadores", status_active: "Ativos", status_blueprint_req: "⚠️ Criar Blueprint"
@@ -113,7 +114,7 @@ function applyTranslations() {
     });
 }
 
-// Globali
+// Variabili globali per navigazione
 let gVat = "", gOwner = "", gToken = "";
 
 async function startDashboard() {
@@ -128,12 +129,13 @@ async function startDashboard() {
 
     try {
         const response = await fetch(DASHBOARD_API, {
-            method: 'POST', headers: {'Content-Type': 'application/json'},
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({ 
                 action: 'get_dashboard_data', 
                 vat_number: gVat, 
                 chat_id: gOwner, 
-                token: gToken // <<< TOKEN INCLUSO
+                token: gToken
             })
         });
 
@@ -157,7 +159,7 @@ async function startDashboard() {
             img.classList.remove('hidden');
         }
 
-        // 2. UPDATE LOGICA
+        // 2. UPDATE LOGICA STATO (Lockdown & Labels)
         if(data.status) updateDashboardStatus(data.status);
 
         document.getElementById('loader').classList.add('hidden');
@@ -175,7 +177,7 @@ async function startDashboard() {
 function updateDashboardStatus(status) {
     const t = i18n[getLang()]; 
 
-    // A. HONEYPOT (Master Key)
+    // A. HONEYPOT
     const isHpReady = (status.honeypot === 'READY');
     const hpSub = document.getElementById('sub-hp');
     const hpCard = document.getElementById('card-hp');
@@ -184,6 +186,7 @@ function updateDashboardStatus(status) {
         hpSub.innerText = t.status_hp_lock;
         hpSub.classList.add('text-warning');
         hpCard.style.border = '1px solid var(--warning)';
+        // Blocca tutto se HP non pronto
         ['card-catalog', 'card-agenda', 'card-team', 'card-knowledge'].forEach(lock);
         return; 
     } else {
@@ -200,7 +203,7 @@ function updateDashboardStatus(status) {
         subCat.classList.add('text-warning');
     }
 
-    // C. CONOSCENZA & AGENDA
+    // C. CONOSCENZA & AGENDA (Dipendono dai Blueprint)
     const hasBlueprints = status.blueprints_count > 0;
     
     if (hasBlueprints) {
@@ -237,7 +240,6 @@ function unlock(id) { const el = document.getElementById(id); if(el) el.classLis
 window.navTo = function(page) {
     const currentQuery = window.location.search.replace(/&bonus_credits=\d+/, '');
     const prefix = page.includes('?') ? '&' : '?';
-    // Assicura che gToken sia presente nell'url se non c'è già
     let q = currentQuery.startsWith('?') ? currentQuery.substring(1) : currentQuery;
     if(!q.includes('token=') && gToken) q += `&token=${gToken}`;
     
@@ -247,7 +249,6 @@ window.navTo = function(page) {
 window.openWidget = () => navTo('SiteBos.html');
 window.openSite = () => navTo('sitebuilder.html');
 
-// FIX: Token passato anche qui
 function handleGamification(vat, ownerId, token) {
     const p = new URLSearchParams(window.location.search);
     const bonus = p.get('bonus_credits');
@@ -262,7 +263,7 @@ function handleGamification(vat, ownerId, token) {
                 vat_number: vat, 
                 chat_id: ownerId, 
                 amount: points,
-                token: token // <<< TOKEN QUI
+                token: token
             })
         }).catch(console.error);
         
