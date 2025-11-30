@@ -28,13 +28,13 @@ function applyTranslations() {
 }
 
 // =========================================================
-// 1. GESTIONE CREDITI (GAMIFICATION) - ESEGUITA SUBITO
+// 1. GESTIONE CREDITI (GAMIFICATION) - VERSION SAFE
 // =========================================================
 function checkAndProcessCredits(vat, owner, token) {
     const p = new URLSearchParams(window.location.search);
     const bonusStr = p.get('bonus_credits');
     
-    console.log("🎲 CHECK CREDITI:", bonusStr); // DEBUG
+    console.log("🎲 CHECK CREDITI:", bonusStr); 
 
     if (bonusStr && parseInt(bonusStr) > 0) {
         const points = parseInt(bonusStr);
@@ -53,14 +53,26 @@ function checkAndProcessCredits(vat, owner, token) {
         }).then(() => console.log("✅ Crediti salvati"))
           .catch(e => console.error("❌ Errore salvataggio crediti", e));
 
-        // 2. Feedback UI Immediato
-        if(tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
-        tg.showPopup({ 
-            title: t('game_title'), 
-            message: t('game_msg').replace('{points}', points) 
-        });
+        // 2. Feedback UI (CON CONTROLLO VERSIONE)
+        try {
+            // Haptic Feedback (Solo se supportato)
+            if(tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
+            
+            // Popup Nativo vs Alert Browser
+            if (tg.showPopup) {
+                tg.showPopup({ 
+                    title: t('game_title'), 
+                    message: t('game_msg').replace('{points}', points) 
+                });
+            } else {
+                // Fallback per Desktop/Versioni vecchie
+                alert(t('game_msg').replace('{points}', points));
+            }
+        } catch (e) {
+            console.warn("Funzioni Telegram UI non disponibili, uso fallback.");
+        }
 
-        // 3. Aggiornamento UI Locale (senza aspettare il reload)
+        // 3. Aggiornamento UI Locale 
         setTimeout(() => {
             const el = document.getElementById('credits-display');
             if(el) {
@@ -68,6 +80,12 @@ function checkAndProcessCredits(vat, owner, token) {
                 el.innerText = current + points;
             }
         }, 500);
+
+        // 4. Pulizia URL 
+        const newUrl = window.location.href.replace(/&bonus_credits=\d+/, '');
+        window.history.replaceState({}, document.title, newUrl);
+    }
+}
 
         // 4. Pulizia URL (Per evitare loop)
         const newUrl = window.location.href.replace(/&bonus_credits=\d+/, '');
