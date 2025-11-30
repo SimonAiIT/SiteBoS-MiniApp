@@ -3,9 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>SiteBoS - AI Business Operating System</title>
-
+  
+  <!-- IMPACT VERIFICATION TAG (NON TOCCARE) -->
   <meta name='impact-site-verification' value='50af4f8e-6775-41ef-a0d1-c24817ec7d7d'>
+  
+  <title>SiteBoS - AI Business Operating System</title>
+  
   <!-- Telegram & Icons -->
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -17,7 +20,7 @@
   <link rel="stylesheet" href="styles.css">
 
   <style>
-    /* STILI SPECIFICI PER LA LANDING PAGE (VETRINA) */
+    /* STILI SPECIFICI PER LA LANDING PAGE */
     .landing-wrapper {
         display: flex; flex-direction: column; min-height: 100vh;
         background: radial-gradient(circle at top left, #1e293b, #0f172a);
@@ -29,16 +32,24 @@
         padding: 20px; display: flex; justify-content: space-between; align-items: center;
         backdrop-filter: blur(10px); border-bottom: 1px solid rgba(255,255,255,0.05);
     }
-    .logo-area img { height: 40px; width: auto; }
+    .logo-area { font-weight: 800; font-size: 20px; letter-spacing: -1px; }
     .nav-link { color: var(--text-muted); text-decoration: none; font-size: 14px; font-weight: 600; }
     .nav-link:hover { color: var(--primary); }
 
     /* Hero Section */
     .hero { padding: 60px 20px; flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-    .hero h1 { 
-        font-size: 42px; font-weight: 800; line-height: 1.1; margin-bottom: 20px; 
-        background: linear-gradient(135deg, #fff 0%, #94a3b8 100%); 
+    
+    /* TITOLONE FIGO */
+    .hero-brand-name {
+        font-size: 80px; font-weight: 900; margin: 0; line-height: 1; letter-spacing: -2px;
+        background: linear-gradient(to right, #ffffff, #5B6FED);
         -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        display: inline-block;
+    }
+    .hero-definition {
+        font-size: 20px; font-weight: 600; color: #94a3b8; text-transform: uppercase;
+        letter-spacing: 4px; margin-top: 10px; margin-bottom: 30px;
+        border-bottom: 1px solid rgba(91, 111, 237, 0.3); padding-bottom: 20px; display: inline-block;
     }
     .hero p { font-size: 18px; color: var(--text-muted); max-width: 600px; margin: 0 auto 30px; line-height: 1.6; }
     
@@ -51,12 +62,18 @@
     }
     .cta-btn:hover { transform: scale(1.05); }
 
-    /* Partners Grid */
-    .partners-section { margin-top: 60px; padding: 20px; width: 100%; max-width: 800px; }
-    .partners-title { font-size: 12px; text-transform: uppercase; letter-spacing: 2px; color: var(--text-secondary); margin-bottom: 20px; }
-    .partners-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 30px; opacity: 0.7; }
-    .partner-logo { height: 30px; width: auto; filter: grayscale(100%) brightness(200%); transition: all 0.3s; }
-    .partner-logo:hover { filter: grayscale(0%) brightness(100%); transform: scale(1.1); }
+    /* Partners Grid & LOGOS FIX */
+    .partners-section { margin-top: 60px; padding: 20px; width: 100%; max-width: 900px; }
+    .partners-title { font-size: 12px; text-transform: uppercase; letter-spacing: 2px; color: var(--text-secondary); margin-bottom: 25px; }
+    .partners-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 40px; align-items: center; }
+    
+    .partner-logo { 
+        height: 35px; width: auto; 
+        /* QUESTO FILTRO È IL TRUCCO: RENDE I LOGHI BIANCHI */
+        filter: brightness(0) invert(1); 
+        opacity: 0.6; transition: all 0.3s; 
+    }
+    .partner-logo:hover { opacity: 1; transform: scale(1.1); }
 
     /* Features */
     .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin-top: 50px; width: 100%; max-width: 1000px; padding: 0 20px; }
@@ -70,16 +87,22 @@
     
     /* Loader per App */
     #app-loader { position: fixed; inset: 0; background: var(--bg-end); z-index: 9999; display: flex; justify-content: center; align-items: center; }
+    
+    /* Mobile Fixes */
+    @media (max-width: 600px) {
+        .hero-brand-name { font-size: 50px; }
+        .hero-definition { font-size: 14px; letter-spacing: 2px; }
+    }
   </style>
 </head>
 <body>
 
   <!-- ========================================= -->
-  <!-- 1. MODALITÀ LAUNCHER APP (Nascosto di default) -->
+  <!-- 1. MODALITÀ LAUNCHER APP (Nascosto) -->
   <!-- ========================================= -->
   <div id="app-container" class="hidden">
       <div id="app-loader"><div class="spinner"></div></div>
-      <div id="app-mount"></div> <!-- Qui vengono iniettati i form -->
+      <div id="app-mount"></div> 
   </div>
 
   <!-- ========================================= -->
@@ -89,35 +112,41 @@
     
     <div class="nav-header">
         <div class="logo-area">
-            <!-- LOGO: Assicurati di avere un file logo.png o usa questo placeholder -->
-            <img src="images/logo.png" alt="TrinAI Logo" onerror="this.style.display='none'; document.getElementById('txt-logo').classList.remove('hidden')">
-            <span id="txt-logo" class="hidden" style="font-weight:800; font-size:20px; color:white;">TrinAI</span>
+            <!-- Se manca il file logo.png, mostra il testo -->
+            <img src="images/logo.png" alt="TrinAI" style="height:35px;" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline'">
+            <span style="display:none;">TrinAI</span>
         </div>
         <a href="https://trinai.it" target="_blank" class="nav-link">Corporate Site <i class="fas fa-external-link-alt"></i></a>
     </div>
 
     <div class="hero">
-        <div style="margin-bottom: 15px;">
-            <span style="background: rgba(91, 111, 237, 0.2); color: #8ba1ff; padding: 5px 15px; border-radius: 20px; font-size: 12px; font-weight: 600; border: 1px solid rgba(91, 111, 237, 0.3);">
+        <div style="margin-bottom: 20px;">
+            <span style="background: rgba(91, 111, 237, 0.15); color: #8ba1ff; padding: 6px 16px; border-radius: 30px; font-size: 11px; font-weight: 700; border: 1px solid rgba(91, 111, 237, 0.3); text-transform: uppercase; letter-spacing: 1px;">
                 🚀 v4.2 Stable Release
             </span>
         </div>
-        <h1>Il Sistema Operativo AI<br>per Artigiani e PMI</h1>
-        <p>SiteBoS trasforma Telegram in un potente gestionale aziendale. <br>Preventivi, incassi e burocrazia automatizzati dall'Intelligenza Artificiale.</p>
+
+        <h1 class="hero-brand-name">SiteBoS</h1>
+        <div class="hero-definition">Site Business Operating System</div>
+        
+        <p>L'Intelligenza Artificiale che trasforma Telegram<br>nel gestionale perfetto per <b>Artigiani e PMI</b>.</p>
         
         <a href="https://t.me/TrinAi_SiteBoS_bot" class="cta-btn">
             <i class="fab fa-telegram"></i> Prova la Demo
         </a>
 
-        <!-- INTEGRATIONS (Per far vedere a Impact che facciamo sul serio) -->
+        <!-- PARTNER LOGOS (Link diretti + Filtro CSS Bianco) -->
         <div class="partners-section">
             <div class="partners-title">Integrated with Industry Leaders</div>
             <div class="partners-grid">
-                <!-- Loghi SVG diretti per alta qualità -->
-                <img class="partner-logo" src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/1a/SumUp_Logo.svg/1200px-SumUp_Logo.svg.png" alt="SumUp" title="Pagamenti POS">
-                <img class="partner-logo" src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/96/Revolut_logo_2020.svg/1200px-Revolut_logo_2020.svg.png" alt="Revolut" title="Banking">
-                <img class="partner-logo" src="https://www.fattureincloud.it/images/logo-fic-blu.svg" alt="FattureInCloud" title="Fatturazione" style="filter: brightness(0) invert(1);"> <!-- Invertito per dark mode -->
-                <img class="partner-logo" src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/23/NordVPN_Horizontal_Logo_White.svg/2560px-NordVPN_Horizontal_Logo_White.svg.png" alt="NordVPN" title="Sicurezza">
+                <!-- SumUp -->
+                <img class="partner-logo" src="https://upload.wikimedia.org/wikipedia/commons/1/1a/SumUp_Logo.svg" alt="SumUp">
+                <!-- Revolut -->
+                <img class="partner-logo" src="https://upload.wikimedia.org/wikipedia/commons/9/96/Revolut_logo_2020.svg" alt="Revolut">
+                <!-- Fatture in Cloud -->
+                <img class="partner-logo" src="https://www.fattureincloud.it/images/logo-fic-blu.svg" alt="FattureInCloud">
+                <!-- NordVPN -->
+                <img class="partner-logo" src="https://upload.wikimedia.org/wikipedia/commons/2/23/NordVPN_Horizontal_Logo_White.svg" alt="NordVPN">
             </div>
         </div>
 
@@ -141,44 +170,35 @@
         </div>
     </div>
 
-<footer>
-    <p>&copy; 2024 TrinAI Solutions. Built for Business.</p>
-    <div style="margin-top:10px; opacity: 0.6;">
-        <!-- Link corretti a legal.html -->
-        <a href="legal.html?lang=it" style="color:inherit; margin:0 10px;">Privacy Policy</a>
-        <a href="legal.html?lang=it" style="color:inherit; margin:0 10px;">Terms of Service</a>
-        
-        <!-- Link per affiliati (Opzionale, puoi puntare a una mail o pagina dedicata) -->
-        <a href="mailto:partners@trinai.it" style="color:inherit; margin:0 10px;">Partner Program</a>
-    </div>
-</footer>
+    <footer>
+        <p>&copy; 2024 TrinAI Solutions. Built for Business.</p>
+        <div style="margin-top:10px; opacity: 0.6;">
+            <!-- LINK LEGALI COLLEGATI -->
+            <a href="legal.html?lang=it" target="_blank" style="color:inherit; margin:0 10px;">Privacy Policy</a>
+            <a href="legal.html?lang=it" target="_blank" style="color:inherit; margin:0 10px;">Terms of Service</a>
+            <a href="mailto:partners@trinai.it" style="color:inherit; margin:0 10px;">Partner Program</a>
+        </div>
+    </footer>
 
   </div>
 
-  <!-- LOGIC: ROUTER -->
+  <!-- ROUTER LOGIC -->
   <script>
     const tg = window.Telegram.WebApp;
     tg.ready();
     tg.expand();
     
-    // 1. ANALISI URL
     const urlParams = new URLSearchParams(window.location.search);
     const formType = urlParams.get('form');
 
-    // 2. ROUTING
     if (formType) {
-        // --- MODALITÀ APP (Nascondi Landing, Mostra App) ---
         document.getElementById('landing-page').classList.add('hidden');
         document.getElementById('app-container').classList.remove('hidden');
         loadApp(formType);
     } else {
-        // --- MODALITÀ LANDING PAGE (Mostra Landing, Nascondi App) ---
-        // (Di default è già così, ma rimuoviamo il loader dell'app per sicurezza)
         document.getElementById('app-loader').classList.add('hidden');
-        // Qui Impact vedrà il sito figo.
     }
 
-    // 3. FUNZIONE LOADER APP (Il vecchio script)
     function loadApp(formName) {
         const appMount = document.getElementById('app-mount');
         const loader = document.getElementById('app-loader');
@@ -190,17 +210,10 @@
           })
           .then(html => {
             appMount.innerHTML = html;
-            
-            // Carica JS
             const script = document.createElement('script');
             script.src = `forms/${formName}.js`;
-            script.onload = () => {
-                loader.classList.add('hidden'); // Nascondi loader solo a caricamento finito
-            };
-            script.onerror = () => {
-                console.warn("JS not found for this form, purely HTML?");
-                loader.classList.add('hidden');
-            };
+            script.onload = () => { loader.classList.add('hidden'); };
+            script.onerror = () => { console.warn("No JS found"); loader.classList.add('hidden'); };
             document.body.appendChild(script);
           })
           .catch((err) => {
