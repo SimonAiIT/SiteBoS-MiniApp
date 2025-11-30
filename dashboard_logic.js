@@ -1,3 +1,11 @@
+/**
+ * SITEBOS DASHBOARD LOGIC (STABLE PRODUCTION VERSION)
+ * - Gestione Crediti (Safe Mode per vecchi Telegram)
+ * - Multilingua completo (6 Lingue)
+ * - Gestione Token e Navigazione
+ * - Logica di Business (Lucchetti e Stati)
+ */
+
 const tg = window.Telegram.WebApp;
 tg.ready(); 
 tg.expand();
@@ -5,16 +13,105 @@ tg.expand();
 // CONFIGURAZIONE
 const DASHBOARD_API = "https://trinai.api.workflow.dcmake.it/webhook/ef4aece4-9ec0-4026-a7a7-328562bcbdf6"; 
 
-// TRADUZIONI (Semplificate e corrette)
+// 1. DIZIONARIO TRADUZIONI COMPLETO
 const i18n = {
-    it: { btn_widget: "Widget", btn_site: "Sito", section_operations: "Gestione Operativa", card_hp: "HoneyPot", sub_hp: "Gestisci Risposte", card_catalog: "Catalogo", sub_catalog: "Prodotti & Servizi", card_agenda: "Agenda", sub_agenda: "Appuntamenti", card_team: "Collaboratori", sub_team: "Team & Ruoli", card_company: "Dati Aziendali", sub_company: "Configurazione", card_knowledge: "Conoscenza", sub_knowledge: "Documenti & Asset", game_title: "🎮 GAME OVER!", game_msg: "Hai guadagnato {points} Crediti AI!", status_hp_lock: "⛔ DA CONFIGURARE", status_hp_ok: "✅ Attivo", status_active: "Attivi", status_req: "⚠️ Richiesto" },
-    en: { btn_widget: "Widget", btn_site: "Site", section_operations: "Operations", card_hp: "HoneyPot", sub_hp: "Manage Responses", card_catalog: "Catalog", sub_catalog: "Products & Services", card_agenda: "Agenda", sub_agenda: "Appointments", card_team: "Team", sub_team: "Staff & Roles", card_company: "Company Data", sub_company: "Configuration", card_knowledge: "Knowledge", sub_knowledge: "Docs & Assets", game_title: "🎮 GAME OVER!", game_msg: "You earned {points} AI Credits!", status_hp_lock: "⛔ SETUP REQUIRED", status_hp_ok: "✅ Active", status_active: "Active", status_req: "⚠️ Required" }
+    it: { 
+        btn_widget: "Widget", btn_site: "Sito", 
+        section_operations: "Gestione Operativa", 
+        card_hp: "HoneyPot", sub_hp: "Gestisci Risposte", 
+        card_catalog: "Catalogo", sub_catalog: "Prodotti & Servizi", 
+        card_agenda: "Agenda", sub_agenda: "Appuntamenti", 
+        card_team: "Collaboratori", sub_team: "Team & Ruoli", 
+        card_company: "Dati Aziendali", sub_company: "Configurazione", 
+        card_knowledge: "Conoscenza", sub_knowledge: "Documenti & Asset", 
+        err_title: "⛔ Errore Parametri", err_msg: "Apri dal Bot Telegram.", 
+        popup_site_title: "Site Builder", popup_site_msg: "Il modulo Sito Web Statico è in fase di sviluppo.",
+        game_title: "🎮 GAME OVER!", game_msg: "Hai guadagnato {points} Crediti AI!",
+        status_hp_lock: "⛔ DA CONFIGURARE", status_hp_ok: "✅ Attivo",
+        status_no_op: "Nessun Operatore", status_active: "Attivi", status_blueprint_req: "⚠️ Crea Blueprint"
+    },
+    en: { 
+        btn_widget: "Widget", btn_site: "Site", 
+        section_operations: "Operations", 
+        card_hp: "HoneyPot", sub_hp: "Manage Responses", 
+        card_catalog: "Catalog", sub_catalog: "Products & Services", 
+        card_agenda: "Agenda", sub_agenda: "Appointments", 
+        card_team: "Team", sub_team: "Staff & Roles", 
+        card_company: "Company Data", sub_company: "Configuration", 
+        card_knowledge: "Knowledge", sub_knowledge: "Docs & Assets", 
+        err_title: "⛔ Param Error", err_msg: "Open from Telegram Bot.", 
+        popup_site_title: "Site Builder", popup_site_msg: "Static Website module under development.",
+        game_title: "🎮 GAME OVER!", game_msg: "You earned {points} AI Credits!",
+        status_hp_lock: "⛔ SETUP REQUIRED", status_hp_ok: "✅ Active",
+        status_no_op: "No Operators", status_active: "Active", status_blueprint_req: "⚠️ Create Blueprint"
+    },
+    fr: { 
+        btn_widget: "Widget", btn_site: "Site", 
+        section_operations: "Gestion Opérationnelle", 
+        card_hp: "HoneyPot", sub_hp: "Gérer Réponses", 
+        card_catalog: "Catalogue", sub_catalog: "Produits & Services", 
+        card_agenda: "Agenda", sub_agenda: "Rendez-vous", 
+        card_team: "Équipe", sub_team: "Personnel & Rôles", 
+        card_company: "Données Entreprise", sub_company: "Configuration", 
+        card_knowledge: "Connaissances", sub_knowledge: "Docs & Actifs", 
+        err_title: "⛔ Erreur Param", err_msg: "Ouvrir via Bot Telegram.", 
+        popup_site_title: "Site Builder", popup_site_msg: "Module Site Web en développement.",
+        game_title: "🎮 GAME OVER !", game_msg: "Vous avez gagné {points} Crédits IA !",
+        status_hp_lock: "⛔ À CONFIGURER", status_hp_ok: "✅ Actif",
+        status_no_op: "Aucun Opérateur", status_active: "Actifs", status_blueprint_req: "⚠️ Créer Blueprint"
+    },
+    de: { 
+        btn_widget: "Widget", btn_site: "Webseite", 
+        section_operations: "Betriebsführung", 
+        card_hp: "HoneyPot", sub_hp: "Antworten verwalten", 
+        card_catalog: "Katalog", sub_catalog: "Produkte & Dienste", 
+        card_agenda: "Agenda", sub_agenda: "Termine", 
+        card_team: "Mitarbeiter", sub_team: "Team & Rollen", 
+        card_company: "Firmendaten", sub_company: "Konfiguration", 
+        card_knowledge: "Wissen", sub_knowledge: "Dokumente & Assets", 
+        err_title: "⛔ Parameterfehler", err_msg: "Über Telegram Bot öffnen.", 
+        popup_site_title: "Site Builder", popup_site_msg: "Webseiten-Modul in Entwicklung.",
+        game_title: "🎮 GAME OVER!", game_msg: "Du hast {points} KI-Credits verdient!",
+        status_hp_lock: "⛔ SETUP NÖTIG", status_hp_ok: "✅ Aktiv",
+        status_no_op: "Keine Mitarbeiter", status_active: "Aktiv", status_blueprint_req: "⚠️ Blueprint erstellen"
+    },
+    es: { 
+        btn_widget: "Widget", btn_site: "Sitio", 
+        section_operations: "Gestión Operativa", 
+        card_hp: "HoneyPot", sub_hp: "Gestionar Respuestas", 
+        card_catalog: "Catálogo", sub_catalog: "Productos y Servicios", 
+        card_agenda: "Agenda", sub_agenda: "Citas", 
+        card_team: "Colaboradores", sub_team: "Equipo y Roles", 
+        card_company: "Datos Empresa", sub_company: "Configuración", 
+        card_knowledge: "Conocimiento", sub_knowledge: "Docs y Activos", 
+        err_title: "⛔ Error Param", err_msg: "Abrir desde Bot Telegram.", 
+        popup_site_title: "Site Builder", popup_site_msg: "Módulo Sitio Web en desarrollo.",
+        game_title: "🎮 ¡JUEGO TERMINADO!", game_msg: "¡Has ganado {points} Créditos IA!",
+        status_hp_lock: "⛔ A CONFIGURAR", status_hp_ok: "✅ Activo",
+        status_no_op: "Sin Operadores", status_active: "Activos", status_blueprint_req: "⚠️ Crear Blueprint"
+    },
+    pt: { 
+        btn_widget: "Widget", btn_site: "Site", 
+        section_operations: "Gestão Operacional", 
+        card_hp: "HoneyPot", sub_hp: "Gerir Respostas", 
+        card_catalog: "Catálogo", sub_catalog: "Produtos e Serviços", 
+        card_agenda: "Agenda", sub_agenda: "Compromissos", 
+        card_team: "Colaboradores", sub_team: "Equipa e Funções", 
+        card_company: "Dados da Empresa", sub_company: "Configuração", 
+        card_knowledge: "Conhecimento", sub_knowledge: "Docs e Ativos", 
+        err_title: "⛔ Erro Param", err_msg: "Abrir via Bot Telegram.", 
+        popup_site_title: "Site Builder", popup_site_msg: "Módulo Website em desenvolvimento.",
+        game_title: "🎮 FIM DE JOGO!", game_msg: "Ganhou {points} Créditos de IA!",
+        status_hp_lock: "⛔ CONFIGURAR", status_hp_ok: "✅ Ativo",
+        status_no_op: "Sem Operadores", status_active: "Ativos", status_blueprint_req: "⚠️ Criar Blueprint"
+    }
 };
 
-// RECUPERO LINGUA
+// 2. HELPER LINGUA
 function getLang() {
     const l = (new URLSearchParams(window.location.search)).get('lang') || 'it';
-    return i18n[l] ? l : 'en'; // Fallback semplice
+    const norm = l.toLowerCase().slice(0, 2); 
+    return i18n[norm] ? norm : 'en';
 }
 
 function t(key) {
@@ -27,19 +124,16 @@ function applyTranslations() {
     });
 }
 
-// =========================================================
-// 1. GESTIONE CREDITI (GAMIFICATION) - VERSION SAFE
-// =========================================================
+// 3. GESTIONE CREDITI (GAMIFICATION)
 function checkAndProcessCredits(vat, owner, token) {
     const p = new URLSearchParams(window.location.search);
     const bonusStr = p.get('bonus_credits');
     
-    console.log("🎲 CHECK CREDITI:", bonusStr); 
-
     if (bonusStr && parseInt(bonusStr) > 0) {
         const points = parseInt(bonusStr);
+        console.log("🎲 CREDITI RILEVATI:", points);
 
-        // 1. Chiamata Backend (Fire & Forget)
+        // A. Chiamata Backend (Fire & Forget)
         fetch(DASHBOARD_API, {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
@@ -50,29 +144,28 @@ function checkAndProcessCredits(vat, owner, token) {
                 token: token,
                 amount: points 
             })
-        }).then(() => console.log("✅ Crediti salvati"))
-          .catch(e => console.error("❌ Errore salvataggio crediti", e));
+        }).catch(console.error);
 
-        // 2. Feedback UI (CON CONTROLLO VERSIONE)
+        // B. Feedback UI (CON PROTEZIONE CRASH)
         try {
-            // Haptic Feedback (Solo se supportato)
             if(tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
             
-            // Popup Nativo vs Alert Browser
+            // Check se showPopup esiste (evita crash su vecchi Telegram o PC)
             if (tg.showPopup) {
                 tg.showPopup({ 
                     title: t('game_title'), 
-                    message: t('game_msg').replace('{points}', points) 
+                    message: t('game_msg').replace('{points}', points),
+                    buttons: [{type: "ok"}]
                 });
             } else {
-                // Fallback per Desktop/Versioni vecchie
-                alert(t('game_msg').replace('{points}', points));
+                // Fallback silenzioso o alert standard
+                console.log("Popup non supportato, crediti aggiunti: " + points);
             }
         } catch (e) {
-            console.warn("Funzioni Telegram UI non disponibili, uso fallback.");
+            console.warn("UI Feedback error (safe to ignore):", e);
         }
 
-        // 3. Aggiornamento UI Locale 
+        // C. Aggiornamento UI Locale (senza aspettare reload)
         setTimeout(() => {
             const el = document.getElementById('credits-display');
             if(el) {
@@ -81,21 +174,13 @@ function checkAndProcessCredits(vat, owner, token) {
             }
         }, 500);
 
-        // 4. Pulizia URL 
+        // D. Pulizia URL
         const newUrl = window.location.href.replace(/&bonus_credits=\d+/, '');
         window.history.replaceState({}, document.title, newUrl);
     }
 }
 
-        // 4. Pulizia URL (Per evitare loop)
-        const newUrl = window.location.href.replace(/&bonus_credits=\d+/, '');
-        window.history.replaceState({}, document.title, newUrl);
-    }
-}
-
-// =========================================================
-// 2. CARICAMENTO DASHBOARD
-// =========================================================
+// 4. CARICAMENTO DASHBOARD
 async function initDashboard() {
     applyTranslations();
 
@@ -104,18 +189,16 @@ async function initDashboard() {
     const owner = p.get('owner');
     const token = p.get('token');
 
-    console.log("🚀 INIT DASHBOARD:", { vat, owner, token }); // DEBUG
-
     if (!vat || !owner) {
-        document.body.innerHTML = "<h3 style='color:white;text-align:center;margin-top:50px'>⛔ ERRORE: Parametri mancanti nell'URL</h3>";
+        document.body.innerHTML = "<h3 style='color:white;text-align:center;margin-top:50px'>⛔ ERRORE PARAMETRI</h3>";
         return;
     }
 
-    // Processa i crediti PRIMA di caricare tutto, così l'utente vede subito il feedback
+    // Processa i crediti PRIMA di caricare i dati
     checkAndProcessCredits(vat, owner, token);
 
     try {
-        const res = await fetch(DASHBOARD_API, {
+        const response = await fetch(DASHBOARD_API, {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({ 
@@ -126,26 +209,22 @@ async function initDashboard() {
             })
         });
 
-        const rawJson = await res.json();
+        const rawJson = await response.json();
         const data = Array.isArray(rawJson) ? rawJson[0] : rawJson;
 
-        console.log("📥 DATI DASHBOARD:", data); // DEBUG
-
-        if (!res.ok || data.status === 'error') {
-            throw new Error(data.error?.message || "Errore Server Generico");
+        if (!response.ok || data.status === 'error') {
+            throw new Error(data.error?.message || "Errore Server");
         }
 
         renderDashboard(data, vat);
 
     } catch (error) {
-        console.error("❌ ERRORE FATALE:", error);
-        document.body.innerHTML = `<h3 style='color:white;text-align:center;margin-top:50px'>Errore Caricamento</h3><p style='color:#ccc;text-align:center'>${error.message}</p>`;
+        console.error("ERRORE FATALE:", error);
+        document.body.innerHTML = `<h3 style='color:white;text-align:center;margin-top:50px'>Connessione Fallita</h3><p style='color:#aaa;text-align:center'>${error.message}</p>`;
     }
 }
 
-// =========================================================
-// 3. RENDERIZZAZIONE UI
-// =========================================================
+// 5. RENDERIZZAZIONE UI
 function renderDashboard(data, vat) {
     const owner = data.owner_data || {};
     const status = data.status || {};
@@ -154,9 +233,8 @@ function renderDashboard(data, vat) {
     document.getElementById('companyName').innerText = owner.ragione_sociale || "Azienda";
     document.getElementById('vatDisplay').innerText = `P.IVA: ${vat}`;
     
-    // Se i crediti non sono stati aggiornati dal bonus locale, usa quelli del DB
+    // Aggiorna crediti solo se non sono già stati aggiornati dal bonus locale
     const creditsEl = document.getElementById('credits-display');
-    // Aggiorna solo se sembra che non abbiamo già sommato il bonus (logica semplice)
     if(parseInt(creditsEl.innerText) === 0) {
         creditsEl.innerText = owner.credits || 0;
     }
@@ -167,7 +245,7 @@ function renderDashboard(data, vat) {
         img.classList.remove('hidden');
     }
 
-    // Stati e Lucchetti
+    // Lucchetti e Stati
     const isHpReady = (status.honeypot === 'READY');
     const hpSub = document.getElementById('sub-hp');
     const hpCard = document.getElementById('card-hp');
@@ -188,16 +266,16 @@ function renderDashboard(data, vat) {
         });
     }
 
-    // Labels
+    // Labels Dinamiche
     document.getElementById('sub-catalog').innerHTML = `Cat: <b>${status.categories_count}</b> | Prod: <b>${status.products_count}</b>`;
     
     if (status.blueprints_count > 0) {
         document.getElementById('sub-agenda').innerText = t('status_active');
         document.getElementById('sub-knowledge').innerText = `${status.knowledge_docs} Docs`;
     } else {
-        document.getElementById('sub-agenda').innerText = t('status_req');
-        document.getElementById('sub-knowledge').innerText = t('status_req');
-        // Riblocca se non ci sono blueprint
+        document.getElementById('sub-agenda').innerText = t('status_blueprint_req');
+        document.getElementById('sub-knowledge').innerText = t('status_blueprint_req');
+        // Riblocca se mancano blueprint
         document.getElementById('card-agenda').classList.add('locked-item');
         document.getElementById('card-knowledge').classList.add('locked-item');
     }
@@ -205,7 +283,8 @@ function renderDashboard(data, vat) {
     if (status.operators_count > 0) {
         document.getElementById('sub-team').innerText = `${status.operators_count} ${t('status_active')}`;
     } else {
-        document.getElementById('sub-team').innerText = "-";
+        document.getElementById('sub-team').innerText = t('status_no_op');
+        document.getElementById('card-team').classList.add('locked-item'); // Blocca se 0 operatori
     }
 
     if (status.profile_completion < 100) {
@@ -217,21 +296,18 @@ function renderDashboard(data, vat) {
     document.getElementById('app-content').classList.remove('hidden');
 }
 
-// =========================================================
-// 4. NAVIGAZIONE
-// =========================================================
+// 6. NAVIGAZIONE
 window.navTo = function(page) {
     const p = new URLSearchParams(window.location.search);
-    // Puliamo i crediti per non passarli alle pagine figlie
-    p.delete('bonus_credits');
-    
-    // Costruiamo l'URL di destinazione mantenendo vat, owner, token, lang
-    const dest = `${page}?${p.toString()}`;
-    window.location.href = dest;
+    p.delete('bonus_credits'); // Pulisci
+    window.location.href = `${page}?${p.toString()}`;
 }
 
 window.openWidget = () => navTo('SiteBos.html');
-window.openSite = () => navTo('sitebuilder.html');
+window.openSite = () => { 
+    const txt = i18n[getLang()];
+    try { tg.showPopup({ title: txt.popup_site_title, message: txt.popup_site_msg }); } catch(e) { alert(txt.popup_site_msg); }
+}
 
 // AVVIO
 initDashboard();
