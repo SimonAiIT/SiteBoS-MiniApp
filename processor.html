@@ -6,6 +6,9 @@
   <title>Configurazione in corso...</title>
   
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <!-- Carichiamo il motore Sponsor -->
+  <script src="sponsor.js"></script> 
+
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Orbitron:wght@700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
@@ -25,41 +28,31 @@
     .btn-game { background: rgba(91, 111, 237, 0.1); border: 1px solid var(--primary); color: #8ba1ff; padding: 12px 20px; border-radius: 12px; font-size: 13px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; transition: all 0.2s; }
     .btn-game:hover { background: var(--primary); color: white; }
 
-    /* --- ADVERTISING STYLES (NEW) --- */
+    /* STILI AD BANNER (Base per sponsor.js) */
     .ad-banner {
         background: var(--ad-bg);
         border: 1px dashed #444;
         border-radius: 8px;
         padding: 0;
-        height: 60px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        position: relative;
-        overflow: hidden;
         cursor: pointer;
         transition: all 0.2s;
-        margin-top: 5px;
+        position: relative;
+        overflow: hidden;
     }
-    .ad-banner:hover { border-color: var(--primary); }
-    .ad-banner img { width: 100%; height: 100%; object-fit: cover; opacity: 0.8; transition: opacity 0.3s; }
-    .ad-banner:hover img { opacity: 1; }
-    .ad-badge { position: absolute; top: 3px; right: 3px; background: rgba(0,0,0,0.7); border: 1px solid #555; color: #fff; font-size: 7px; padding: 2px 4px; border-radius: 3px; text-transform: uppercase; letter-spacing: 1px; }
-    .ad-text { z-index: 2; color: #fff; font-size: 12px; font-weight: bold; text-shadow: 0 2px 4px rgba(0,0,0,0.9); pointer-events: none; display: flex; align-items: center; gap: 8px; }
+    .ad-banner:hover { border-color: var(--primary); box-shadow: 0 0 15px rgba(91, 111, 237, 0.2); }
+    .ad-badge { position: absolute; top: 3px; right: 3px; font-size: 8px; padding: 2px 5px; border-radius: 3px; text-transform: uppercase; letter-spacing: 0.5px; z-index: 5; }
 
     /* GAME OVERLAY */
     #game-layer { position: fixed; inset: 0; background: #1a1a2e; z-index: 100; display: flex; flex-direction: column; }
     #game-container { flex: 1; position: relative; overflow: hidden; }
     canvas { display: block; width: 100%; height: 100%; }
     
-    /* HEADER GIOCO */
     .game-header { position: absolute; top: 0; left: 0; width: 100%; padding: 15px; display: flex; justify-content: space-between; align-items: flex-start; z-index: 110; pointer-events: none; }
     .score-box { background: rgba(0,0,0,0.5); padding: 8px 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.2); text-align: left; }
     .score { font-family: 'Orbitron', sans-serif; font-size: 18px; color: #fff; }
     .best-score { font-size: 10px; color: rgba(255,255,255,0.5); margin-top: 2px; }
     .close-game { background: rgba(255,255,255,0.1); border: none; color: #fff; width: 36px; height: 36px; border-radius: 50%; font-size: 16px; cursor: pointer; pointer-events: auto; }
 
-    /* LEGEND BAR */
     .legend-bar { position: absolute; top: 70px; width: 100%; display: flex; justify-content: center; gap: 15px; pointer-events: none; z-index: 120; }
     .legend-item { background: rgba(0,0,0,0.6); padding: 5px 10px; border-radius: 15px; border: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; gap: 6px; }
     .legend-icon { font-size: 16px; }
@@ -67,28 +60,15 @@
     .legend-bad { border-color: #ff6b6b; color: #ff6b6b; }
     .legend-good { border-color: #4cd964; color: #4cd964; }
 
-    /* --- IN-GAME AD CONTAINER (Fixed Bottom) --- */
+    /* IN-GAME AD CONTAINER */
     .game-ad-footer {
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        width: 100%;
-        height: 80px; /* Spazio riservato per l'AD */
-        background: #0f172a; /* Copre il canvas sotto */
-        border-top: 2px solid var(--primary);
-        z-index: 150; /* Sopra al canvas */
-        display: flex;
-        align-items: center;
-        justify-content: center;
+        position: absolute; bottom: 0; left: 0; width: 100%; height: 80px;
+        background: #0f172a; border-top: 2px solid var(--primary); z-index: 150;
+        display: flex; align-items: center; justify-content: center;
         box-shadow: 0 -5px 20px rgba(0,0,0,0.6);
     }
-    .game-ad-footer .ad-banner {
-        width: 95%;
-        height: 90%;
-        margin: 0;
-        border: none;
-        background: transparent;
-    }
+    /* Questo serve per far sì che il banner iniettato occupi lo spazio giusto */
+    .game-ad-footer .ad-banner { width: 96%; height: 90%; margin: 0; border: none; background: transparent; }
 
     #error-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 200; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 30px; }
     .hidden { display: none !important; }
@@ -96,23 +76,16 @@
 </head>
 <body>
 
-  <!-- BUSINESS UI (LOADER) -->
+  <!-- LOADER -->
   <div class="loader-container">
     <div class="spinner-ring"></div>
     <h1>Configurazione in corso</h1>
     <p>L'AI sta costruendo la tua istanza.<br>Tempo stimato: <b>4-5 minuti</b>.</p>
-    
     <div class="status-log">> <span id="log-text">Inizializzazione...</span><span class="blink">_</span></div>
     
-    <!-- === AD SLOT 1 (NEL LOADER) === -->
-    <div class="ad-banner" onclick="window.open('https://trinai.it', '_blank')">
-        <span class="ad-badge">SPONSOR</span>
-        <span class="ad-text"><i class="fas fa-bolt" style="color:yellow; margin-right:5px;"></i> TRINAI ENTERPRISE</span>
-        <!-- Se vuoi usare un'immagine reale, scommenta e usa il tag img qui sotto -->
-        <!-- <img src="https://via.placeholder.com/350x60/000000/FFFFFF?text=AD+BANNER" alt="Ad"> -->
-    </div>
-    <!-- ============================== -->
-
+    <!-- SLOT PUBBLICITARIO 1 (DINAMICO) -->
+    <div id="loader-ad-slot" style="width:100%; min-height:70px;"></div>
+    
     <button class="btn-game" onclick="openGame()"><i class="fas fa-gamepad"></i> Inganna l'attesa (Mini-Game)</button>
     <p style="font-size:10px; opacity:0.5;">Puoi chiudere il gioco in qualsiasi momento.</p>
   </div>
@@ -136,16 +109,9 @@
       <canvas id="gameCanvas"></canvas>
     </div>
     
-    <!-- === AD SLOT 2 (IN-GAME FOOTER) === -->
-    <div class="game-ad-footer">
-        <div class="ad-banner" onclick="window.open('https://google.com', '_blank')">
-            <span class="ad-badge">PARTNER</span>
-            <span class="ad-text"><i class="fas fa-star" style="color:orange; margin-right:5px;"></i> SPAZIO DISPONIBILE</span>
-        </div>
-    </div>
-    <!-- ================================== -->
+    <!-- SLOT PUBBLICITARIO 2 (DINAMICO IN-GAME) -->
+    <div class="game-ad-footer" id="game-ad-slot"></div>
     
-    <!-- Tutorial sopra l'AD -->
     <div style="position:absolute; bottom:85px; width:100%; text-align:center; color:#666; font-size:10px; font-family:'Inter'; pointer-events:none; z-index:140; font-weight:600;">
       Tocca per Saltare • Evita il Lavoro • Guadagna Vita
     </div>
@@ -158,11 +124,11 @@
     <button class="btn-game" onclick="window.location.reload()">Riprova</button>
   </div>
 
+  <!-- SCRIPT DEL GIOCO (GAME ENGINE) -->
   <script>
     const SiteBoSGame = {
         canvas: null, ctx: null, loopId: null, active: false,
-        width: 0, height: 0,
-        frames: 0, score: 0, bestScore: 0, speed: 6,
+        width: 0, height: 0, frames: 0, score: 0, bestScore: 0, speed: 6,
         player: { x: 80, y: 0, w: 40, h: 40, dy: 0, gravity: 0.6, jumpPower: -13, grounded: false },
         floorY: 0, obstacles: [], bonuses: [], particles: [],
         sprites: { player: "🤖", bad: ["💼", "📄", "📧", "📊", "📞"], good: ["❤️", "🏠", "☀️", "🍺", "🏖️"] },
@@ -172,167 +138,93 @@
             this.ctx = this.canvas.getContext('2d');
             this.resize();
             window.addEventListener('resize', () => this.resize());
-            
             const saved = localStorage.getItem('sitebos_highscore');
             if(saved) { this.bestScore = parseInt(saved); document.getElementById('best-score').innerText = this.bestScore; }
             
             const jump = (e) => {
                 if(!this.active) return;
-                
-                // === FIX: SE CLICCO SUL BANNER, NON SALTARE ===
-                // Questo impedisce che il gioco registri un salto quando l'utente vuole solo cliccare sull'ad
+                // FIX: Ignora click sui banner
                 if(e.target.closest('.ad-banner')) return;
-                // ==============================================
-
+                
                 if(e.type !== 'keydown') e.preventDefault();
                 if(this.player.grounded) {
-                    this.player.dy = this.player.jumpPower;
-                    this.player.grounded = false;
+                    this.player.dy = this.player.jumpPower; this.player.grounded = false;
                     this.createExplosion(this.player.x + 20, this.player.y+40, 5, '#fff');
                     if(window.Telegram?.WebApp?.HapticFeedback) window.Telegram.WebApp.HapticFeedback.impactOccurred('light');
                 }
             };
-            
-            // Event Listeners
             this.canvas.addEventListener('touchstart', jump, {passive:false});
             this.canvas.addEventListener('mousedown', jump);
             window.addEventListener('keydown', (e) => { if(e.code==='Space') jump(e); });
         },
-
         start: function() {
-            if(this.active) return;
-            this.active = true;
-            this.score = 0; 
+            if(this.active) return; this.active = true; this.score = 0; 
             document.getElementById('score').innerText = '0';
             this.obstacles = []; this.bonuses = [];
-            this.player.y = this.floorY - 40; this.player.dy = 0;
-            this.loop();
+            this.player.y = this.floorY - 40; this.player.dy = 0; this.loop();
         },
-
-        stop: function() { 
-            this.active = false; 
-            cancelAnimationFrame(this.loopId); 
-            sessionStorage.setItem('last_game_score', this.score);
-        },
-
+        stop: function() { this.active = false; cancelAnimationFrame(this.loopId); sessionStorage.setItem('last_game_score', this.score); },
         resize: function() {
             this.width = this.canvas.width = window.innerWidth;
             this.height = this.canvas.height = window.innerHeight;
-            this.floorY = this.height * 0.65; // PAVIMENTO AL 65% (Lascia spazio sotto per l'AD)
+            this.floorY = this.height * 0.65;
         },
-
-        createExplosion: function(x, y, count, color) {
-            for(let i=0; i<count; i++) this.particles.push({x, y, vx:(Math.random()-0.5)*5, vy:(Math.random()-0.5)*5, life:1, color});
-        },
-
+        createExplosion: function(x, y, count, color) { for(let i=0; i<count; i++) this.particles.push({x, y, vx:(Math.random()-0.5)*5, vy:(Math.random()-0.5)*5, life:1, color}); },
         updateScore: function() {
             document.getElementById('score').innerText = this.score;
-            if (this.score > this.bestScore) {
-                this.bestScore = this.score;
-                document.getElementById('best-score').innerText = this.bestScore;
-                localStorage.setItem('sitebos_highscore', this.bestScore);
-            }
+            if (this.score > this.bestScore) { this.bestScore = this.score; document.getElementById('best-score').innerText = this.bestScore; localStorage.setItem('sitebos_highscore', this.bestScore); }
         },
-
         update: function() {
-            this.frames++;
-            // Physics
-            this.player.dy += this.player.gravity;
-            this.player.y += this.player.dy;
+            this.frames++; this.player.dy += this.player.gravity; this.player.y += this.player.dy;
             if(this.player.y + 40 > this.floorY) { this.player.y = this.floorY - 40; this.player.dy = 0; this.player.grounded = true; }
-
-            // Spawn Logic
             if(this.frames % 100 === 0) {
-                if(Math.random() > 0.3) {
-                    const badEmoji = this.sprites.bad[Math.floor(Math.random() * this.sprites.bad.length)];
-                    this.obstacles.push({ x: this.width, y: this.floorY - 40, w: 30, h: 30, icon: badEmoji });
-                } else {
-                    const goodEmoji = this.sprites.good[Math.floor(Math.random() * this.sprites.good.length)];
-                    const heightOffset = Math.random() > 0.5 ? 100 : 40;
-                    this.bonuses.push({ x: this.width, y: this.floorY - heightOffset, w: 30, h: 30, icon: goodEmoji });
-                }
+                if(Math.random() > 0.3) this.obstacles.push({ x: this.width, y: this.floorY - 40, w: 30, h: 30, icon: this.sprites.bad[Math.floor(Math.random() * this.sprites.bad.length)] });
+                else this.bonuses.push({ x: this.width, y: this.floorY - (Math.random()>0.5?100:40), w: 30, h: 30, icon: this.sprites.good[Math.floor(Math.random() * this.sprites.good.length)] });
             }
-            
-            // Obstacles (BAD)
             for(let i=this.obstacles.length-1; i>=0; i--) {
-                let o = this.obstacles[i];
-                o.x -= this.speed;
-                if (this.checkCollision(this.player, o)) {
-                    this.createExplosion(this.player.x, this.player.y, 15, '#ff0000');
-                    if(window.Telegram?.WebApp?.HapticFeedback) window.Telegram.WebApp.HapticFeedback.notificationOccurred('error');
-                    this.obstacles.splice(i, 1);
-                    this.score = Math.max(0, this.score - 50); 
-                    this.updateScore();
-                }
+                let o = this.obstacles[i]; o.x -= this.speed;
+                if (this.checkCollision(this.player, o)) { this.createExplosion(this.player.x, this.player.y, 15, '#ff0000'); if(window.Telegram?.WebApp?.HapticFeedback) window.Telegram.WebApp.HapticFeedback.notificationOccurred('error'); this.obstacles.splice(i, 1); this.score = Math.max(0, this.score - 50); this.updateScore(); }
                 if(o.x + o.w < 0) this.obstacles.splice(i, 1);
             }
-
-            // Bonuses (GOOD)
             for(let i=this.bonuses.length-1; i>=0; i--) {
-                let b = this.bonuses[i];
-                b.x -= this.speed;
-                if (this.checkCollision(this.player, b)) {
-                    this.createExplosion(this.player.x, this.player.y, 15, '#00ff00');
-                    if(window.Telegram?.WebApp?.HapticFeedback) window.Telegram.WebApp.HapticFeedback.notificationOccurred('success');
-                    this.bonuses.splice(i, 1);
-                    this.score += 100;
-                    this.updateScore();
-                }
+                let b = this.bonuses[i]; b.x -= this.speed;
+                if (this.checkCollision(this.player, b)) { this.createExplosion(this.player.x, this.player.y, 15, '#00ff00'); if(window.Telegram?.WebApp?.HapticFeedback) window.Telegram.WebApp.HapticFeedback.notificationOccurred('success'); this.bonuses.splice(i, 1); this.score += 100; this.updateScore(); }
                 if(b.x + b.w < 0) this.bonuses.splice(i, 1);
             }
-
-            // Particles
-            for(let i=this.particles.length-1; i>=0; i--) {
-                let p = this.particles[i]; p.x += p.vx; p.y += p.vy; p.life -= 0.05;
-                if(p.life <= 0) this.particles.splice(i, 1);
-            }
+            for(let i=this.particles.length-1; i>=0; i--) { let p = this.particles[i]; p.x += p.vx; p.y += p.vy; p.life -= 0.05; if(p.life <= 0) this.particles.splice(i, 1); }
         },
-
-        checkCollision: function(p, o) {
-            return p.x < o.x + o.w && p.x + p.w > o.x && p.y < o.y + o.h && p.y + p.h > o.y;
-        },
-
+        checkCollision: function(p, o) { return p.x < o.x + o.w && p.x + p.w > o.x && p.y < o.y + o.h && p.y + p.h > o.y; },
         draw: function() {
             this.ctx.fillStyle = '#0f172a'; this.ctx.fillRect(0,0,this.width,this.height);
-            this.ctx.beginPath(); this.ctx.moveTo(0, this.floorY); this.ctx.lineTo(this.width, this.floorY);
-            this.ctx.strokeStyle = '#5B6FED'; this.ctx.lineWidth = 4; this.ctx.stroke();
-
+            this.ctx.beginPath(); this.ctx.moveTo(0, this.floorY); this.ctx.lineTo(this.width, this.floorY); this.ctx.strokeStyle = '#5B6FED'; this.ctx.lineWidth = 4; this.ctx.stroke();
             this.ctx.font = "40px Arial"; this.ctx.textAlign = "center"; this.ctx.textBaseline = "bottom";
             this.ctx.fillText(this.sprites.player, this.player.x + 20, this.player.y + 45);
-
             this.obstacles.forEach(o => { this.ctx.fillText(o.icon, o.x + 15, o.y + 40); });
             this.bonuses.forEach(b => { this.ctx.fillText(b.icon, b.x + 15, b.y + 40); });
-            this.particles.forEach(p => { this.ctx.fillStyle = p.color; this.ctx.globalAlpha = p.life; this.ctx.fillRect(p.x, p.y, 4, 4); });
-            this.ctx.globalAlpha = 1;
+            this.particles.forEach(p => { this.ctx.fillStyle = p.color; this.ctx.globalAlpha = p.life; this.ctx.fillRect(p.x, p.y, 4, 4); }); this.ctx.globalAlpha = 1;
         },
-
-        loop: function() {
-            if(!this.active) return;
-            this.update(); this.draw();
-            this.loopId = requestAnimationFrame(() => this.loop());
-        }
+        loop: function() { if(!this.active) return; this.update(); this.draw(); this.loopId = requestAnimationFrame(() => this.loop()); }
     };
-
-    function openGame() {
-        document.getElementById('game-layer').classList.remove('hidden');
-        if(!SiteBoSGame.ctx) SiteBoSGame.init();
-        SiteBoSGame.start();
-        setTimeout(() => SiteBoSGame.resize(), 100);
-    }
-
-    function closeGame() {
-        document.getElementById('game-layer').classList.add('hidden');
-        SiteBoSGame.stop();
-    }
-
+    function openGame() { document.getElementById('game-layer').classList.remove('hidden'); if(!SiteBoSGame.ctx) SiteBoSGame.init(); SiteBoSGame.start(); setTimeout(() => SiteBoSGame.resize(), 100); }
+    function closeGame() { document.getElementById('game-layer').classList.add('hidden'); SiteBoSGame.stop(); }
     const logs = ["Analisi requisiti...", "Creazione database...", "Generazione chiavi...", "Setup AI...", "Ottimizzazione...", "Quasi pronto..."];
-    let lIdx = 0;
-    setInterval(() => {
-        if(lIdx < logs.length) { document.getElementById('log-text').innerText = logs[lIdx]; lIdx++; }
-    }, 15000);
+    let lIdx = 0; setInterval(() => { if(lIdx < logs.length) { document.getElementById('log-text').innerText = logs[lIdx]; lIdx++; } }, 15000);
   </script>
 
-  <!-- LOGICA BUSINESS -->
+  <!-- LOGICA BUSINESS + INIZIO ADS -->
   <script src="processor_logic.js"></script>
+  
+  <!-- INIZIALIZZAZIONE ADVERTISING (Cruciale) -->
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        if(window.SponsorManager) {
+            console.log("Inietta Pubblicità...");
+            // Inietta nel Loader
+            SponsorManager.inject('#loader-ad-slot', 'loader');
+            // Inietta nel Gioco
+            SponsorManager.inject('#game-ad-slot', 'game');
+        }
+    });
+  </script>
 </body>
 </html>
