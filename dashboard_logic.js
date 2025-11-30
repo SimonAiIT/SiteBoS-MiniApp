@@ -1,6 +1,5 @@
 const tg = window.Telegram.WebApp;
-tg.ready(); 
-tg.expand();
+tg.ready(); tg.expand();
 
 // CONFIG
 const DASHBOARD_API = "https://trinai.api.workflow.dcmake.it/webhook/ef4aece4-9ec0-4026-a7a7-328562bcbdf6"; 
@@ -114,13 +113,13 @@ function applyTranslations() {
     });
 }
 
-// Variabili globali per navigazione
-let gVat = "", gOwner = "";
+// Globali
+let gVat = "", gOwner = "", gToken = "";
 
 async function startDashboard() {
     applyTranslations();
     const p = new URLSearchParams(window.location.search);
-    gVat = p.get('vat'); gOwner = p.get('owner'); const token = p.get('token');
+    gVat = p.get('vat'); gOwner = p.get('owner'); gToken = p.get('token');
 
     if (!gVat || !gOwner) { 
         document.body.innerHTML = `<h3 style='color:white;text-align:center;margin-top:50px'>${i18n[getLang()].err_title}</h3>`; 
@@ -130,7 +129,12 @@ async function startDashboard() {
     try {
         const response = await fetch(DASHBOARD_API, {
             method: 'POST', headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({ action: 'get_dashboard_data', vat_number: gVat, chat_id: gOwner, token: token })
+            body: JSON.stringify({ 
+                action: 'get_dashboard_data', 
+                vat_number: gVat, 
+                chat_id: gOwner, 
+                token: gToken // <<< TOKEN INCLUSO
+            })
         });
 
         let data = await response.json();
@@ -141,28 +145,26 @@ async function startDashboard() {
             return;
         }
 
-        // 1. UPDATE HEADER & INFO
+        // 1. UPDATE HEADER
         const owner = data.owner_data || {};
         document.getElementById('companyName').innerText = owner.ragione_sociale || "Azienda";
         document.getElementById('vatDisplay').innerText = `P.IVA: ${owner.vat_number}`;
-        
-        // Crediti
         document.getElementById('credits-display').innerText = owner.credits || 0;
         
-        // Logo (se c'è)
         if(owner.logo_url) {
             const img = document.getElementById('header-logo');
             img.src = owner.logo_url;
             img.classList.remove('hidden');
         }
 
-        // 2. UPDATE LOGICA STATO (Lockdown & Labels)
+        // 2. UPDATE LOGICA
         if(data.status) updateDashboardStatus(data.status);
 
         document.getElementById('loader').classList.add('hidden');
         document.getElementById('app-content').classList.remove('hidden');
 
-        handleGamification(gVat, gOwner); // Check crediti gioco
+        // Gamification con token
+        handleGamification(gVat, gOwner, gToken);
 
     } catch (error) {
         console.error(error);
@@ -171,7 +173,7 @@ async function startDashboard() {
 }
 
 function updateDashboardStatus(status) {
-    const t = i18n[getLang()]; // Usa traduzioni correnti
+    const t = i18n[getLang()]; 
 
     // A. HONEYPOT (Master Key)
     const isHpReady = (status.honeypot === 'READY');
@@ -182,7 +184,6 @@ function updateDashboardStatus(status) {
         hpSub.innerText = t.status_hp_lock;
         hpSub.classList.add('text-warning');
         hpCard.style.border = '1px solid var(--warning)';
-        // Se HP non è pronto, tutto il resto è bloccato
         ['card-catalog', 'card-agenda', 'card-team', 'card-knowledge'].forEach(lock);
         return; 
     } else {
@@ -199,24 +200,22 @@ function updateDashboardStatus(status) {
         subCat.classList.add('text-warning');
     }
 
-    // C. CONOSCENZA & AGENDA (Dipendono dai Blueprint)
+    // C. CONOSCENZA & AGENDA
     const hasBlueprints = status.blueprints_count > 0;
     
     if (hasBlueprints) {
         unlock('card-agenda');
-        document.getElementById('sub-agenda').innerText = t.status_active; // "Attiva"
-        
+        document.getElementById('sub-agenda').innerText = t.status_active;
         unlock('card-knowledge');
         document.getElementById('sub-knowledge').innerText = `${status.knowledge_docs} Docs`;
     } else {
         lock('card-agenda');
         document.getElementById('sub-agenda').innerText = t.status_blueprint_req;
-        
         lock('card-knowledge');
         document.getElementById('sub-knowledge').innerText = t.status_blueprint_req;
     }
 
-    // D. COLLABORATORI
+    // D. TEAM
     if (status.operators_count > 0) {
         unlock('card-team');
         document.getElementById('sub-team').innerText = `${status.operators_count} ${t.status_active}`;
@@ -225,64 +224,57 @@ function updateDashboardStatus(status) {
         document.getElementById('sub-team').innerText = t.status_no_op;
     }
 
-    // E. CONFIGURAZIONE
+    // E. CONFIG
     if (status.profile_completion < 100) {
         document.getElementById('sub-config').innerText = `${status.profile_completion}%`;
         document.getElementById('sub-config').classList.add('text-warning');
     }
 }
 
-// Helpers Lock/Unlock
-function lock(id) {
-    const el = document.getElementById(id);
-    if(el) el.classList.add('locked-item');
-}
-function unlock(id) {
-    const el = document.getElementById(id);
-    if(el) el.classList.remove('locked-item');
-}
+function lock(id) { const el = document.getElementById(id); if(el) el.classList.add('locked-item'); }
+function unlock(id) { const el = document.getElementById(id); if(el) el.classList.remove('locked-item'); }
 
-// --- NAVIGAZIONE ---
 window.navTo = function(page) {
-    // Pulisce l'URL dai crediti bonus prima di navigare
     const currentQuery = window.location.search.replace(/&bonus_credits=\d+/, '');
     const prefix = page.includes('?') ? '&' : '?';
-    const q = currentQuery.startsWith('?') ? currentQuery.substring(1) : currentQuery;
+    // Assicura che gToken sia presente nell'url se non c'è già
+    let q = currentQuery.startsWith('?') ? currentQuery.substring(1) : currentQuery;
+    if(!q.includes('token=') && gToken) q += `&token=${gToken}`;
+    
     window.location.href = `${page}${prefix}${q}`;
 }
 
 window.openWidget = () => navTo('SiteBos.html');
+window.openSite = () => navTo('sitebuilder.html');
 
-window.openSite = () => { 
-    navTo('sitebuilder.html');
-}
-
-// Gamification Handler
-function handleGamification(vat, ownerId) {
+// FIX: Token passato anche qui
+function handleGamification(vat, ownerId, token) {
     const p = new URLSearchParams(window.location.search);
     const bonus = p.get('bonus_credits');
     
     if (bonus && parseInt(bonus) > 0) {
         const points = parseInt(bonus);
         
-        // Save
         fetch(DASHBOARD_API, {
             method: 'POST', headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({ action: 'add_gamification_credits', vat_number: vat, chat_id: ownerId, amount: points })
+            body: JSON.stringify({ 
+                action: 'add_gamification_credits', 
+                vat_number: vat, 
+                chat_id: ownerId, 
+                amount: points,
+                token: token // <<< TOKEN QUI
+            })
         }).catch(console.error);
         
-        // Notify
         if(tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
         const t = i18n[getLang()];
-        const msg = (t.game_msg || "You earned {points} AI Credits!").replace('{points}', points);
+        const msg = (t.game_msg || "Earned {points} Credits!").replace('{points}', points);
         
         tg.showPopup({ title: t.game_title, message: msg });
         
-        // Clean URL
         const newUrl = window.location.href.replace(/&bonus_credits=\d+/, '');
         window.history.replaceState({}, document.title, newUrl);
         
-        // Update UI
         const cur = parseInt(document.getElementById('credits-display').innerText) || 0;
         document.getElementById('credits-display').innerText = cur + points;
     }
