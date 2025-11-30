@@ -5,223 +5,149 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>Legal & Compliance</title>
   
-  <!-- LIBS -->
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
-  <!-- UNIFIED STYLE -->
   <link rel="stylesheet" href="styles.css">
 
   <style>
-    /* Specific Styles for Legal Page */
-    .nav-tabs {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 20px;
-    }
-    .nav-tab {
-      flex: 1;
-      padding: 12px;
-      text-align: center;
-      background: var(--glass);
-      border: 1px solid var(--glass-border);
-      border-radius: var(--radius-md);
-      color: var(--text-muted);
-      cursor: pointer;
-      font-weight: 600;
-      transition: all 0.2s;
-    }
-    .nav-tab.active {
-      background: var(--primary);
-      color: #fff;
-      border-color: var(--primary);
-      box-shadow: 0 4px 15px rgba(91, 111, 237, 0.3);
-    }
-    .legal-content {
-      font-size: 14px;
-      line-height: 1.6;
-      color: var(--text-muted);
-      height: 60vh;
-      overflow-y: auto;
-      padding-right: 10px; /* Space for scrollbar */
-    }
-    .legal-content h3 {
-      color: #fff;
-      margin-top: 20px;
-      margin-bottom: 10px;
-      font-size: 16px;
-      border-bottom: 1px solid var(--glass-border);
-      padding-bottom: 5px;
-    }
-    .legal-content p {
-      margin-bottom: 15px;
-    }
-    .legal-content ul {
-      margin-left: 20px;
-      margin-bottom: 15px;
-    }
-    .legal-content li {
-      margin-bottom: 5px;
-    }
-    strong {
-      color: var(--text-main);
-    }
+    .nav-tabs { display: flex; gap: 10px; margin-bottom: 20px; }
+    .nav-tab { flex: 1; padding: 12px; text-align: center; background: var(--glass); border: 1px solid var(--glass-border); border-radius: var(--radius-md); color: var(--text-muted); cursor: pointer; font-weight: 600; transition: all 0.2s; }
+    .nav-tab.active { background: var(--primary); color: #fff; border-color: var(--primary); box-shadow: 0 4px 15px rgba(91, 111, 237, 0.3); }
+    
+    .legal-content { font-size: 13px; line-height: 1.6; color: var(--text-muted); height: 65vh; overflow-y: auto; padding-right: 10px; }
+    .legal-content h3 { color: #fff; margin-top: 20px; margin-bottom: 10px; font-size: 15px; border-bottom: 1px solid var(--glass-border); padding-bottom: 5px; }
+    .legal-content p { margin-bottom: 15px; }
+    .legal-content ul { margin-left: 20px; margin-bottom: 15px; }
+    .legal-content li { margin-bottom: 5px; }
+    strong { color: var(--text-main); }
+    
+    .affiliate-disclaimer { font-size: 11px; font-style: italic; opacity: 0.7; margin-top: 20px; border-top: 1px dashed var(--glass-border); padding-top: 10px; }
   </style>
 </head>
 <body>
 
   <div class="container">
     <h1 class="text-center" data-i18n="page_title">Legal Center</h1>
-    <p class="subtitle text-center" data-i18n="page_subtitle">Trasparenza e Termini di Utilizzo</p>
+    <p class="subtitle text-center" data-i18n="page_subtitle">Compliance & Transparency</p>
 
     <!-- TABS -->
     <div class="nav-tabs">
       <div class="nav-tab active" onclick="switchTab('privacy')" id="tab-privacy" data-i18n="tab_privacy">Privacy Policy</div>
-      <div class="nav-tab" onclick="switchTab('terms')" id="tab-terms" data-i18n="tab_terms">Termini & Condizioni</div>
+      <div class="nav-tab" onclick="switchTab('terms')" id="tab-terms" data-i18n="tab_terms">Terms & Cond.</div>
     </div>
 
     <!-- PRIVACY CONTENT -->
     <div id="content-privacy" class="card legal-content">
-      <!-- IT CONTENT -->
-      <div class="lang-it">
+      <!-- IT -->
+      <div class="lang-content lang-it">
         <h3>1. Titolare del Trattamento</h3>
-        <p>Il titolare del trattamento dei dati è <strong>TrinAi / SiteBoS Team</strong>. Per qualsiasi richiesta relativa alla privacy, contattare: <em>privacy@trinai.it</em> (o inserire email reale).</p>
+        <p>I dati sono trattati da <strong>TrinAI Solutions</strong>. Per richieste: <em>support@trinai.it</em>.</p>
 
         <h3>2. Dati Raccolti</h3>
-        <p>Raccogliamo ed elaboriamo i seguenti dati necessari per il funzionamento del servizio:</p>
+        <p>Per erogare il servizio SiteBoS, trattiamo:</p>
         <ul>
-          <li><strong>Dati Identificativi Telegram:</strong> ID Utente, Username, Nome, Lingua.</li>
-          <li><strong>Input Utente:</strong> Testi, immagini o file inviati volontariamente al Bot per l'elaborazione AI.</li>
-          <li><strong>Dati Aziendali (Se forniti):</strong> P.IVA, Ragione Sociale, Indirizzo per la fatturazione e la configurazione del profilo.</li>
+          <li><strong>Identità:</strong> ID Telegram, Nome, Username.</li>
+          <li><strong>Dati Business:</strong> P.IVA, Ragione Sociale, Indirizzi (solo se forniti volontariamente).</li>
+          <li><strong>Input AI:</strong> Testi e file inviati al bot vengono processati tramite API sicure (es. Google Gemini) esclusivamente per generare le risposte richieste.</li>
         </ul>
 
-        <h3>3. Finalità del Trattamento (AI)</h3>
-        <p>I dati vengono utilizzati per fornire risposte automatizzate tramite modelli di Intelligenza Artificiale (LLM). <br><strong>Nota Importante:</strong> I dati inviati potrebbero essere processati da provider terzi (es. OpenAI, Google Gemini) esclusivamente per la generazione delle risposte.</p>
+        <h3>3. Sicurezza e Conservazione</h3>
+        <p>I dati sono crittografati e conservati su server sicuri (MongoDB Atlas, Europa). Non cediamo dati a terzi per marketing.</p>
 
-        <h3>4. Conservazione dei Dati</h3>
-        <p>I dati sono conservati su server sicuri (MongoDB) per il tempo necessario all'erogazione del servizio o fino alla richiesta di cancellazione da parte dell'utente.</p>
-
-        <h3>5. Diritti dell'Utente</h3>
-        <p>Hai il diritto di accedere, rettificare o cancellare i tuoi dati in qualsiasi momento inviando il comando <code>/delete_account</code> (se disponibile) o contattando il supporto.</p>
+        <h3>4. I Tuoi Diritti</h3>
+        <p>Puoi richiedere la cancellazione totale del tuo account inviando il comando <code>/delete_me</code> al bot o contattando il supporto.</p>
+        
+        <p class="affiliate-disclaimer">Questo servizio utilizza link di affiliazione. Quando attivi servizi partner (es. POS, Banche), potremmo ricevere una commissione senza costi aggiuntivi per te.</p>
       </div>
 
-      <!-- EN CONTENT -->
-      <div class="lang-en hidden">
+      <!-- EN (Fallback per tutti gli altri) -->
+      <div class="lang-content lang-en hidden">
         <h3>1. Data Controller</h3>
-        <p>The data controller is <strong>TrinAi / SiteBoS Team</strong>. For any privacy requests, please contact: <em>privacy@trinai.it</em>.</p>
+        <p>Data is processed by <strong>TrinAI Solutions</strong>. Contact: <em>support@trinai.it</em>.</p>
 
-        <h3>2. Data Collected</h3>
-        <p>We collect and process the following data necessary for the service operation:</p>
+        <h3>2. Collected Data</h3>
+        <p>To provide the SiteBoS service, we process:</p>
         <ul>
-          <li><strong>Telegram ID Data:</strong> User ID, Username, Name, Language.</li>
-          <li><strong>User Input:</strong> Text, images, or files voluntarily sent to the Bot for AI processing.</li>
-          <li><strong>Business Data (If provided):</strong> VAT ID, Company Name, Address for billing and profile configuration.</li>
+          <li><strong>Identity:</strong> Telegram ID, Name, Username.</li>
+          <li><strong>Business Data:</strong> VAT ID, Company Name (only if provided).</li>
+          <li><strong>AI Input:</strong> Text and files sent to the bot are processed via secure APIs (e.g. Google Gemini) solely to generate the requested responses.</li>
         </ul>
 
-        <h3>3. Processing Purpose (AI)</h3>
-        <p>Data is used to provide automated responses via Artificial Intelligence (LLM) models. <br><strong>Important Note:</strong> Submitted data may be processed by third-party providers (e.g., OpenAI, Google Gemini) solely for generating responses.</p>
+        <h3>3. Security & Retention</h3>
+        <p>Data is encrypted and stored on secure servers (MongoDB Atlas, Europe). We do not sell data to third parties.</p>
 
-        <h3>4. Data Retention</h3>
-        <p>Data is stored on secure servers (MongoDB) for the time necessary to provide the service or until the user requests deletion.</p>
-
-        <h3>5. User Rights</h3>
-        <p>You have the right to access, rectify, or delete your data at any time by sending the command <code>/delete_account</code> or contacting support.</p>
+        <h3>4. Your Rights</h3>
+        <p>You can request full account deletion by sending <code>/delete_me</code> to the bot or contacting support.</p>
+        
+        <p class="affiliate-disclaimer">This service uses affiliate links. When you activate partner services (e.g., POS, Banking), we may earn a commission at no extra cost to you.</p>
       </div>
     </div>
 
     <!-- TERMS CONTENT -->
     <div id="content-terms" class="card legal-content hidden">
-      <!-- IT CONTENT -->
-      <div class="lang-it">
-        <h3>1. Accettazione dei Termini</h3>
-        <p>Utilizzando <strong>SiteBoS MiniApp</strong>, accetti integralmente i presenti Termini e Condizioni. Se non sei d'accordo, ti invitiamo a non utilizzare il servizio.</p>
+      <!-- IT -->
+      <div class="lang-content lang-it">
+        <h3>1. Accettazione</h3>
+        <p>Utilizzando SiteBoS, accetti questi Termini. Il servizio è B2B, riservato a P.IVA e Professionisti.</p>
 
-        <h3>2. Descrizione del Servizio</h3>
-        <p>SiteBoS è un assistente virtuale basato su AI per la gestione aziendale. Il servizio è fornito "così com'è" e può essere soggetto a modifiche o interruzioni senza preavviso.</p>
+        <h3>2. Limitazione di Responsabilità (AI)</h3>
+        <p><strong>SiteBoS è un assistente basato su Intelligenza Artificiale.</strong> L'AI può commettere errori ("allucinazioni"). L'utente è l'unico responsabile della verifica delle informazioni (es. preventivi, contratti) prima dell'uso. TrinAI non è responsabile per danni derivanti dall'uso non verificato dell'output AI.</p>
 
-        <h3>3. Limitazione di Responsabilità (AI)</h3>
-        <p>L'Intelligenza Artificiale può commettere errori ("allucinazioni"). <strong>L'utente è tenuto a verificare sempre le informazioni generate</strong> prima di utilizzarle per scopi critici, legali o finanziari. SiteBoS non è responsabile per danni derivanti dall'uso delle informazioni fornite.</p>
-
-        <h3>4. Uso Consentito</h3>
-        <p>È vietato utilizzare il servizio per generare contenuti illegali, diffamatori, o che violino diritti di terzi. Ci riserviamo il diritto di sospendere gli account che violano queste regole.</p>
-
-        <h3>5. Modifiche ai Termini</h3>
-        <p>Ci riserviamo il diritto di modificare questi termini in qualsiasi momento. L'uso continuato del servizio costituisce accettazione delle modifiche.</p>
+        <h3>3. Uso Consentito</h3>
+        <p>È vietato utilizzare il bot per attività illegali, spam o generazione di contenuti dannosi. La violazione comporta il ban immediato.</p>
       </div>
 
-      <!-- EN CONTENT -->
-      <div class="lang-en hidden">
-        <h3>1. Acceptance of Terms</h3>
-        <p>By using <strong>SiteBoS MiniApp</strong>, you fully agree to these Terms and Conditions. If you do not agree, please do not use the service.</p>
+      <!-- EN -->
+      <div class="lang-content lang-en hidden">
+        <h3>1. Acceptance</h3>
+        <p>By using SiteBoS, you agree to these Terms. This is a B2B service intended for Professionals and Businesses.</p>
 
-        <h3>2. Service Description</h3>
-        <p>SiteBoS is an AI-based virtual assistant for business management. The service is provided "as is" and may be subject to changes or interruptions without notice.</p>
+        <h3>2. AI Disclaimer & Liability</h3>
+        <p><strong>SiteBoS is an AI-based assistant.</strong> AI can make mistakes ("hallucinations"). You are solely responsible for verifying all information (e.g., quotes, contracts) before use. TrinAI is not liable for damages resulting from unverified use of AI output.</p>
 
-        <h3>3. Limitation of Liability (AI)</h3>
-        <p>Artificial Intelligence can make mistakes ("hallucinations"). <strong>The user is required to verify generated information</strong> before using it for critical, legal, or financial purposes. SiteBoS is not liable for damages resulting from the use of provided information.</p>
-
-        <h3>4. Permitted Use</h3>
-        <p>It is forbidden to use the service to generate illegal, defamatory content, or content that violates third-party rights. We reserve the right to suspend accounts violating these rules.</p>
-
-        <h3>5. Changes to Terms</h3>
-        <p>We reserve the right to modify these terms at any time. Continued use of the service constitutes acceptance of the changes.</p>
+        <h3>3. Permitted Use</h3>
+        <p>You may not use the bot for illegal activities, spam, or generating harmful content. Violations will result in an immediate ban.</p>
       </div>
     </div>
 
-    <!-- Scritta al posto del bottone -->
-    <p class="cancel-hint" data-i18n="close_hint"></p>
+    <p class="cancel-hint" data-i18n="close_hint">Chiudi per tornare al Bot.</p>
 
   </div>
 
   <script>
     const tg = window.Telegram.WebApp;
-    tg.ready();
-    tg.expand();
+    tg.ready(); tg.expand();
 
-    // I18N CONFIG
-    const translations = {
-      it: {
-        page_title: "Centro Legale", page_subtitle: "Trasparenza e Termini di Utilizzo",
-        tab_privacy: "Privacy Policy", tab_terms: "Termini & Condizioni",
-        close_hint: "Chiudi la pagina per tornare al bot."
-      },
-      en: {
-        page_title: "Legal Center", page_subtitle: "Transparency and Terms of Use",
-        tab_privacy: "Privacy Policy", tab_terms: "Terms & Conditions",
-        close_hint: "Close the page to return to the bot."
-      }
+    const i18n = {
+      it: { page_title: "Area Legale", page_subtitle: "Compliance & Trasparenza", tab_privacy: "Privacy Policy", tab_terms: "Termini", close_hint: "Chiudi" },
+      en: { page_title: "Legal Center", page_subtitle: "Compliance & Transparency", tab_privacy: "Privacy Policy", tab_terms: "Terms", close_hint: "Close" }
     };
 
-    // Detect Language
     const urlParams = new URLSearchParams(window.location.search);
-    const langParam = urlParams.get('lang') || 'it';
-    const currentLang = (['it', 'en'].includes(langParam)) ? langParam : 'en'; // Default to EN if not IT
+    // Rileva lingua (default IT, fallback EN per tutto il resto)
+    const langParam = urlParams.get('lang') || tg.initDataUnsafe?.user?.language_code || 'it';
+    const lang = (langParam === 'it') ? 'it' : 'en'; 
 
-    // Apply Static Translations
-    const t = translations[currentLang];
+    const t = i18n[lang];
     document.querySelector('[data-i18n="page_title"]').innerText = t.page_title;
     document.querySelector('[data-i18n="page_subtitle"]').innerText = t.page_subtitle;
     document.querySelector('[data-i18n="tab_privacy"]').innerText = t.tab_privacy;
     document.querySelector('[data-i18n="tab_terms"]').innerText = t.tab_terms;
     document.querySelector('[data-i18n="close_hint"]').innerText = t.close_hint;
 
-    // Show correct language content inside cards
-    document.querySelectorAll('.lang-it').forEach(el => el.classList.toggle('hidden', currentLang !== 'it'));
-    document.querySelectorAll('.lang-en').forEach(el => el.classList.toggle('hidden', currentLang !== 'en'));
+    // Mostra contenuto lingua corretta
+    document.querySelectorAll('.lang-content').forEach(el => el.classList.add('hidden'));
+    document.querySelectorAll(`.lang-${lang}`).forEach(el => el.classList.remove('hidden'));
 
-    // Tab Switching Logic
     function switchTab(tab) {
-      // Buttons
       document.querySelectorAll('.nav-tab').forEach(el => el.classList.remove('active'));
       document.getElementById('tab-' + tab).classList.add('active');
-
-      // Content
       document.getElementById('content-privacy').classList.add('hidden');
       document.getElementById('content-terms').classList.add('hidden');
       document.getElementById('content-' + tab).classList.remove('hidden');
     }
-
   </script>
 </body>
 </html>
