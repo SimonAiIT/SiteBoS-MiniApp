@@ -10,16 +10,16 @@
     <link rel="stylesheet" href="../styles.css">
 
     <style>
-        /* Separatore Orizzontale "OPPURE" */
-        .divider {
+        /* Separatore per indicare l'alternativa/aggiunta del file */
+        .separator {
             display: flex; align-items: center; text-align: center;
-            margin: 25px 0; color: var(--text-muted); font-size: 12px; text-transform: uppercase; letter-spacing: 1px;
+            margin: 20px 0; color: var(--text-muted); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;
         }
-        .divider::before, .divider::after {
+        .separator::before, .separator::after {
             content: ''; flex: 1; border-bottom: 1px solid var(--glass-border);
         }
-        .divider::before { margin-right: 10px; }
-        .divider::after { margin-left: 10px; }
+        .separator::before { margin-right: 10px; }
+        .separator::after { margin-left: 10px; }
     </style>
 </head>
 <body>
@@ -33,48 +33,45 @@
     <div class="container fade-in" id="app-content">
         
         <h1 data-i18n="title">Nuova Categoria</h1>
-        <p class="subtitle" data-i18n="subtitle">Definisci l'area o carica un listino.</p>
+        <p class="subtitle" data-i18n="subtitle">Configura la nuova area di business.</p>
 
-        <!-- FASE 1: SCELTA METODO (Tutto in vista) -->
+        <!-- FASE 1: INPUT UNICO (Tutto visibile) -->
         <div id="inputPhase">
             
-            <!-- OPZIONE A: MANUALE -->
             <div class="card">
+                <!-- 1. Nome (OBBLIGATORIO) -->
                 <div class="form-group">
                     <label for="categoryName" class="required" data-i18n="lblCatName">Nome Categoria</label>
                     <input type="text" id="categoryName" required placeholder="...">
                 </div>
                 
+                <!-- 2. Descrizione (OPZIONALE) -->
                 <div class="form-group">
                     <label for="categoryDescription" data-i18n="lblCatDesc">Descrizione (Opzionale)</label>
                     <textarea id="categoryDescription" rows="2" placeholder="..."></textarea>
                 </div>
-                
-                <button id="generateBtn" class="btn btn-primary btn-block">
-                    <i class="fas fa-magic"></i> <span data-i18n="btnGenerate">Genera con AI</span>
+
+                <!-- SEPARATORE -->
+                <div class="separator" data-i18n="divider_text">E / O CARICA LISTINO</div>
+
+                <!-- 3. File (OPZIONALE) -->
+                <div class="upload-box enabled" id="file-upload-box" style="padding: 20px;">
+                    <input type="file" id="file-input" accept=".pdf,.json,.txt,.csv">
+                    <div class="upload-icon" style="font-size: 28px; margin-bottom: 5px;"><i class="fas fa-file-upload"></i></div>
+                    <span class="upload-text" id="upload-text" data-i18n="upload_hint">Tocca per caricare File</span>
+                    <div id="file-name-display" style="font-size:12px; color:var(--success); margin-top:5px; font-weight:600;"></div>
+                </div>
+            </div>
+
+            <!-- AZIONE UNICA -->
+            <div class="btn-container">
+                <button id="generateBtn" class="btn btn-primary btn-block btn-lg">
+                    <i class="fas fa-magic"></i> <span data-i18n="btnGenerate">Genera Servizi</span>
                 </button>
-            </div>
-
-            <!-- DIVIDER -->
-            <div class="divider">
-                <span data-i18n="divider_text">Oppure Carica File</span>
-            </div>
-
-            <!-- OPZIONE B: UPLOAD (Sempre visibile) -->
-            <div class="card">
-                <div class="note note-warning" style="margin-bottom: 10px; font-size: 11px;">
-                    <i class="fas fa-info-circle"></i> <span data-i18n="upload_disclaimer"></span>
-                </div>
-
-                <div class="upload-box enabled" id="file-upload-box" style="padding: 15px;">
-                    <input type="file" id="file-input" accept=".pdf,.json">
-                    <div class="upload-icon" style="font-size: 24px;"><i class="fas fa-file-upload"></i></div>
-                    <span class="upload-text" id="upload-text" data-i18n="upload_hint"></span>
-                </div>
             </div>
         </div>
 
-        <!-- FASE 2: REVISIONE & SALVATAGGIO (Nascosta all'inizio) -->
+        <!-- FASE 2: REVISIONE (Nascosta all'inizio) -->
         <div id="reviewPhase" class="hidden fade-in">
             <div class="card">
                 <h3 data-i18n="subcatTitle" class="section-title">Servizi Rilevati</h3>
@@ -93,10 +90,10 @@
 
             <div class="btn-container">
                 <button class="btn btn-secondary" onclick="resetForm()">
-                    <i class="fas fa-arrow-left"></i> Indietro
+                    <i class="fas fa-arrow-left"></i>
                 </button>
                 <button id="saveBtn" class="btn btn-success flex-1">
-                    <i class="fas fa-save"></i> <span data-i18n="btnSave">Salva Tutto</span>
+                    <i class="fas fa-save"></i> <span data-i18n="btnSave">Conferma e Salva</span>
                 </button>
             </div>
         </div>
