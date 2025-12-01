@@ -1,97 +1,83 @@
 /**
- * ADD PRODUCT LOGIC (v4.0 - GHOST MODE & SPONSORS)
- * - Supporto Ghost ID: Auto-trigger dell'enrichment se ghostId è presente.
- * - Sponsor Loader: Ads durante l'attesa AI.
- * - Gestione File Base64.
+ * ADD PRODUCT LOGIC (v7.0 - BROWSER SAFE FINAL)
+ * - Niente tg.showPopup/tg.showAlert -> Solo alert() nativi.
+ * - Redirect sicuri.
+ * - Payload piatto.
  * - 6 Lingue.
  */
 
 'use strict';
 
-// CONFIG
-const ENRICH_URL = "https://trinai.api.workflow.dcmake.it/webhook/31f89350-4d7f-44b7-9aaf-e7d9e3655b6c";
-const SAVE_URL = "https://trinai.api.workflow.dcmake.it/webhook/20fd95c0-4218-400e-ae2a-cd881a757b80"; 
+// 1. CONFIGURAZIONE
+const ENRICH_WEBHOOK = "https://trinai.api.workflow.dcmake.it/webhook/31f89350-4d7f-44b7-9aaf-e7d9e3655b6c";
+const SAVE_WEBHOOK = "https://trinai.api.workflow.dcmake.it/webhook/20fd95c0-4218-400e-ae2a-cd881a757b80";
 
+// Init Telegram (Solo per espansione view e aptico, non per UI critica)
 const tg = window.Telegram.WebApp; 
-tg.ready(); tg.expand();
+try { tg.ready(); tg.expand(); } catch(e){}
 
+// 2. PARAMETRI URL
 const urlParams = new URLSearchParams(window.location.search);
 const token = urlParams.get('token');
 const catId = urlParams.get('catId');
-const ghostId = urlParams.get('ghostId'); // ID GHOST (Opzionale)
+const ghostId = urlParams.get('ghostId');
+const langParam = urlParams.get('lang') || 'it';
 
-// STATE
+// 3. STATO GLOBALE
 let draftData = null;
 let fileData = null;
 
-// I18N
+// 4. TRADUZIONI (6 LINGUE)
 const i18n = {
-    it: {
-        page_title: "Nuovo Prodotto", title: "Nuovo Prodotto", sub: "Categoria:", 
-        lName: "Nome Richiesta", lDesc: "Istruzioni Base", lFile: "Allegato", lFileBtn: "Carica Foto/PDF",
-        btnEnrich: "Genera Bozza AI", btnSave: "Salva Definitivo",
-        secId: "Identità Prodotto", secPrice: "Prezzi & Operazioni", secMark: "Marketing & Target",
-        outName: "Nome Ufficiale", outSku: "SKU", outType: "Tipo",
-        outShort: "Descrizione Breve (x UI)", outLong: "Descrizione Estesa", outInt: "Note Interne (Staff)",
-        outPrice: "Prezzo (€)", outUnit: "Unità (es. ora)", outDyn: "Prezzo Dinamico?", outBook: "Richiede Prenotazione?",
-        outTags: "Tags (SEO)", outTarget: "Target Audience",
-        dup: "⚠️ Possibile Duplicato!",
-        status_ai: "L'AI sta analizzando...", status_saving: "Salvataggio...", 
-        err_name: "Nome obbligatorio!", ok_saved: "Prodotto Salvato!"
-    },
-    en: {
-        page_title: "New Product", title: "New Product", sub: "Category:", 
-        lName: "Request Name", lDesc: "Instructions", lFile: "Attachment", lFileBtn: "Upload Photo/PDF",
-        btnEnrich: "Generate AI Draft", btnSave: "Save Final",
-        secId: "Identity", secPrice: "Pricing & Ops", secMark: "Marketing & Target",
-        outName: "Official Name", outSku: "SKU", outType: "Type",
-        outShort: "Short Desc (UI)", outLong: "Full Description", outInt: "Internal Notes",
-        outPrice: "Price (€)", outUnit: "Unit (e.g. hour)", outDyn: "Dynamic Price?", outBook: "Needs Booking?",
-        outTags: "Tags (SEO)", outTarget: "Target Audience",
-        dup: "⚠️ Possible Duplicate!",
-        status_ai: "AI Analyzing...", status_saving: "Saving...", 
-        err_name: "Name required!", ok_saved: "Product Saved!"
-    },
-    // ... Altre lingue (fr, de, es, pt) rimangono uguali ...
-    fr: { page_title: "Nouveau Produit", title: "Nouveau Produit", sub: "Catégorie:", lName: "Nom", lDesc: "Instructions", lFile: "Pièce Jointe", lFileBtn: "Charger", btnEnrich: "Générer Ébauche", btnSave: "Enregistrer", secId: "Identité", secPrice: "Prix", secMark: "Marketing", outName: "Nom Officiel", outSku: "SKU", outType: "Type", outShort: "Desc. Courte", outLong: "Desc. Complète", outInt: "Notes Internes", outPrice: "Prix", outUnit: "Unité", outDyn: "Prix Dynamique?", outBook: "Réservation?", outTags: "Tags", outTarget: "Cible", dup: "⚠️ Doublon Possible!", status_ai: "Analyse IA...", status_saving: "Enregistrement...", err_name: "Nom requis !", ok_saved: "Enregistré !" },
-    de: { page_title: "Neues Produkt", title: "Neues Produkt", sub: "Kategorie:", lName: "Name", lDesc: "Anweisungen", lFile: "Anhang", lFileBtn: "Laden", btnEnrich: "Entwurf", btnSave: "Speichern", secId: "Identität", secPrice: "Preise", secMark: "Marketing", outName: "Name", outSku: "SKU", outType: "Typ", outShort: "Kurz", outLong: "Lang", outInt: "Interne Notizen", outPrice: "Preis", outUnit: "Einheit", outDyn: "Dynamisch?", outBook: "Buchung?", outTags: "Tags", outTarget: "Zielgruppe", dup: "⚠️ Duplikat!", status_ai: "KI Analysiert...", status_saving: "Speichern...", err_name: "Name erforderlich!", ok_saved: "Gespeichert!" },
-    es: { page_title: "Nuevo Producto", title: "Nuevo Producto", sub: "Categoría:", lName: "Nombre", lDesc: "Instrucciones", lFile: "Adjunto", lFileBtn: "Cargar", btnEnrich: "Borrador", btnSave: "Guardar", secId: "Identidad", secPrice: "Precios", secMark: "Marketing", outName: "Nombre", outSku: "SKU", outType: "Tipo", outShort: "Desc. Corta", outLong: "Desc. Larga", outInt: "Notas Internas", outPrice: "Precio", outUnit: "Unidad", outDyn: "Dinámico?", outBook: "Reserva?", outTags: "Tags", outTarget: "Audiencia", dup: "⚠️ Duplicado!", status_ai: "IA Analizando...", status_saving: "Guardando...", err_name: "Nombre obligatorio!", ok_saved: "¡Guardado!" },
-    pt: { page_title: "Novo Produto", title: "Novo Produto", sub: "Categoria:", lName: "Nome", lDesc: "Instruções", lFile: "Anexo", lFileBtn: "Carregar", btnEnrich: "Rascunho", btnSave: "Salvar", secId: "Identidade", secPrice: "Preços", secMark: "Marketing", outName: "Nome", outSku: "SKU", outType: "Tipo", outShort: "Curta", outLong: "Longa", outInt: "Notas Internas", outPrice: "Preço", outUnit: "Unidade", outDyn: "Dinâmico?", outBook: "Reserva?", outTags: "Tags", outTarget: "Público-alvo", dup: "⚠️ Duplicado!", status_ai: "IA Analisando...", status_saving: "Salvando...", err_name: "Nome obrigatório!", ok_saved: "Salvo!" }
+    it: { title: "Nuovo Prodotto", btnEnrich: "Genera Bozza AI", btnSave: "Salva Definitivo", status_ai: "Analisi AI in corso...", status_save: "Salvataggio...", err_name: "Nome mancante!", ok_saved: "Salvato!", err_generic: "Errore. Riprova." },
+    en: { title: "New Product", btnEnrich: "Generate Draft", btnSave: "Save Final", status_ai: "AI Analyzing...", status_save: "Saving...", err_name: "Name missing!", ok_saved: "Saved!", err_generic: "Error. Retry." },
+    fr: { title: "Nouveau Produit", btnEnrich: "Générer Ébauche", btnSave: "Enregistrer", status_ai: "Analyse IA...", status_save: "Enregistrement...", err_name: "Nom requis !", ok_saved: "Enregistré !", err_generic: "Erreur. Réessayer." },
+    de: { title: "Neues Produkt", btnEnrich: "Entwurf Generieren", btnSave: "Speichern", status_ai: "KI Analysiert...", status_save: "Speichern...", err_name: "Name fehlt!", ok_saved: "Gespeichert!", err_generic: "Fehler. Wiederholen." },
+    es: { title: "Nuevo Producto", btnEnrich: "Generar Borrador", btnSave: "Guardar", status_ai: "Analizando...", status_save: "Guardando...", err_name: "¡Nombre obligatorio!", ok_saved: "¡Guardado!", err_generic: "Error. Reintentar." },
+    pt: { title: "Novo Produto", btnEnrich: "Gerar Rascunho", btnSave: "Salvar", status_ai: "Analisando...", status_save: "Salvando...", err_name: "Nome obrigatório!", ok_saved: "Salvo!", err_generic: "Erro. Tente novamente." }
+};
+const t = i18n[langParam.slice(0,2)] || i18n.it;
+
+// 5. DOM CACHE
+const dom = {
+    loader: document.getElementById('loader'),
+    loaderText: document.getElementById('loader-text'),
+    inputSection: document.getElementById('inputSection'),
+    editForm: document.getElementById('editForm'),
+    fileInput: document.getElementById('inFile'),
+    fileBox: document.getElementById('uploadBox'),
+    fileBtnText: document.getElementById('lblFileBtn')
 };
 
-const lang = (urlParams.get('lang') || tg.initDataUnsafe?.user?.language_code || 'it').slice(0, 2);
-const t = i18n[lang] || i18n.it;
-
-// INIT
+// 6. INIT
 function init() {
     // Setup Testi
     document.title = t.title;
     document.querySelector('h1').innerText = t.title;
     document.getElementById('btnEnrich').innerHTML = `<i class="fas fa-magic"></i> ${t.btnEnrich}`;
-    
-    // Bind Eventi
-    document.getElementById('btnEnrich').addEventListener('click', () => manualEnrich());
+    document.getElementById('displayCatName').innerText = catId || "...";
+
+    // Eventi
+    document.getElementById('btnEnrich').addEventListener('click', manualEnrich);
     document.getElementById('editForm').addEventListener('submit', handleSave);
     dom.fileInput.addEventListener('change', handleFileSelect);
 
-    // --- LOGICA GHOST (AUTOMATICA) ---
+    // GHOST MODE AUTO-START
     if (ghostId) {
-        // Nascondi input manuale subito
         dom.inputSection.classList.add('hidden');
-        // Triggera Webhook Immediato
-        triggerEnrichment({ ghost_id: ghostId });
+        callEnrichWebhook({ ghost_id: ghostId });
     }
 }
 
-// GESTIONE FILE (Solo modo manuale)
+// 7. FILE HANDLE
 function handleFileSelect(e) {
     const f = e.target.files[0];
     if(!f) return;
     const r = new FileReader();
     r.onload = (ev) => {
         fileData = { 
-            base64_content: ev.target.result.split(',')[1], 
-            mime_type: f.type 
+            base64: ev.target.result.split(',')[1], 
+            mime: f.type 
         };
         dom.fileBox.classList.add('enabled');
         dom.fileBtnText.innerText = f.name;
@@ -99,122 +85,172 @@ function handleFileSelect(e) {
     r.readAsDataURL(f);
 }
 
-// MODALITÀ MANUALE (Click su bottone)
+// 8. TRIGGER MANUALE
 function manualEnrich() {
     const name = document.getElementById('inName').value;
-    if(!name) return tg.showAlert(t.err_name);
+    if(!name) return alert(t.err_name);
 
-    // Triggera Webhook con Dati Manuali + File
-    triggerEnrichment({
+    const payloadData = {
         product_name: name,
-        product_description: document.getElementById('inDesc').value,
-        // Se c'è fileData lo passo, altrimenti null
-        file_attachment: fileData 
-    });
+        product_description: document.getElementById('inDesc').value
+    };
+
+    if (fileData) {
+        payloadData.file_data = fileData.base64;
+        payloadData.mime_type = fileData.mime;
+    }
+
+    callEnrichWebhook(payloadData);
 }
 
-// CHIAMATA WEBHOOK UNICA (CON SPONSOR)
-async function triggerEnrichment(dataPayload) {
-    // 1. Mostra Loader con Sponsor
+// 9. WEBHOOK CALL
+async function callEnrichWebhook(customData) {
     showLoader(t.status_ai);
 
-    // 2. Prepara Payload Completo
     const payload = {
         token: token,
         category_id: catId,
-        language: (urlParams.get('lang') || 'it'),
-        ...dataPayload // Spredda ghost_id oppure name/desc/file
+        language: langParam,
+        ...customData
     };
 
     try {
-        const res = await fetch(ENRICH_URL, {
-            method: 'POST', headers: {'Content-Type':'application/json'},
+        const res = await fetch(ENRICH_WEBHOOK, {
+            method: 'POST', 
+            headers: {'Content-Type':'application/json'},
             body: JSON.stringify(payload)
         });
 
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         
         const json = await res.json();
-        const data = Array.isArray(json) ? json[0] : json; // Fix n8n array
+        const data = Array.isArray(json) ? json[0] : json;
+
+        if (!data) throw new Error("Empty Data");
 
         populateForm(data);
 
     } catch(e) {
         console.error(e);
-        tg.showAlert("Error: " + e.message);
+        alert(t.err_generic + "\n" + e.message);
         hideLoader();
-        // Se eravamo in ghost mode e fallisce, mostriamo l'input manuale per fallback
-        if(dataPayload.ghost_id) dom.inputSection.classList.remove('hidden');
+        if (customData.ghost_id) dom.inputSection.classList.remove('hidden');
     }
 }
 
-// POPOLA FORM E MOSTRA
+// 10. POPULATE UI
 function populateForm(data) {
-    draftData = data; // Salva stato per il save finale
+    draftData = data;
 
-    const val = (id, v) => document.getElementById(id).value = v || '';
-    const chk = (id, v) => document.getElementById(id).checked = !!v;
+    const val = (id, v) => { 
+        const el = document.getElementById(id);
+        if(el) el.value = v || ''; 
+    };
+    const chk = (id, v) => {
+        const el = document.getElementById(id);
+        if(el) el.checked = !!v;
+    };
 
-    // Mapping campi (uguale a prima)
-    val('outName', data.identity?.item_name);
-    val('outSku', data.identity?.item_sku);
-    val('outType', data.identity?.item_type || 'SERVICE');
-    val('outShortDesc', data.identity?.description?.short);
-    val('outLongDesc', data.identity?.description?.long);
-    val('outInternal', data.identity?.description?.internal_notes);
-    val('outPrice', data.pricing?.base_price);
-    val('outUnit', data.pricing?.unit_of_measure);
-    chk('outDynamicPrice', data.pricing?.pricing_rules_engine?.is_dynamic_price);
-    chk('outBooking', data.operations?.requires_booking);
-    val('outTags', (data.identity?.tags || []).join(', '));
-    val('outTarget', (data.relations?.marketing_info?.target_audience_tags || []).join(', '));
+    // Mapping Sicuro
+    const identity = data.identity || {};
+    const pricing = data.pricing || {};
+    const desc = identity.description || {};
+    const ops = data.operations || {};
+    const mkt = data.relations?.marketing_info || {};
 
-    // Switch View
+    val('outName', identity.item_name);
+    val('outSku', identity.item_sku);
+    val('outType', identity.item_type || 'SERVICE');
+    val('outShortDesc', desc.short);
+    val('outLongDesc', desc.long);
+    val('outInternal', desc.internal_notes);
+    val('outPrice', pricing.base_price);
+    val('outUnit', pricing.unit_of_measure);
+    chk('outDynamicPrice', pricing.pricing_rules_engine?.is_dynamic_price);
+    chk('outBooking', ops.requires_booking);
+    val('outTags', (identity.tags || []).join(', '));
+    val('outTarget', (mkt.target_audience_tags || []).join(', '));
+
+    const dupBanner = document.getElementById('duplicateBanner');
+    if (data.is_duplicate) dupBanner.classList.remove('hidden');
+    else dupBanner.classList.add('hidden');
+
     dom.inputSection.classList.add('hidden');
     dom.editForm.classList.remove('hidden');
     hideLoader();
+    window.scrollTo(0,0);
 }
 
-// SALVATAGGIO FINALE
+// 11. SAVE FINAL
 async function handleSave(e) {
     e.preventDefault();
     showLoader(t.status_save);
 
-    // Aggiorna draftData con i valori del form (uguale a prima)
-    // ... (omesso per brevità, è identico al codice precedente di scraping form) ...
-    // Se vuoi te lo riscrivo, ma è solo lettura dei value e aggiornamento di draftData.
+    const get = (id) => document.getElementById(id).value;
+    const getChk = (id) => document.getElementById(id).checked;
+
+    // Update Draft Object
+    if(!draftData.identity) draftData.identity = {};
+    draftData.identity.item_name = get('outName');
+    draftData.identity.item_sku = get('outSku');
+    draftData.identity.item_type = get('outType');
     
-    // Payload Save
+    if(!draftData.identity.description) draftData.identity.description = {};
+    draftData.identity.description.short = get('outShortDesc');
+    draftData.identity.description.long = get('outLongDesc');
+    draftData.identity.description.internal_notes = get('outInternal');
+
+    if(!draftData.pricing) draftData.pricing = {};
+    draftData.pricing.base_price = parseFloat(get('outPrice')) || 0;
+    draftData.pricing.unit_of_measure = get('outUnit');
+    
+    if(!draftData.pricing.pricing_rules_engine) draftData.pricing.pricing_rules_engine = {};
+    draftData.pricing.pricing_rules_engine.is_dynamic_price = getChk('outDynamicPrice');
+
+    if(!draftData.operations) draftData.operations = {};
+    draftData.operations.requires_booking = getChk('outBooking');
+
+    draftData.identity.tags = get('outTags').split(',').map(s=>s.trim()).filter(Boolean);
+    
+    if(!draftData.relations) draftData.relations = {};
+    if(!draftData.relations.marketing_info) draftData.relations.marketing_info = {};
+    draftData.relations.marketing_info.target_audience_tags = get('outTarget').split(',').map(s=>s.trim()).filter(Boolean);
+
     const savePayload = {
         token: token,
         category_id: catId,
         new_product_block: draftData
-        // Qui draftData è stato aggiornato con i valori editati dall'utente
     };
 
     try {
-        const res = await fetch(SAVE_URL, {
-            method: 'POST', headers: {'Content-Type':'application/json'},
+        const res = await fetch(SAVE_WEBHOOK, {
+            method: 'POST', 
+            headers: {'Content-Type':'application/json'},
             body: JSON.stringify(savePayload)
         });
+
         if(res.ok) {
             hideLoader();
-            tg.showPopup({ message: t.ok_saved, buttons: [{type: 'ok'}] }, () => {
-                window.location.href = `catalog.html?token=${token}`;
-            });
-        } else throw new Error();
+            try { if(tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success'); } catch(e){}
+            
+            // ALERT CLASSICO + REDIRECT SICURO
+            alert(t.ok_saved);
+            window.location.href = `catalog.html?token=${token}`;
+            
+        } else throw new Error("Server Error");
+
     } catch(e) {
-        tg.showAlert("Save Error");
+        console.error(e);
+        alert(t.err_generic);
         hideLoader();
     }
 }
 
-// UTILS CON SPONSOR
+// 12. UTILS
 function showLoader(text) {
     dom.loaderText.innerText = text;
     dom.loader.classList.remove('hidden');
     dom.loader.style.display = 'flex';
-    // INIETTA SPONSOR
     if(window.SponsorManager) window.SponsorManager.inject('#loader-ad-slot', 'loader');
 }
 
