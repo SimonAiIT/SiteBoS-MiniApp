@@ -78,15 +78,34 @@ function t(key) {
 }
 
 function applyTranslations() {
-    document.getElementById('page-title').innerText = t('title');
-    document.getElementById('page-subtitle').innerText = t('subtitle');
-    document.getElementById('lbl-ghost').innerText = t('ghost_label');
-    document.getElementById('lbl-active').innerText = t('active_label');
-    document.getElementById('btn-new-cat-text').innerText = t('btn_new_cat');
-    
-    // Empty state
-    document.querySelector('#empty-state p').innerText = t('empty_title');
-    document.querySelector('#empty-state button').innerText = t('empty_btn');
+    // Funzione helper sicura: cerca l'elemento e, se esiste, cambia il testo
+    const safeSetText = (selector, key) => {
+        const el = document.querySelector(selector);
+        if (el) el.innerText = t(key);
+    };
+
+    // 1. Header (H1 e Small non hanno ID, usiamo le classi)
+    safeSetText('.header-info h1', 'title');
+    safeSetText('.header-info small', 'subtitle');
+
+    // 2. Stats Labels (Sono dentro .dash-sub vicino agli ID dei contatori)
+    // Cerchiamo il div che contiene l'ID count-ghost e prendiamo il suo vicino .dash-sub
+    const ghostLabel = document.querySelector('#count-ghost + .dash-sub');
+    if (ghostLabel) ghostLabel.innerText = t('ghost_label');
+
+    const activeLabel = document.querySelector('#count-active + .dash-sub');
+    if (activeLabel) activeLabel.innerText = t('active_label');
+
+    // 3. Bottone Nuova Categoria (Non ha ID, usiamo le classi del bottone)
+    const btnNewCat = document.querySelector('.btn-secondary.btn-block');
+    if (btnNewCat) {
+        // Nota: Qui usiamo innerHTML perché c'è l'icona <i>
+        btnNewCat.innerHTML = `<i class="fas fa-plus"></i> ${t('btn_new_cat')}`;
+    }
+
+    // 4. Empty State (P e Button dentro #empty-state)
+    safeSetText('#empty-state p', 'empty_title');
+    safeSetText('#empty-state button', 'empty_btn');
 }
 
 // NAVIGAZIONE
