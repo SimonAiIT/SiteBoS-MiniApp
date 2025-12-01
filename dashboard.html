@@ -4,34 +4,24 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>Dashboard</title>
-  
-  <!-- Telegram Script -->
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  
-  <!-- Fonts & Icons -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  
-  <!-- CSS Principale -->
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
-  <!-- LOADER -->
   <div id="loader">
     <div class="spinner-ring"></div>
     <div style="margin-top:10px; opacity:0.7; text-align:center;">Loading Dashboard...</div>
   </div>
 
-  <!-- APP CONTENT -->
   <div id="app-content" class="container hidden fade-in">
     
-    <!-- HEADER -->
+    <!-- HEADER RIVISTO -->
     <div class="dashboard-header">
         <div class="header-info">
-            <!-- Logo Azienda (Opzionale) -->
             <img id="header-logo" src="" alt="Logo" class="hidden brand-logo" style="width:30px; height:30px; margin-right:10px; vertical-align:middle; border-radius:6px;">
-            
             <div style="display:inline-block; vertical-align:middle;">
                 <h1 id="companyName" style="font-size:16px; margin:0;">Caricamento...</h1>
                 <small id="vatDisplay" style="color:var(--text-muted); font-size:11px;">...</small>
@@ -45,14 +35,19 @@
                 <div style="font-size:8px; color:var(--text-muted); text-transform:uppercase;">CREDITI</div>
             </div>
 
-            <!-- Widget Button (Occhio) -->
+            <!-- Widget -->
             <button class="btn-icon" onclick="navTo('widget')" title="Widget">
                 <i class="fas fa-eye"></i>
             </button>
 
-            <!-- Blog/Site Button (Mondo - AGGIUNTO) -->
+            <!-- Blog -->
             <button class="btn-icon" onclick="navTo('blog')" title="Sito Web">
                 <i class="fas fa-globe"></i>
+            </button>
+            
+            <!-- CONFIGURAZIONE (Spostato qui) -->
+            <button class="btn-icon" onclick="navTo('company')" title="Dati Aziendali" style="background:rgba(255,255,255,0.1);">
+                <i class="fas fa-cog"></i>
             </button>
         </div>
     </div>
@@ -61,11 +56,11 @@
         <h4 data-i18n="section_operations" style="opacity:0.7; text-transform:uppercase; font-size:12px; letter-spacing:1px;">Gestione Operativa</h4>
     </div>
 
-    <!-- DASHBOARD GRID -->
+    <!-- GRIGLIA OPERATIVA (Simmetrica) -->
     <div class="dash-grid">
         
-        <!-- 1. HoneyPot (Sempre in Root o gestito a parte se vuoi spostarlo) -->
-        <div id="card-hp" class="dash-card" style="grid-column: span 2; flex-direction:row; justify-content:center; gap:15px;">
+        <!-- 1. HoneyPot (Largo, in cima) -->
+        <div id="card-hp" class="dash-card" style="grid-column: span 2; flex-direction:row; justify-content:center; gap:15px; min-height:90px;">
              <div class="dash-icon" style="background:rgba(91, 111, 237, 0.2);"><i class="fas fa-brain"></i></div>
              <div style="text-align:left;">
                  <div class="dash-label" data-i18n="card_hp">HoneyPot</div>
@@ -73,35 +68,28 @@
              </div>
         </div>
 
-        <!-- 2. Catalogo (Link a catalog/catalog.html) -->
+        <!-- 2. Catalogo -->
         <div id="card-catalog" class="dash-card" onclick="navTo('catalog')">
             <div class="dash-icon"><i class="fas fa-box-open"></i></div>
             <div class="dash-label" data-i18n="card_catalog">Catalogo</div>
             <div class="dash-sub" id="sub-catalog">...</div>
         </div>
 
-        <!-- 3. Agenda (Link a agenda/agenda.html) -->
+        <!-- 3. Agenda -->
         <div id="card-agenda" class="dash-card" onclick="navTo('agenda')">
             <div class="dash-icon"><i class="fas fa-calendar-alt"></i></div>
             <div class="dash-label" data-i18n="card_agenda">Agenda</div>
             <div class="dash-sub" id="sub-agenda">...</div>
         </div>
 
-        <!-- 4. Dati Aziendali (Link a edit_owner.html in root) -->
-        <div id="card-company" class="dash-card" onclick="navTo('company')">
-            <div class="dash-icon"><i class="fas fa-building"></i></div>
-            <div class="dash-label" data-i18n="card_company">Dati Aziendali</div>
-            <div class="dash-sub" id="sub-config">...</div>
-        </div>
-
-        <!-- 5. Team / HR (Link a human_resources/team.html) -->
+        <!-- 4. Team -->
         <div id="card-team" class="dash-card" onclick="navTo('team')">
             <div class="dash-icon"><i class="fas fa-users"></i></div>
             <div class="dash-label" data-i18n="card_team">Collaboratori</div>
             <div class="dash-sub" id="sub-team">...</div>
         </div>
         
-        <!-- 6. Conoscenza (Link a knowledge_base/knowledge.html) -->
+        <!-- 5. Conoscenza -->
         <div id="card-knowledge" class="dash-card" onclick="navTo('knowledge')">
             <div class="dash-icon"><i class="fas fa-folder-open"></i></div>
             <div class="dash-label" data-i18n="card_knowledge">Conoscenza</div>
@@ -110,14 +98,11 @@
 
     </div>
 
-    <!-- Footer / Info -->
     <div style="text-align:center; margin-top:30px; opacity:0.3; font-size:10px;">
         <p>TrinAi Business OS v2.1</p>
     </div>
 
   </div>
-
-  <!-- LOGICA JS -->
   <script src="dashboard_logic.js"></script>
 </body>
 </html>
