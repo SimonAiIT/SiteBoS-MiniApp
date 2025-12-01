@@ -214,6 +214,9 @@ async function loadCatalog(forceRefresh = false) {
     }
 }
 
+// ==========================================
+// FUNZIONE RENDER AGGIORNATA (SOLO QUESTA PARTE CAMBIA)
+// ==========================================
 function renderCatalog() {
     const container = document.getElementById('catalog-list');
     container.innerHTML = '';
@@ -233,30 +236,18 @@ function renderCatalog() {
         ghostCount += (subcats.length - catActive);
 
         const displayTitle = cat.short_name || cat.name;
-        // Importante: fallback a stringa vuota se manca l'ID
         const catId = cat.callback_data || ""; 
 
         const catEl = document.createElement('div');
         catEl.className = 'cat-card';
         
-        // --- RENDERING ROBUSTO: Onclick inline + Data Attributes ---
+        // Header Categoria (Invariato)
         catEl.innerHTML = `
             <div class="cat-header" onclick="this.parentElement.classList.toggle('open')">
                 <div class="cat-title" title="${escapeHtml(cat.name)}">${displayTitle}<span class="cat-badge">${subcats.length}</span></div>
                 <div class="cat-actions">
-                    <button class="btn-icon-sm" 
-                        data-id="${catId}" 
-                        data-name="${escapeHtml(cat.name)}" 
-                        data-short="${escapeHtml(cat.short_name)}"
-                        onclick="event.stopPropagation(); handleEditClick(this)">
-                        <i class="fas fa-pen"></i>
-                    </button>
-                    <button class="btn-icon-sm text-error" 
-                        data-id="${catId}" 
-                        data-name="${escapeHtml(cat.name)}"
-                        onclick="event.stopPropagation(); handleDeleteClick(this)">
-                        <i class="fas fa-trash"></i>
-                    </button>
+                    <button class="btn-icon-sm" data-id="${catId}" data-name="${escapeHtml(cat.name)}" data-short="${escapeHtml(cat.short_name)}" onclick="event.stopPropagation(); handleEditClick(this)"><i class="fas fa-pen"></i></button>
+                    <button class="btn-icon-sm text-error" data-id="${catId}" data-name="${escapeHtml(cat.name)}" onclick="event.stopPropagation(); handleDeleteClick(this)"><i class="fas fa-trash"></i></button>
                     <i class="fas fa-chevron-down chevron"></i>
                 </div>
             </div>
@@ -269,6 +260,7 @@ function renderCatalog() {
         `;
 
         const prodContainer = catEl.querySelector('.products-container');
+        
         subcats.forEach((prod, prodIdx) => {
             const isActive = prod.blueprint_ready === true;
             const statusClass = isActive ? 'status-active' : 'status-ghost';
@@ -280,18 +272,31 @@ function renderCatalog() {
             const prodDisplay = prod.short_name || prod.name;
             const prodSub = (prod.short_name && prod.name !== prod.short_name) ? prod.name : '';
             const shortDesc = prod.description ? prod.description.substring(0, 50) + '...' : '';
+            
+            // ID Prodotto
+            const prodId = prod.callback_data || "";
+            const safeProdName = escapeHtml(prod.name);
 
             const prodEl = document.createElement('div');
             prodEl.className = `prod-item ${statusClass}`;
+            
+            // NUOVO LAYOUT HTML PRODOTTO CON TASTO DELETE
             prodEl.innerHTML = `
                 <div class="prod-info">
                     <div class="prod-name">${prodDisplay} ${isActive ? `<i class="fas fa-check-circle" style="color:var(--success); font-size:10px;"></i>` : ''}</div>
                     ${prodSub ? `<div class="prod-full-name">${prodSub}</div>` : ''}
                     <div class="prod-desc">${shortDesc}</div>
                 </div>
-                <button class="btn-action ${btnClass}" onclick="openProduct('${targetPage}', ${catIdx}, ${prodIdx})">
-                    ${icon} <span>${actionLabel}</span>
-                </button>
+                
+                <div class="prod-actions-group">
+                    <button class="btn-action ${btnClass}" onclick="openProduct('${targetPage}', ${catIdx}, ${prodIdx})">
+                        ${icon} <span>${actionLabel}</span>
+                    </button>
+                    
+                    <button class="btn-prod-delete" onclick="deleteProduct('${safeProdName}', '${prodId}')">
+                        <i class="fas fa-trash-alt"></i> <span>Elimina</span>
+                    </button>
+                </div>
             `;
             prodContainer.appendChild(prodEl);
         });
@@ -301,6 +306,47 @@ function renderCatalog() {
     document.getElementById('count-ghost').innerText = ghostCount;
     document.getElementById('count-active').innerText = activeCount;
 }
+
+// ==========================================
+// NUOVA FUNZIONE: DELETE PRODUCT
+// ==========================================
+
+window.deleteProduct = async function(prodName, prodId) {
+    // Fallback traduzione manuale se non aggiorni tutto il dizionario i18n subito
+    const confirmText = i18n[getLang()]?.confirm_delete_prod || `Delete product '${prodName}'?`;
+    
+    if (!prodId) return alert("Error: Product ID missing");
+    if (!confirm(confirmText.replace('{name}', prodName))) return;
+
+    document.getElementById('loader').classList.remove('hidden');
+
+    try {
+        const payload = { 
+            action: 'delete_product', // NUOVA ACTION
+            token: token, 
+            product_id: prodId, // ID UNIVOCO DEL PRODOTTO
+            ...getAllUrlParams() 
+        };
+
+        const res = await fetch(CATALOG_WEBHOOK, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+        if (!res.ok) throw new Error("Server Error");
+        
+        const json = await res.json();
+        
+        // Update One-Shot
+        catalogData = parseN8nResponse(json);
+        renderCatalog();
+        
+        // FIX ROTELLA
+        document.getElementById('loader').classList.add('hidden');
+        
+        if(tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('warning');
+
+    } catch (e) {
+        alert("Error: " + e.message);
+        document.getElementById('loader').classList.add('hidden');
+    }
+};
 
 // ==========================================
 // 6. ACTION HANDLERS (Proxy per leggere data-*)
