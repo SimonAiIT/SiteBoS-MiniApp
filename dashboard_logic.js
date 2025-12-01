@@ -296,11 +296,28 @@ function renderDashboard(data, vat) {
 }
 
 // 5. NAVIGAZIONE
-window.navTo = function(page) {
+// Mappa delle destinazioni (Routing)
+const ROUTES = {
+    'catalog': 'catalog/catalog.html',
+    'agenda': 'agenda/agenda.html',
+    'team': 'human_resources/team.html',
+    'knowledge': 'knowledge_base/knowledge.html',
+    'company': 'edit_owner.html',
+    'widget': 'SiteBos.html',
+    'blog': 'blog/blog.html'
+};
+
+window.navTo = function(routeKey) {
     const p = new URLSearchParams(window.location.search);
-    p.delete('bonus_credits'); 
-    window.location.href = `${page}?${p.toString()}`;
+    p.delete('bonus_credits'); // Pulizia URL per evitare loop di crediti
+    
+    // Recupera il percorso reale dalla mappa, o usa la chiave come fallback se non trovata
+    const targetPath = ROUTES[routeKey] || routeKey;
+
+    // Naviga mantenendo i parametri vitali (token, vat, lang, owner)
+    window.location.href = `${targetPath}?${p.toString()}`;
 }
+
 
 window.openWidget = () => navTo('SiteBos.html');
 window.openSite = () => { 
