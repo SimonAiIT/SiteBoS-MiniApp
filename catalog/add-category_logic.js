@@ -1,12 +1,12 @@
 /**
- * ADD CATEGORY LOGIC (v2.3 FINAL - UNIFIED VIEW)
- * - Niente Tab: Input Manuale e Upload visibili insieme.
- * - Single Webhook per generazione.
+ * ADD CATEGORY LOGIC (v3.0 - SIMPLE & FLAT)
+ * - Single Form Flow: Name (Req) + Desc (Opt) + File (Opt) -> One Button.
+ * - Full 6-language I18N.
  */
 
 'use strict';
 
-// WEBHOOKS
+// CONFIG
 const GENERATE_WEBHOOK_URL = "https://trinai.api.workflow.dcmake.it/webhook/5e225cf6-76bb-4e19-8657-35cac49fd399";
 const SAVE_WEBHOOK_URL = "https://trinai.api.workflow.dcmake.it/webhook/7da6f424-dc2a-4476-a0bd-a3bfd21270fb";
 
@@ -16,97 +16,85 @@ tg.ready(); tg.expand();
 const urlParams = new URLSearchParams(window.location.search);
 let generatedCategoryData = null;
 
-// I18N
+// I18N COMPLETE
 const i18n = {
     it: {
-        page_title: "Nuova Categoria", title: "➕ Nuova Categoria", subtitle: "Definisci una nuova area per i tuoi prodotti o servizi.",
-        tab_manual: "Manuale / AI", tab_upload: "Da File",
+        page_title: "Nuova Categoria", title: "➕ Nuova Categoria", subtitle: "Configura la nuova area di business.",
         lblCatName: "Nome Categoria", lblCatDesc: "Descrizione (Opzionale)",
-        btnGenerate: "Genera Servizi con AI",
-        subcatTitle: "Seleziona i servizi da includere",
-        lblManualAdd: "Aggiungi Manualmente", manualPlaceholder: "Es. Manutenzione ordinaria...",
-        upload_disclaimer: "Carica un listino o un documento (PDF/JSON). L'AI estrarrà una singola categoria e i relativi prodotti.",
-        upload_hint: "Tocca per caricare PDF o JSON",
-        btnSave: "Salva Categoria",
-        status_generating: "L'AI sta analizzando...", status_saving: "Salvataggio...", status_uploading: "Caricamento e analisi...",
+        divider_text: "E / O CARICA LISTINO (PDF/JSON)",
+        upload_hint: "Tocca per caricare File",
+        btnGenerate: "Genera Servizi",
+        subcatTitle: "Revisione Servizi", lblManualAdd: "Aggiungi altro...",
+        btnSave: "Conferma e Salva",
+        status_analyzing: "Analisi in corso...", status_saving: "Salvataggio...",
         status_success: "✅ Categoria Creata!",
-        err_name_req: "Il nome della categoria è obbligatorio!", err_file_req: "Per favore, seleziona un file.",
-        err_generic: "Si è verificato un errore. Riprova più tardi."
+        err_name_req: "Il nome della categoria è obbligatorio!",
+        err_generic: "Errore. Riprova."
     },
     en: {
-        page_title: "New Category", title: "➕ New Category", subtitle: "Define a new area for your products or services.",
-        tab_manual: "Manual / AI", tab_upload: "From File",
+        page_title: "New Category", title: "➕ New Category", subtitle: "Setup new business area.",
         lblCatName: "Category Name", lblCatDesc: "Description (Optional)",
-        btnGenerate: "Generate Services with AI",
-        subcatTitle: "Select services to include",
-        lblManualAdd: "Add Manually", manualPlaceholder: "E.g., Standard maintenance...",
-        upload_disclaimer: "Upload a pricelist or document (PDF/JSON). The AI will extract a single category and its products.",
-        upload_hint: "Tap to upload PDF or JSON",
-        btnSave: "Save Category",
-        status_generating: "AI is analyzing...", status_saving: "Saving...", status_uploading: "Uploading & analyzing...",
+        divider_text: "AND / OR UPLOAD LIST (PDF/JSON)",
+        upload_hint: "Tap to upload File",
+        btnGenerate: "Generate Services",
+        subcatTitle: "Review Services", lblManualAdd: "Add more...",
+        btnSave: "Confirm & Save",
+        status_analyzing: "Analyzing...", status_saving: "Saving...",
         status_success: "✅ Category Created!",
-        err_name_req: "Category name is required!", err_file_req: "Please select a file.",
-        err_generic: "An error occurred. Please try again later."
+        err_name_req: "Category name is required!",
+        err_generic: "Error. Retry."
     },
     fr: {
-        page_title: "Nouvelle Catégorie", title: "➕ Nouvelle Catégorie", subtitle: "Définissez une nouvelle zone pour vos produits ou services.",
-        tab_manual: "Manuel / IA", tab_upload: "Depuis Fichier",
-        lblCatName: "Nom de la Catégorie", lblCatDesc: "Description (Optionnel)",
-        btnGenerate: "Générer avec l'IA",
-        subcatTitle: "Sélectionnez les services à inclure",
-        lblManualAdd: "Ajouter Manuellement", manualPlaceholder: "Ex. Entretien courant...",
-        upload_disclaimer: "Chargez une liste de prix ou un document (PDF/JSON). L'IA extraira une seule catégorie et ses produits.",
-        upload_hint: "Touchez pour charger PDF ou JSON",
-        btnSave: "Enregistrer Catégorie",
-        status_generating: "L'IA analyse...", status_saving: "Enregistrement...", status_uploading: "Chargement et analyse...",
-        status_success: "✅ Catégorie Créée !",
-        err_name_req: "Le nom de la catégorie est requis !", err_file_req: "Veuillez sélectionner un fichier.",
-        err_generic: "Une erreur est survenue. Veuillez réessayer plus tard."
+        page_title: "Nouvelle Catégorie", title: "➕ Nouvelle Catégorie", subtitle: "Configurez la nouvelle zone.",
+        lblCatName: "Nom Catégorie", lblCatDesc: "Description (Optionnel)",
+        divider_text: "ET / OU CHARGER FICHIER",
+        upload_hint: "Touchez pour charger",
+        btnGenerate: "Générer Services",
+        subcatTitle: "Révision Services", lblManualAdd: "Ajouter...",
+        btnSave: "Confirmer & Enregistrer",
+        status_analyzing: "Analyse...", status_saving: "Enregistrement...",
+        status_success: "✅ Créée !",
+        err_name_req: "Nom requis !",
+        err_generic: "Erreur. Réessayer."
     },
     de: {
-        page_title: "Neue Kategorie", title: "➕ Neue Kategorie", subtitle: "Definieren Sie einen neuen Bereich für Ihre Produkte oder Dienstleistungen.",
-        tab_manual: "Manuell / KI", tab_upload: "Aus Datei",
+        page_title: "Neue Kategorie", title: "➕ Neue Kategorie", subtitle: "Neuen Bereich einrichten.",
         lblCatName: "Kategoriename", lblCatDesc: "Beschreibung (Optional)",
-        btnGenerate: "Mit KI generieren",
-        subcatTitle: "Wählen Sie die einzuschließenden Dienste aus",
-        lblManualAdd: "Manuell hinzufügen", manualPlaceholder: "Z.B. Standardwartung...",
-        upload_disclaimer: "Laden Sie eine Preisliste oder ein Dokument (PDF/JSON) hoch. Die KI extrahiert eine einzelne Kategorie und ihre Produkte.",
-        upload_hint: "Tippen, um PDF oder JSON hochzuladen",
-        btnSave: "Kategorie speichern",
-        status_generating: "KI analysiert...", status_saving: "Speichern...", status_uploading: "Hochladen & analysieren...",
-        status_success: "✅ Kategorie erstellt!",
-        err_name_req: "Kategoriename ist erforderlich!", err_file_req: "Bitte wählen Sie eine Datei aus.",
-        err_generic: "Ein Fehler ist aufgetreten. Bitte versuchen Sie es später erneut."
+        divider_text: "UND / ODER DATEI LADEN",
+        upload_hint: "Tippen zum Laden",
+        btnGenerate: "Dienste Generieren",
+        subcatTitle: "Dienste Überprüfen", lblManualAdd: "Hinzufügen...",
+        btnSave: "Bestätigen & Speichern",
+        status_analyzing: "Analysiere...", status_saving: "Speichern...",
+        status_success: "✅ Erstellt!",
+        err_name_req: "Name erforderlich!",
+        err_generic: "Fehler. Wiederholen."
     },
     es: {
-        page_title: "Nueva Categoría", title: "➕ Nueva Categoría", subtitle: "Define una nueva área para tus productos o servicios.",
-        tab_manual: "Manual / IA", tab_upload: "Desde Archivo",
-        lblCatName: "Nombre de la Categoría", lblCatDesc: "Descripción (Opcional)",
-        btnGenerate: "Generar con IA",
-        subcatTitle: "Selecciona los servicios a incluir",
-        lblManualAdd: "Añadir Manualmente", manualPlaceholder: "Ej. Mantenimiento estándar...",
-        upload_disclaimer: "Sube una lista de precios o un documento (PDF/JSON). La IA extraerá una sola categoría y sus productos.",
-        upload_hint: "Toca para subir PDF o JSON",
-        btnSave: "Guardar Categoría",
-        status_generating: "La IA está analizando...", status_saving: "Guardando...", status_uploading: "Subiendo y analizando...",
-        status_success: "✅ ¡Categoría Creada!",
-        err_name_req: "¡El nombre de la categoría es obligatorio!", err_file_req: "Por favor, selecciona un archivo.",
-        err_generic: "Ocurrió un error. Por favor, inténtalo de nuevo más tarde."
+        page_title: "Nueva Categoría", title: "➕ Nueva Categoría", subtitle: "Configura nueva área.",
+        lblCatName: "Nombre Categoría", lblCatDesc: "Descripción (Opcional)",
+        divider_text: "Y / O CARGAR ARCHIVO",
+        upload_hint: "Toca para cargar",
+        btnGenerate: "Generar Servicios",
+        subcatTitle: "Revisar Servicios", lblManualAdd: "Añadir...",
+        btnSave: "Confirmar y Guardar",
+        status_analyzing: "Analizando...", status_saving: "Guardando...",
+        status_success: "✅ ¡Creada!",
+        err_name_req: "¡Nombre obligatorio!",
+        err_generic: "Error. Reintentar."
     },
     pt: {
-        page_title: "Nova Categoria", title: "➕ Nova Categoria", subtitle: "Defina uma nova área para seus produtos ou serviços.",
-        tab_manual: "Manual / IA", tab_upload: "De Arquivo",
-        lblCatName: "Nome da Categoria", lblCatDesc: "Descrição (Opcional)",
-        btnGenerate: "Gerar com IA",
-        subcatTitle: "Selecione os serviços a incluir",
-        lblManualAdd: "Adicionar Manualmente", manualPlaceholder: "Ex. Manutenção padrão...",
-        upload_disclaimer: "Carregue uma lista de preços ou documento (PDF/JSON). A IA irá extrair uma única categoria e seus produtos.",
-        upload_hint: "Toque para carregar PDF ou JSON",
-        btnSave: "Salvar Categoria",
-        status_generating: "A IA está analisando...", status_saving: "Salvando...", status_uploading: "Carregando e analisando...",
-        status_success: "✅ Categoria Criada!",
-        err_name_req: "O nome da categoria é obrigatório!", err_file_req: "Por favor, selecione um arquivo.",
-        err_generic: "Ocorreu um erro. Por favor, tente novamente mais tarde."
+        page_title: "Nova Categoria", title: "➕ Nova Categoria", subtitle: "Configurar nova área.",
+        lblCatName: "Nome Categoria", lblCatDesc: "Descrição (Opcional)",
+        divider_text: "E / OU CARREGAR ARQUIVO",
+        upload_hint: "Toque para carregar",
+        btnGenerate: "Gerar Serviços",
+        subcatTitle: "Revisar Serviços", lblManualAdd: "Adicionar...",
+        btnSave: "Confirmar e Salvar",
+        status_analyzing: "Analisando...", status_saving: "Salvando...",
+        status_success: "✅ Criada!",
+        err_name_req: "Nome obrigatório!",
+        err_generic: "Erro. Tente novamente."
     }
 };
 
@@ -126,44 +114,55 @@ const dom = {
     manualInput: document.getElementById('manualSubcat'),
     fileInput: document.getElementById('file-input'),
     fileBox: document.getElementById('file-upload-box'),
-    fileText: document.getElementById('upload-text')
+    fileText: document.getElementById('upload-text'),
+    fileName: document.getElementById('file-name-display')
 };
 
+// INIT
 function init() {
-    applyTranslations();
-    bindEvents();
-}
-
-function applyTranslations() {
-    document.querySelectorAll('[data-i18n]').forEach(el => {
-        const key = el.getAttribute('data-i18n');
-        if (t[key]) el.innerText = t[key];
-    });
+    // Apply Translations
     document.title = t.page_title;
-}
+    for (const key in t) {
+        const el = document.querySelector(`[data-i18n="${key}"]`);
+        if(el) el.innerText = t[key];
+    }
+    dom.manualInput.placeholder = t.manualPlaceholder; // Placeholder specific handling
 
-function bindEvents() {
-    document.getElementById('generateBtn').addEventListener('click', generateFromText);
+    // Bind Events
+    document.getElementById('generateBtn').addEventListener('click', handleGenerate);
     document.getElementById('addSubcatBtn').addEventListener('click', addManualSubcat);
     document.getElementById('saveBtn').addEventListener('click', saveCategory);
-    dom.fileInput.addEventListener('change', handleFileUpload);
+    
+    // File UI feedback
+    dom.fileInput.addEventListener('change', (e) => {
+        if(e.target.files.length > 0) {
+            dom.fileBox.classList.add('success');
+            dom.fileName.innerText = e.target.files[0].name;
+        } else {
+            dom.fileBox.classList.remove('success');
+            dom.fileName.innerText = "";
+        }
+    });
 }
 
-// RESET FORM (Torna alla fase 1)
+// RESET FORM
 window.resetForm = function() {
     dom.reviewPhase.classList.add('hidden');
     dom.inputPhase.classList.remove('hidden');
-    dom.fileInput.value = ''; // Reset file input
+    dom.fileInput.value = ''; 
     dom.fileBox.classList.remove('success');
-    dom.fileText.innerText = t.upload_hint;
+    dom.fileName.innerText = "";
     generatedCategoryData = null;
 }
 
-// LOGICA GENERAZIONE (Text)
-async function generateFromText() {
+// MAIN ACTION: GENERATE
+async function handleGenerate() {
     const name = dom.catName.value.trim();
     if (!name) return tg.showAlert(t.err_name_req);
-    
+
+    showLoader(t.status_analyzing);
+
+    // Prepare Payload
     const payload = {
         category_name: name,
         category_description: dom.catDesc.value,
@@ -171,94 +170,90 @@ async function generateFromText() {
         language: lang
     };
 
-    await sendToGenerator(payload, t.status_generating);
-}
-
-// LOGICA UPLOAD (File)
-async function handleFileUpload(e) {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    dom.fileBox.classList.add('analyzing');
-    dom.fileText.innerText = t.status_uploading;
-
-    try {
-        const reader = new FileReader();
-        reader.readAsDataURL(file);
-        reader.onload = async () => {
-            const base64 = reader.result.split(',')[1];
-            const mime = reader.result.match(/:(.*?);/)[1];
-
-            const payload = {
-                token: urlParams.get('token'),
-                language: lang,
-                file_data: base64,
-                mime_type: mime
-            };
-
-            await sendToGenerator(payload, t.status_uploading);
-            dom.fileBox.classList.remove('analyzing');
-        };
-    } catch (e) {
-        handleError(e);
-        dom.fileBox.classList.remove('analyzing');
+    // Check File
+    if (dom.fileInput.files.length > 0) {
+        try {
+            const fileData = await readFile(dom.fileInput.files[0]);
+            payload.file_data = fileData.base64;
+            payload.mime_type = fileData.mime;
+        } catch (e) {
+            console.error("File read error", e);
+        }
     }
-}
 
-// CHIAMATA API COMUNE
-async function sendToGenerator(payload, loadingMessage) {
-    showLoader(loadingMessage);
+    // Call API
     try {
         const res = await fetch(GENERATE_WEBHOOK_URL, {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify(payload)
         });
+
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const data = Array.isArray(await res.json()) ? (await res.json())[0] : await res.json();
+        
+        const jsonResponse = await res.json();
+        const data = Array.isArray(jsonResponse) ? jsonResponse[0] : jsonResponse;
+        
         handleAnalysisResult(data);
+
     } catch (e) {
         handleError(e);
     }
 }
 
-// GESTIONE RISULTATI & SWITCH A REVISIONE
+// RESULT HANDLER
 function handleAnalysisResult(data) {
     generatedCategoryData = data;
     
-    // Aggiorna i campi (se l'AI ha migliorato nome/descrizione)
-    dom.catName.value = data.name || dom.catName.value;
-    dom.catDesc.value = data.description || dom.catDesc.value;
+    // Update inputs with AI refined data
+    if(data.name) dom.catName.value = data.name;
+    if(data.description) dom.catDesc.value = data.description;
     
-    // Popola lista
+    // Populate List
     dom.subcatList.innerHTML = '';
     if (data.subcategories) {
         data.subcategories.forEach(sub => createListItem(sub.name, sub.short_name));
     }
     
-    // Switch View: Nascondi Input, Mostra Revisione
+    // Switch Views
     dom.inputPhase.classList.add('hidden');
     dom.reviewPhase.classList.remove('hidden');
     
     hideLoader();
 }
 
+// HELPER: Create List Item
 function createListItem(name, display) {
     const li = document.createElement('li');
     li.className = 'list-item';
     li.innerHTML = `
         <div class="checkbox-group" style="margin-bottom:0; width:100%;">
-            <input type="checkbox" checked value="${name}" data-short="${display}" id="chk_${name.replace(/\s/g, '_')}">
-            <label for="chk_${name.replace(/\s/g, '_')}">${display}</label>
+            <input type="checkbox" checked value="${name}" data-short="${display}" id="chk_${name.replace(/[^a-zA-Z0-9]/g, '_')}">
+            <label for="chk_${name.replace(/[^a-zA-Z0-9]/g, '_')}">${display}</label>
         </div>`;
     dom.subcatList.appendChild(li);
 }
 
+// HELPER: Add Manual Item
 function addManualSubcat() {
     const val = dom.manualInput.value.trim();
     if (val) { createListItem(val, val); dom.manualInput.value = ''; }
 }
 
+// HELPER: Read File
+function readFile(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve({
+            base64: reader.result.split(',')[1],
+            mime: reader.result.match(/:(.*?);/)[1]
+        });
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+    });
+}
+
+// FINAL SAVE
 async function saveCategory() {
     if (!dom.catName.value) return tg.showAlert(t.err_name_req);
     showLoader(t.status_saving);
@@ -266,7 +261,8 @@ async function saveCategory() {
     const selected = [];
     dom.subcatList.querySelectorAll('input:checked').forEach(cb => {
         selected.push({
-            name: cb.value, short_name: cb.dataset.short,
+            name: cb.value, 
+            short_name: cb.dataset.short,
             callback_data: cb.value.toUpperCase().replace(/[^A-Z0-9\s]/g, '').replace(/\s/g, '_').substring(0, 60)
         });
     });
@@ -274,12 +270,13 @@ async function saveCategory() {
     const payload = {
         token: urlParams.get('token'),
         new_category_block: {
-            name: dom.catName.value, description: dom.catDesc.value,
+            name: dom.catName.value, 
+            description: dom.catDesc.value,
             short_name: generatedCategoryData?.short_name || dom.catName.value,
             callback_data: generatedCategoryData?.callback_data || dom.catName.value.toUpperCase().replace(/[^A-Z0-9\s]/g, '').replace(/\s/g, '_').substring(0, 60),
             subcategories: selected
         },
-        ...Object.fromEntries(urlParams) // Passa tutti i parametri URL
+        ...Object.fromEntries(urlParams)
     };
 
     try {
@@ -287,6 +284,7 @@ async function saveCategory() {
             method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload)
         });
         if (!res.ok) throw new Error();
+        
         hideLoader();
         if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
         tg.showPopup({ message: t.status_success, buttons: [{type: 'ok'}] }, () => history.back());
@@ -295,17 +293,16 @@ async function saveCategory() {
     }
 }
 
+// UI UTILS
 function showLoader(text) {
     dom.loaderText.innerText = text;
     dom.loader.classList.remove('hidden');
     dom.content.classList.add('hidden');
 }
-
 function hideLoader() {
     dom.loader.classList.add('hidden');
     dom.content.classList.remove('hidden');
 }
-
 function handleError(error) {
     console.error(error);
     hideLoader();
