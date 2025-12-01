@@ -1,8 +1,8 @@
 /**
- * CATALOG LOGIC (v4.0 - Final Production)
- * - Multilingua Completo (6 Lingue)
- * - Gestione CRUD Avanzata (Edit/Delete con Modale)
- * - Persistenza Parametri URL in tutte le chiamate
+ * CATALOG LOGIC (v5.0 - ID Based Actions)
+ * - Multilingua Completo
+ * - Gestione CRUD con CALLBACK_DATA come ID univoco (Non più nome)
+ * - Persistenza Parametri URL
  * - Gestione Short Name / Long Name
  */
 
@@ -18,11 +18,11 @@ tg.expand();
 const urlParams = new URLSearchParams(window.location.search);
 const token = urlParams.get('token');
 
-// Stato locale per l'editing
-let currentEditingCatOriginalName = ""; 
+// Stato locale per l'editing (Memorizza l'ID univoco, non il nome)
+let currentEditingCatId = ""; 
 
 // ==========================================
-// 2. I18N DICTIONARY (6 LANGUAGES)
+// 2. I18N DICTIONARY
 // ==========================================
 const i18n = {
     it: {
@@ -152,12 +152,11 @@ function applyTranslations() {
     safeSetText('#empty-state p', 'empty_title');
     safeSetText('#empty-state button', 'empty_btn');
 
-    // Modal Translations
+    // Modal
     safeSetText('h3[data-i18n="modal_edit_title"]', 'modal_edit_title');
     safeSetText('label[data-i18n="lbl_cat_short"]', 'lbl_cat_short');
     safeSetText('label[data-i18n="lbl_cat_long"]', 'lbl_cat_long');
     
-    // Modal Buttons
     const btnCancel = document.querySelector('#edit-cat-modal .btn-secondary');
     if(btnCancel) btnCancel.innerText = t('btn_cancel');
     const btnSave = document.querySelector('#edit-cat-modal .btn-primary');
@@ -208,8 +207,7 @@ async function loadCatalog(forceRefresh = false) {
 
     try {
         const payload = { action: 'get_catalog', token: token, ...getAllUrlParams() };
-        console.log("Sending Payload:", payload); 
-
+        
         const res = await fetch(CATALOG_WEBHOOK, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
         if (!res.ok) throw new Error(`HTTP Error: ${res.status}`);
         
@@ -256,28 +254,32 @@ function renderCatalog() {
         activeCount += catActive;
         ghostCount += catGhost;
 
-        // Visualizzazione: Short name vince (con emoji), Name come fallback
         const displayTitle = cat.short_name || cat.name;
         
-        // Escape strings per passare alle funzioni JS in modo sicuro
+        // --- ESTRAZIONE DATI PER AZIONI ---
+        // Escape dei nomi per JS
         const safeName = (cat.name || "").replace(/'/g, "\\'").replace(/"/g, '&quot;'); 
         const safeShort = (cat.short_name || "").replace(/'/g, "\\'").replace(/"/g, '&quot;'); 
+        
+        // **QUI ESTRAIAMO L'ID UNIVOCO**
+        const catId = cat.callback_data || ""; 
 
         const catEl = document.createElement('div');
         catEl.className = 'cat-card';
         catEl.innerHTML = `
             <div class="cat-header" onclick="this.parentElement.classList.toggle('open')">
-                <div class="cat-title" title="${cat.name}"> <!-- Tooltip con nome completo -->
+                <div class="cat-title" title="${cat.name}">
                     <i class="fas fa-folder" style="color:var(--primary)"></i>
                     ${displayTitle}
                     <span class="cat-badge">${subcats.length}</span>
                 </div>
                 
                 <div class="cat-actions">
-                    <button class="btn-icon-sm" onclick="event.stopPropagation(); openEditModal('${safeName}', '${safeShort}')">
+                    <!-- PASSIAMO catId ALLE FUNZIONI -->
+                    <button class="btn-icon-sm" onclick="event.stopPropagation(); openEditModal('${safeName}', '${safeShort}', '${catId}')">
                         <i class="fas fa-pen"></i>
                     </button>
-                    <button class="btn-icon-sm text-error" onclick="event.stopPropagation(); deleteCategory('${safeName}')">
+                    <button class="btn-icon-sm text-error" onclick="event.stopPropagation(); deleteCategory('${safeName}', '${catId}')">
                         <i class="fas fa-trash"></i>
                     </button>
                     <i class="fas fa-chevron-down chevron"></i>
@@ -330,7 +332,6 @@ function renderCatalog() {
         container.appendChild(catEl);
     });
 
-    // Aggiorna Stats
     const countGhost = document.getElementById('count-ghost');
     if(countGhost) countGhost.innerText = ghostCount;
     const countActive = document.getElementById('count-active');
@@ -338,21 +339,21 @@ function renderCatalog() {
 }
 
 // ==========================================
-// 6. MODAL EDIT LOGIC
+// 6. MODAL EDIT LOGIC (USING ID)
 // ==========================================
 
-window.openEditModal = function(originalName, originalShort) {
-    currentEditingCatOriginalName = originalName; // Chiave per il backend
+window.openEditModal = function(name, short, id) {
+    currentEditingCatId = id; // SALVA L'ID UNIVOCO
     
-    document.getElementById('edit-cat-long').value = originalName;
-    document.getElementById('edit-cat-short').value = originalShort || ""; 
+    document.getElementById('edit-cat-long').value = name;
+    document.getElementById('edit-cat-short').value = short || ""; 
     
     document.getElementById('edit-cat-modal').classList.remove('hidden');
 };
 
 window.closeEditModal = function() {
     document.getElementById('edit-cat-modal').classList.add('hidden');
-    currentEditingCatOriginalName = "";
+    currentEditingCatId = "";
 };
 
 window.saveEditCategory = async function() {
@@ -369,12 +370,12 @@ window.saveEditCategory = async function() {
 
     try {
         const payload = { 
-            action: 'modify_category', // ACTION SPECIFICA
+            action: 'modify_category', 
             token: token, 
-            old_category_name: currentEditingCatOriginalName, // Per trovare la categoria
-            new_category_name: newLong, // Nuovo nome
-            new_category_short_name: newShort, // Nuovo short name
-            ...getAllUrlParams() // Persistenza VAT, Owner, Lang
+            category_id: currentEditingCatId, // CHIAVE: ID (callback_data)
+            new_category_name: newLong,
+            new_category_short_name: newShort,
+            ...getAllUrlParams() 
         };
 
         const res = await fetch(CATALOG_WEBHOOK, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
@@ -390,20 +391,20 @@ window.saveEditCategory = async function() {
 };
 
 // ==========================================
-// 7. DELETE LOGIC
+// 7. DELETE LOGIC (USING ID)
 // ==========================================
 
-window.deleteCategory = async function(catName) {
+window.deleteCategory = async function(catName, catId) {
     const confirmMsg = t('confirm_delete_cat').replace('{name}', catName);
     if (!confirm(confirmMsg)) return;
 
     document.getElementById('loader').classList.remove('hidden');
     try {
         const payload = { 
-            action: 'delete_category', // ACTION SPECIFICA
+            action: 'delete_category', 
             token: token, 
-            category_name: catName, 
-            ...getAllUrlParams() // Persistenza Parametri
+            category_id: catId, // CHIAVE: ID (callback_data)
+            ...getAllUrlParams() 
         };
 
         const res = await fetch(CATALOG_WEBHOOK, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
