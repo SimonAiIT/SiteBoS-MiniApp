@@ -99,7 +99,7 @@ const i18n = {
 };
 
 const lang = (urlParams.get('lang') || tg.initDataUnsafe?.user?.language_code || 'it').slice(0, 2);
-const t = i18n[lang] || i18n.it;
+const t = i18n[lang] || i18n.it; // Fallback su IT se manca lingua
 
 // DOM
 const dom = {
@@ -118,7 +118,6 @@ const dom = {
     fileName: document.getElementById('file-name-display')
 };
 
-// INIT
 function init() {
     // Apply Translations
     document.title = t.page_title;
@@ -126,14 +125,13 @@ function init() {
         const el = document.querySelector(`[data-i18n="${key}"]`);
         if(el) el.innerText = t[key];
     }
-    dom.manualInput.placeholder = t.manualPlaceholder; // Placeholder specific handling
+    dom.manualInput.placeholder = t.manualPlaceholder || "...";
 
     // Bind Events
     document.getElementById('generateBtn').addEventListener('click', handleGenerate);
     document.getElementById('addSubcatBtn').addEventListener('click', addManualSubcat);
     document.getElementById('saveBtn').addEventListener('click', saveCategory);
     
-    // File UI feedback
     dom.fileInput.addEventListener('change', (e) => {
         if(e.target.files.length > 0) {
             dom.fileBox.classList.add('success');
@@ -143,6 +141,12 @@ function init() {
             dom.fileName.innerText = "";
         }
     });
+
+    // --- INIZIALIZZA SPONSOR ---
+    if(window.SponsorManager) {
+        // Pre-carica uno sponsor ma non inietta finché non appare il loader
+        console.log("Sponsor Engine Ready");
+    }
 }
 
 // RESET FORM
@@ -155,14 +159,13 @@ window.resetForm = function() {
     generatedCategoryData = null;
 }
 
-// MAIN ACTION: GENERATE
 async function handleGenerate() {
     const name = dom.catName.value.trim();
     if (!name) return tg.showAlert(t.err_name_req);
 
+    // Mostra Loader con Sponsor
     showLoader(t.status_analyzing);
 
-    // Prepare Payload
     const payload = {
         category_name: name,
         category_description: dom.catDesc.value,
@@ -170,7 +173,6 @@ async function handleGenerate() {
         language: lang
     };
 
-    // Check File
     if (dom.fileInput.files.length > 0) {
         try {
             const fileData = await readFile(dom.fileInput.files[0]);
@@ -181,7 +183,6 @@ async function handleGenerate() {
         }
     }
 
-    // Call API
     try {
         const res = await fetch(GENERATE_WEBHOOK_URL, {
             method: 'POST',
@@ -201,28 +202,22 @@ async function handleGenerate() {
     }
 }
 
-// RESULT HANDLER
 function handleAnalysisResult(data) {
     generatedCategoryData = data;
-    
-    // Update inputs with AI refined data
     if(data.name) dom.catName.value = data.name;
     if(data.description) dom.catDesc.value = data.description;
     
-    // Populate List
     dom.subcatList.innerHTML = '';
     if (data.subcategories) {
         data.subcategories.forEach(sub => createListItem(sub.name, sub.short_name));
     }
     
-    // Switch Views
     dom.inputPhase.classList.add('hidden');
     dom.reviewPhase.classList.remove('hidden');
     
     hideLoader();
 }
 
-// HELPER: Create List Item
 function createListItem(name, display) {
     const li = document.createElement('li');
     li.className = 'list-item';
@@ -234,13 +229,11 @@ function createListItem(name, display) {
     dom.subcatList.appendChild(li);
 }
 
-// HELPER: Add Manual Item
 function addManualSubcat() {
     const val = dom.manualInput.value.trim();
     if (val) { createListItem(val, val); dom.manualInput.value = ''; }
 }
 
-// HELPER: Read File
 function readFile(file) {
     return new Promise((resolve, reject) => {
         const reader = new FileReader();
@@ -253,10 +246,9 @@ function readFile(file) {
     });
 }
 
-// FINAL SAVE
 async function saveCategory() {
     if (!dom.catName.value) return tg.showAlert(t.err_name_req);
-    showLoader(t.status_saving);
+    showLoader(t.status_saving); // Qui lo sponsor gira di nuovo se serve
     
     const selected = [];
     dom.subcatList.querySelectorAll('input:checked').forEach(cb => {
@@ -293,16 +285,24 @@ async function saveCategory() {
     }
 }
 
-// UI UTILS
+// UI UTILS AGGIORNATI PER SPONSOR
 function showLoader(text) {
     dom.loaderText.innerText = text;
+    // Rimuove 'hidden' e usa flex per centrare
     dom.loader.classList.remove('hidden');
-    dom.content.classList.add('hidden');
+    dom.loader.style.display = 'flex';
+    
+    // INIETTA LO SPONSOR QUANDO IL LOADER APPARE
+    if(window.SponsorManager) {
+        window.SponsorManager.inject('#loader-ad-slot', 'loader');
+    }
 }
+
 function hideLoader() {
     dom.loader.classList.add('hidden');
-    dom.content.classList.remove('hidden');
+    dom.loader.style.display = 'none'; // Nasconde davvero
 }
+
 function handleError(error) {
     console.error(error);
     hideLoader();
