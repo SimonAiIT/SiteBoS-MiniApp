@@ -304,7 +304,6 @@ function renderCatalog() {
             const prodDisplay = prod.short_name || prod.name;
             const prodSub = (prod.short_name && prod.name !== prod.short_name) ? prod.name : '';
             const shortDesc = prod.description ? prod.description.substring(0, 50) + '...' : '';
-            const prodId = prod.callback_data || "";
             const safeProdName = escapeHtml(prod.name);
 
             const prodEl = document.createElement('div');
