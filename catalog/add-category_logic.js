@@ -247,9 +247,13 @@ function readFile(file) {
 }
 
 async function saveCategory() {
+    // 1. Validazione
     if (!dom.catName.value) return tg.showAlert(t.err_name_req);
-    showLoader(t.status_saving); // Qui lo sponsor gira di nuovo se serve
     
+    // 2. Loader
+    showLoader(t.status_saving); 
+    
+    // 3. Raccolta Dati
     const selected = [];
     dom.subcatList.querySelectorAll('input:checked').forEach(cb => {
         selected.push({
@@ -259,27 +263,55 @@ async function saveCategory() {
         });
     });
 
+    // 4. Costruzione Payload
     const payload = {
         token: urlParams.get('token'),
         new_category_block: {
             name: dom.catName.value, 
             description: dom.catDesc.value,
+            // Fallback intelligenti se i dati generati non esistono
             short_name: generatedCategoryData?.short_name || dom.catName.value,
             callback_data: generatedCategoryData?.callback_data || dom.catName.value.toUpperCase().replace(/[^A-Z0-9\s]/g, '').replace(/\s/g, '_').substring(0, 60),
             subcategories: selected
         },
-        ...Object.fromEntries(urlParams)
+        ...Object.fromEntries(urlParams) // Passa tutti i parametri URL (chat_id, owner, etc)
     };
 
     try {
+        // 5. Chiamata API
         const res = await fetch(SAVE_WEBHOOK_URL, {
             method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload)
         });
+        
         if (!res.ok) throw new Error();
         
+        // 6. Successo
         hideLoader();
         if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
-        tg.showPopup({ message: t.status_success, buttons: [{type: 'ok'}] }, () => history.back());
+
+        // 7. Popup Decisionale
+        tg.showPopup({
+            title: t.status_success,
+            message: t.msg_what_next || "Salvato! Vuoi continuare?",
+            buttons: [
+                { id: 'new', type: 'default', text: t.btn_add_another || "➕ Aggiungine un'altra" },
+                { id: 'exit', type: 'ok', text: t.btn_exit || "📂 Torna al Catalogo" }
+            ]
+        }, (btnId) => {
+            if (btnId === 'new') {
+                // A. RESET PER NUOVO INSERIMENTO
+                resetForm();
+                dom.catName.value = '';
+                dom.catDesc.value = '';
+                window.scrollTo(0,0);
+            } else {
+                // B. REDIRECT AL CATALOGO (Aggiorna la lista)
+                // window.location.replace è meglio di history.back perché ricarica la pagina target
+                const target = `catalog.html?${urlParams.toString()}`;
+                window.location.replace(target);
+            }
+        });
+
     } catch (e) {
         handleError(e);
     }
