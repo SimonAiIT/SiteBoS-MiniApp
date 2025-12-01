@@ -169,7 +169,7 @@ function escapeHtml(str) {
 // 4. NAVIGATION
 // ==========================================
 
-window.goBack = () => window.location.href = `dashboard.html?${urlParams.toString()}`;
+window.goBack = () => window.location.href = `../dashboard.html?${urlParams.toString()}`;
 window.goToAddCategory = () => window.location.href = `add-category.html?${urlParams.toString()}`;
 window.goToAddProduct = (catIdx) => location.href = `add-product.html?token=${token}&catIdx=${catIdx}&${urlParams.toString()}`;
 window.openProduct = (page, catIdx, prodIdx) => location.href = `${page}?token=${token}&cat=${catIdx}&prod=${prodIdx}&${urlParams.toString()}`;
