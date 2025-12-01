@@ -174,6 +174,7 @@ window.goToAddCategory = () => window.location.href = `add-category.html?${urlPa
 window.goToAddProduct = (catIdx) => location.href = `add-product.html?token=${token}&catIdx=${catIdx}&${urlParams.toString()}`;
 window.openProduct = (page, catIdx, prodIdx) => location.href = `${page}?token=${token}&cat=${catIdx}&prod=${prodIdx}&${urlParams.toString()}`;
 
+
 // ==========================================
 // 5. CORE LOGIC
 // ==========================================
@@ -231,6 +232,8 @@ function renderCatalog() {
     
     categories.forEach((cat, catIdx) => {
         const subcats = cat.subcategories || [];
+        
+        // CALCOLO CONTATORI (La logica che già funziona)
         const catActive = subcats.filter(p => p.blueprint_ready).length;
         activeCount += catActive;
         ghostCount += (subcats.length - catActive);
@@ -241,7 +244,6 @@ function renderCatalog() {
         const catEl = document.createElement('div');
         catEl.className = 'cat-card';
         
-        // Header Categoria (Invariato)
         catEl.innerHTML = `
             <div class="cat-header" onclick="this.parentElement.classList.toggle('open')">
                 <div class="cat-title" title="${escapeHtml(cat.name)}">${displayTitle}<span class="cat-badge">${subcats.length}</span></div>
@@ -253,7 +255,10 @@ function renderCatalog() {
             </div>
             <div class="cat-body">
                 <div style="padding:10px; text-align:center; border-bottom:1px solid var(--glass-border);">
-                    <button class="btn btn-sm btn-secondary" onclick="event.stopPropagation(); goToAddProduct(${catIdx})"><i class="fas fa-plus"></i> ${t('btn_add_here')}</button>
+                    <!-- AGGIUNGI NUOVO (Vuoto) -->
+                    <button class="btn btn-sm btn-secondary" onclick="event.stopPropagation(); goToAddProduct(${catIdx}, null)">
+                        <i class="fas fa-plus"></i> ${t('btn_add_here')}
+                    </button>
                 </div>
                 <div class="products-container"></div>
             </div>
@@ -262,35 +267,47 @@ function renderCatalog() {
         const prodContainer = catEl.querySelector('.products-container');
         
         subcats.forEach((prod, prodIdx) => {
-            const isActive = prod.blueprint_ready === true;
-            const statusClass = isActive ? 'status-active' : 'status-ghost';
-            const icon = isActive ? '<i class="fas fa-sliders-h"></i>' : '<i class="fas fa-magic"></i>';
-            const actionLabel = isActive ? t('btn_manage') : t('btn_activate');
-            const targetPage = isActive ? 'edit-blueprint.html' : 'edit-product.html';
-            const btnClass = isActive ? 'btn-edit' : 'btn-create';
+            const isRealProduct = prod.blueprint_ready === true;
             
+            // --- LOGICA 1+1 ---
+            let btnIcon, btnLabel, btnClass, actionFunction;
+            
+            if (isRealProduct) {
+                // CASO 1: ESISTE -> MODIFICA / GESTISCI
+                btnIcon = '<i class="fas fa-sliders-h"></i>';
+                btnLabel = t('btn_manage') || "Gestisci";
+                btnClass = 'btn-edit'; // Stile secondario/outline
+                // Apre edit-blueprint.html (o edit-product.html a tua scelta per modifica)
+                actionFunction = `openProduct('edit-blueprint.html', ${catIdx}, ${prodIdx})`;
+            } else {
+                // CASO 2: NON ESISTE (GHOST) -> AGGIUNGI
+                btnIcon = '<i class="fas fa-plus"></i>';
+                btnLabel = t('btn_activate') || "Aggiungi";
+                btnClass = 'btn-create'; // Stile primario/pieno
+                // Apre add-product.html passando l'indice per pre-compilare
+                actionFunction = `goToAddProduct(${catIdx}, ${prodIdx})`;
+            }
+
+            const statusClass = isRealProduct ? 'status-active' : 'status-ghost';
             const prodDisplay = prod.short_name || prod.name;
             const prodSub = (prod.short_name && prod.name !== prod.short_name) ? prod.name : '';
             const shortDesc = prod.description ? prod.description.substring(0, 50) + '...' : '';
-            
-            // ID Prodotto
             const prodId = prod.callback_data || "";
             const safeProdName = escapeHtml(prod.name);
 
             const prodEl = document.createElement('div');
             prodEl.className = `prod-item ${statusClass}`;
             
-            // NUOVO LAYOUT HTML PRODOTTO CON TASTO DELETE
             prodEl.innerHTML = `
                 <div class="prod-info">
-                    <div class="prod-name">${prodDisplay} ${isActive ? `<i class="fas fa-check-circle" style="color:var(--success); font-size:10px;"></i>` : ''}</div>
+                    <div class="prod-name">${prodDisplay} ${isRealProduct ? `<i class="fas fa-check-circle" style="color:var(--success); font-size:10px;"></i>` : ''}</div>
                     ${prodSub ? `<div class="prod-full-name">${prodSub}</div>` : ''}
                     <div class="prod-desc">${shortDesc}</div>
                 </div>
                 
                 <div class="prod-actions-group">
-                    <button class="btn-action ${btnClass}" onclick="openProduct('${targetPage}', ${catIdx}, ${prodIdx})">
-                        ${icon} <span>${actionLabel}</span>
+                    <button class="btn-action ${btnClass}" onclick="${actionFunction}">
+                        ${btnIcon} <span>${btnLabel}</span>
                     </button>
                     
                     <button class="btn-prod-delete" onclick="deleteProduct('${safeProdName}', '${prodId}')">
@@ -306,6 +323,7 @@ function renderCatalog() {
     document.getElementById('count-ghost').innerText = ghostCount;
     document.getElementById('count-active').innerText = activeCount;
 }
+
 
 // ==========================================
 // NUOVA FUNZIONE: DELETE PRODUCT
