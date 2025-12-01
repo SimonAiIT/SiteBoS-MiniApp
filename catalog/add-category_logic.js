@@ -1,7 +1,7 @@
 /**
- * ADD CATEGORY LOGIC (v2.1 FINAL)
+ * ADD CATEGORY LOGIC (v2.2 FINAL - UNIFIED WEBHOOK)
  * - Full 6-language I18N support.
- * - Dual Mode: Manual/AI and File Upload.
+ * - Dual Mode: Manual/AI and File Upload using a SINGLE GENERATE ENDPOINT.
  * - Clear separation of logic and view.
  */
 
@@ -11,10 +11,8 @@
 // 1. CONFIG & STATE
 // ==========================================
 
-// TODO: Inserisci qui i tuoi webhook reali
 const GENERATE_WEBHOOK_URL = "https://trinai.api.workflow.dcmake.it/webhook/5e225cf6-76bb-4e19-8657-35cac49fd399";
 const SAVE_WEBHOOK_URL = "https://trinai.api.workflow.dcmake.it/webhook/7da6f424-dc2a-4476-a0bd-a3bfd21270fb";
-const ANALYZE_FILE_WEBHOOK_URL = "https://trinai.api.workflow.dcmake.it/webhook/INSERISCI_ENDPOINT_ANALISI_FILE";
 
 const tg = window.Telegram.WebApp;
 tg.ready(); tg.expand();
@@ -177,52 +175,82 @@ window.switchTab = function(mode) {
     dom.saveSection.classList.add('hidden');
     dom.subcatSection.classList.add('hidden');
     dom.initialSection.classList.remove('hidden');
-    generatedCategoryData = null; // Reset state
+    generatedCategoryData = null;
 };
 
 async function generateFromText() {
     const name = dom.catName.value.trim();
     if (!name) return tg.showAlert(t.err_name_req);
-    showLoader(t.status_generating);
-    try {
-        const res = await fetch(GENERATE_WEBHOOK_URL, {
-            method: 'POST', headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({ category_name: name, category_description: dom.catDesc.value, token: urlParams.get('token'), language: lang })
-        });
-        handleAnalysisResult(await res.json());
-    } catch (e) { handleError(e); }
+    
+    const payload = {
+        category_name: name,
+        category_description: dom.catDesc.value,
+        token: urlParams.get('token'),
+        language: lang
+    };
+
+    await sendToGenerator(payload, t.status_generating);
 }
 
 async function handleFileUpload(e) {
     const file = e.target.files[0];
     if (!file) return;
-    showLoader(t.status_uploading);
+
     dom.fileBox.classList.add('analyzing');
     dom.fileText.innerText = t.status_uploading;
+
     try {
         const reader = new FileReader();
         reader.readAsDataURL(file);
         reader.onload = async () => {
             const base64 = reader.result.split(',')[1];
             const mime = reader.result.match(/:(.*?);/)[1];
-            const res = await fetch(ANALYZE_FILE_WEBHOOK_URL, {
-                method: 'POST', headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ token: urlParams.get('token'), file_data: base64, mime_type: mime, language: lang })
-            });
-            dom.fileBox.classList.remove('analyzing').add('success');
+
+            const payload = {
+                token: urlParams.get('token'),
+                language: lang,
+                // --- CAMPI AGGIUNTIVI PER IL FILE ---
+                file_data: base64,
+                mime_type: mime
+            };
+
+            await sendToGenerator(payload, t.status_uploading);
+            
+            dom.fileBox.classList.remove('analyzing');
+            dom.fileBox.classList.add('success');
             dom.fileText.innerText = "File Analizzato!";
             switchTab('manual');
-            handleAnalysisResult(await res.json());
         };
-    } catch (e) { handleError(e); dom.fileBox.classList.remove('analyzing'); }
+    } catch (e) {
+        handleError(e);
+        dom.fileBox.classList.remove('analyzing');
+    }
+}
+
+async function sendToGenerator(payload, loadingMessage) {
+    showLoader(loadingMessage);
+    try {
+        const res = await fetch(GENERATE_WEBHOOK_URL, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(payload)
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = Array.isArray(await res.json()) ? (await res.json())[0] : await res.json();
+        handleAnalysisResult(data);
+    } catch (e) {
+        handleError(e);
+    }
 }
 
 function handleAnalysisResult(data) {
     generatedCategoryData = data;
-    dom.catName.value = data.name;
-    dom.catDesc.value = data.description || "";
+    dom.catName.value = data.name || dom.catName.value;
+    dom.catDesc.value = data.description || dom.catDesc.value;
     dom.subcatList.innerHTML = '';
-    if (data.subcategories) data.subcategories.forEach(sub => createListItem(sub.name, sub.short_name));
+    if (data.subcategories) {
+        data.subcategories.forEach(sub => createListItem(sub.name, sub.short_name));
+    }
     dom.initialSection.classList.remove('hidden');
     dom.subcatSection.classList.remove('hidden');
     dom.saveSection.classList.remove('hidden');
@@ -248,21 +276,25 @@ function addManualSubcat() {
 async function saveCategory() {
     if (!dom.catName.value) return tg.showAlert(t.err_name_req);
     showLoader(t.status_saving);
+    
     const selected = [];
     dom.subcatList.querySelectorAll('input:checked').forEach(cb => {
         selected.push({
             name: cb.value, short_name: cb.dataset.short,
-            callback_data: cb.value.toUpperCase().replace(/[^A-Z0-9]/g, '_').substring(0, 60)
+            callback_data: cb.value.toUpperCase().replace(/[^A-Z0-9\s]/g, '').replace(/\s/g, '_').substring(0, 60)
         });
     });
+
     const payload = {
-        token: urlParams.get('token'),
+        ...Object.fromEntries(urlParams),
         new_category_block: {
             name: dom.catName.value, description: dom.catDesc.value,
-            short_name: dom.catName.value, subcategories: selected
-        },
-        ...Object.fromEntries(urlParams)
+            short_name: generatedCategoryData?.short_name || dom.catName.value, // Usa short_name se generato, altrimenti fallback
+            callback_data: generatedCategoryData?.callback_data || dom.catName.value.toUpperCase().replace(/[^A-Z0-9\s]/g, '').replace(/\s/g, '_').substring(0, 60),
+            subcategories: selected
+        }
     };
+
     try {
         const res = await fetch(SAVE_WEBHOOK_URL, {
             method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload)
@@ -271,7 +303,9 @@ async function saveCategory() {
         hideLoader();
         if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
         tg.showPopup({ message: t.status_success, buttons: [{type: 'ok'}] }, () => history.back());
-    } catch (e) { handleError(e); }
+    } catch (e) {
+        handleError(e);
+    }
 }
 
 // ==========================================
