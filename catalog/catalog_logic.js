@@ -1,19 +1,93 @@
 // catalog_logic.js
+// Gestione Catalogo Multilingua con Webhook Dedicato
 
-// ============================================================
 // CONFIGURAZIONE
-// ============================================================
-// INCOLLA QUI IL TUO NUOVO WEBHOOK CATALOGO "FRESCO"
 const CATALOG_WEBHOOK = "https://trinai.api.workflow.dcmake.it/webhook/0fff7fa2-bcb2-4b50-a26b-589b7054952e";
 
-// ============================================================
-
+// INIT TELEGRAM
 const tg = window.Telegram.WebApp;
-tg.ready(); tg.expand();
+tg.ready(); 
+tg.expand();
 
-let catalogData = null;
+// URL PARAMS
 const urlParams = new URLSearchParams(window.location.search);
 const token = urlParams.get('token');
+
+// I18N (6 Lingue)
+const i18n = {
+    it: {
+        title: "Catalogo Servizi", subtitle: "Prodotti attivi e suggerimenti AI.",
+        ghost_label: "Suggeriti", active_label: "Attivi",
+        btn_reload: "Ricarica", btn_new_cat: "Nuova Categoria",
+        empty_title: "Nessun catalogo trovato.", empty_btn: "Crea Prima Categoria",
+        btn_add_here: "Aggiungi Prodotto qui",
+        status_active: "Attivo", btn_manage: "Gestisci", btn_activate: "Attiva"
+    },
+    en: {
+        title: "Service Catalog", subtitle: "Active products & AI suggestions.",
+        ghost_label: "Suggested", active_label: "Active",
+        btn_reload: "Reload", btn_new_cat: "New Category",
+        empty_title: "No catalog found.", empty_btn: "Create First Category",
+        btn_add_here: "Add Product here",
+        status_active: "Active", btn_manage: "Manage", btn_activate: "Activate"
+    },
+    fr: {
+        title: "Catalogue Services", subtitle: "Produits actifs & suggestions IA.",
+        ghost_label: "Suggérés", active_label: "Actifs",
+        btn_reload: "Recharger", btn_new_cat: "Nouvelle Catégorie",
+        empty_title: "Aucun catalogue trouvé.", empty_btn: "Créer Première Catégorie",
+        btn_add_here: "Ajouter Produit ici",
+        status_active: "Actif", btn_manage: "Gérer", btn_activate: "Activer"
+    },
+    de: {
+        title: "Service-Katalog", subtitle: "Aktive Produkte & KI-Vorschläge.",
+        ghost_label: "Vorgeschlagen", active_label: "Aktiv",
+        btn_reload: "Neu laden", btn_new_cat: "Neue Kategorie",
+        empty_title: "Kein Katalog gefunden.", empty_btn: "Erste Kategorie erstellen",
+        btn_add_here: "Produkt hier hinzufügen",
+        status_active: "Aktiv", btn_manage: "Verwalten", btn_activate: "Aktivieren"
+    },
+    es: {
+        title: "Catálogo Servicios", subtitle: "Productos activos y sugerencias IA.",
+        ghost_label: "Sugeridos", active_label: "Activos",
+        btn_reload: "Recargar", btn_new_cat: "Nueva Categoría",
+        empty_title: "No se encontró catálogo.", empty_btn: "Crear Primera Categoría",
+        btn_add_here: "Añadir Producto aquí",
+        status_active: "Activo", btn_manage: "Gestionar", btn_activate: "Activar"
+    },
+    pt: {
+        title: "Catálogo Serviços", subtitle: "Produtos ativos e sugestões IA.",
+        ghost_label: "Sugeridos", active_label: "Ativos",
+        btn_reload: "Recarregar", btn_new_cat: "Nova Categoria",
+        empty_title: "Nenhum catálogo encontrado.", empty_btn: "Criar Primeira Categoria",
+        btn_add_here: "Adicionar Produto aqui",
+        status_active: "Ativo", btn_manage: "Gerir", btn_activate: "Ativar"
+    }
+};
+
+// LANGUAGE HELPER
+function getLang() {
+    const l = urlParams.get('lang') || 'it';
+    const norm = l.toLowerCase().slice(0, 2);
+    return i18n[norm] ? norm : 'en';
+}
+
+function t(key) {
+    const lang = getLang();
+    return (i18n[lang] && i18n[lang][key]) || (i18n['en'] && i18n['en'][key]) || key;
+}
+
+function applyTranslations() {
+    document.getElementById('page-title').innerText = t('title');
+    document.getElementById('page-subtitle').innerText = t('subtitle');
+    document.getElementById('lbl-ghost').innerText = t('ghost_label');
+    document.getElementById('lbl-active').innerText = t('active_label');
+    document.getElementById('btn-new-cat-text').innerText = t('btn_new_cat');
+    
+    // Empty state
+    document.querySelector('#empty-state p').innerText = t('empty_title');
+    document.querySelector('#empty-state button').innerText = t('empty_btn');
+}
 
 // NAVIGAZIONE
 window.goBack = function() {
@@ -21,12 +95,19 @@ window.goBack = function() {
     else tg.close();
 }
 
-// CARICAMENTO DATI
-async function loadCatalog(forceRefresh = false) {
-    if (!CATALOG_WEBHOOK) {
-        alert("CONFIG ERROR: Manca CATALOG_WEBHOOK in catalog_logic.js");
-        return;
+// RACCOLTA TUTTI I PARAMETRI URL
+function getAllUrlParams() {
+    const params = {};
+    for (const [key, value] of urlParams.entries()) {
+        params[key] = value;
     }
+    return params;
+}
+
+// LOGIC
+let catalogData = null;
+
+async function loadCatalog(forceRefresh = false) {
     if (!token) { alert("Token mancante"); return; }
     
     if(forceRefresh) {
@@ -35,25 +116,30 @@ async function loadCatalog(forceRefresh = false) {
     }
 
     try {
-        // Chiamata al webhook dedicato 'get_catalog'
+        // Costruisce il payload con ACTION + TOKEN + TUTTI I PARAMETRI URL
+        const payload = {
+            action: 'get_catalog',
+            token: token,
+            ...getAllUrlParams() // Espande vat, owner, lang, etc. nel body
+        };
+
         const res = await fetch(CATALOG_WEBHOOK, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ action: 'get_catalog', token: token })
+            body: JSON.stringify(payload)
         });
 
         if (!res.ok) throw new Error("Errore server");
         const json = await res.json();
         
-        // Gestisce sia formato diretto {categories:[]} che nested {data:{categories:[]}}
+        // Gestione flessibile risposta
         catalogData = json.catalog || json.data || json;
         
         renderCatalog();
         
     } catch (e) {
         console.error(e);
-        // Fallback per test se il webhook è vuoto o fallisce
-        document.getElementById('empty-state').innerHTML += `<br><small style='color:red'>${e.message}</small>`;
+        document.getElementById('empty-state').innerHTML = `<i class="fas fa-exclamation-triangle" style="font-size:40px; color:var(--error)"></i><p>${e.message}</p>`;
         document.getElementById('empty-state').classList.remove('hidden');
     } finally {
         document.getElementById('loader').classList.add('hidden');
@@ -61,7 +147,6 @@ async function loadCatalog(forceRefresh = false) {
     }
 }
 
-// RENDERIZZAZIONE
 function renderCatalog() {
     const container = document.getElementById('catalog-list');
     container.innerHTML = '';
@@ -86,7 +171,6 @@ function renderCatalog() {
         activeCount += catActive;
         ghostCount += catGhost;
 
-        // HTML Categoria
         const catEl = document.createElement('div');
         catEl.className = 'cat-card';
         catEl.innerHTML = `
@@ -99,18 +183,15 @@ function renderCatalog() {
                 <i class="fas fa-chevron-down chevron"></i>
             </div>
             <div class="cat-body">
-                <!-- Tasto rapido per aggiungere prodotto in questa categoria -->
                 <div style="padding:10px; text-align:center; border-bottom:1px solid var(--glass-border);">
                     <button class="btn-mini" onclick="goToAddProduct(${catIdx})">
-                        <i class="fas fa-plus"></i> Aggiungi Prodotto qui
+                        <i class="fas fa-plus"></i> ${t('btn_add_here')}
                     </button>
                 </div>
-                <!-- Prodotti -->
                 <div class="products-container"></div>
             </div>
         `;
 
-        // Inserimento Prodotti
         const prodContainer = catEl.querySelector('.products-container');
         
         subcats.forEach((prod, prodIdx) => {
@@ -118,8 +199,7 @@ function renderCatalog() {
             const statusClass = isActive ? 'status-active' : 'status-ghost';
             const icon = isActive ? '<i class="fas fa-sliders-h"></i>' : '<i class="fas fa-magic"></i>';
             
-            // Se è attivo usa edit-blueprint, se è ghost usa edit-product (o forge)
-            const actionLabel = isActive ? 'Gestisci' : 'Attiva';
+            const actionLabel = isActive ? t('btn_manage') : t('btn_activate');
             const targetPage = isActive ? 'edit-blueprint.html' : 'edit-product.html';
             const btnClass = isActive ? 'btn-edit' : 'btn-create';
             
@@ -129,7 +209,10 @@ function renderCatalog() {
             prodEl.className = `prod-item ${statusClass}`;
             prodEl.innerHTML = `
                 <div class="prod-info">
-                    <div class="prod-name">${prod.name} ${isActive ? '<i class="fas fa-check-circle" style="color:var(--success); font-size:10px;"></i>' : ''}</div>
+                    <div class="prod-name">
+                        ${prod.name} 
+                        ${isActive ? `<i class="fas fa-check-circle" style="color:var(--success); font-size:10px;" title="${t('status_active')}"></i>` : ''}
+                    </div>
                     <div class="prod-desc">${shortDesc}</div>
                 </div>
                 <button class="btn-action ${btnClass}" onclick="openProduct('${targetPage}', ${catIdx}, ${prodIdx})">
@@ -154,14 +237,13 @@ window.toggleCat = function(header) {
 }
 
 window.goToAddProduct = function(catIdx) {
-    // Passiamo l'indice categoria per pre-selezionarla
-    location.href = `add-product.html?token=${token}&catIdx=${catIdx}`;
+    location.href = `add-product.html?token=${token}&catIdx=${catIdx}&${urlParams.toString()}`;
 }
 
 window.openProduct = function(page, catIdx, prodIdx) {
-    // Passiamo le coordinate del prodotto
-    location.href = `${page}?token=${token}&cat=${catIdx}&prod=${prodIdx}`;
+    location.href = `${page}?token=${token}&cat=${catIdx}&prod=${prodIdx}&${urlParams.toString()}`;
 }
 
 // START
+applyTranslations();
 loadCatalog();
