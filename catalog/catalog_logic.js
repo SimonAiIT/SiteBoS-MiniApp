@@ -173,7 +173,7 @@ window.goBack = () => window.location.href = `../dashboard.html?${urlParams.toSt
 window.goToAddCategory = () => window.location.href = `add-category.html?${urlParams.toString()}`;
 
 window.goToAddProduct = (productId) => {
-    let url = `add-product.html?token=${token}&${urlParams.toString()}`;
+    let url = `add-product.html?token=${token}`;
     
     if (productId) {
         url += `&ghostId=${encodeURIComponent(productId)}`; // Passiamo l'ID
@@ -185,7 +185,7 @@ window.goToAddProduct = (productId) => {
 // Funzione per GESTIRE ESISTENTE (Blueprint)
 window.openProduct = (page, productId) => {
     // Passiamo l'ID del prodotto attivo
-    location.href = `${page}?token=${token}&productId=${encodeURIComponent(productId)}&${urlParams.toString()}`;
+    location.href = `${page}?token=${token}&productId=${encodeURIComponent(productId)}`;
 };
 // ==========================================
 // 5. CORE LOGIC
