@@ -1,9 +1,8 @@
 /**
- * CATALOG LOGIC (v5.0 - ID Based Actions)
+ * CATALOG LOGIC (v6.0 - Optimized One-Shot Update)
  * - Multilingua Completo
- * - Gestione CRUD con CALLBACK_DATA come ID univoco (Non più nome)
- * - Persistenza Parametri URL
- * - Gestione Short Name / Long Name
+ * - Gestione CRUD con ID univoci
+ * - OTTIMIZZAZIONE: Nessuna doppia chiamata. L'update usa la risposta della modifica.
  */
 
 // ==========================================
@@ -18,7 +17,7 @@ tg.expand();
 const urlParams = new URLSearchParams(window.location.search);
 const token = urlParams.get('token');
 
-// Stato locale per l'editing (Memorizza l'ID univoco, non il nome)
+// Stato locale
 let currentEditingCatId = ""; 
 
 // ==========================================
@@ -32,7 +31,6 @@ const i18n = {
         empty_title: "Nessun catalogo trovato.", empty_btn: "Crea Prima Categoria",
         btn_add_here: "Aggiungi Prodotto qui",
         status_active: "Attivo", btn_manage: "Gestisci", btn_activate: "Attiva",
-        // Modal & Actions
         modal_edit_title: "Modifica Categoria",
         lbl_cat_short: "Nome Breve (Menu/Bottoni)",
         lbl_cat_long: "Nome Completo (Interno/Descrittivo)",
@@ -62,10 +60,9 @@ const i18n = {
         btn_add_here: "Ajouter Produit ici",
         status_active: "Actif", btn_manage: "Gérer", btn_activate: "Activer",
         modal_edit_title: "Modifier Catégorie",
-        lbl_cat_short: "Nom Court (Menu/Boutons)",
-        lbl_cat_long: "Nom Complet (Descriptif)",
+        lbl_cat_short: "Nom Court", lbl_cat_long: "Nom Complet",
         btn_cancel: "Annuler", btn_save: "Enregistrer",
-        confirm_delete_cat: "Voulez-vous vraiment supprimer la catégorie '{name}' et ses produits ?",
+        confirm_delete_cat: "Voulez-vous vraiment supprimer la catégorie '{name}' ?",
         alert_loading_error: "Erreur de chargement", alert_name_required: "Le nom complet est requis"
     },
     de: {
@@ -76,10 +73,9 @@ const i18n = {
         btn_add_here: "Produkt hier hinzufügen",
         status_active: "Aktiv", btn_manage: "Verwalten", btn_activate: "Aktivieren",
         modal_edit_title: "Kategorie Bearbeiten",
-        lbl_cat_short: "Kurzname (Menü/Buttons)",
-        lbl_cat_long: "Vollständiger Name (Beschreibung)",
+        lbl_cat_short: "Kurzname", lbl_cat_long: "Vollständiger Name",
         btn_cancel: "Abbrechen", btn_save: "Speichern",
-        confirm_delete_cat: "Möchten Sie die Kategorie '{name}' und alle Produkte wirklich löschen?",
+        confirm_delete_cat: "Möchten Sie die Kategorie '{name}' wirklich löschen?",
         alert_loading_error: "Ladefehler", alert_name_required: "Vollständiger Name ist erforderlich"
     },
     es: {
@@ -90,10 +86,9 @@ const i18n = {
         btn_add_here: "Añadir Producto aquí",
         status_active: "Activo", btn_manage: "Gestionar", btn_activate: "Activar",
         modal_edit_title: "Editar Categoría",
-        lbl_cat_short: "Nombre Corto (Menú/Botones)",
-        lbl_cat_long: "Nombre Completo (Descriptivo)",
+        lbl_cat_short: "Nombre Corto", lbl_cat_long: "Nombre Completo",
         btn_cancel: "Cancelar", btn_save: "Guardar",
-        confirm_delete_cat: "¿Seguro que quieres eliminar la categoría '{name}' y sus productos?",
+        confirm_delete_cat: "¿Seguro que quieres eliminar la categoría '{name}'?",
         alert_loading_error: "Error de carga", alert_name_required: "El nombre completo es obligatorio"
     },
     pt: {
@@ -104,10 +99,9 @@ const i18n = {
         btn_add_here: "Adicionar Produto aqui",
         status_active: "Ativo", btn_manage: "Gerir", btn_activate: "Ativar",
         modal_edit_title: "Editar Categoria",
-        lbl_cat_short: "Nome Curto (Menu/Botões)",
-        lbl_cat_long: "Nome Completo (Descritivo)",
+        lbl_cat_short: "Nome Curto", lbl_cat_long: "Nome Completo",
         btn_cancel: "Cancelar", btn_save: "Salvar",
-        confirm_delete_cat: "Tem certeza que deseja excluir a categoria '{name}' e seus produtos?",
+        confirm_delete_cat: "Tem certeza que deseja excluir a categoria '{name}'?",
         alert_loading_error: "Erro ao carregar", alert_name_required: "O nome completo é obrigatório"
     }
 };
@@ -152,7 +146,6 @@ function applyTranslations() {
     safeSetText('#empty-state p', 'empty_title');
     safeSetText('#empty-state button', 'empty_btn');
 
-    // Modal
     safeSetText('h3[data-i18n="modal_edit_title"]', 'modal_edit_title');
     safeSetText('label[data-i18n="lbl_cat_short"]', 'lbl_cat_short');
     safeSetText('label[data-i18n="lbl_cat_long"]', 'lbl_cat_long');
@@ -184,16 +177,20 @@ window.openProduct = function(page, catIdx, prodIdx) {
 }
 
 // ==========================================
-// 5. CORE LOGIC (LOAD & RENDER)
+// 5. CORE LOGIC
 // ==========================================
 
 let catalogData = null;
 
+// Helper per parsare la risposta di n8n (Array o Oggetto)
+function parseN8nResponse(json) {
+    const data = Array.isArray(json) ? json[0] : json;
+    // Cerca il catalogo in diverse proprietà comuni
+    return data.catalog || data.data || data;
+}
+
 async function loadCatalog(forceRefresh = false) {
-    if (!token) {
-        document.body.innerHTML = "<h3 style='color:white;text-align:center;margin-top:50px'>Access Denied: Missing Token</h3>";
-        return;
-    }
+    if (!token) return;
     
     const loader = document.getElementById('loader');
     const content = document.getElementById('app-content');
@@ -212,8 +209,7 @@ async function loadCatalog(forceRefresh = false) {
         if (!res.ok) throw new Error(`HTTP Error: ${res.status}`);
         
         const json = await res.json();
-        const data = Array.isArray(json) ? json[0] : json;
-        catalogData = data.catalog || data.data || data;
+        catalogData = parseN8nResponse(json);
         
         renderCatalog();
         
@@ -250,18 +246,12 @@ function renderCatalog() {
         const subcats = cat.subcategories || [];
         const catActive = subcats.filter(p => p.blueprint_ready).length;
         const catGhost = subcats.length - catActive;
-        
         activeCount += catActive;
         ghostCount += catGhost;
 
         const displayTitle = cat.short_name || cat.name;
-        
-        // --- ESTRAZIONE DATI PER AZIONI ---
-        // Escape dei nomi per JS
         const safeName = (cat.name || "").replace(/'/g, "\\'").replace(/"/g, '&quot;'); 
         const safeShort = (cat.short_name || "").replace(/'/g, "\\'").replace(/"/g, '&quot;'); 
-        
-        // **QUI ESTRAIAMO L'ID UNIVOCO**
         const catId = cat.callback_data || ""; 
 
         const catEl = document.createElement('div');
@@ -273,19 +263,12 @@ function renderCatalog() {
                     ${displayTitle}
                     <span class="cat-badge">${subcats.length}</span>
                 </div>
-                
                 <div class="cat-actions">
-                    <!-- PASSIAMO catId ALLE FUNZIONI -->
-                    <button class="btn-icon-sm" onclick="event.stopPropagation(); openEditModal('${safeName}', '${safeShort}', '${catId}')">
-                        <i class="fas fa-pen"></i>
-                    </button>
-                    <button class="btn-icon-sm text-error" onclick="event.stopPropagation(); deleteCategory('${safeName}', '${catId}')">
-                        <i class="fas fa-trash"></i>
-                    </button>
+                    <button class="btn-icon-sm" onclick="event.stopPropagation(); openEditModal('${safeName}', '${safeShort}', '${catId}')"><i class="fas fa-pen"></i></button>
+                    <button class="btn-icon-sm text-error" onclick="event.stopPropagation(); deleteCategory('${safeName}', '${catId}')"><i class="fas fa-trash"></i></button>
                     <i class="fas fa-chevron-down chevron"></i>
                 </div>
             </div>
-
             <div class="cat-body">
                 <div style="padding:10px; text-align:center; border-bottom:1px solid var(--glass-border);">
                     <button class="btn btn-sm btn-secondary" onclick="event.stopPropagation(); goToAddProduct(${catIdx})">
@@ -297,7 +280,6 @@ function renderCatalog() {
         `;
 
         const prodContainer = catEl.querySelector('.products-container');
-        
         subcats.forEach((prod, prodIdx) => {
             const isActive = prod.blueprint_ready === true;
             const statusClass = isActive ? 'status-active' : 'status-ghost';
@@ -314,21 +296,16 @@ function renderCatalog() {
             prodEl.className = `prod-item ${statusClass}`;
             prodEl.innerHTML = `
                 <div class="prod-info">
-                    <div class="prod-name">
-                        ${prodDisplay} 
-                        ${isActive ? `<i class="fas fa-check-circle" style="color:var(--success); font-size:10px;"></i>` : ''}
-                    </div>
+                    <div class="prod-name">${prodDisplay} ${isActive ? `<i class="fas fa-check-circle" style="color:var(--success); font-size:10px;"></i>` : ''}</div>
                     ${prodSub ? `<div class="prod-full-name">${prodSub}</div>` : ''}
                     <div class="prod-desc">${shortDesc}</div>
                 </div>
                 <button class="btn-action ${btnClass}" onclick="openProduct('${targetPage}', ${catIdx}, ${prodIdx})">
-                    ${icon}
-                    <span>${actionLabel}</span>
+                    ${icon} <span>${actionLabel}</span>
                 </button>
             `;
             prodContainer.appendChild(prodEl);
         });
-
         container.appendChild(catEl);
     });
 
@@ -339,15 +316,13 @@ function renderCatalog() {
 }
 
 // ==========================================
-// 6. MODAL EDIT LOGIC (USING ID)
+// 6. MODAL EDIT (ONE-SHOT UPDATE)
 // ==========================================
 
 window.openEditModal = function(name, short, id) {
-    currentEditingCatId = id; // SALVA L'ID UNIVOCO
-    
+    currentEditingCatId = id; 
     document.getElementById('edit-cat-long').value = name;
     document.getElementById('edit-cat-short').value = short || ""; 
-    
     document.getElementById('edit-cat-modal').classList.remove('hidden');
 };
 
@@ -360,10 +335,7 @@ window.saveEditCategory = async function() {
     const newLong = document.getElementById('edit-cat-long').value.trim();
     const newShort = document.getElementById('edit-cat-short').value.trim();
 
-    if (!newLong) {
-        alert(t('alert_name_required'));
-        return;
-    }
+    if (!newLong) { alert(t('alert_name_required')); return; }
 
     closeEditModal();
     document.getElementById('loader').classList.remove('hidden');
@@ -372,7 +344,7 @@ window.saveEditCategory = async function() {
         const payload = { 
             action: 'modify_category', 
             token: token, 
-            category_id: currentEditingCatId, // CHIAVE: ID (callback_data)
+            category_id: currentEditingCatId, 
             new_category_name: newLong,
             new_category_short_name: newShort,
             ...getAllUrlParams() 
@@ -381,7 +353,12 @@ window.saveEditCategory = async function() {
         const res = await fetch(CATALOG_WEBHOOK, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
         if (!res.ok) throw new Error("Server Error");
         
-        await loadCatalog(true);
+        const json = await res.json();
+        
+        // OTTIMIZZAZIONE: Usiamo il catalogo aggiornato restituito dalla modifica
+        catalogData = parseN8nResponse(json); 
+        renderCatalog();
+        
         if(tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
 
     } catch (e) {
@@ -391,7 +368,7 @@ window.saveEditCategory = async function() {
 };
 
 // ==========================================
-// 7. DELETE LOGIC (USING ID)
+// 7. DELETE LOGIC (ONE-SHOT UPDATE)
 // ==========================================
 
 window.deleteCategory = async function(catName, catId) {
@@ -403,14 +380,19 @@ window.deleteCategory = async function(catName, catId) {
         const payload = { 
             action: 'delete_category', 
             token: token, 
-            category_id: catId, // CHIAVE: ID (callback_data)
+            category_id: catId, 
             ...getAllUrlParams() 
         };
 
         const res = await fetch(CATALOG_WEBHOOK, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
         if (!res.ok) throw new Error("Server Error");
         
-        await loadCatalog(true);
+        const json = await res.json();
+        
+        // OTTIMIZZAZIONE: Usiamo il catalogo aggiornato restituito dalla cancellazione
+        catalogData = parseN8nResponse(json);
+        renderCatalog();
+        
         if(tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('warning');
 
     } catch (e) {
@@ -419,9 +401,6 @@ window.deleteCategory = async function(catName, catId) {
     }
 };
 
-// ==========================================
-// 8. BOOTSTRAP
-// ==========================================
 document.addEventListener('DOMContentLoaded', () => {
     applyTranslations();
     loadCatalog();
