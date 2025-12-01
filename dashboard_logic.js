@@ -1,5 +1,5 @@
 // dashboard_logic.js
-// Versione Completa - Traduzioni multilingua, Logica Gatekeeper (HP/Blueprint/Docs), Gamification
+// Versione Definitiva - 6 Lingue, Routing Completo, Fix UI e Gatekeepers
 
 // 0. INIT TELEGRAM
 const tg = window.Telegram.WebApp;
@@ -8,6 +8,17 @@ tg.expand();
 
 // CONFIGURAZIONE
 const DASHBOARD_API = "https://trinai.api.workflow.dcmake.it/webhook/ef4aece4-9ec0-4026-a7a7-328562bcbdf6"; 
+
+// ROUTING (Mappa delle destinazioni)
+const ROUTES = {
+    'catalog': 'catalog/catalog.html',
+    'agenda': 'agenda/agenda.html',
+    'team': 'human_resources/team.html',
+    'knowledge': 'knowledge_base/knowledge.html',
+    'company': 'edit_owner.html', 
+    'widget': 'SiteBos.html',
+    'blog': 'blog/blog.html'
+};
 
 // 1. DIZIONARIO TRADUZIONI COMPLETO
 const i18n = {
@@ -106,12 +117,11 @@ const i18n = {
 function getLang() {
     const l = (new URLSearchParams(window.location.search)).get('lang') || 'it';
     const norm = l.toLowerCase().slice(0, 2); 
-    return i18n[norm] ? norm : 'en'; // Fallback su Inglese
+    return i18n[norm] ? norm : 'en'; 
 }
 
 function t(key) {
     const lang = getLang();
-    // Cerca nella lingua, poi in inglese, poi restituisce la chiave
     return (i18n[lang] && i18n[lang][key]) || (i18n['en'] && i18n['en'][key]) || key;
 }
 
@@ -121,13 +131,20 @@ function applyTranslations() {
     });
 }
 
+// NAVIGAZIONE
+window.navTo = function(routeKey) {
+    const p = new URLSearchParams(window.location.search);
+    p.delete('bonus_credits'); 
+    const targetPath = ROUTES[routeKey] || routeKey;
+    window.location.href = `${targetPath}?${p.toString()}`;
+}
+
 // ---------------------------------------------------------
-// FUNZIONE PRINCIPALE
+// AVVIO DASHBOARD
 // ---------------------------------------------------------
 async function startDashboard() {
     applyTranslations();
 
-    // 1. RECUPERA PARAMETRI URL
     const p = new URLSearchParams(window.location.search);
     const vat = p.get('vat'); 
     const owner = p.get('owner'); 
@@ -138,53 +155,36 @@ async function startDashboard() {
         return; 
     }
 
-    // 2. GESTIONE CREDITI BONUS (FIRE & FORGET)
+    // Bonus Crediti (Gamification)
     const bonus = p.get('bonus_credits');
     if (bonus && parseInt(bonus) > 0) {
         const points = parseInt(bonus);
-        
-        // Manda al backend (che farà la somma nel DB)
         fetch(DASHBOARD_API, {
             method: 'POST', headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({ 
-                action: 'add_gamification_credits', 
-                vat_number: vat, 
-                chat_id: owner, 
-                amount: points, 
-                token: token 
-            })
+            body: JSON.stringify({ action: 'add_gamification_credits', vat_number: vat, chat_id: owner, amount: points, token: token })
         }).catch(console.error);
 
-        // Feedback Utente (Popup)
         try {
             if(tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
             if(tg.showPopup) tg.showPopup({ title: t('game_title'), message: t('game_msg').replace('{points}', points) });
         } catch(e) {}
-
-        // Pulisce URL (Nessun calcolo locale)
+        
         const newUrl = window.location.href.replace(/&bonus_credits=\d+/, '');
         window.history.replaceState({}, document.title, newUrl);
     }
 
-    // 3. CHIAMATA DATI DASHBOARD
+    // Caricamento Dati
     try {
         const response = await fetch(DASHBOARD_API, {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({ 
-                action: 'get_dashboard_data', 
-                vat_number: vat, 
-                chat_id: owner, 
-                token: token 
-            })
+            body: JSON.stringify({ action: 'get_dashboard_data', vat_number: vat, chat_id: owner, token: token })
         });
 
         const rawJson = await response.json();
         const data = Array.isArray(rawJson) ? rawJson[0] : rawJson;
 
-        if (!response.ok || data.status === 'error') {
-            throw new Error(data.error?.message || "Server Error");
-        }
+        if (!response.ok || data.status === 'error') throw new Error(data.error?.message || "Server Error");
 
         renderDashboard(data, vat);
 
@@ -194,12 +194,12 @@ async function startDashboard() {
     }
 }
 
-// 4. RENDER UI
+// RENDER UI
 function renderDashboard(data, vat) {
     const owner = data.owner_data || {};
     const status = data.status || {};
 
-    // Header Info
+    // Header
     document.getElementById('companyName').innerText = owner.ragione_sociale || "Azienda";
     document.getElementById('vatDisplay').innerText = `P.IVA: ${vat}`;
     document.getElementById('credits-display').innerText = owner.credits || 0;
@@ -210,7 +210,7 @@ function renderDashboard(data, vat) {
         img.classList.remove('hidden');
     }
 
-    // Helper function per gestire i lucchetti
+    // Helper Lucchetti
     const setLock = (cardId, isLocked, subId, textLocked, textUnlocked) => {
         const card = document.getElementById(cardId);
         const sub = document.getElementById(subId);
@@ -232,98 +232,45 @@ function renderDashboard(data, vat) {
         }
     };
 
-    // --- LOGICA GATEKEEPERS ---
+    // LOGICA GATEKEEPERS
     const isHpReady = (status.honeypot === 'READY');
     const hpSub = document.getElementById('sub-hp');
     const hpCard = document.getElementById('card-hp');
 
-    // 1. HoneyPot (Master Key)
     if (!isHpReady) {
-        // Se HP non è pronto, BLOCCA TUTTO tranne HP e Config
+        // BLOCCA TUTTO se HP non è pronto
         hpSub.innerText = t('status_hp_lock');
         hpSub.classList.add('text-warning');
         hpCard.style.border = '1px solid var(--warning)';
         
-        ['card-catalog', 'card-agenda', 'card-team', 'card-knowledge'].forEach(id => document.getElementById(id).classList.add('locked-item'));
+        ['card-catalog', 'card-agenda', 'card-team', 'card-knowledge'].forEach(id => {
+            const el = document.getElementById(id);
+            if(el) el.classList.add('locked-item');
+        });
     } else {
-        // Se HP è pronto, apri Catalogo e valuta le altre
+        // SBLOCCA
         hpSub.innerText = t('status_hp_ok');
         hpSub.classList.add('text-success');
         hpCard.classList.add('border-success');
         
-        // Sblocca Catalogo (sempre accessibile se HP è OK)
+        // Catalogo (Sempre sbloccato se HP è ok)
         document.getElementById('card-catalog').classList.remove('locked-item');
         document.getElementById('sub-catalog').innerHTML = `Cat: <b>${status.categories_count || 0}</b> | Prod: <b>${status.products_count || 0}</b>`;
 
-        // 2. Agenda: Dipende SOLO da Blueprints > 0
-        setLock(
-            'card-agenda', 
-            (status.blueprints_count === 0), 
-            'sub-agenda', 
-            t('status_req'), 
-            t('status_active')
-        );
+        // Agenda (Blueprints > 0)
+        setLock('card-agenda', (status.blueprints_count === 0), 'sub-agenda', t('status_req'), t('status_active'));
 
-        // 3. Conoscenza: Dipende SOLO da Docs > 0
-        setLock(
-            'card-knowledge', 
-            (status.knowledge_docs === 0), 
-            'sub-knowledge', 
-            t('status_req'), 
-            `${status.knowledge_docs} Docs`
-        );
+        // Knowledge (Docs > 0)
+        setLock('card-knowledge', (status.knowledge_docs === 0), 'sub-knowledge', t('status_req'), `${status.knowledge_docs} Docs`);
 
-        // 4. Team: Dipende da Operatori > 0 (View Only)
-        setLock(
-            'card-team', 
-            (status.operators_count === 0), 
-            'sub-team', 
-            t('status_no_op'), 
-            `${status.operators_count} ${t('status_active')}`
-        );
+        // Team (Operatori > 0)
+        setLock('card-team', (status.operators_count === 0), 'sub-team', t('status_no_op'), `${status.operators_count} ${t('status_active')}`);
     }
 
-    // Configurazione (Sempre accessibile, warning se incompleto)
-    const subConfig = document.getElementById('sub-config');
-    subConfig.innerText = `${status.profile_completion || 0}%`;
-    if ((status.profile_completion || 0) < 100) {
-        subConfig.classList.add('text-warning');
-    }
-
-    // Mostra UI finale
+    // UI Pronta
     document.getElementById('loader').classList.add('hidden');
     document.getElementById('app-content').classList.remove('hidden');
 }
 
-// 5. NAVIGAZIONE
-// Mappa delle destinazioni (Routing)
-const ROUTES = {
-    'catalog': 'catalog/catalog.html',
-    'agenda': 'agenda/agenda.html',
-    'team': 'human_resources/team.html',
-    'knowledge': 'knowledge_base/knowledge.html',
-    'company': 'edit_owner.html',
-    'widget': 'SiteBos.html',
-    'blog': 'blog/blog.html'
-};
-
-window.navTo = function(routeKey) {
-    const p = new URLSearchParams(window.location.search);
-    p.delete('bonus_credits'); // Pulizia URL per evitare loop di crediti
-    
-    // Recupera il percorso reale dalla mappa, o usa la chiave come fallback se non trovata
-    const targetPath = ROUTES[routeKey] || routeKey;
-
-    // Naviga mantenendo i parametri vitali (token, vat, lang, owner)
-    window.location.href = `${targetPath}?${p.toString()}`;
-}
-
-
-window.openWidget = () => navTo('SiteBos.html');
-window.openSite = () => { 
-    const txt = i18n[getLang()] || i18n['en'];
-    try { tg.showPopup({ title: txt.popup_site_title, message: txt.popup_site_msg }); } catch(e) { alert(txt.popup_site_msg); }
-}
-
-// AVVIO
+// AVVIA DASHBOARD
 startDashboard();
