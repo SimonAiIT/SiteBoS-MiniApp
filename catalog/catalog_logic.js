@@ -171,10 +171,19 @@ function escapeHtml(str) {
 
 window.goBack = () => window.location.href = `../dashboard.html?${urlParams.toString()}`;
 window.goToAddCategory = () => window.location.href = `add-category.html?${urlParams.toString()}`;
-window.goToAddProduct = (catIdx) => location.href = `add-product.html?token=${token}&catIdx=${catIdx}&${urlParams.toString()}`;
-window.openProduct = (page, catIdx, prodIdx) => location.href = `${page}?token=${token}&cat=${catIdx}&prod=${prodIdx}&${urlParams.toString()}`;
 
+window.goToAddProduct = (catIdx, prodIdx) => {
+    let url = `add-product.html?token=${token}&catIdx=${catIdx}&${urlParams.toString()}`;
+    if (prodIdx !== null && prodIdx !== undefined) {
+        url += `&ghostIdx=${prodIdx}`; // Passiamo l'indice del ghost per prelevare i dati
+    }
+    location.href = url;
+};
 
+// Funzione per GESTIRE ESISTENTE
+window.openProduct = (page, catIdx, prodIdx) => {
+    location.href = `${page}?token=${token}&catIdx=${catIdx}&prodIdx=${prodIdx}&${urlParams.toString()}`;
+};
 // ==========================================
 // 5. CORE LOGIC
 // ==========================================
