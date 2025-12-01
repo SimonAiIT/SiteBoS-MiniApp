@@ -9,8 +9,10 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="../styles.css">
 
+    <!-- MOTORE SPONSOR (Assicurati che sia nella root o aggiusta il path) -->
+    <script src="../sponsor.js"></script>
+
     <style>
-        /* Separatore per indicare l'alternativa/aggiunta del file */
         .separator {
             display: flex; align-items: center; text-align: center;
             margin: 20px 0; color: var(--text-muted); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;
@@ -20,14 +22,38 @@
         }
         .separator::before { margin-right: 10px; }
         .separator::after { margin-left: 10px; }
+
+        /* Stile Loader Arricchito */
+        #loader {
+            background: rgba(15, 23, 42, 0.95); /* Sfondo scuro coprente */
+            backdrop-filter: blur(10px);
+            z-index: 9999;
+        }
+        .loader-content {
+            width: 90%; max-width: 350px;
+            text-align: center;
+            background: var(--card-bg);
+            padding: 30px; border-radius: 20px;
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+        }
     </style>
 </head>
 <body>
     
-    <!-- LOADER -->
-    <div id="loader" class="hidden">
-        <div class="spinner-ring"></div>
-        <div style="margin-top:10px; opacity:0.7;" id="loader-text">Elaborazione...</div>
+    <!-- LOADER (Ora con Sponsor) -->
+    <div id="loader" class="hidden" style="position: fixed; inset: 0; display: flex; justify-content: center; align-items: center;">
+        <div class="loader-content fade-in">
+            <div class="spinner-ring" style="width: 40px; height: 40px; margin-bottom: 15px;"></div>
+            <h3 id="loader-title" style="margin-bottom: 5px; font-size: 16px;">AI al Lavoro...</h3>
+            <div id="loader-text" style="margin-bottom: 20px; font-size: 13px; color: var(--text-muted);">Analisi della richiesta in corso</div>
+            
+            <!-- SLOT PUBBLICITARIO -->
+            <div style="border-top: 1px dashed var(--glass-border); padding-top: 15px; margin-top: 15px;">
+                <div style="font-size: 9px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; opacity: 0.5;">Sponsored Partner</div>
+                <div id="loader-ad-slot" style="min-height: 80px;"></div>
+            </div>
+        </div>
     </div>
 
     <div class="container fade-in" id="app-content">
@@ -35,26 +61,22 @@
         <h1 data-i18n="title">Nuova Categoria</h1>
         <p class="subtitle" data-i18n="subtitle">Configura la nuova area di business.</p>
 
-        <!-- FASE 1: INPUT UNICO (Tutto visibile) -->
+        <!-- FASE 1: INPUT UNICO -->
         <div id="inputPhase">
             
             <div class="card">
-                <!-- 1. Nome (OBBLIGATORIO) -->
                 <div class="form-group">
                     <label for="categoryName" class="required" data-i18n="lblCatName">Nome Categoria</label>
                     <input type="text" id="categoryName" required placeholder="...">
                 </div>
                 
-                <!-- 2. Descrizione (OPZIONALE) -->
                 <div class="form-group">
                     <label for="categoryDescription" data-i18n="lblCatDesc">Descrizione (Opzionale)</label>
                     <textarea id="categoryDescription" rows="2" placeholder="..."></textarea>
                 </div>
 
-                <!-- SEPARATORE -->
                 <div class="separator" data-i18n="divider_text">E / O CARICA LISTINO</div>
 
-                <!-- 3. File (OPZIONALE) -->
                 <div class="upload-box enabled" id="file-upload-box" style="padding: 20px;">
                     <input type="file" id="file-input" accept=".pdf,.json,.txt,.csv">
                     <div class="upload-icon" style="font-size: 28px; margin-bottom: 5px;"><i class="fas fa-file-upload"></i></div>
@@ -63,7 +85,6 @@
                 </div>
             </div>
 
-            <!-- AZIONE UNICA -->
             <div class="btn-container">
                 <button id="generateBtn" class="btn btn-primary btn-block btn-lg">
                     <i class="fas fa-magic"></i> <span data-i18n="btnGenerate">Genera Servizi</span>
@@ -71,7 +92,7 @@
             </div>
         </div>
 
-        <!-- FASE 2: REVISIONE (Nascosta all'inizio) -->
+        <!-- FASE 2: REVISIONE -->
         <div id="reviewPhase" class="hidden fade-in">
             <div class="card">
                 <h3 data-i18n="subcatTitle" class="section-title">Servizi Rilevati</h3>
@@ -100,7 +121,6 @@
 
     </div>
 
-    <!-- FAB BACK -->
     <button class="back-fab" onclick="history.back()">
         <i class="fas fa-arrow-left"></i>
     </button>
