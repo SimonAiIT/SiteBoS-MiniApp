@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title data-i18n="page_title">Nuova Categoria</title>
+    
+    <!-- Librerie Esterne -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- CSS Unificato -->
+    <link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+    
+    <!-- LOADER -->
+    <div id="loader" class="hidden">
+        <div class="spinner-ring"></div>
+        <div style="margin-top:10px; opacity:0.7;" id="loader-text">Elaborazione...</div>
+    </div>
+
+    <div class="container fade-in" id="app-content">
+        
+        <h1 data-i18n="title">Nuova Categoria</h1>
+        <p class="subtitle" data-i18n="subtitle">Crea manualmente o carica un file.</p>
+
+        <!-- TABS NAVIGAZIONE -->
+        <div class="nav-tabs" style="margin-bottom: 20px;">
+            <div class="nav-tab active" data-tab="manual" onclick="switchTab('manual')">
+                <i class="fas fa-edit"></i> <span data-i18n="tab_manual">Manuale / AI</span>
+            </div>
+            <div class="nav-tab" data-tab="upload" onclick="switchTab('upload')">
+                <i class="fas fa-file-upload"></i> <span data-i18n="tab_upload">Da File</span>
+            </div>
+        </div>
+
+        <!-- TAB 1: MANUALE / AI -->
+        <div id="tab-content-manual">
+            <!-- SEZIONE 1: INPUT INIZIALE -->
+            <div id="initialInputSection" class="card">
+                <div class="form-group">
+                    <label for="categoryName" class="required" data-i18n="lblCatName">Nome Categoria</label>
+                    <input type="text" id="categoryName" required placeholder="...">
+                </div>
+                
+                <div class="form-group">
+                    <label for="categoryDescription" data-i18n="lblCatDesc">Descrizione (Opzionale)</label>
+                    <textarea id="categoryDescription" rows="3" placeholder="..."></textarea>
+                </div>
+                
+                <div class="btn-container">
+                    <button id="generateBtn" class="btn btn-primary btn-block">
+                        <i class="fas fa-magic"></i> <span data-i18n="btnGenerate">Genera con AI</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- SEZIONE 2: CURA -->
+            <div id="subcategoriesSection" class="hidden card fade-in">
+                <h3 data-i18n="subcatTitle" class="section-title">Seleziona Servizi</h3>
+                <ul id="subcategoriesList" style="list-style: none; margin-bottom: 20px; padding: 0;"></ul>
+                
+                <div class="input-group">
+                    <label data-i18n="lblManualAdd">Aggiungi Manualmente</label>
+                    <div class="d-flex gap-2">
+                        <input type="text" id="manualSubcat" placeholder="">
+                        <button id="addSubcatBtn" class="btn btn-secondary btn-icon" style="border-radius: var(--radius-md);">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 2: UPLOAD FILE -->
+        <div id="tab-content-upload" class="hidden">
+            <div class="card">
+                <div class="note note-warning">
+                    <i class="fas fa-info-circle"></i> <span data-i18n="upload_disclaimer"></span>
+                </div>
+
+                <div class="upload-box enabled" id="file-upload-box">
+                    <input type="file" id="file-input" accept=".pdf,.json">
+                    <div class="upload-icon"><i class="fas fa-cloud-upload-alt"></i></div>
+                    <span class="upload-text" id="upload-text" data-i18n="upload_hint"></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- BOTTONE SALVA COMUNE -->
+        <div id="save-section" class="btn-container hidden">
+            <button id="saveBtn" class="btn btn-success btn-block">
+                <i class="fas fa-save"></i> <span data-i18n="btnSave">Salva Tutto</span>
+            </button>
+        </div>
+
+    </div>
+
+    <!-- FAB BACK -->
+    <button class="back-fab" onclick="history.back()">
+        <i class="fas fa-arrow-left"></i>
+    </button>
+
+    <script src="add-category_logic.js"></script>
+</body>
+</html>
