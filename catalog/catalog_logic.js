@@ -174,9 +174,11 @@ window.goToAddCategory = () => window.location.href = `add-category.html?${urlPa
 
 window.goToAddProduct = (catIdx, prodIdx) => {
     let url = `add-product.html?token=${token}&catIdx=${catIdx}&${urlParams.toString()}`;
-    if (prodIdx !== null && prodIdx !== undefined) {
+    
+    if (prodIdx !== null && prodIdx !== undefined && !isNaN(prodIdx)) {
         url += `&ghostIdx=${prodIdx}`; // Passiamo l'indice del ghost per prelevare i dati
     }
+    
     location.href = url;
 };
 
