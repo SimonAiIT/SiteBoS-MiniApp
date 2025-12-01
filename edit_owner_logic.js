@@ -1,5 +1,5 @@
 // edit_owner_logic.js
-// Gestisce il caricamento e salvataggio sicuro dei dati Owner via Token
+// Gestione Dati Owner con Auto-Save per Operatori e Salvataggio Manuale per Dati Anagrafici
 
 // CONFIG
 const WEBHOOK_URL = "https://trinai.api.workflow.dcmake.it/webhook/83acc670-15ae-4da0-ae0e-3587c85bd5f4";
@@ -45,7 +45,7 @@ const dom = {
 // I18N TRANSLATIONS
 const i18n = {
     it: {
-      title: "Gestione Dati Azienda", subtitle: "Modifica le informazioni del tuo account.",
+      title: "Gestione Dati Azienda", subtitle: "Modifica le informazioni per aggiornare il sistema.",
       section_core: "Dati Anagrafici", section_company: "Dati Aziendali", section_config: "Configurazione Operativa",
       lbl_name: "Nome", lbl_surname: "Cognome", lbl_email: "Email", lbl_phone: "Telefono",
       lbl_company_name: "Ragione Sociale", lbl_vat: "P.IVA (Non modificabile)", lbl_address: "Indirizzo", lbl_site: "Sito Web",
@@ -53,7 +53,7 @@ const i18n = {
       op_title: "Gestione Operatori", op_btn_invite: "Invita Nuovo Operatore", op_limit_reached: "Limite raggiunto.",
       op_status_pending: "In attesa", op_invite_text: "Invia questo link:", op_btn_copy: "Copia", op_copied: "Copiato!",
       modal_title: "Invita Operatore", modal_subtitle: "Inserisci il nome per generare il link.", modal_lbl_name: "Nome Operatore",
-      btn_cancel: "Annulla", btn_generate: "Genera Invito", btn_save: "Salva Modifiche", hint_close: "Chiudi dopo aver salvato.",
+      btn_cancel: "Annulla", btn_generate: "Genera Invito", btn_save: "Salva Modifiche", hint_close: "Puoi chiudere questa finestra dopo aver salvato.",
       error_token_title: "Link Scaduto", error_token_desc: "Il token di accesso non è valido o è scaduto.",
       alert_del: "Eliminare operatore?", alert_revoke: "Revocare invito?", alert_saved: "Dati salvati con successo!", alert_err: "Errore durante il salvataggio."
     },
@@ -69,8 +69,7 @@ const i18n = {
       btn_cancel: "Cancel", btn_generate: "Generate Invite", btn_save: "Save Changes", hint_close: "Close after saving.",
       error_token_title: "Link Expired", error_token_desc: "Access token is invalid or expired.",
       alert_del: "Delete operator?", alert_revoke: "Revoke invite?", alert_saved: "Data saved successfully!", alert_err: "Error saving data."
-    },
-    // ... altre lingue se necessarie
+    }
 };
 
 // LANGUAGE SETUP
@@ -201,7 +200,7 @@ function renderOperators() {
     checkDirty();
 }
 
-// HELPERS
+// DATA OBJECT HELPER
 function getDataObj() {
     return {
         name: dom.name.value, surname: dom.surname.value,
@@ -222,35 +221,97 @@ function checkDirty() {
     dom.saveBtn.style.opacity = (curr === initialHash) ? 0.5 : 1;
 }
 
-// EVENT LISTENERS
 document.querySelectorAll('input, select').forEach(el => el.addEventListener('input', checkDirty));
+
+// MODAL
 window.openModal = () => { dom.opName.value = ''; dom.modal.classList.remove('hidden'); }
 window.closeModal = () => dom.modal.classList.add('hidden');
 
-window.generateInvitation = () => {
+// --- LOGICA AUTO-SAVE OPERATORI ---
+
+// 1. GENERAZIONE (AUTO-SAVE)
+window.generateInvitation = async () => {
     const name = dom.opName.value.trim();
     if(!name) return;
+    
+    const btn = document.querySelector('#operator-modal .btn-primary');
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i>';
+    btn.disabled = true;
+
     const rnd = Math.random().toString(36).substring(7);
     const code = `INV-${rnd}`; 
-    operators.push({ OperatorName: name, invitation_code: code, OperatorChatID: null, Role: 'Operator', OperatorLenguage: ownerData.lenguage });
-    renderOperators();
-    closeModal();
+    
+    operators.push({ 
+        OperatorName: name, 
+        invitation_code: code, 
+        OperatorChatID: null, 
+        Role: 'Operator', 
+        OperatorLenguage: ownerData.lenguage || 'it' 
+    });
+
+    try {
+        closeModal();
+        renderOperators(); 
+        await saveData(true); // Silent Save
+    } catch (e) {
+        alert(t.alert_err);
+        operators.pop(); // Rollback
+        renderOperators();
+    } finally {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+    }
 }
 
-window.deleteOp = (idx) => { if(confirm(t.alert_del)) { operators.splice(idx, 1); renderOperators(); } }
+// 2. ELIMINAZIONE (AUTO-SAVE)
+window.deleteOp = async (idx) => { 
+    if(confirm(t.alert_del)) { 
+        const removed = operators[idx];
+        operators.splice(idx, 1); 
+        renderOperators(); 
+        
+        try {
+            await saveData(true); // Silent Save
+        } catch(e) {
+            alert(t.alert_err);
+            operators.splice(idx, 0, removed); // Rollback
+            renderOperators();
+        }
+    } 
+}
+
 window.copyLink = (txt, btn) => { navigator.clipboard.writeText(txt); const old = btn.innerText; btn.innerText = t.op_copied; setTimeout(() => btn.innerText = old, 2000); }
 
-// SAVE
-window.saveData = async () => {
+// 3. SAVE DATA (Principale e Silent)
+window.saveData = async (silent = false) => {
     dom.saveBtn.disabled = true;
     const icon = dom.saveBtn.querySelector('i');
+    const oldClass = icon.className;
     icon.className = 'fas fa-circle-notch fa-spin';
     
     const payload = { action: 'save_owner_data_by_token', token: accessToken, data_update: getDataObj() };
+    
     try {
         const res = await fetch(WEBHOOK_URL, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(payload) });
-        if(res.ok) { tg.HapticFeedback.notificationOccurred('success'); alert(t.alert_saved); initialHash = JSON.stringify(getDataObj()); checkDirty(); } else throw new Error("Save Failed");
-    } catch(e) { alert(t.alert_err); } finally { icon.className = 'fas fa-save'; checkDirty(); }
+        
+        if(res.ok) { 
+            if(!silent) {
+                tg.HapticFeedback.notificationOccurred('success'); 
+                alert(t.alert_saved); 
+            }
+            initialHash = JSON.stringify(getDataObj()); 
+            checkDirty(); 
+        } else {
+            throw new Error("Save Failed");
+        }
+    } catch(e) { 
+        if(!silent) alert(t.alert_err); 
+        throw e; 
+    } finally { 
+        icon.className = oldClass; 
+        checkDirty(); 
+    }
 }
 
 // START
