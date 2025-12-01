@@ -1,331 +1,113 @@
-/**
- * ADD CATEGORY LOGIC (v2.2 FINAL - UNIFIED WEBHOOK)
- * - Full 6-language I18N support.
- * - Dual Mode: Manual/AI and File Upload using a SINGLE GENERATE ENDPOINT.
- * - Clear separation of logic and view.
- */
-
-'use strict';
-
-// ==========================================
-// 1. CONFIG & STATE
-// ==========================================
-
-const GENERATE_WEBHOOK_URL = "https://trinai.api.workflow.dcmake.it/webhook/5e225cf6-76bb-4e19-8657-35cac49fd399";
-const SAVE_WEBHOOK_URL = "https://trinai.api.workflow.dcmake.it/webhook/7da6f424-dc2a-4476-a0bd-a3bfd21270fb";
-
-const tg = window.Telegram.WebApp;
-tg.ready(); tg.expand();
-
-const urlParams = new URLSearchParams(window.location.search);
-let generatedCategoryData = null;
-let currentMode = 'manual';
-
-// ==========================================
-// 2. I18N DICTIONARY (FULL 6 LANGUAGES)
-// ==========================================
-const i18n = {
-    it: {
-        page_title: "Nuova Categoria", title: "➕ Nuova Categoria", subtitle: "Definisci una nuova area per i tuoi prodotti o servizi.",
-        tab_manual: "Manuale / AI", tab_upload: "Da File",
-        lblCatName: "Nome Categoria", lblCatDesc: "Descrizione (Opzionale)",
-        btnGenerate: "Genera Servizi con AI",
-        subcatTitle: "Seleziona i servizi da includere",
-        lblManualAdd: "Aggiungi Manualmente", manualPlaceholder: "Es. Manutenzione ordinaria...",
-        upload_disclaimer: "Carica un listino o un documento (PDF/JSON). L'AI estrarrà una singola categoria e i relativi prodotti.",
-        upload_hint: "Tocca per caricare PDF o JSON",
-        btnSave: "Salva Categoria",
-        status_generating: "L'AI sta analizzando...", status_saving: "Salvataggio...", status_uploading: "Caricamento e analisi...",
-        status_success: "✅ Categoria Creata!",
-        err_name_req: "Il nome della categoria è obbligatorio!", err_file_req: "Per favore, seleziona un file.",
-        err_generic: "Si è verificato un errore. Riprova più tardi."
-    },
-    en: {
-        page_title: "New Category", title: "➕ New Category", subtitle: "Define a new area for your products or services.",
-        tab_manual: "Manual / AI", tab_upload: "From File",
-        lblCatName: "Category Name", lblCatDesc: "Description (Optional)",
-        btnGenerate: "Generate Services with AI",
-        subcatTitle: "Select services to include",
-        lblManualAdd: "Add Manually", manualPlaceholder: "E.g., Standard maintenance...",
-        upload_disclaimer: "Upload a pricelist or document (PDF/JSON). The AI will extract a single category and its products.",
-        upload_hint: "Tap to upload PDF or JSON",
-        btnSave: "Save Category",
-        status_generating: "AI is analyzing...", status_saving: "Saving...", status_uploading: "Uploading & analyzing...",
-        status_success: "✅ Category Created!",
-        err_name_req: "Category name is required!", err_file_req: "Please select a file.",
-        err_generic: "An error occurred. Please try again later."
-    },
-    fr: {
-        page_title: "Nouvelle Catégorie", title: "➕ Nouvelle Catégorie", subtitle: "Définissez une nouvelle zone pour vos produits ou services.",
-        tab_manual: "Manuel / IA", tab_upload: "Depuis Fichier",
-        lblCatName: "Nom de la Catégorie", lblCatDesc: "Description (Optionnel)",
-        btnGenerate: "Générer avec l'IA",
-        subcatTitle: "Sélectionnez les services à inclure",
-        lblManualAdd: "Ajouter Manuellement", manualPlaceholder: "Ex. Entretien courant...",
-        upload_disclaimer: "Chargez une liste de prix ou un document (PDF/JSON). L'IA extraira une seule catégorie et ses produits.",
-        upload_hint: "Touchez pour charger PDF ou JSON",
-        btnSave: "Enregistrer Catégorie",
-        status_generating: "L'IA analyse...", status_saving: "Enregistrement...", status_uploading: "Chargement et analyse...",
-        status_success: "✅ Catégorie Créée !",
-        err_name_req: "Le nom de la catégorie est requis !", err_file_req: "Veuillez sélectionner un fichier.",
-        err_generic: "Une erreur est survenue. Veuillez réessayer plus tard."
-    },
-    de: {
-        page_title: "Neue Kategorie", title: "➕ Neue Kategorie", subtitle: "Definieren Sie einen neuen Bereich für Ihre Produkte oder Dienstleistungen.",
-        tab_manual: "Manuell / KI", tab_upload: "Aus Datei",
-        lblCatName: "Kategoriename", lblCatDesc: "Beschreibung (Optional)",
-        btnGenerate: "Mit KI generieren",
-        subcatTitle: "Wählen Sie die einzuschließenden Dienste aus",
-        lblManualAdd: "Manuell hinzufügen", manualPlaceholder: "Z.B. Standardwartung...",
-        upload_disclaimer: "Laden Sie eine Preisliste oder ein Dokument (PDF/JSON) hoch. Die KI extrahiert eine einzelne Kategorie und ihre Produkte.",
-        upload_hint: "Tippen, um PDF oder JSON hochzuladen",
-        btnSave: "Kategorie speichern",
-        status_generating: "KI analysiert...", status_saving: "Speichern...", status_uploading: "Hochladen & analysieren...",
-        status_success: "✅ Kategorie erstellt!",
-        err_name_req: "Kategoriename ist erforderlich!", err_file_req: "Bitte wählen Sie eine Datei aus.",
-        err_generic: "Ein Fehler ist aufgetreten. Bitte versuchen Sie es später erneut."
-    },
-    es: {
-        page_title: "Nueva Categoría", title: "➕ Nueva Categoría", subtitle: "Define una nueva área para tus productos o servicios.",
-        tab_manual: "Manual / IA", tab_upload: "Desde Archivo",
-        lblCatName: "Nombre de la Categoría", lblCatDesc: "Descripción (Opcional)",
-        btnGenerate: "Generar con IA",
-        subcatTitle: "Selecciona los servicios a incluir",
-        lblManualAdd: "Añadir Manualmente", manualPlaceholder: "Ej. Mantenimiento estándar...",
-        upload_disclaimer: "Sube una lista de precios o un documento (PDF/JSON). La IA extraerá una sola categoría y sus productos.",
-        upload_hint: "Toca para subir PDF o JSON",
-        btnSave: "Guardar Categoría",
-        status_generating: "La IA está analizando...", status_saving: "Guardando...", status_uploading: "Subiendo y analizando...",
-        status_success: "✅ ¡Categoría Creada!",
-        err_name_req: "¡El nombre de la categoría es obligatorio!", err_file_req: "Por favor, selecciona un archivo.",
-        err_generic: "Ocurrió un error. Por favor, inténtalo de nuevo más tarde."
-    },
-    pt: {
-        page_title: "Nova Categoria", title: "➕ Nova Categoria", subtitle: "Defina uma nova área para seus produtos ou serviços.",
-        tab_manual: "Manual / IA", tab_upload: "De Arquivo",
-        lblCatName: "Nome da Categoria", lblCatDesc: "Descrição (Opcional)",
-        btnGenerate: "Gerar com IA",
-        subcatTitle: "Selecione os serviços a incluir",
-        lblManualAdd: "Adicionar Manualmente", manualPlaceholder: "Ex. Manutenção padrão...",
-        upload_disclaimer: "Carregue uma lista de preços ou documento (PDF/JSON). A IA irá extrair uma única categoria e seus produtos.",
-        upload_hint: "Toque para carregar PDF ou JSON",
-        btnSave: "Salvar Categoria",
-        status_generating: "A IA está analisando...", status_saving: "Salvando...", status_uploading: "Carregando e analisando...",
-        status_success: "✅ Categoria Criada!",
-        err_name_req: "O nome da categoria é obrigatório!", err_file_req: "Por favor, selecione um arquivo.",
-        err_generic: "Ocorreu um erro. Por favor, tente novamente mais tarde."
-    }
-};
-
-const lang = (urlParams.get('lang') || tg.initDataUnsafe?.user?.language_code || 'it').slice(0, 2);
-const t = i18n[lang] || i18n.it;
-
-// ==========================================
-// 3. DOM ELEMENTS
-// ==========================================
-const dom = {
-    loader: document.getElementById('loader'),
-    loaderText: document.getElementById('loader-text'),
-    content: document.getElementById('app-content'),
-    initialSection: document.getElementById('initialInputSection'),
-    subcatSection: document.getElementById('subcategoriesSection'),
-    subcatList: document.getElementById('subcategoriesList'),
-    saveSection: document.getElementById('save-section'),
-    catName: document.getElementById('categoryName'),
-    catDesc: document.getElementById('categoryDescription'),
-    manualInput: document.getElementById('manualSubcat'),
-    fileInput: document.getElementById('file-input'),
-    fileBox: document.getElementById('file-upload-box'),
-    fileText: document.getElementById('upload-text')
-};
-
-// ==========================================
-// 4. CORE LOGIC
-// ==========================================
-function init() {
-    applyTranslations();
-    bindEvents();
-}
-
-function applyTranslations() {
-    document.querySelectorAll('[data-i18n]').forEach(el => {
-        const key = el.getAttribute('data-i18n');
-        if (t[key]) el.innerText = t[key];
-    });
-    document.title = t.page_title;
-    dom.manualInput.placeholder = t.manualPlaceholder;
-}
-
-function bindEvents() {
-    document.getElementById('generateBtn').addEventListener('click', generateFromText);
-    document.getElementById('addSubcatBtn').addEventListener('click', addManualSubcat);
-    document.getElementById('saveBtn').addEventListener('click', saveCategory);
-    dom.fileInput.addEventListener('change', handleFileUpload);
-}
-
-window.switchTab = function(mode) {
-    currentMode = mode;
-    document.querySelectorAll('.nav-tab').forEach(el => el.classList.remove('active'));
-    document.querySelector(`.nav-tab[data-tab="${mode}"]`).classList.add('active');
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title data-i18n="page_title">Nuova Categoria</title>
     
-    document.getElementById('tab-content-manual').classList.add('hidden');
-    document.getElementById('tab-content-upload').classList.add('hidden');
-    document.getElementById(`tab-content-${mode}`).classList.remove('hidden');
-    
-    dom.saveSection.classList.add('hidden');
-    dom.subcatSection.classList.add('hidden');
-    dom.initialSection.classList.remove('hidden');
-    generatedCategoryData = null;
-};
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../styles.css">
 
-async function generateFromText() {
-    const name = dom.catName.value.trim();
-    if (!name) return tg.showAlert(t.err_name_req);
-    
-    const payload = {
-        category_name: name,
-        category_description: dom.catDesc.value,
-        token: urlParams.get('token'),
-        language: lang
-    };
-
-    await sendToGenerator(payload, t.status_generating);
-}
-
-async function handleFileUpload(e) {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    dom.fileBox.classList.add('analyzing');
-    dom.fileText.innerText = t.status_uploading;
-
-    try {
-        const reader = new FileReader();
-        reader.readAsDataURL(file);
-        reader.onload = async () => {
-            const base64 = reader.result.split(',')[1];
-            const mime = reader.result.match(/:(.*?);/)[1];
-
-            const payload = {
-                token: urlParams.get('token'),
-                language: lang,
-                // --- CAMPI AGGIUNTIVI PER IL FILE ---
-                file_data: base64,
-                mime_type: mime
-            };
-
-            await sendToGenerator(payload, t.status_uploading);
-            
-            dom.fileBox.classList.remove('analyzing');
-            dom.fileBox.classList.add('success');
-            dom.fileText.innerText = "File Analizzato!";
-            switchTab('manual');
-        };
-    } catch (e) {
-        handleError(e);
-        dom.fileBox.classList.remove('analyzing');
-    }
-}
-
-async function sendToGenerator(payload, loadingMessage) {
-    showLoader(loadingMessage);
-    try {
-        const res = await fetch(GENERATE_WEBHOOK_URL, {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify(payload)
-        });
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const data = Array.isArray(await res.json()) ? (await res.json())[0] : await res.json();
-        handleAnalysisResult(data);
-    } catch (e) {
-        handleError(e);
-    }
-}
-
-function handleAnalysisResult(data) {
-    generatedCategoryData = data;
-    dom.catName.value = data.name || dom.catName.value;
-    dom.catDesc.value = data.description || dom.catDesc.value;
-    dom.subcatList.innerHTML = '';
-    if (data.subcategories) {
-        data.subcategories.forEach(sub => createListItem(sub.name, sub.short_name));
-    }
-    dom.initialSection.classList.remove('hidden');
-    dom.subcatSection.classList.remove('hidden');
-    dom.saveSection.classList.remove('hidden');
-    hideLoader();
-}
-
-function createListItem(name, display) {
-    const li = document.createElement('li');
-    li.className = 'list-item';
-    li.innerHTML = `
-        <div class="checkbox-group" style="margin-bottom:0; width:100%;">
-            <input type="checkbox" checked value="${name}" data-short="${display}" id="chk_${name.replace(/\s/g, '_')}">
-            <label for="chk_${name.replace(/\s/g, '_')}">${display}</label>
-        </div>`;
-    dom.subcatList.appendChild(li);
-}
-
-function addManualSubcat() {
-    const val = dom.manualInput.value.trim();
-    if (val) { createListItem(val, val); dom.manualInput.value = ''; }
-}
-
-async function saveCategory() {
-    if (!dom.catName.value) return tg.showAlert(t.err_name_req);
-    showLoader(t.status_saving);
-    
-    const selected = [];
-    dom.subcatList.querySelectorAll('input:checked').forEach(cb => {
-        selected.push({
-            name: cb.value, short_name: cb.dataset.short,
-            callback_data: cb.value.toUpperCase().replace(/[^A-Z0-9\s]/g, '').replace(/\s/g, '_').substring(0, 60)
-        });
-    });
-
-    const payload = {
-        ...Object.fromEntries(urlParams),
-        new_category_block: {
-            name: dom.catName.value, description: dom.catDesc.value,
-            short_name: generatedCategoryData?.short_name || dom.catName.value, // Usa short_name se generato, altrimenti fallback
-            callback_data: generatedCategoryData?.callback_data || dom.catName.value.toUpperCase().replace(/[^A-Z0-9\s]/g, '').replace(/\s/g, '_').substring(0, 60),
-            subcategories: selected
+    <style>
+        /* Separatore Orizzontale "OPPURE" */
+        .divider {
+            display: flex; align-items: center; text-align: center;
+            margin: 25px 0; color: var(--text-muted); font-size: 12px; text-transform: uppercase; letter-spacing: 1px;
         }
-    };
+        .divider::before, .divider::after {
+            content: ''; flex: 1; border-bottom: 1px solid var(--glass-border);
+        }
+        .divider::before { margin-right: 10px; }
+        .divider::after { margin-left: 10px; }
+    </style>
+</head>
+<body>
+    
+    <!-- LOADER -->
+    <div id="loader" class="hidden">
+        <div class="spinner-ring"></div>
+        <div style="margin-top:10px; opacity:0.7;" id="loader-text">Elaborazione...</div>
+    </div>
 
-    try {
-        const res = await fetch(SAVE_WEBHOOK_URL, {
-            method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload)
-        });
-        if (!res.ok) throw new Error();
-        hideLoader();
-        if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
-        tg.showPopup({ message: t.status_success, buttons: [{type: 'ok'}] }, () => history.back());
-    } catch (e) {
-        handleError(e);
-    }
-}
+    <div class="container fade-in" id="app-content">
+        
+        <h1 data-i18n="title">Nuova Categoria</h1>
+        <p class="subtitle" data-i18n="subtitle">Definisci l'area o carica un listino.</p>
 
-// ==========================================
-// 5. UTILITY FUNCTIONS
-// ==========================================
-function showLoader(text) {
-    dom.loaderText.innerText = text;
-    dom.loader.classList.remove('hidden');
-    dom.content.classList.add('hidden');
-}
+        <!-- FASE 1: SCELTA METODO (Tutto in vista) -->
+        <div id="inputPhase">
+            
+            <!-- OPZIONE A: MANUALE -->
+            <div class="card">
+                <div class="form-group">
+                    <label for="categoryName" class="required" data-i18n="lblCatName">Nome Categoria</label>
+                    <input type="text" id="categoryName" required placeholder="...">
+                </div>
+                
+                <div class="form-group">
+                    <label for="categoryDescription" data-i18n="lblCatDesc">Descrizione (Opzionale)</label>
+                    <textarea id="categoryDescription" rows="2" placeholder="..."></textarea>
+                </div>
+                
+                <button id="generateBtn" class="btn btn-primary btn-block">
+                    <i class="fas fa-magic"></i> <span data-i18n="btnGenerate">Genera con AI</span>
+                </button>
+            </div>
 
-function hideLoader() {
-    dom.loader.classList.add('hidden');
-    dom.content.classList.remove('hidden');
-}
+            <!-- DIVIDER -->
+            <div class="divider">
+                <span data-i18n="divider_text">Oppure Carica File</span>
+            </div>
 
-function handleError(error) {
-    console.error(error);
-    hideLoader();
-    tg.showAlert(t.err_generic);
-}
+            <!-- OPZIONE B: UPLOAD (Sempre visibile) -->
+            <div class="card">
+                <div class="note note-warning" style="margin-bottom: 10px; font-size: 11px;">
+                    <i class="fas fa-info-circle"></i> <span data-i18n="upload_disclaimer"></span>
+                </div>
 
-document.addEventListener('DOMContentLoaded', init);
+                <div class="upload-box enabled" id="file-upload-box" style="padding: 15px;">
+                    <input type="file" id="file-input" accept=".pdf,.json">
+                    <div class="upload-icon" style="font-size: 24px;"><i class="fas fa-file-upload"></i></div>
+                    <span class="upload-text" id="upload-text" data-i18n="upload_hint"></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- FASE 2: REVISIONE & SALVATAGGIO (Nascosta all'inizio) -->
+        <div id="reviewPhase" class="hidden fade-in">
+            <div class="card">
+                <h3 data-i18n="subcatTitle" class="section-title">Servizi Rilevati</h3>
+                <ul id="subcategoriesList" style="list-style: none; margin-bottom: 20px; padding: 0;"></ul>
+                
+                <div class="input-group">
+                    <label data-i18n="lblManualAdd">Aggiungi Manualmente</label>
+                    <div class="d-flex gap-2">
+                        <input type="text" id="manualSubcat" placeholder="">
+                        <button id="addSubcatBtn" class="btn btn-secondary btn-icon" style="border-radius: var(--radius-md);">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="btn-container">
+                <button class="btn btn-secondary" onclick="resetForm()">
+                    <i class="fas fa-arrow-left"></i> Indietro
+                </button>
+                <button id="saveBtn" class="btn btn-success flex-1">
+                    <i class="fas fa-save"></i> <span data-i18n="btnSave">Salva Tutto</span>
+                </button>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- FAB BACK -->
+    <button class="back-fab" onclick="history.back()">
+        <i class="fas fa-arrow-left"></i>
+    </button>
+
+    <script src="add-category_logic.js"></script>
+</body>
+</html>
