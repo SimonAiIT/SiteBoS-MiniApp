@@ -106,64 +106,6 @@ const i18n = {
     }
 };
 
-/**
- * CATALOG LOGIC (v7.0 - Bulletproof Event Handling)
- * - FIX: Risolto bug category_id vuoto usando event delegation e data-attributes.
- * - Logica ottimizzata One-Shot Update.
- * - Gestione CRUD con ID univoci.
- */
-
-// ==========================================
-// 1. CONFIG & INIT
-// ==========================================
-const CATALOG_WEBHOOK = "https://trinai.api.workflow.dcmake.it/webhook/0fff7fa2-bcb2-4b50-a26b-589b7054952e";
-
-const tg = window.Telegram.WebApp;
-tg.ready(); 
-tg.expand();
-
-const urlParams = new URLSearchParams(window.location.search);
-const token = urlParams.get('token');
-
-let currentEditingCatId = ""; 
-
-// ==========================================
-// 2. I18N DICTIONARY
-// ==========================================
-const i18n = {
-    it: {
-        title: "Catalogo Servizi", subtitle: "Prodotti attivi e suggerimenti AI.",
-        ghost_label: "Suggeriti", active_label: "Attivi",
-        btn_reload: "Ricarica", btn_new_cat: "Nuova Categoria",
-        empty_title: "Nessun catalogo trovato.", empty_btn: "Crea Prima Categoria",
-        btn_add_here: "Aggiungi Prodotto qui",
-        status_active: "Attivo", btn_manage: "Gestisci", btn_activate: "Attiva",
-        modal_edit_title: "Modifica Categoria",
-        lbl_cat_short: "Nome Breve (Menu/Bottoni)",
-        lbl_cat_long: "Nome Completo (Interno/Descrittivo)",
-        btn_cancel: "Annulla", btn_save: "Salva",
-        confirm_delete_cat: "Sei sicuro di voler eliminare la categoria '{name}' e tutti i suoi prodotti?",
-        alert_loading_error: "Errore caricamento", alert_name_required: "Il nome completo è obbligatorio",
-        error_id_missing: "Errore: ID Categoria non trovato. Impossibile eseguire l'azione."
-    },
-    en: {
-        title: "Service Catalog", subtitle: "Active products & AI suggestions.",
-        ghost_label: "Suggested", active_label: "Active",
-        btn_reload: "Reload", btn_new_cat: "New Category",
-        empty_title: "No catalog found.", empty_btn: "Create First Category",
-        btn_add_here: "Add Product here",
-        status_active: "Active", btn_manage: "Manage", btn_activate: "Activate",
-        modal_edit_title: "Edit Category",
-        lbl_cat_short: "Short Name (Menu/Buttons)",
-        lbl_cat_long: "Full Name (Internal/Descriptive)",
-        btn_cancel: "Cancel", btn_save: "Save",
-        confirm_delete_cat: "Are you sure you want to delete category '{name}' and all its products?",
-        alert_loading_error: "Loading Error", alert_name_required: "Full name is required",
-        error_id_missing: "Error: Category ID not found. Action cannot be performed."
-    },
-    // ... Altre lingue
-};
-
 // ==========================================
 // 3. HELPER FUNCTIONS
 // ==========================================
