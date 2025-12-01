@@ -172,19 +172,20 @@ function escapeHtml(str) {
 window.goBack = () => window.location.href = `../dashboard.html?${urlParams.toString()}`;
 window.goToAddCategory = () => window.location.href = `add-category.html?${urlParams.toString()}`;
 
-window.goToAddProduct = (catIdx, prodIdx) => {
-    let url = `add-product.html?token=${token}&catIdx=${catIdx}&${urlParams.toString()}`;
+window.goToAddProduct = (productId) => {
+    let url = `add-product.html?token=${token}&${urlParams.toString()}`;
     
-    if (prodIdx !== null && prodIdx !== undefined && !isNaN(prodIdx)) {
-        url += `&ghostIdx=${prodIdx}`; // Passiamo l'indice del ghost per prelevare i dati
+    if (productId) {
+        url += `&ghostId=${encodeURIComponent(productId)}`; // Passiamo l'ID
     }
     
     location.href = url;
 };
 
-// Funzione per GESTIRE ESISTENTE
-window.openProduct = (page, catIdx, prodIdx) => {
-    location.href = `${page}?token=${token}&catIdx=${catIdx}&prodIdx=${prodIdx}&${urlParams.toString()}`;
+// Funzione per GESTIRE ESISTENTE (Blueprint)
+window.openProduct = (page, productId) => {
+    // Passiamo l'ID del prodotto attivo
+    location.href = `${page}?token=${token}&productId=${encodeURIComponent(productId)}&${urlParams.toString()}`;
 };
 // ==========================================
 // 5. CORE LOGIC
@@ -277,26 +278,26 @@ function renderCatalog() {
 
         const prodContainer = catEl.querySelector('.products-container');
         
-        subcats.forEach((prod, prodIdx) => {
+        subcats.forEach((prod, productIndex) => {
             const isRealProduct = prod.blueprint_ready === true;
+            const prodId = prod.callback_data; // QUESTO È L'ID CHE SERVE
             
-            // --- LOGICA 1+1 ---
             let btnIcon, btnLabel, btnClass, actionFunction;
             
             if (isRealProduct) {
-                // CASO 1: ESISTE -> MODIFICA / GESTISCI
+                // MODIFICA (Attivo)
                 btnIcon = '<i class="fas fa-sliders-h"></i>';
                 btnLabel = t('btn_manage') || "Gestisci";
-                btnClass = 'btn-edit'; // Stile secondario/outline
-                // Apre edit-blueprint.html (o edit-product.html a tua scelta per modifica)
-                actionFunction = `openProduct('edit-blueprint.html', ${catIdx}, ${prodIdx})`;
+                btnClass = 'btn-edit';
+                // Passiamo l'ID del prodotto, non l'indice
+                actionFunction = `openProduct('edit-blueprint.html', '${prodId}')`;
             } else {
-                // CASO 2: NON ESISTE (GHOST) -> AGGIUNGI
+                // ATTIVA (Ghost) -> APRE ADD-PRODUCT
                 btnIcon = '<i class="fas fa-plus"></i>';
                 btnLabel = t('btn_activate') || "Aggiungi";
-                btnClass = 'btn-create'; // Stile primario/pieno
-                // Apre add-product.html passando l'indice per pre-compilare
-                actionFunction = `goToAddProduct(${catIdx}, ${prodIdx})`;
+                btnClass = 'btn-create';
+                // Passiamo l'ID del prodotto, non l'indice
+                actionFunction = `goToAddProduct('${prodId}')`;
             }
 
             const statusClass = isRealProduct ? 'status-active' : 'status-ghost';
