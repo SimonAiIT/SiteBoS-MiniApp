@@ -1,8 +1,12 @@
+// dashboard_logic.js
+// Versione Completa - Traduzioni multilingua, Logica Gatekeeper (HP/Blueprint/Docs), Gamification
+
+// 0. INIT TELEGRAM
 const tg = window.Telegram.WebApp;
 tg.ready(); 
 tg.expand();
 
-// CONFIG
+// CONFIGURAZIONE
 const DASHBOARD_API = "https://trinai.api.workflow.dcmake.it/webhook/ef4aece4-9ec0-4026-a7a7-328562bcbdf6"; 
 
 // 1. DIZIONARIO TRADUZIONI COMPLETO
@@ -102,11 +106,13 @@ const i18n = {
 function getLang() {
     const l = (new URLSearchParams(window.location.search)).get('lang') || 'it';
     const norm = l.toLowerCase().slice(0, 2); 
-    return i18n[norm] ? norm : 'en';
+    return i18n[norm] ? norm : 'en'; // Fallback su Inglese
 }
 
 function t(key) {
-    return i18n[getLang()][key] || i18n['en'][key] || key;
+    const lang = getLang();
+    // Cerca nella lingua, poi in inglese, poi restituisce la chiave
+    return (i18n[lang] && i18n[lang][key]) || (i18n['en'] && i18n['en'][key]) || key;
 }
 
 function applyTranslations() {
@@ -145,7 +151,7 @@ async function startDashboard() {
                 vat_number: vat, 
                 chat_id: owner, 
                 amount: points, 
-                token: token // TOKEN
+                token: token 
             })
         }).catch(console.error);
 
@@ -160,7 +166,7 @@ async function startDashboard() {
         window.history.replaceState({}, document.title, newUrl);
     }
 
-    // 3. CHIAMATA DATI DASHBOARD (Il backend restituirà il saldo aggiornato o meno)
+    // 3. CHIAMATA DATI DASHBOARD
     try {
         const response = await fetch(DASHBOARD_API, {
             method: 'POST',
@@ -169,7 +175,7 @@ async function startDashboard() {
                 action: 'get_dashboard_data', 
                 vat_number: vat, 
                 chat_id: owner, 
-                token: token // TOKEN
+                token: token 
             })
         });
 
@@ -196,59 +202,95 @@ function renderDashboard(data, vat) {
     // Header Info
     document.getElementById('companyName').innerText = owner.ragione_sociale || "Azienda";
     document.getElementById('vatDisplay').innerText = `P.IVA: ${vat}`;
-    
-    // Header Crediti (MOSTRA SOLO QUELLO CHE ARRIVA DAL DB)
     document.getElementById('credits-display').innerText = owner.credits || 0;
 
-    // Header Logo
     if (owner.logo_url) {
         const img = document.getElementById('header-logo');
         img.src = owner.logo_url;
         img.classList.remove('hidden');
     }
 
-    // LOGICA LUCCHETTI
+    // Helper function per gestire i lucchetti
+    const setLock = (cardId, isLocked, subId, textLocked, textUnlocked) => {
+        const card = document.getElementById(cardId);
+        const sub = document.getElementById(subId);
+        
+        if (isLocked) {
+            card.classList.add('locked-item');
+            if(sub) {
+                sub.innerText = textLocked;
+                sub.classList.add('text-warning');
+                sub.classList.remove('text-success');
+            }
+        } else {
+            card.classList.remove('locked-item');
+            if(sub && textUnlocked) {
+                sub.innerText = textUnlocked;
+                sub.classList.remove('text-warning');
+                sub.classList.add('text-success');
+            }
+        }
+    };
+
+    // --- LOGICA GATEKEEPERS ---
     const isHpReady = (status.honeypot === 'READY');
     const hpSub = document.getElementById('sub-hp');
     const hpCard = document.getElementById('card-hp');
 
+    // 1. HoneyPot (Master Key)
     if (!isHpReady) {
+        // Se HP non è pronto, BLOCCA TUTTO tranne HP e Config
         hpSub.innerText = t('status_hp_lock');
         hpSub.classList.add('text-warning');
         hpCard.style.border = '1px solid var(--warning)';
+        
         ['card-catalog', 'card-agenda', 'card-team', 'card-knowledge'].forEach(id => document.getElementById(id).classList.add('locked-item'));
     } else {
+        // Se HP è pronto, apri Catalogo e valuta le altre
         hpSub.innerText = t('status_hp_ok');
         hpSub.classList.add('text-success');
         hpCard.classList.add('border-success');
-        ['card-catalog', 'card-agenda', 'card-team', 'card-knowledge'].forEach(id => document.getElementById(id).classList.remove('locked-item'));
+        
+        // Sblocca Catalogo (sempre accessibile se HP è OK)
+        document.getElementById('card-catalog').classList.remove('locked-item');
+        document.getElementById('sub-catalog').innerHTML = `Cat: <b>${status.categories_count || 0}</b> | Prod: <b>${status.products_count || 0}</b>`;
+
+        // 2. Agenda: Dipende SOLO da Blueprints > 0
+        setLock(
+            'card-agenda', 
+            (status.blueprints_count === 0), 
+            'sub-agenda', 
+            t('status_req'), 
+            t('status_active')
+        );
+
+        // 3. Conoscenza: Dipende SOLO da Docs > 0
+        setLock(
+            'card-knowledge', 
+            (status.knowledge_docs === 0), 
+            'sub-knowledge', 
+            t('status_req'), 
+            `${status.knowledge_docs} Docs`
+        );
+
+        // 4. Team: Dipende da Operatori > 0 (View Only)
+        setLock(
+            'card-team', 
+            (status.operators_count === 0), 
+            'sub-team', 
+            t('status_no_op'), 
+            `${status.operators_count} ${t('status_active')}`
+        );
     }
 
-    // Labels e Contatori
-    document.getElementById('sub-catalog').innerHTML = `Cat: <b>${status.categories_count}</b> | Prod: <b>${status.products_count}</b>`;
-    
-    if (status.blueprints_count > 0) {
-        document.getElementById('sub-agenda').innerText = t('status_active');
-        document.getElementById('sub-knowledge').innerText = `${status.knowledge_docs} Docs`;
-    } else {
-        document.getElementById('sub-agenda').innerText = t('status_req');
-        document.getElementById('sub-knowledge').innerText = t('status_req');
-        document.getElementById('card-agenda').classList.add('locked-item');
-        document.getElementById('card-knowledge').classList.add('locked-item');
+    // Configurazione (Sempre accessibile, warning se incompleto)
+    const subConfig = document.getElementById('sub-config');
+    subConfig.innerText = `${status.profile_completion || 0}%`;
+    if ((status.profile_completion || 0) < 100) {
+        subConfig.classList.add('text-warning');
     }
 
-    if (status.operators_count > 0) {
-        document.getElementById('sub-team').innerText = `${status.operators_count} ${t('status_active')}`;
-    } else {
-        document.getElementById('sub-team').innerText = t('status_no_op');
-        document.getElementById('card-team').classList.add('locked-item');
-    }
-
-    if (status.profile_completion < 100) {
-        document.getElementById('sub-config').innerText = `${status.profile_completion}%`;
-        document.getElementById('sub-config').classList.add('text-warning');
-    }
-
+    // Mostra UI finale
     document.getElementById('loader').classList.add('hidden');
     document.getElementById('app-content').classList.remove('hidden');
 }
@@ -262,7 +304,7 @@ window.navTo = function(page) {
 
 window.openWidget = () => navTo('SiteBos.html');
 window.openSite = () => { 
-    const txt = i18n[getLang()];
+    const txt = i18n[getLang()] || i18n['en'];
     try { tg.showPopup({ title: txt.popup_site_title, message: txt.popup_site_msg }); } catch(e) { alert(txt.popup_site_msg); }
 }
 
