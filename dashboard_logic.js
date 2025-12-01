@@ -11,6 +11,7 @@ const DASHBOARD_API = "https://trinai.api.workflow.dcmake.it/webhook/ef4aece4-9e
 
 // ROUTING (Mappa delle destinazioni)
 const ROUTES = {
+    'honeypot': 'honeypot_editor.html',
     'catalog': 'catalog/catalog.html',
     'agenda': 'agenda/agenda.html',
     'team': 'human_resources/team.html',
