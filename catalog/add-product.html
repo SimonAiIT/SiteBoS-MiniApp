@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title data-i18n="page_title">Nuovo Prodotto</title>
+    
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- CSS Unificato -->
+    <link rel="stylesheet" href="../styles.css">
+    <!-- Sponsor Engine -->
+    <script src="../sponsor.js"></script>
+
+    <style>
+        /* Loader con Sponsor */
+        #loader {
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(10px);
+            z-index: 9999;
+            position: fixed; inset: 0; display: flex; justify-content: center; align-items: center;
+        }
+        .loader-content {
+            width: 90%; max-width: 350px;
+            text-align: center;
+            background: var(--card-bg);
+            padding: 30px; border-radius: 20px;
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+        }
+    </style>
+</head>
+<body>
+    
+    <!-- LOADER (SPONSORIZZATO) -->
+    <div id="loader" class="hidden">
+        <div class="loader-content fade-in">
+            <div class="spinner-ring" style="width: 40px; height: 40px; margin-bottom: 15px;"></div>
+            <h3 id="loader-title" style="margin-bottom: 5px; font-size: 16px;">AI al Lavoro...</h3>
+            <div id="loader-text" style="margin-bottom: 20px; font-size: 13px; color: var(--text-muted);">Analisi in corso</div>
+            
+            <div style="border-top: 1px dashed var(--glass-border); padding-top: 15px; margin-top: 15px;">
+                <div style="font-size: 9px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; opacity: 0.5;">Sponsored Partner</div>
+                <div id="loader-ad-slot" style="min-height: 80px;"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container fade-in" id="app-content">
+        
+        <!-- SECTION 1: INPUT INIZIALE (Nascosta se Ghost Mode) -->
+        <div id="inputSection">
+            <h1 data-i18n="title">Nuovo Prodotto</h1>
+            <p class="subtitle"><span data-i18n="sub">Categoria:</span> <b id="displayCatName">...</b></p>
+            
+            <div class="card">
+                <div class="form-group">
+                    <label data-i18n="lName" class="required">Nome Richiesta</label>
+                    <input type="text" id="inName" required autocomplete="off" placeholder="...">
+                </div>
+                
+                <div class="form-group">
+                    <label data-i18n="lDesc">Istruzioni Base</label>
+                    <textarea id="inDesc" rows="3" placeholder="..."></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label data-i18n="lFile">Allegato</label>
+                    <div class="upload-box" id="uploadBox">
+                        <input type="file" id="inFile" accept="image/*,application/pdf">
+                        <div class="upload-icon"><i class="fas fa-cloud-upload-alt"></i></div>
+                        <span id="lblFileBtn" class="upload-text" data-i18n="lFileBtn">Carica Foto/PDF</span>
+                        <div id="filePreview" class="mt-2"></div>
+                    </div>
+                </div>
+                
+                <div class="btn-container">
+                    <button id="btnEnrich" class="btn btn-primary btn-block">
+                        <i class="fas fa-magic"></i> <span data-i18n="btnEnrich">Genera Bozza AI</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECTION 2: EDIT FORM (Generato da AI) -->
+        <form id="editForm" class="hidden fade-in">
+            
+            <div id="duplicateBanner" class="note note-warning hidden">
+                <span>⚠️</span> <span data-i18n="dup">Possibile Duplicato!</span>
+            </div>
+
+            <!-- IDENTITÀ -->
+            <div class="section-title" data-i18n="secId">Identità Prodotto</div>
+            <div class="form-section">
+                <div class="form-group">
+                    <label data-i18n="outName" class="required">Nome Ufficiale</label>
+                    <input type="text" id="outName" required>
+                </div>
+                
+                <div class="row">
+                    <div class="col">
+                        <label data-i18n="outSku">SKU</label>
+                        <input type="text" id="outSku" required>
+                    </div>
+                    <div class="col">
+                        <label data-i18n="outType">Tipo</label>
+                        <select id="outType">
+                            <option value="SERVICE">SERVICE</option>
+                            <option value="PRODUCT">PRODUCT</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label data-i18n="outShort">Descrizione Breve</label>
+                    <input type="text" id="outShortDesc">
+                </div>
+                
+                <div class="form-group">
+                    <label data-i18n="outLong">Descrizione Estesa</label>
+                    <textarea id="outLongDesc" rows="4"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label data-i18n="outInt">Note Interne</label>
+                    <textarea id="outInternal" rows="2" class="monospace"></textarea>
+                </div>
+            </div>
+
+            <!-- PRICING & OPS -->
+            <div class="section-title" data-i18n="secPrice">Prezzi & Operazioni</div>
+            <div class="form-section">
+                <div class="row">
+                    <div class="col">
+                        <label data-i18n="outPrice">Prezzo (€)</label>
+                        <input type="number" id="outPrice" step="0.01">
+                    </div>
+                    <div class="col">
+                        <label data-i18n="outUnit">Unità</label>
+                        <input type="text" id="outUnit" placeholder="es. hour, item">
+                    </div>
+                </div>
+                
+                <div class="checkbox-group">
+                    <input type="checkbox" id="outDynamicPrice">
+                    <label for="outDynamicPrice"><span data-i18n="outDyn">Prezzo Dinamico?</span></label>
+                </div>
+                
+                <div class="checkbox-group">
+                    <input type="checkbox" id="outBooking">
+                    <label for="outBooking"><span data-i18n="outBook">Richiede Prenotazione?</span></label>
+                </div>
+            </div>
+
+            <!-- MARKETING -->
+            <div class="section-title" data-i18n="secMark">Marketing & Target</div>
+            <div class="form-section">
+                <div class="form-group">
+                    <label data-i18n="outTags">Tags (SEO)</label>
+                    <input type="text" id="outTags" placeholder="Tag1, Tag2...">
+                </div>
+                <div class="form-group">
+                    <label data-i18n="outTarget">Target Audience</label>
+                    <input type="text" id="outTarget" placeholder="PMI, Hotel...">
+                </div>
+            </div>
+
+            <div class="btn-container">
+                <button type="button" class="btn btn-secondary" onclick="resetForm()">
+                    <i class="fas fa-arrow-left"></i>
+                </button>
+                <button type="submit" id="btnSave" class="btn btn-success flex-1">
+                    <i class="fas fa-check"></i> <span data-i18n="btnSave">Salva Definitivo</span>
+                </button>
+            </div>
+        </form>
+
+    </div>
+
+    <script src="add-product_logic.js"></script>
+</body>
+</html>
