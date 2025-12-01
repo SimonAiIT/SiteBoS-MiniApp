@@ -247,13 +247,16 @@ function readFile(file) {
 }
 
 async function saveCategory() {
-    // 1. Validazione
-    if (!dom.catName.value) return tg.showAlert(t.err_name_req);
+    // 1. Validazione base
+    if (!dom.catName.value) {
+        alert(t.err_name_req || "Nome obbligatorio");
+        return;
+    }
     
     // 2. Loader
-    showLoader(t.status_saving); 
+    showLoader(t.status_saving || "Salvataggio..."); 
     
-    // 3. Raccolta Dati
+    // 3. Preparazione Dati
     const selected = [];
     dom.subcatList.querySelectorAll('input:checked').forEach(cb => {
         selected.push({
@@ -263,54 +266,29 @@ async function saveCategory() {
         });
     });
 
-    // 4. Costruzione Payload
     const payload = {
         token: urlParams.get('token'),
         new_category_block: {
             name: dom.catName.value, 
             description: dom.catDesc.value,
-            // Fallback intelligenti se i dati generati non esistono
             short_name: generatedCategoryData?.short_name || dom.catName.value,
             callback_data: generatedCategoryData?.callback_data || dom.catName.value.toUpperCase().replace(/[^A-Z0-9\s]/g, '').replace(/\s/g, '_').substring(0, 60),
             subcategories: selected
         },
-        ...Object.fromEntries(urlParams) // Passa tutti i parametri URL (chat_id, owner, etc)
+        ...Object.fromEntries(urlParams)
     };
 
     try {
-        // 5. Chiamata API
+        // 4. Invio al Backend
         const res = await fetch(SAVE_WEBHOOK_URL, {
             method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload)
         });
         
         if (!res.ok) throw new Error();
         
-        // 6. Successo
-        hideLoader();
-        if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
-
-        // 7. Popup Decisionale
-        tg.showPopup({
-            title: t.status_success,
-            message: t.msg_what_next || "Salvato! Vuoi continuare?",
-            buttons: [
-                { id: 'new', type: 'default', text: t.btn_add_another || "➕ Aggiungine un'altra" },
-                { id: 'exit', type: 'ok', text: t.btn_exit || "📂 Torna al Catalogo" }
-            ]
-        }, (btnId) => {
-            if (btnId === 'new') {
-                // A. RESET PER NUOVO INSERIMENTO
-                resetForm();
-                dom.catName.value = '';
-                dom.catDesc.value = '';
-                window.scrollTo(0,0);
-            } else {
-                // B. REDIRECT AL CATALOGO (Aggiorna la lista)
-                // window.location.replace è meglio di history.back perché ricarica la pagina target
-                const target = `catalog.html?${urlParams.toString()}`;
-                window.location.replace(target);
-            }
-        });
+        // 5. REDIRECT IMMEDIATO
+        // Mantiene tutti i parametri URL (token, chat_id, ecc) e torna al catalogo
+        window.location.href = "catalog.html" + window.location.search;
 
     } catch (e) {
         handleError(e);
