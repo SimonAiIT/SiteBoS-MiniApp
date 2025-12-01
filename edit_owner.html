@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Gestione Dati Azienda</title>
+  
+  <!-- Telegram & Fonts -->
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Tuo CSS esterno (opzionale se usi stili inline, ma consigliato) -->
+  <link rel="stylesheet" href="styles.css"> 
+
+  <style>
+      /* STILI SPECIFICI PER QUESTA PAGINA */
+      :root {
+          --primary: #007bff; --success: #28a745; --warning: #ffc107; --danger: #dc3545;
+          --bg-dark: #121212; --card-bg: #1e1e1e; --text-main: #ffffff; --text-secondary: #b0b3b8;
+      }
+      body { background-color: var(--bg-dark); color: var(--text-main); font-family: 'Inter', sans-serif; margin: 0; padding-bottom: 80px; }
+      
+      .container { padding: 20px; max-width: 600px; margin: 0 auto; }
+      .hidden { display: none !important; }
+      
+      /* Cards e Sezioni */
+      .form-section, .operators-card, .modal-content { background: var(--card-bg); border-radius: 12px; padding: 15px; margin-bottom: 15px; }
+      .form-section-title { font-weight: 600; margin-bottom: 10px; color: var(--primary); }
+      
+      /* Inputs */
+      .input-group { margin-bottom: 10px; }
+      label { display: block; font-size: 12px; margin-bottom: 5px; color: var(--text-secondary); }
+      input, select { width: 100%; background: #2a2a2a; border: 1px solid #333; color: white; padding: 10px; border-radius: 8px; box-sizing: border-box; }
+      input:focus, select:focus { border-color: var(--primary); outline: none; }
+      
+      /* Bottoni */
+      .btn { border: none; padding: 12px; border-radius: 8px; font-weight: 600; cursor: pointer; width: 100%; text-align: center; }
+      .btn-primary { background: var(--primary); color: white; }
+      .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+      .btn-secondary { background: #333; color: white; }
+      
+      /* Pulsante Flottante "Back" */
+      .floating-back-btn {
+          position: fixed; bottom: 20px; left: 20px;
+          width: 50px; height: 50px;
+          background-color: var(--success); color: white;
+          border-radius: 50%; border: none;
+          box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+          display: flex; align-items: center; justify-content: center;
+          font-size: 20px; z-index: 1000; cursor: pointer;
+          transition: transform 0.2s;
+      }
+      .floating-back-btn:active { transform: scale(0.95); }
+
+      /* Modal */
+      .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 9999; display: flex; align-items: center; justify-content: center; }
+      .modal-content { width: 80%; max-width: 300px; }
+
+      /* Loader */
+      .spinner { border: 4px solid rgba(255,255,255,0.1); width: 36px; height: 36px; border-radius: 50%; border-left-color: var(--primary); animation: spin 1s linear infinite; margin: 0 auto; }
+      @keyframes spin { 0% {transform: rotate(0deg)} 100% {transform: rotate(360deg)} }
+  </style>
+</head>
+<body>
+
+  <!-- LOADER -->
+  <div id="loader">
+    <div class="spinner"></div>
+    <div style="margin-top:10px; opacity:0.7; text-align:center;">Loading Secure Data...</div>
+  </div>
+
+  <!-- ACCESS DENIED -->
+  <div id="access-denied" class="hidden container text-center" style="padding-top:50px; text-align:center;">
+    <div style="font-size:50px; margin-bottom:20px;">🚫</div>
+    <h2 data-i18n="error_token_title">Link Scaduto o Invalido</h2>
+    <p class="subtitle" data-i18n="error_token_desc" style="color:var(--text-secondary);">Per motivi di sicurezza, richiedi un nuovo link dal bot.</p>
+    <button onclick="tg.close()" class="btn btn-primary" style="margin-top:20px;">Chiudi</button>
+  </div>
+
+  <!-- MAIN APP -->
+  <div id="app-content" class="container hidden">
+    <h2 data-i18n="title">Gestione Dati Azienda</h2>
+    <p class="subtitle" data-i18n="subtitle" style="color:var(--text-secondary); margin-bottom:20px;">Modifica le informazioni per aggiornare il sistema.</p>
+
+    <form id="editForm" onsubmit="return false;">
+      
+      <!-- 1. ANAGRAFICA -->
+      <div class="form-section">
+        <div class="form-section-title" data-i18n="section_core">Dati Anagrafici</div>
+        <div style="display:flex; gap:10px;">
+          <div style="flex:1;"><div class="input-group"><label data-i18n="lbl_name">Nome</label><input type="text" id="name"></div></div>
+          <div style="flex:1;"><div class="input-group"><label data-i18n="lbl_surname">Cognome</label><input type="text" id="surname"></div></div>
+        </div>
+        <div class="input-group"><label data-i18n="lbl_email">Email</label><input type="email" id="email" required></div>
+        <div class="input-group"><label data-i18n="lbl_phone">Telefono</label><input type="tel" id="phone"></div>
+      </div>
+
+      <!-- 2. AZIENDA -->
+      <div class="form-section">
+        <div class="form-section-title" data-i18n="section_company">Dati Aziendali</div>
+        <div class="input-group"><label data-i18n="lbl_company_name">Ragione Sociale</label><input type="text" id="ragione_sociale" required></div>
+        <div class="input-group"><label data-i18n="lbl_vat">P.IVA (Non modificabile)</label><input type="text" id="vat_number" readonly style="opacity:0.6;"></div>
+        <div class="input-group"><label data-i18n="lbl_address">Indirizzo</label><input type="text" id="indirizzo"></div>
+        <div class="input-group"><label data-i18n="lbl_site">Sito Web</label><input type="url" id="site"></div>
+        <div class="input-group"><label>LinkedIn</label><input type="url" id="linkedin_page"></div>
+        <div class="input-group"><label>Facebook</label><input type="url" id="facebook_page"></div>
+      </div>
+
+      <!-- 3. CONFIGURAZIONE -->
+      <div class="form-section">
+        <div class="form-section-title" data-i18n="section_config">Configurazione Operativa</div>
+        
+        <div class="input-group">
+            <label data-i18n="lbl_owner_avail">Orari NON reperibilità (Owner)</label>
+            <div style="display:flex; gap:5px; align-items:center;">
+                <select id="owner_unav_from" style="flex:1;"></select> <span>-</span> <select id="owner_unav_to" style="flex:1;"></select>
+            </div>
+        </div>
+        
+        <div class="input-group">
+            <label data-i18n="lbl_op_avail">Orari NON reperibilità (Operatori)</label>
+            <div style="display:flex; gap:5px; align-items:center;">
+                <select id="operator_unav_from" style="flex:1;"></select> <span>-</span> <select id="operator_unav_to" style="flex:1;"></select>
+            </div>
+        </div>
+        
+        <div class="input-group">
+            <label>Gemini API Key</label>
+            <input type="text" id="gemini_key">
+        </div>
+      </div>
+      
+      <!-- 4. OPERATORI -->
+      <div class="operators-card">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+            <h3 style="margin:0; font-size:16px;"><i class="fas fa-users"></i> <span data-i18n="op_title">Gestione Operatori</span></h3>
+            <span id="slot-counter" style="font-size:12px; background:rgba(255,255,255,0.1); padding:2px 8px; border-radius:10px;">0 / 3</span>
+          </div>
+          
+          <div id="operators-list"></div>
+          
+          <button type="button" class="btn btn-secondary" id="add-operator-btn" onclick="openModal()" style="margin-top:10px;">
+            <i class="fas fa-plus-circle"></i> <span data-i18n="op_btn_invite">Invita Nuovo Operatore</span>
+          </button>
+          
+          <div class="hint hidden text-center" id="upgrade-prompt" style="color:var(--warning); margin-top:10px; text-align:center;">
+            <p data-i18n="op_limit_reached">Limite raggiunto.</p>
+          </div>
+      </div>
+
+      <div class="button-container" style="margin-top:20px;">
+          <button type="button" id="saveBtn" class="btn btn-primary" onclick="saveData()" disabled>
+            <i class="fas fa-save"></i> <span data-i18n="btn_save">Salva Modifiche</span>
+          </button>
+      </div>
+      <p class="cancel-hint" data-i18n="hint_close" style="text-align:center; font-size:12px; color:var(--text-secondary); margin-top:10px;">Puoi chiudere questa finestra dopo aver salvato.</p>
+
+    </form>
+  </div>
+  
+  <!-- PULSANTE FLOTTANTE DASHBOARD -->
+  <button class="floating-back-btn" onclick="goBack()">
+    <i class="fas fa-arrow-left"></i>
+  </button>
+
+  <!-- MODAL OPERATORE -->
+  <div id="operator-modal" class="modal-overlay hidden">
+    <div class="modal-content">
+      <h3 id="modal-title" data-i18n="modal_title" style="margin-top:0;">Invita Operatore</h3>
+      <p class="subtitle" data-i18n="modal_subtitle" style="margin-bottom:15px; color:var(--text-secondary); font-size:13px;">Inserisci il nome. Verrà generato un link.</p>
+      
+      <div class="input-group">
+          <label data-i18n="modal_lbl_name">Nome Operatore</label>
+          <input type="text" id="op-name" placeholder="Es: Mario Rossi">
+      </div>
+      
+      <div style="display:flex; gap:10px; margin-top:15px;">
+        <button type="button" class="btn btn-secondary" onclick="closeModal()" style="flex:1;"><span data-i18n="btn_cancel">Annulla</span></button>
+        <button type="button" class="btn btn-primary" onclick="generateInvitation()" style="flex:1;"><span data-i18n="btn_generate">Genera Invito</span></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCRIPT LOGICA -->
+  <script src="edit_owner_logic.js"></script>
+</body>
+</html>
