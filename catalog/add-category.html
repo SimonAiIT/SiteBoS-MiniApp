@@ -5,12 +5,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title data-i18n="page_title">Nuova Categoria</title>
     
-    <!-- Librerie Esterne -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <!-- CSS Unificato -->
     <link rel="stylesheet" href="../styles.css">
+
+    <style>
+        /* Separatore Orizzontale "OPPURE" */
+        .divider {
+            display: flex; align-items: center; text-align: center;
+            margin: 25px 0; color: var(--text-muted); font-size: 12px; text-transform: uppercase; letter-spacing: 1px;
+        }
+        .divider::before, .divider::after {
+            content: ''; flex: 1; border-bottom: 1px solid var(--glass-border);
+        }
+        .divider::before { margin-right: 10px; }
+        .divider::after { margin-left: 10px; }
+    </style>
 </head>
 <body>
     
@@ -23,22 +33,13 @@
     <div class="container fade-in" id="app-content">
         
         <h1 data-i18n="title">Nuova Categoria</h1>
-        <p class="subtitle" data-i18n="subtitle">Crea manualmente o carica un file.</p>
+        <p class="subtitle" data-i18n="subtitle">Definisci l'area o carica un listino.</p>
 
-        <!-- TABS NAVIGAZIONE -->
-        <div class="nav-tabs" style="margin-bottom: 20px;">
-            <div class="nav-tab active" data-tab="manual" onclick="switchTab('manual')">
-                <i class="fas fa-edit"></i> <span data-i18n="tab_manual">Manuale / AI</span>
-            </div>
-            <div class="nav-tab" data-tab="upload" onclick="switchTab('upload')">
-                <i class="fas fa-file-upload"></i> <span data-i18n="tab_upload">Da File</span>
-            </div>
-        </div>
-
-        <!-- TAB 1: MANUALE / AI -->
-        <div id="tab-content-manual">
-            <!-- SEZIONE 1: INPUT INIZIALE -->
-            <div id="initialInputSection" class="card">
+        <!-- FASE 1: SCELTA METODO (Tutto in vista) -->
+        <div id="inputPhase">
+            
+            <!-- OPZIONE A: MANUALE -->
+            <div class="card">
                 <div class="form-group">
                     <label for="categoryName" class="required" data-i18n="lblCatName">Nome Categoria</label>
                     <input type="text" id="categoryName" required placeholder="...">
@@ -46,19 +47,37 @@
                 
                 <div class="form-group">
                     <label for="categoryDescription" data-i18n="lblCatDesc">Descrizione (Opzionale)</label>
-                    <textarea id="categoryDescription" rows="3" placeholder="..."></textarea>
+                    <textarea id="categoryDescription" rows="2" placeholder="..."></textarea>
                 </div>
                 
-                <div class="btn-container">
-                    <button id="generateBtn" class="btn btn-primary btn-block">
-                        <i class="fas fa-magic"></i> <span data-i18n="btnGenerate">Genera con AI</span>
-                    </button>
-                </div>
+                <button id="generateBtn" class="btn btn-primary btn-block">
+                    <i class="fas fa-magic"></i> <span data-i18n="btnGenerate">Genera con AI</span>
+                </button>
             </div>
 
-            <!-- SEZIONE 2: CURA -->
-            <div id="subcategoriesSection" class="hidden card fade-in">
-                <h3 data-i18n="subcatTitle" class="section-title">Seleziona Servizi</h3>
+            <!-- DIVIDER -->
+            <div class="divider">
+                <span data-i18n="divider_text">Oppure Carica File</span>
+            </div>
+
+            <!-- OPZIONE B: UPLOAD (Sempre visibile) -->
+            <div class="card">
+                <div class="note note-warning" style="margin-bottom: 10px; font-size: 11px;">
+                    <i class="fas fa-info-circle"></i> <span data-i18n="upload_disclaimer"></span>
+                </div>
+
+                <div class="upload-box enabled" id="file-upload-box" style="padding: 15px;">
+                    <input type="file" id="file-input" accept=".pdf,.json">
+                    <div class="upload-icon" style="font-size: 24px;"><i class="fas fa-file-upload"></i></div>
+                    <span class="upload-text" id="upload-text" data-i18n="upload_hint"></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- FASE 2: REVISIONE & SALVATAGGIO (Nascosta all'inizio) -->
+        <div id="reviewPhase" class="hidden fade-in">
+            <div class="card">
+                <h3 data-i18n="subcatTitle" class="section-title">Servizi Rilevati</h3>
                 <ul id="subcategoriesList" style="list-style: none; margin-bottom: 20px; padding: 0;"></ul>
                 
                 <div class="input-group">
@@ -71,28 +90,15 @@
                     </div>
                 </div>
             </div>
-        </div>
 
-        <!-- TAB 2: UPLOAD FILE -->
-        <div id="tab-content-upload" class="hidden">
-            <div class="card">
-                <div class="note note-warning">
-                    <i class="fas fa-info-circle"></i> <span data-i18n="upload_disclaimer"></span>
-                </div>
-
-                <div class="upload-box enabled" id="file-upload-box">
-                    <input type="file" id="file-input" accept=".pdf,.json">
-                    <div class="upload-icon"><i class="fas fa-cloud-upload-alt"></i></div>
-                    <span class="upload-text" id="upload-text" data-i18n="upload_hint"></span>
-                </div>
+            <div class="btn-container">
+                <button class="btn btn-secondary" onclick="resetForm()">
+                    <i class="fas fa-arrow-left"></i> Indietro
+                </button>
+                <button id="saveBtn" class="btn btn-success flex-1">
+                    <i class="fas fa-save"></i> <span data-i18n="btnSave">Salva Tutto</span>
+                </button>
             </div>
-        </div>
-
-        <!-- BOTTONE SALVA COMUNE -->
-        <div id="save-section" class="btn-container hidden">
-            <button id="saveBtn" class="btn btn-success btn-block">
-                <i class="fas fa-save"></i> <span data-i18n="btnSave">Salva Tutto</span>
-            </button>
         </div>
 
     </div>
