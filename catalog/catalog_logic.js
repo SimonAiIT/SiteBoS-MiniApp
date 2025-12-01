@@ -166,27 +166,44 @@ function escapeHtml(str) {
 }
 
 // ==========================================
-// 4. NAVIGATION
+// 4. NAVIGATION CORRETTA
 // ==========================================
 
 window.goBack = () => window.location.href = `../dashboard.html?${urlParams.toString()}`;
 window.goToAddCategory = () => window.location.href = `add-category.html?${urlParams.toString()}`;
 
-window.goToAddProduct = (productId) => {
-    let url = `add-product.html?token=${token}`;
+// Parametro 1: catId (ID della categoria, OBBLIGATORIO)
+// Parametro 2: prodId (ID del ghost, OPZIONALE)
+window.goToAddProduct = (catId, prodId) => {
+    if (!catId) {
+        alert("Errore: ID Categoria mancante");
+        return;
+    }
+
+    // Costruiamo l'URL base con il Token e l'ID Categoria
+    let url = `add-product.html?token=${token}&catId=${encodeURIComponent(catId)}`;
     
-    if (productId) {
-        url += `&ghostId=${encodeURIComponent(productId)}`; // Passiamo l'ID
+    // Se c'è un Ghost ID (Attivazione), lo aggiungiamo
+    if (prodId) {
+        url += `&ghostId=${encodeURIComponent(prodId)}`;
     }
     
-    location.href = url;
+    // Manteniamo gli altri parametri (lang, owner, ecc.) per coerenza
+    // Nota: rimuoviamo token/catId dai vecchi params per evitare duplicati sporchi
+    const currentParams = new URLSearchParams(window.location.search);
+    currentParams.delete('token'); 
+    
+    location.href = `${url}&${currentParams.toString()}`;
 };
 
-// Funzione per GESTIRE ESISTENTE (Blueprint)
+
 window.openProduct = (page, productId) => {
-    // Passiamo l'ID del prodotto attivo
+    const currentParams = new URLSearchParams(window.location.search);
+    currentParams.delete('token');
+    
     location.href = `${page}?token=${token}&productId=${encodeURIComponent(productId)}`;
 };
+
 // ==========================================
 // 5. CORE LOGIC
 // ==========================================
@@ -228,7 +245,7 @@ async function loadCatalog(forceRefresh = false) {
 }
 
 // ==========================================
-// FUNZIONE RENDER AGGIORNATA (SOLO QUESTA PARTE CAMBIA)
+// FUNZIONE RENDER CORRETTA (Passa ID, non indici)
 // ==========================================
 function renderCatalog() {
     const container = document.getElementById('catalog-list');
@@ -242,15 +259,16 @@ function renderCatalog() {
     
     let ghostCount = 0, activeCount = 0;
     
-    categories.forEach((cat, catIdx) => {
+    categories.forEach((cat) => { // Rimosso catIdx, non serve
         const subcats = cat.subcategories || [];
         
-        // CALCOLO CONTATORI (La logica che già funziona)
+        // Calcolo Contatori
         const catActive = subcats.filter(p => p.blueprint_ready).length;
         activeCount += catActive;
         ghostCount += (subcats.length - catActive);
 
         const displayTitle = cat.short_name || cat.name;
+        // ID CATEGORIA
         const catId = cat.callback_data || ""; 
 
         const catEl = document.createElement('div');
@@ -267,8 +285,8 @@ function renderCatalog() {
             </div>
             <div class="cat-body">
                 <div style="padding:10px; text-align:center; border-bottom:1px solid var(--glass-border);">
-                    <!-- AGGIUNGI NUOVO (Vuoto) -->
-                    <button class="btn btn-sm btn-secondary" onclick="event.stopPropagation(); goToAddProduct(${catIdx}, null)">
+                    <!-- AGGIUNGI NUOVO: Passiamo catId e null -->
+                    <button class="btn btn-sm btn-secondary" onclick="event.stopPropagation(); goToAddProduct('${catId}', null)">
                         <i class="fas fa-plus"></i> ${t('btn_add_here')}
                     </button>
                 </div>
@@ -278,9 +296,10 @@ function renderCatalog() {
 
         const prodContainer = catEl.querySelector('.products-container');
         
-        subcats.forEach((prod, productIndex) => {
+        subcats.forEach((prod) => { // Rimosso prodIdx
             const isRealProduct = prod.blueprint_ready === true;
-            const prodId = prod.callback_data; // QUESTO È L'ID CHE SERVE
+            // ID PRODOTTO
+            const prodId = prod.callback_data; 
             
             let btnIcon, btnLabel, btnClass, actionFunction;
             
@@ -289,15 +308,15 @@ function renderCatalog() {
                 btnIcon = '<i class="fas fa-sliders-h"></i>';
                 btnLabel = t('btn_manage') || "Gestisci";
                 btnClass = 'btn-edit';
-                // Passiamo l'ID del prodotto, non l'indice
+                // Passiamo l'ID del prodotto
                 actionFunction = `openProduct('edit-blueprint.html', '${prodId}')`;
             } else {
                 // ATTIVA (Ghost) -> APRE ADD-PRODUCT
                 btnIcon = '<i class="fas fa-plus"></i>';
                 btnLabel = t('btn_activate') || "Aggiungi";
                 btnClass = 'btn-create';
-                // Passiamo l'ID del prodotto, non l'indice
-                actionFunction = `goToAddProduct('${prodId}')`;
+                // Passiamo catId E prodId
+                actionFunction = `goToAddProduct('${catId}', '${prodId}')`;
             }
 
             const statusClass = isRealProduct ? 'status-active' : 'status-ghost';
