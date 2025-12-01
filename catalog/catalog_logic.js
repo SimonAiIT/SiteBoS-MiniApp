@@ -261,7 +261,7 @@ window.saveEditCategory = async function() {
     if (!currentEditingCatId) return alert(t('error_id_missing'));
 
     closeEditModal();
-    document.getElementById('loader').classList.remove('hidden');
+    document.getElementById('loader').classList.remove('hidden'); // Mostra rotella
 
     try {
         const payload = { 
@@ -271,13 +271,22 @@ window.saveEditCategory = async function() {
             new_category_short_name: newShort,
             ...getAllUrlParams() 
         };
+        
         const res = await fetch(CATALOG_WEBHOOK, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
         if (!res.ok) throw new Error("Server Error");
         
-        catalogData = parseN8nResponse(await res.json()); 
+        const json = await res.json();
+        
+        // Aggiorna i dati
+        catalogData = parseN8nResponse(json); 
         renderCatalog();
         
+        // --- LA RIGA MANCANTE CHE BLOCCAVA TUTTO ---
+        document.getElementById('loader').classList.add('hidden'); // Nascondi rotella!
+        // -------------------------------------------
+
         if(tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
+
     } catch (e) {
         alert("Error: " + e.message);
         document.getElementById('loader').classList.add('hidden');
@@ -288,16 +297,26 @@ window.deleteCategory = async function(catName, catId) {
     if (!catId) return alert(t('error_id_missing'));
     if (!confirm(t('confirm_delete_cat').replace('{name}', catName))) return;
     
-    document.getElementById('loader').classList.remove('hidden');
+    document.getElementById('loader').classList.remove('hidden'); // Mostra rotella
+
     try {
         const payload = { action: 'delete_category', token: token, category_id: catId, ...getAllUrlParams() };
+        
         const res = await fetch(CATALOG_WEBHOOK, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
         if (!res.ok) throw new Error("Server Error");
         
-        catalogData = parseN8nResponse(await res.json());
+        const json = await res.json();
+        
+        // Aggiorna i dati
+        catalogData = parseN8nResponse(json);
         renderCatalog();
         
+        // --- LA RIGA MANCANTE ---
+        document.getElementById('loader').classList.add('hidden'); // Nascondi rotella!
+        // ------------------------
+        
         if(tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('warning');
+
     } catch (e) {
         alert("Error: " + e.message);
         document.getElementById('loader').classList.add('hidden');
