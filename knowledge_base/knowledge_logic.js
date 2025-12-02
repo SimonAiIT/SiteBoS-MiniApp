@@ -145,7 +145,7 @@ function renderFragmentDetails(fragment, cardElement) {
     `;
 
     const btnStyle = `
-        background: linear-gradient(135deg, #6c5ce7, #a29bfe); 
+        background: #0984e3; 
         color: white; 
         border: none; 
         padding: 8px 15px; 
@@ -156,9 +156,10 @@ function renderFragmentDetails(fragment, cardElement) {
         display: flex; 
         align-items: center; 
         gap: 6px; 
-        box-shadow: 0 2px 5px rgba(108, 92, 231, 0.2);
-        transition: transform 0.1s ease;
+        box-shadow: 0 2px 5px rgba(9, 132, 227, 0.25); /* Ombra blu coordinata */
+        transition: transform 0.1s ease, background 0.2s;
     `;
+
 
     body.innerHTML = `
         <!-- BARRA AZIONI IN ALTO -->
