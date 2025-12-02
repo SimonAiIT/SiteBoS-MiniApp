@@ -8,28 +8,22 @@
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  
   <link rel="stylesheet" href="../styles.css">
   
   <style>
-    /* STILI ALLINEATI AL CATALOGO */
-    
-    /* Stage Card = Categoria Card */
+    /* STAGE CARD */
     .stage-card {
-        background: var(--card-bg); 
-        border: 1px solid var(--glass-border); 
-        border-radius: 12px; margin-bottom: 15px; 
-        overflow: hidden;
-        border-left: 4px solid var(--primary); /* Distintivo visivo */
+        background: var(--card-bg); border: 1px solid var(--glass-border);
+        border-radius: 12px; margin-bottom: 15px; overflow: hidden;
+        border-left: 4px solid var(--primary);
     }
-    
     .stage-header {
         padding: 15px; background: rgba(255,255,255,0.03);
         display: flex; align-items: flex-start; gap: 10px;
         border-bottom: 1px solid var(--glass-border);
     }
 
-    /* Input puliti ma editabili */
+    /* INPUT STYLES */
     .edit-input {
         background: transparent; border: none; border-bottom: 1px dashed var(--glass-border);
         color: white; width: 100%; padding: 5px 0; font-size: 15px; font-weight: 600;
@@ -43,26 +37,53 @@
     }
     .edit-textarea:focus { outline: none; color: white; }
 
-    /* Step Item = Prodotto Item */
+    /* STEP ITEM - IL CUORE DEL REFACTORING */
     .step-list-container { padding: 0; }
     
     .step-item {
-        padding: 15px; border-bottom: 1px solid var(--glass-border);
-        background: rgba(0,0,0,0.1); position: relative;
+        padding: 12px 15px; 
+        border-bottom: 1px solid var(--glass-border);
+        background: rgba(0,0,0,0.1); 
+        display: flex; 
+        flex-direction: column; /* Per gestire l'accordion */
     }
-    .step-item:last-child { border-bottom: none; }
-
-    .step-header-row { display: flex; align-items: center; gap: 10px; margin-bottom: 5px; }
     
-    /* Bottoni Azione Compatti */
-    .action-group { display: flex; gap: 5px; margin-left: auto; }
+    /* Griglia per l'header dello step: Drag | Nome | Tempo | Azioni */
+    .step-header-grid {
+        display: grid;
+        grid-template-columns: 20px 1fr auto auto; /* Drag | Nome espandibile | Tempo | Azioni */
+        align-items: center;
+        gap: 10px;
+        width: 100%;
+    }
+
+    /* Nome Step */
+    .step-name-box { width: 100%; }
+    .step-name-box input { font-size: 14px; font-weight: 500; margin: 0; }
+
+    /* Tempo */
+    .step-time-box {
+        display: flex; align-items: center; gap: 4px;
+        background: rgba(255,255,255,0.05); padding: 4px 8px; border-radius: 6px;
+        white-space: nowrap; font-size: 11px; color: var(--text-muted);
+    }
+    .step-time-box input {
+        width: 30px; background: transparent; border: none; color: white; 
+        text-align: center; font-weight: bold; border-bottom: 1px solid rgba(255,255,255,0.2);
+    }
+
+    /* Azioni */
+    .step-actions-box { display: flex; gap: 5px; }
+    
     .btn-icon-sm {
-        width: 30px; height: 30px; border-radius: 6px;
+        width: 32px; height: 32px; border-radius: 8px;
         display: flex; align-items: center; justify-content: center;
         background: rgba(255,255,255,0.05); color: var(--text-muted); border: none;
+        cursor: pointer; transition: all 0.2s;
     }
     .btn-icon-sm:hover { background: var(--primary); color: white; }
     .btn-icon-sm.delete:hover { background: var(--error); }
+    .btn-icon-sm.active { background: var(--primary); color: white; }
 
     /* Dettagli Step (Accordion) */
     .step-details { display: none; margin-top: 15px; padding-top: 15px; border-top: 1px dashed var(--glass-border); }
@@ -70,39 +91,36 @@
 
     /* Badge */
     .badge { 
-        font-size: 10px; padding: 2px 6px; border-radius: 4px; text-transform: uppercase; font-weight: 700;
-        border: 1px solid; display: inline-block; margin-left: 5px;
+        font-size: 9px; padding: 2px 6px; border-radius: 4px; text-transform: uppercase; font-weight: 700;
+        border: 1px solid; display: inline-block; margin-right: 5px;
     }
     .badge-wip { border-color: var(--warning); color: var(--warning); background: rgba(245, 158, 11, 0.1); }
     .badge-fin { border-color: var(--success); color: var(--success); background: rgba(76, 217, 100, 0.1); }
 
-    /* FAB Container a Destra */
+    /* FAB Container a Destra - CORRETTO */
     .fab-container {
         position: fixed; bottom: 20px; right: 20px;
         display: flex; flex-direction: column; gap: 15px; z-index: 100;
-        align-items: flex-end; /* Allinea a destra */
+        align-items: center; /* Allinea al centro della colonna */
     }
     
-    .fab-main {
-        width: 56px; height: 56px; border-radius: 28px;
-        background: var(--primary); color: white; border: none;
+    .fab-btn {
+        width: 56px; height: 56px; border-radius: 50%; /* Cerchi perfetti */
+        border: none; color: white;
         box-shadow: 0 4px 15px rgba(0,0,0,0.4); font-size: 20px;
         display: flex; align-items: center; justify-content: center;
+        transition: transform 0.2s; cursor: pointer;
     }
+    .fab-btn:active { transform: scale(0.9); }
     
-    .fab-secondary {
-        width: 48px; height: 48px; border-radius: 24px;
-        background: var(--card-bg); color: var(--text-main); border: 1px solid var(--glass-border);
-        box-shadow: 0 4px 10px rgba(0,0,0,0.3); font-size: 18px;
-        display: flex; align-items: center; justify-content: center;
-    }
+    .fab-primary { background: var(--primary); }
+    .fab-secondary { background: var(--card-bg); border: 1px solid var(--glass-border); color: var(--text-main); }
 
     @keyframes slideDown { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
   </style>
 </head>
 <body>
 
-  <!-- LOADER -->
   <div id="loadingOverlay">
     <div class="spinner-ring"></div>
     <div id="loaderText" data-i18n="loading"></div>
@@ -110,18 +128,13 @@
 
   <div class="container hidden fade-in" id="mainContent">
     
-    <!-- HEADER -->
     <div class="dashboard-header">
         <div class="header-info">
             <h1 data-i18n="title">Blueprint Operativo</h1>
             <small data-i18n="subtitle">Definisci il processo</small>
         </div>
-        <div class="header-actions">
-            <!-- Info Box Toggle? O lasciamo fisso -->
-        </div>
     </div>
 
-    <!-- GLOBAL INFO CARD -->
     <div class="cat-card" style="padding: 15px;">
         <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
             <label style="font-size:10px; color:var(--text-muted); font-weight:700;">DESCRIZIONE BLUEPRINT</label>
@@ -130,25 +143,23 @@
         <textarea id="blueprintDesc" rows="2" class="edit-textarea" style="color: white; font-style: normal; border: 1px solid var(--glass-border); padding: 8px; border-radius: 8px;"></textarea>
     </div>
 
-    <!-- STAGES CONTAINER -->
     <div id="stagesContainer"></div>
 
-    <!-- ADD STAGE BUTTON (Bottom of list) -->
     <button class="btn btn-secondary btn-block" style="border-style:dashed; margin-top:20px; opacity:0.8; padding: 15px;" id="btnAddStageBtn">
         <i class="fas fa-plus"></i> <span data-i18n="btnAddStage"></span>
     </button>
 
-    <div style="height: 120px;"></div> <!-- Spacer per FAB -->
+    <div style="height: 120px;"></div> 
 
   </div>
 
-  <!-- FABs (Bottoni Flottanti a Destra) -->
+  <!-- FABs IDENTICI E ALLINEATI -->
   <div class="fab-container">
-      <button class="fab-secondary" onclick="history.back()">
+      <button class="fab-btn fab-secondary" onclick="history.back()">
         <i class="fas fa-arrow-left"></i>
       </button>
       
-      <button class="fab-main" id="saveBtn">
+      <button class="fab-btn fab-primary" id="saveBtn">
         <i class="fas fa-save"></i>
       </button>
   </div>
