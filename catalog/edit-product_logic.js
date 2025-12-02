@@ -111,37 +111,53 @@ async function loadProduct() {
     }
 }
 
-function populateForm(data) {
-    const val = (id, v) => { const el = document.getElementById(id); if (el) el.value = v != null ? v : ''; };
-    const chk = (id, v) => { const el = document.getElementById(id); if (el) el.checked = !!v; };
+function populateForm(inputData) {
+    // 1. NORMALIZZAZIONE: Rimuove eventuale wrapper 'catalog_item' se presente
+    const data = inputData.catalog_item || inputData;
 
+    // 2. FUNZIONI HELPER
+    const val = (id, v) => { 
+        const el = document.getElementById(id); 
+        if (el) el.value = (v !== undefined && v !== null) ? v : ''; 
+    };
+    const chk = (id, v) => { 
+        const el = document.getElementById(id); 
+        if (el) el.checked = !!v; 
+    };
+
+    // 3. ESTRAZIONE DATI CON FALLBACK SICURI
     const identity = data.identity || {};
+    const description = identity.description || {}; // ATTENZIONE: description è dentro identity
     const pricing = data.pricing || {};
-    const desc = identity.description || {};
+    const tax_info = pricing.tax_info || {};
     const operations = data.operations || {};
-    const provider = operations.provider_info || {};
-    const tax = pricing.tax_info || {};
+    const provider_info = operations.provider_info || {};
 
+    // 4. POPOLAMENTO CAMPI
     val('itemName', identity.item_name);
     val('itemSku', identity.item_sku);
     val('itemType', identity.item_type);
-    val('descShort', desc.short);
-    val('descLong', desc.long);
-    val('internalNotes', desc.internal_notes);
+    
+    val('descShort', description.short);
+    val('descLong', description.long);
+    val('internalNotes', description.internal_notes);
+    
     val('basePrice', pricing.base_price);
     val('currency', pricing.currency);
     val('unitOfMeasure', pricing.unit_of_measure);
-    val('taxRate', tax.tax_rate_percentage);
+    val('taxRate', tax_info.tax_rate_percentage);
     
     chk('requiresBooking', operations.requires_booking);
     chk('requiresInventory', operations.requires_inventory_check);
 
-    skillTags = Array.isArray(provider.required_skill_tags) ? provider.required_skill_tags : [];
+    // 5. GESTIONE TAGS (Array sicuri)
+    skillTags = Array.isArray(provider_info.required_skill_tags) ? provider_info.required_skill_tags : [];
     keywords = Array.isArray(identity.keywords) ? identity.keywords : [];
     
     renderTags(dom.skillContainer, skillTags);
     renderTags(dom.keywordContainer, keywords);
 
+    // 6. TITOLO PAGINA
     document.getElementById('pageTitle').textContent = `✏️ ${identity.item_name || 'Prodotto'}`;
 }
 
