@@ -9,16 +9,13 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
-  <!-- Usa il tuo CSS globale -->
   <link rel="stylesheet" href="../styles.css">
   
-  <!-- CSS SPECIFICO PER IL BLUEPRINT (Miglioramenti visivi) -->
   <style>
-    /* STAGE CARD: Più compatta ed elegante */
     .stage-card {
-        background: rgba(30, 41, 59, 0.7); /* Sfondo scuro semi-trasparente */
+        background: rgba(30, 41, 59, 0.7);
         border: 1px solid rgba(255, 255, 255, 0.1);
-        border-left: 4px solid var(--primary); /* Indicatore colore */
+        border-left: 4px solid var(--primary);
         border-radius: 12px;
         margin-bottom: 15px;
         overflow: hidden;
@@ -26,7 +23,6 @@
     }
     .stage-card.sortable-ghost { opacity: 0.4; border: 2px dashed var(--primary); }
 
-    /* STAGE HEADER */
     .stage-header {
         padding: 12px 15px;
         background: rgba(255, 255, 255, 0.03);
@@ -36,7 +32,6 @@
     .drag-handle { cursor: grab; color: var(--text-muted); padding-top: 4px; font-size: 16px; }
     .drag-handle:active { cursor: grabbing; color: var(--primary); }
 
-    /* INPUT TRASPARENTI (Inline Editing Style) */
     input.ghost-input {
         background: transparent; border: none; color: white;
         font-weight: 700; font-size: 15px; width: 100%; padding: 0;
@@ -51,25 +46,19 @@
     }
     textarea.ghost-textarea:focus { outline: none; color: white; background: rgba(0,0,0,0.2); padding: 5px; border-radius: 4px; }
 
-    /* STEP LIST */
     .step-list-container { padding: 10px; min-height: 10px; }
 
-    /* STEP ITEM: Card interna */
     .step-item {
         background: rgba(255, 255, 255, 0.05);
         border: 1px solid rgba(255, 255, 255, 0.05);
         border-radius: 8px; margin-bottom: 8px;
     }
     
-    .step-header {
-        padding: 10px; display: flex; align-items: center; gap: 10px;
-    }
-    
+    .step-header { padding: 10px; display: flex; align-items: center; gap: 10px; }
     .step-main { flex: 1; }
-    .step-title { font-size: 14px; font-weight: 600; color: #fff; margin-bottom: 2px; }
     .step-meta { display: flex; align-items: center; gap: 10px; font-size: 11px; color: var(--text-secondary); }
-    
     .step-actions { display: flex; align-items: center; gap: 5px; }
+    
     .btn-step-action {
         width: 28px; height: 28px; border-radius: 6px; border: none;
         background: transparent; color: var(--text-muted);
@@ -78,16 +67,14 @@
     }
     .btn-step-action:hover { background: rgba(255,255,255,0.1); color: white; }
     .btn-step-action.active { color: var(--primary); background: rgba(91, 111, 237, 0.15); }
+    .text-error { color: var(--error) !important; }
 
-    /* COLLAPSIBLE DETAILS */
     .step-details {
         display: none; padding: 15px; border-top: 1px solid rgba(255,255,255,0.05);
-        background: rgba(0,0,0,0.1);
-        animation: slideDown 0.2s ease-out;
+        background: rgba(0,0,0,0.1); animation: slideDown 0.2s ease-out;
     }
     .step-details.open { display: block; }
 
-    /* MINI TAGS */
     .mini-badge {
         font-size: 9px; padding: 2px 6px; border-radius: 4px; 
         text-transform: uppercase; font-weight: 700; border: 1px solid transparent;
@@ -100,7 +87,6 @@
 </head>
 <body>
 
-  <!-- LOADING -->
   <div id="loadingOverlay">
     <div class="spinner-ring"></div>
     <div id="loaderText" data-i18n="loading"></div>
@@ -108,42 +94,36 @@
 
   <div class="container hidden fade-in" id="mainContent">
     
-    <!-- HEADER FISSO -->
     <div style="margin-bottom: 25px;">
         <h1 id="pageTitle" data-i18n="title" style="margin-bottom: 5px;"></h1>
         <p class="subtitle" id="pageSubtitle" data-i18n="subtitle"></p>
         
-        <!-- Global Description Box -->
         <div class="card" style="padding: 15px; margin-bottom: 20px;">
             <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
-                <label data-i18n="lblDesc" style="font-size:10px;">DESCRIZIONE BLUEPRINT</label>
+                <label data-i18n="lblDesc" style="font-size:10px;"></label>
                 <span id="serviceSku" style="font-family:monospace; font-size:10px; color:var(--primary);">SKU: ...</span>
             </div>
-            <textarea id="blueprintDesc" rows="2" class="ghost-textarea" style="font-size:13px; color:#fff; font-style:normal;" placeholder="..."></textarea>
+            <textarea id="blueprintDesc" rows="2" class="ghost-textarea" style="font-size:13px; color:#fff; font-style:normal;"></textarea>
         </div>
     </div>
 
-    <!-- STAGES LIST -->
     <div id="stagesContainer"></div>
 
-    <!-- ADD STAGE BTN -->
     <button class="btn btn-secondary btn-block" style="border-style:dashed; margin-top:15px; opacity:0.7;" id="btnAddStageBtn">
-        <i class="fas fa-plus"></i> <span data-i18n="btnAddStage">Nuova Fase</span>
+        <i class="fas fa-plus"></i> <span data-i18n="btnAddStage"></span>
     </button>
 
-    <!-- SPACER PER IL FAB -->
     <div style="height: 100px;"></div>
 
   </div>
 
-  <!-- FLOATING ACTION BUTTONS -->
   <div style="position: fixed; bottom: 20px; left: 20px; right: 20px; display: flex; gap: 15px; z-index: 100;">
       <button class="btn btn-secondary" style="width: 50px; height: 50px; border-radius: 50%; padding: 0; display: flex; align-items: center; justify-content: center; box-shadow: 0 5px 15px rgba(0,0,0,0.3);" onclick="history.back()">
         <i class="fas fa-arrow-left"></i>
       </button>
       
       <button class="btn btn-primary flex-1" id="saveBtn" style="border-radius: 25px; box-shadow: 0 5px 20px rgba(91, 111, 237, 0.4); font-size: 16px;">
-        <i class="fas fa-save"></i> <span data-i18n="btnSave">Salva Tutto</span>
+        <i class="fas fa-save"></i> <span data-i18n="btnSave"></span>
       </button>
   </div>
 
