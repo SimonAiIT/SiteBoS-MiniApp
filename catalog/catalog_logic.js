@@ -239,16 +239,11 @@ async function loadCatalog(forceRefresh = false) {
             payload[key] = value;
         }
 
-        // 2. GESTIONE BONUS CREDITS (BROWSER-SAFE)
+        // 2. GESTIONE BONUS CREDITS (SILENZIOSA)
         const bonus = currentUrlParams.get('bonus_credits');
         if (bonus && parseInt(bonus) > 0) {
             
-            // FEEDBACK UTENTE UNIVERSALE (alert)
-            const gameTitle = t('game_title') || "Game Over!";
-            const gameMsg = (t('game_msg') || "You earned {points} credits!").replace('{points}', bonus);
-            alert(`${gameTitle}\n${gameMsg}`);
-
-            // PULIZIA URL (CRITICO)
+            // PULIZIA URL (CRITICO) - Rimuove il parametro visivamente senza ricaricare
             currentUrlParams.delete('bonus_credits');
             const newUrl = window.location.pathname + '?' + currentUrlParams.toString();
             window.history.replaceState({}, document.title, newUrl);
@@ -277,6 +272,7 @@ async function loadCatalog(forceRefresh = false) {
         content.classList.remove('hidden');
     }
 }
+
 // ==========================================
 // FUNZIONE RENDER (vFINAL v2 - AREE CLICCABILI)
 // ==========================================
