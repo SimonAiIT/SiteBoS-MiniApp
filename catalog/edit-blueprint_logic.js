@@ -113,163 +113,112 @@ function renderStages() {
 function renderSteps(steps, sIdx) {
     if (!steps || steps.length === 0) return '';
     return steps.map((step, stIdx) => {
-        // Se _ui_open è true, aggiungiamo la classe 'open' al contenitore principale
-        const openClass = step._ui_open ? 'open' : '';
+        const isOpen = step._ui_open ? 'open' : '';
+        const activeClass = step._ui_open ? 'active' : '';
         
         const wipBadge = step.logistics_flags?.requires_wip ? `<span class="badge badge-wip">WIP</span>` : '';
         const finBadge = step.logistics_flags?.requires_finished ? `<span class="badge badge-fin">FINISHED</span>` : '';
         const mins = parseInt(step.estimated_time_minutes) || 0;
         
         return `
-        <!-- NOTA: id univoco per manipolazione DOM diretta -->
-        <div class="step-item ${openClass}" id="step-${sIdx}-${stIdx}" data-sidx="${sIdx}" data-stidx="${stIdx}">
+        <div class="step-item" data-sidx="${sIdx}" data-stidx="${stIdx}">
             
-            <!-- HEADER: Sempre visibile -->
-            <div class="step-header-wrapper" data-action="toggle-step" data-sidx="${sIdx}" data-stidx="${stIdx}">
-                
-                <!-- RIGA 1 -->
-                <div class="riga-1">
-                    <div class="riga-1-left">
-                        <i class="fas fa-grip-lines drag-handle"></i>
-                        ${wipBadge} ${finBadge}
-                    </div>
-                    <div class="btn-group">
-                        <!-- Icona Chevron che ruota via CSS -->
-                        <i class="fas fa-chevron-down chevron"></i>
-                        
-                        <!-- Tasto Delete (ferma la propagazione del click nel handler) -->
-                        <button class="btn-icon del" data-action="delete-step" data-sidx="${sIdx}" data-stidx="${stIdx}">
-                            <i class="fas fa-times"></i>
-                        </button>
-                    </div>
+            <!-- RIGA 1: Drag (=) | Badge | Bottoni (Tornati colorati al click) -->
+            <div class="riga-1">
+                <div class="riga-1-left">
+                    <i class="fas fa-grip-lines drag-handle" style="color:var(--text-muted); cursor:grab; font-size: 18px;"></i>
+                    ${wipBadge} ${finBadge}
                 </div>
-
-                <!-- RIGA 2 -->
-                <div class="riga-2">
-                    <!-- stopPropagation gestito nel click handler per permettere input -->
-                    <input type="text" class="edit-input step-name-field" 
-                           value="${step.step_name || ''}" placeholder="${t.phStepName}" 
-                           data-type="step-name" data-sidx="${sIdx}" data-stidx="${stIdx}">
+                
+                <div class="btn-group">
+                    <button class="btn-icon ${activeClass}" data-action="toggle-step" data-sidx="${sIdx}" data-stidx="${stIdx}">
+                        <i class="fas fa-chevron-${isOpen ? 'up' : 'down'}"></i>
+                    </button>
+                    <button class="btn-icon del" data-action="delete-step" data-sidx="${sIdx}" data-stidx="${stIdx}">
+                        <i class="fas fa-times"></i>
+                    </button>
                 </div>
             </div>
 
-            <!-- CONTENT BODY: Nascosto di default, appare con classe .open -->
-            <div class="step-content-wrapper">
+            <!-- RIGA 2: Nome Step -->
+            <div class="riga-2">
+                <input type="text" class="edit-input" 
+                       value="${step.step_name || ''}" placeholder="${t.phStepName}" 
+                       data-type="step-name" data-sidx="${sIdx}" data-stidx="${stIdx}">
+            </div>
+
+            <!-- RIGA 3: Tempo (Lungo a sinistra) -->
+            <div class="riga-3">
+                <div class="time-box-fixed">
+                    <i class="far fa-clock"></i>
+                    <input type="number" min="0" value="${mins}" 
+                           data-type="step-time" data-sidx="${sIdx}" data-stidx="${stIdx}">
+                    <span>${t.min}</span>
+                </div>
+            </div>
+
+            <!-- DETTAGLI -->
+            <div class="step-details ${isOpen}">
                 
-                <!-- RIGA 3: Tempo -->
-                <div class="riga-3">
-                    <div class="time-box-fixed">
-                        <i class="far fa-clock"></i>
-                        <input type="number" min="0" value="${mins}" 
-                               data-type="step-time" data-sidx="${sIdx}" data-stidx="${stIdx}">
-                        <span>${t.min}</span>
-                    </div>
+                <div class="input-block">
+                    <label>${t.lblInstr}</label>
+                    <textarea class="full-area" rows="3" placeholder="${t.phStepInstr}" 
+                              data-type="step-instr" data-sidx="${sIdx}" data-stidx="${stIdx}">${step.instructions||''}</textarea>
                 </div>
 
-                <!-- DETTAGLI -->
-                <div class="step-details">
-                    <div class="input-block">
-                        <label>${t.lblInstr}</label>
-                        <textarea class="edit-textarea" rows="3" placeholder="${t.phStepInstr}" 
-                                  data-type="step-instr" data-sidx="${sIdx}" data-stidx="${stIdx}">${step.instructions||''}</textarea>
-                    </div>
-
-                    <div class="input-block">
-                        <label style="color:#30d158;">${t.lblQC}</label>
-                        <textarea class="edit-textarea" rows="2" placeholder="${t.phQC}" 
-                                  data-type="step-qc" data-sidx="${sIdx}" data-stidx="${stIdx}">${step.quality_check?.check_description||''}</textarea>
-                    </div>
-
-                    <div class="input-block">
-                        <label>${t.lblSkills}</label>
-                        <input type="text" class="full-area" 
-                               value="${(step.resources_needed?.labor?.required_skill_tags||[]).join(', ')}" 
-                               placeholder="${t.phSkills}" 
-                               data-type="step-skills" data-sidx="${sIdx}" data-stidx="${stIdx}">
-                    </div>
-
-                    <div style="display:flex; gap:20px; margin-top:10px; border-top:1px dashed var(--glass-border); padding-top:10px;">
-                        <label style="display:flex; align-items:center; gap:8px; font-size:12px; color:white;">
-                            <input type="checkbox" ${step.logistics_flags?.requires_wip?'checked':''} 
-                                   data-type="flag-wip" data-sidx="${sIdx}" data-stidx="${stIdx}"> 
-                            ${t.lblWip}
-                        </label>
-                        <label style="display:flex; align-items:center; gap:8px; font-size:12px; color:white;">
-                            <input type="checkbox" ${step.logistics_flags?.requires_finished?'checked':''} 
-                                   data-type="flag-fin" data-sidx="${sIdx}" data-stidx="${stIdx}"> 
-                            ${t.lblFin}
-                        </label>
-                    </div>
+                <div class="input-block">
+                    <label style="color:#30d158;">${t.lblQC}</label>
+                    <textarea class="full-area" rows="2" placeholder="${t.phQC}" 
+                              data-type="step-qc" data-sidx="${sIdx}" data-stidx="${stIdx}">${step.quality_check?.check_description||''}</textarea>
                 </div>
+
+                <div class="input-block">
+                    <label>${t.lblSkills}</label>
+                    <input type="text" class="full-area" 
+                           value="${(step.resources_needed?.labor?.required_skill_tags||[]).join(', ')}" 
+                           placeholder="${t.phSkills}" 
+                           data-type="step-skills" data-sidx="${sIdx}" data-stidx="${stIdx}">
+                </div>
+
+                <div style="display:flex; gap:20px; margin-top:10px; border-top:1px dashed var(--glass-border); padding-top:10px;">
+                    <label style="display:flex; align-items:center; gap:8px; font-size:12px; color:white;">
+                        <input type="checkbox" ${step.logistics_flags?.requires_wip?'checked':''} 
+                               data-type="flag-wip" data-sidx="${sIdx}" data-stidx="${stIdx}"> 
+                        ${t.lblWip}
+                    </label>
+                    <label style="display:flex; align-items:center; gap:8px; font-size:12px; color:white;">
+                        <input type="checkbox" ${step.logistics_flags?.requires_finished?'checked':''} 
+                               data-type="flag-fin" data-sidx="${sIdx}" data-stidx="${stIdx}"> 
+                        ${t.lblFin}
+                    </label>
+                </div>
+
             </div>
         </div>
         `;
     }).join('');
 }
 
-
 // 6. EVENT HANDLERS
 function handleContainerClick(e) {
-    // 1. Gestione input/textarea click (evita che il click sull'input chiuda la card)
-    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
-        return; 
-    }
+    const btn = e.target.closest('button');
+    if (!btn) return;
+    const action = btn.dataset.action;
+    const sIdx = parseInt(btn.dataset.sidx);
+    const stIdx = parseInt(btn.dataset.stidx);
 
-    // 2. Cerca l'elemento cliccato o i suoi genitori
-    const target = e.target;
-    const deleteBtn = target.closest('[data-action="delete-step"]');
-    const toggleHeader = target.closest('[data-action="toggle-step"]');
-    const deleteStageBtn = target.closest('[data-action="delete-stage"]');
-    const addStepBtn = target.closest('[data-action="add-step"]');
-
-    // --- DELETE STEP ---
-    if (deleteBtn) {
-        e.stopPropagation(); // Importante: evita il toggle
-        const sIdx = parseInt(deleteBtn.dataset.sidx);
-        const stIdx = parseInt(deleteBtn.dataset.stidx);
-        if(confirm(t.confirmDel)) { 
-            currentData.stages[sIdx].steps.splice(stIdx, 1); 
-            updateIndexes(); 
-            renderStages(); 
-        }
-        return;
-    }
-
-    // --- TOGGLE STEP (Apri/Chiudi Card) ---
-    if (toggleHeader) {
-        const sIdx = parseInt(toggleHeader.dataset.sidx);
-        const stIdx = parseInt(toggleHeader.dataset.stidx);
-        const stepItem = document.getElementById(`step-${sIdx}-${stIdx}`);
-        
-        // Toggle classe CSS visiva
-        stepItem.classList.toggle('open');
-        
-        // Aggiorna stato interno dati (opzionale, ma utile se salvi/ricarichi view)
-        const stepData = currentData.stages[sIdx].steps[stIdx];
-        stepData._ui_open = stepItem.classList.contains('open');
-        
-        return; // Non serve renderStages()!
-    }
-
-    // --- DELETE STAGE ---
-    if (deleteStageBtn) {
-        const sIdx = parseInt(deleteStageBtn.dataset.sidx);
-        if(confirm(t.confirmDel)) { 
-            currentData.stages.splice(sIdx, 1); 
-            updateIndexes(); 
-            renderStages(); 
-        }
-        return;
-    }
-
-    // --- ADD STEP ---
-    if (addStepBtn) {
-        const sIdx = parseInt(addStepBtn.dataset.sidx);
+    if (action === 'delete-stage') {
+        if(confirm(t.confirmDel)) { currentData.stages.splice(sIdx, 1); updateIndexes(); renderStages(); }
+    } else if (action === 'add-step') {
         addStep(sIdx);
-        return;
+    } else if (action === 'delete-step') {
+        if(confirm(t.confirmDel)) { currentData.stages[sIdx].steps.splice(stIdx, 1); updateIndexes(); renderStages(); }
+    } else if (action === 'toggle-step') {
+        const step = currentData.stages[sIdx].steps[stIdx];
+        step._ui_open = !step._ui_open;
+        renderStages();
     }
 }
-
 
 function handleInput(e) {
     const el = e.target;
