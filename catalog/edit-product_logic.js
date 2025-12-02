@@ -1,5 +1,5 @@
 /**
- * EDIT PRODUCT LOGIC (v1.2 - INTEGRALE & FULL LANG)
+ * EDIT PRODUCT LOGIC (v1.5 - INTEGRAL & DIRTY CHECKING)
  */
 'use strict';
 
@@ -7,15 +7,17 @@
 const WEBHOOK_URL = "https://trinai.api.workflow.dcmake.it/webhook/2c6416b1-32c6-4661-bd8f-b175d24fd035";
 
 const tg = window.Telegram.WebApp;
-try { tg.ready(); tg.expand(); } catch (e) {}
+try { tg.ready(); tg.expand(); } catch (e) { console.warn("TG WebApp not found"); }
 
 const urlParams = new URLSearchParams(window.location.search);
 const productId = urlParams.get('productId');
 const token = urlParams.get('token');
-const vat = urlParams.get('vat'); // <-- RECUPERIAMO IL VAT
+const vat = urlParams.get('vat');
 const langParam = urlParams.get('lang') || 'it';
 
 let currentData = null;
+let initialDataString = "";
+let isDirty = false;
 let skillTags = [];
 let keywords = [];
 
@@ -47,7 +49,7 @@ const dom = {
 function init() {
     applyTranslations();
     if (!productId || !token || !vat) {
-        document.getElementById('loaderText').textContent = "Error: Missing VAT/Token/ID Parameters";
+        dom.loaderText.textContent = "Error: Missing VAT/Token/ID Parameters";
         return;
     }
     loadProduct();
@@ -69,13 +71,7 @@ async function loadProduct() {
         const res = await fetch(WEBHOOK_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ 
-                action: 'GET', 
-                type: 'PRODUCT', 
-                productId: productId, 
-                token: token, 
-                vat: vat // <-- AGGIUNTO QUI
-            })
+            body: JSON.stringify({ action: 'GET', type: 'PRODUCT', productId: productId, token: token, vat: vat })
         });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         
@@ -85,10 +81,15 @@ async function loadProduct() {
         
         currentData = data;
         populateForm(data);
-
-        setupTagInput(dom.skillInput, dom.skillContainer, skillTags, (idx) => { skillTags.splice(idx, 1); renderTags(dom.skillContainer, skillTags, arguments.callee); });
-        setupTagInput(dom.keywordInput, dom.keywordContainer, keywords, (idx) => { keywords.splice(idx, 1); renderTags(dom.keywordContainer, keywords, arguments.callee); });
         
+        // Dopo aver popolato, facciamo la fotografia dello stato
+        initialDataString = JSON.stringify(collectDataFromForm());
+        checkDirty(); // Chiamata iniziale per disabilitare il bottone
+
+        setupTagInput(dom.skillInput, dom.skillContainer, skillTags);
+        setupTagInput(dom.keywordInput, dom.keywordContainer, keywords);
+        
+        dom.form.addEventListener('input', checkDirty);
         dom.form.addEventListener('submit', handleSave);
 
         hideLoader();
@@ -117,14 +118,16 @@ function populateForm(data) {
     skillTags = data.operations?.provider_info?.required_skill_tags || [];
     keywords = data.identity?.keywords || [];
     
-    renderTags(dom.skillContainer, skillTags, (idx) => { skillTags.splice(idx, 1); renderTags(dom.skillContainer, skillTags, arguments.callee); });
-    renderTags(dom.keywordContainer, keywords, (idx) => { keywords.splice(idx, 1); renderTags(dom.keywordContainer, keywords, arguments.callee); });
+    renderTags(dom.skillContainer, skillTags);
+    renderTags(dom.keywordContainer, keywords);
 
     document.getElementById('pageTitle').textContent = `✏️ ${data.identity?.item_name || 'Prodotto'}`;
 }
 
 async function handleSave(e) {
     e.preventDefault();
+    if (!isDirty) return; // Blocco se non ci sono modifiche
+
     setButtonLoading(dom.saveBtn, true, t.saving);
 
     currentData.identity.item_name = document.getElementById('itemName').value;
@@ -145,20 +148,13 @@ async function handleSave(e) {
         const res = await fetch(WEBHOOK_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ 
-                action: 'SAVE', 
-                type: 'PRODUCT', 
-                productId: productId, 
-                token: token, 
-                vat: vat, // <-- AGGIUNTO QUI
-                payload: currentData 
-            })
+            body: JSON.stringify({ action: 'SAVE', type: 'PRODUCT', productId: productId, token: token, vat: vat, payload: currentData })
         });
         if (!res.ok) throw new Error("Save failed");
         
         setButtonLoading(dom.saveBtn, false, t.saved, true);
         try { tg.HapticFeedback.notificationOccurred('success'); } catch (e) {}
-        setTimeout(() => { try { tg.close(); } catch (e) { history.back(); } }, 1500);
+        setTimeout(() => { try { tg.close(); } catch (e) { goBackToCatalog(); } }, 1500);
 
     } catch (e) {
         handleError(e);
@@ -167,7 +163,36 @@ async function handleSave(e) {
 }
 
 // 5. HELPER UTILITIES
-function setupTagInput(input, container, tags, onRemove) {
+function collectDataFromForm() {
+    return {
+        itemName: document.getElementById('itemName').value,
+        itemType: document.getElementById('itemType').value,
+        descShort: document.getElementById('descShort').value,
+        descLong: document.getElementById('descLong').value,
+        internalNotes: document.getElementById('internalNotes').value,
+        basePrice: document.getElementById('basePrice').value,
+        currency: document.getElementById('currency').value,
+        unitOfMeasure: document.getElementById('unitOfMeasure').value,
+        taxRate: document.getElementById('taxRate').value,
+        requiresBooking: document.getElementById('requiresBooking').checked,
+        requiresInventory: document.getElementById('requiresInventory').checked,
+        skillTags: skillTags.join(','),
+        keywords: keywords.join(',')
+    };
+}
+
+function checkDirty() {
+    const currentFormState = JSON.stringify(collectDataFromForm());
+    isDirty = currentFormState !== initialDataString;
+    dom.saveBtn.disabled = !isDirty;
+}
+
+function setupTagInput(input, container, tags) {
+    const onRemove = (idx) => {
+        tags.splice(idx, 1);
+        renderTags(container, tags);
+        checkDirty(); // Check dopo rimozione
+    };
     input.addEventListener('keydown', (e) => {
         if (e.key === 'Enter' || e.key === ',') {
             e.preventDefault();
@@ -175,42 +200,37 @@ function setupTagInput(input, container, tags, onRemove) {
             if (val && !tags.includes(val)) {
                 tags.push(val);
                 input.value = '';
-                renderTags(container, tags, onRemove);
+                renderTags(container, tags);
+                checkDirty(); // Check dopo aggiunta
             }
         } else if (e.key === 'Backspace' && input.value === '' && tags.length > 0) {
             tags.pop();
-            renderTags(container, tags, onRemove);
+            renderTags(container, tags);
+            checkDirty(); // Check dopo rimozione
         }
     });
+    renderTags(container, tags); // Chiamata iniziale per associare onRemove
 }
 
-function renderTags(container, tags, onRemove) {
+function renderTags(container, tags) {
     const input = container.querySelector('input');
     container.querySelectorAll('.tag').forEach(el => el.remove());
     tags.forEach((tag, idx) => {
         const tagEl = document.createElement('div');
         tagEl.className = 'tag';
         tagEl.innerHTML = `${tag} <span class="tag-remove" data-idx="${idx}">×</span>`;
-        tagEl.querySelector('.tag-remove').onclick = () => onRemove(idx);
+        tagEl.querySelector('.tag-remove').onclick = () => {
+            tags.splice(idx, 1);
+            renderTags(container, tags);
+            checkDirty();
+        };
         container.insertBefore(tagEl, input);
     });
 }
 
-function showLoader(text) {
-    dom.loaderText.textContent = text;
-    dom.loader.classList.remove('hidden');
-    dom.content.classList.add('hidden');
-}
-
-function hideLoader() {
-    dom.loader.classList.remove('hidden');
-    dom.content.classList.add('hidden');
-}
-
-function handleError(e) {
-    console.error(e);
-    dom.loaderText.textContent = t.error + " " + e.message;
-}
+function showLoader(text) { dom.loaderText.textContent = text; dom.loader.classList.remove('hidden'); dom.content.classList.add('hidden'); }
+function hideLoader() { dom.loader.classList.remove('hidden'); dom.content.classList.add('hidden'); }
+function handleError(e) { console.error(e); dom.loaderText.textContent = t.error + " " + e.message; }
 
 function setButtonLoading(btn, isLoading, text, isSuccess = false) {
     btn.disabled = isLoading;
