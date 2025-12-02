@@ -62,7 +62,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         cardElement.classList.remove('loading');
         if (response) {
-            const fragment = response?.[0]?.Fragment?.[0] || response?.Fragment?.[0];
+            const fragment = response.Fragment || response; 
             if (fragment) {
                 tg?.HapticFeedback?.impactOccurred('light'); // Sicuro: non si rompe se tg non esiste
                 knowledgeData.push(fragment);
