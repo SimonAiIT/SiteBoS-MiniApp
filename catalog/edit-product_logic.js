@@ -182,15 +182,13 @@ async function handleSave(e) {
         const res = await fetch(WEBHOOK_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ 
-                body: {
-                    action: 'SAVE', 
-                    type: 'PRODUCT', 
-                    productId: productId, 
-                    token: token, 
-                    vat: vat, 
-                    payload: currentData
-                }
+            body: JSON.stringify({ // NESSUN WRAPPER 'body' QUI
+                action: 'SAVE', 
+                type: 'PRODUCT', 
+                productId: productId, 
+                token: token, 
+                vat: vat, 
+                payload: currentData 
             })
         });
         
