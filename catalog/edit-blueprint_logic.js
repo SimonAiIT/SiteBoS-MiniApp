@@ -1,8 +1,8 @@
 /**
  * BLUEPRINT EDITOR LOGIC (vFINAL - UI FIXED)
  * - Grid Layout per Steps
- * - FABs Allineati Orizzontalmente
- * - Minuti su riga separata
+ * - FABs a destra in colonna
+ * - FIX: Caricamento minuti corretto
  */
 'use strict';
 
@@ -118,6 +118,9 @@ function renderSteps(steps, sIdx) {
         const wipBadge = step.logistics_flags?.requires_wip ? `<span class="badge badge-wip">${t.lblWip}</span>` : '';
         const finBadge = step.logistics_flags?.requires_finished ? `<span class="badge badge-fin">${t.lblFin}</span>` : '';
         
+        // FIX: Assicurati che estimated_time_minutes sia un numero
+        const timeValue = parseInt(step.estimated_time_minutes) || 0;
+        
         return `
         <div class="step-item" data-sidx="${sIdx}" data-stidx="${stIdx}">
             
@@ -148,7 +151,7 @@ function renderSteps(steps, sIdx) {
                 <!-- Tempo a sinistra -->
                 <div class="step-time-box">
                     <span>⏱️</span>
-                    <input type="number" value="${step.estimated_time_minutes||0}" 
+                    <input type="number" min="0" value="${timeValue}" 
                            data-type="step-time" data-sidx="${sIdx}" data-stidx="${stIdx}">
                     <span>${t.min}</span>
                 </div>
@@ -163,17 +166,17 @@ function renderSteps(steps, sIdx) {
             <div class="step-details ${isOpen}">
                 <div class="input-group">
                     <label style="font-size:10px; font-weight:700; color:var(--primary);">${t.lblInstr}</label>
-                    <textarea class="edit-textarea" style="background:rgba(0,0,0,0.2); padding:10px; border-radius:8px;" rows="2" placeholder="${t.phStepInstr}" data-type="step-instr" data-sidx="${sIdx}" data-stidx="${stIdx}">${step.instructions||''}</textarea>
+                    <textarea class="edit-textarea" style="background:rgba(0,0,0,0.2); padding:10px; border-radius:8px; color:white;" rows="2" placeholder="${t.phStepInstr}" data-type="step-instr" data-sidx="${sIdx}" data-stidx="${stIdx}">${step.instructions||''}</textarea>
                 </div>
 
                 <div class="input-group" style="margin-top:10px;">
                     <label style="font-size:10px; font-weight:700; color:var(--success);">${t.lblQC}</label>
-                    <textarea class="edit-textarea" style="background:rgba(0,0,0,0.2); padding:10px; border-radius:8px;" rows="1" placeholder="${t.phQC}" data-type="step-qc" data-sidx="${sIdx}" data-stidx="${stIdx}">${step.quality_check?.check_description||''}</textarea>
+                    <textarea class="edit-textarea" style="background:rgba(0,0,0,0.2); padding:10px; border-radius:8px; color:white;" rows="1" placeholder="${t.phQC}" data-type="step-qc" data-sidx="${sIdx}" data-stidx="${stIdx}">${step.quality_check?.check_description||''}</textarea>
                 </div>
 
                 <div class="input-group" style="margin-top:10px;">
                     <label style="font-size:10px; font-weight:700;">${t.lblSkills}</label>
-                    <input type="text" class="edit-input" style="font-size:12px; background:rgba(0,0,0,0.2); padding:5px 10px; border-radius:6px; border:none;" value="${(step.resources_needed?.labor?.required_skill_tags||[]).join(', ')}" placeholder="${t.phSkills}" data-type="step-skills" data-sidx="${sIdx}" data-stidx="${stIdx}">
+                    <input type="text" class="edit-input" style="font-size:12px; background:rgba(0,0,0,0.2); padding:5px 10px; border-radius:6px; border:none; color:white;" value="${(step.resources_needed?.labor?.required_skill_tags||[]).join(', ')}" placeholder="${t.phSkills}" data-type="step-skills" data-sidx="${sIdx}" data-stidx="${stIdx}">
                 </div>
 
                 <div style="display:flex; gap:15px; margin-top:15px; padding-top:10px; border-top:1px dashed rgba(255,255,255,0.1);">
@@ -226,7 +229,7 @@ function handleInput(e) {
     if (type.startsWith('step-')) {
         const step = currentData.stages[sIdx].steps[stIdx];
         if (type === 'step-name') step.step_name = val;
-        if (type === 'step-time') { step.estimated_time_minutes = parseInt(val)||0; updateIndexes(); }
+        if (type === 'step-time') { step.estimated_time_minutes = parseInt(val)||0; }
         if (type === 'step-instr') step.instructions = val;
         if (type === 'step-qc') { if(!step.quality_check) step.quality_check={}; step.quality_check.check_description = val; }
         if (type === 'step-skills') { if(!step.resources_needed) step.resources_needed={labor:{}}; step.resources_needed.labor.required_skill_tags = val.split(',').map(s=>s.trim()).filter(Boolean); }
@@ -296,19 +299,30 @@ async function loadBlueprint() {
             body: JSON.stringify({ action: 'GET', type: 'BLUEPRINT', productId, token, vat })
         });
         const data = await res.json();
-        const bp = Array.isArray(data) ? (data[0].blueprint || data[0]) : (data.blueprint || data);
+        
+        console.log('Raw data received:', data); // DEBUG
+        
+        // Il JSON arriva come array, quindi prendiamo il primo elemento
+        const bp = Array.isArray(data) ? data[0] : data;
+        
+        console.log('Blueprint parsed:', bp); // DEBUG
         
         currentData = bp || { stages: [] };
         dom.desc.value = currentData.blueprint_description || '';
         dom.sku.innerText = `SKU: ${currentData.service_sku || 'N/A'}`;
         
-        updateIndexes(); renderStages(); hideLoader();
-    } catch(e) { showError(e.message); }
+        updateIndexes(); 
+        renderStages(); 
+        hideLoader();
+    } catch(e) { 
+        console.error('Load error:', e); // DEBUG
+        showError(e.message); 
+    }
 }
 
 async function handleSave(e) {
     e.preventDefault();
-    showLoader(t.saving || 'Salvataggio...');
+    showLoader('Salvataggio...');
     
     currentData.blueprint_description = dom.desc.value;
     const payload = JSON.parse(JSON.stringify(currentData));
