@@ -310,7 +310,7 @@ async function handleSave(e) {
 
 // UTILS
 function showLoader(msg) { dom.loaderText.innerText=msg; dom.loader.style.display='flex'; dom.content.classList.add('hidden'); }
-function hideLoader() { dom.loader.style.display='none'; dom.content.classList.remove('hidden'); }
+function hideLoader() { dom.content.classList.remove('hidden'); dom.loader.style.display='none'; }
 function showError(msg) { alert(msg); hideLoader(); }
 
 // START
