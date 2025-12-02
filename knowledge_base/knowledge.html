@@ -3,41 +3,42 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Knowledge Base</title>
+    <title>Knowledge Base Editor</title>
     
-    <!-- SCRIPT TELEGRAM FONDAMENTALE -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    
-    <!-- Font Awesome (già usato nel progetto) -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <!-- Link al tuo styles.css unificato -->
     <link rel="stylesheet" href="../styles.css">
-
 </head>
 <body>
 
-    <!-- === LOADER INIZIALE === -->
     <div id="loader">
         <div class="spinner-ring"></div>
         <p>Caricamento Knowledge Base...</p>
     </div>
 
-    <!-- === CONTENUTO PRINCIPALE === -->
     <div class="container hidden" id="mainContent">
         <header class="dashboard-header">
             <div class="header-info">
                 <h1>Knowledge Base</h1>
-                <small id="companyName">Documenti e procedure per </small>
+                <small id="companyName">Modifica documenti e procedure per </small>
             </div>
         </header>
 
         <main id="kb-container">
-            <!-- Le card verranno inserite qui dal JavaScript -->
+            <!-- Le card editabili verranno inserite qui -->
         </main>
+        
+        <div style="height: 100px;"></div>
     </div>
 
-    <!-- Logic Script -->
+    <!-- BOTTONE DI SALVATAGGIO CON SPINNER INTERNO -->
+    <div class="fab-container">
+        <button class="fab-btn" id="saveBtn">
+            <i class="fas fa-save save-icon"></i>
+            <i class="fas fa-spinner fa-spin spinner-icon hidden"></i>
+        </button>
+    </div>
+
     <script src="knowledge_logic.js"></script>
 
 </body>
