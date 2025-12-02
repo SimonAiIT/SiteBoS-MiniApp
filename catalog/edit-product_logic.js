@@ -290,7 +290,10 @@ function renderTags(container, tags) {
 }
 
 function showLoader(text) { dom.loaderText.textContent = text; dom.loader.classList.remove('hidden'); dom.content.classList.add('hidden'); }
-function hideLoader() { dom.loader.classList.remove('hidden'); dom.content.classList.add('hidden'); }
+function hideLoader() { 
+    dom.loader.classList.add('hidden');      // Nascondi il loader
+    dom.content.classList.remove('hidden');   // Mostra il contenuto
+}
 function handleError(e) { console.error(e); dom.loaderText.textContent = t.error + ": " + e.message; }
 function setButtonLoading(btn, isLoading, text, isSuccess = false) {
     btn.disabled = isLoading;
