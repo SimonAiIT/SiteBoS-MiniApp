@@ -11,87 +11,117 @@
   <link rel="stylesheet" href="../styles.css">
   
 <style>
+    /* --- VARIABILI DI FALLBACK (Se styles.css non carica) --- */
+    :root {
+        --primary: #007aff;
+        --card-bg: #1c1c1e;
+        --glass-border: rgba(255, 255, 255, 0.1);
+        --text-muted: #8e8e93;
+        --text-main: #ffffff;
+    }
+
     /* STILE GENERALE */
     body {
-        padding-bottom: 80px; 
+        background-color: #000;
+        color: white;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        margin: 0; padding: 0;
+        /* Padding bottom per non far finire il contenuto sotto i FAB */
+        padding-bottom: 100px; 
+    }
+
+    /* CONTAINER PRINCIPALE */
+    .container {
+        padding: 15px;
+        max-width: 600px;
+        margin: 0 auto;
+    }
+
+    /* HEADER */
+    .dashboard-header { margin-bottom: 20px; }
+    .header-info h1 { margin: 0; font-size: 24px; font-weight: 800; }
+    .header-info small { color: var(--text-muted); font-size: 14px; }
+
+    /* CARD DESCRIZIONE */
+    .cat-card {
+        background: var(--card-bg); border: 1px solid var(--glass-border);
+        border-radius: 12px; margin-bottom: 20px; padding: 15px;
     }
 
     /* STAGE CARD */
     .stage-card {
-        background: var(--card-bg, #1c1c1e); 
-        border: 1px solid var(--glass-border, rgba(255,255,255,0.1));
+        background: var(--card-bg); 
+        border: 1px solid var(--glass-border);
         border-radius: 12px; margin-bottom: 20px; 
         overflow: hidden;
-        border-left: 4px solid var(--primary, #007aff);
+        border-left: 4px solid var(--primary);
     }
     .stage-header {
-        padding: 15px; 
-        background: rgba(255,255,255,0.03);
+        padding: 15px; background: rgba(255,255,255,0.03);
         display: flex; align-items: flex-start; gap: 10px;
-        border-bottom: 1px solid var(--glass-border, rgba(255,255,255,0.1));
+        border-bottom: 1px solid var(--glass-border);
     }
 
     /* INPUT GENERALE */
     .edit-input {
         background: transparent; border: none; 
-        border-bottom: 1px dashed var(--glass-border, rgba(255,255,255,0.3));
+        border-bottom: 1px dashed var(--glass-border);
         color: white; width: 100%; padding: 5px 0; 
         font-size: 16px; font-weight: 600;
     }
-    .edit-input:focus { outline: none; border-bottom-color: var(--primary, #007aff); }
+    .edit-input:focus { outline: none; border-bottom-color: var(--primary); }
     
     .edit-textarea {
         background: transparent; border: none; width: 100%; 
-        color: var(--text-muted, #8e8e93);
-        font-size: 13px; resize: none; margin-top: 5px; font-style: italic;
+        color: var(--text-muted); font-size: 13px; resize: none; margin-top: 5px; font-style: italic;
     }
     .edit-textarea:focus { outline: none; color: white; }
 
-    /* --- STEP ITEM: 3 RIGHE FISSE --- */
+    /* --- STEP ITEM: LAYOUT 3 RIGHE --- */
     .step-list-container { padding: 0; }
     
     .step-item {
         padding: 15px; 
-        border-bottom: 1px solid var(--glass-border, rgba(255,255,255,0.1));
-        background: rgba(0,0,0,0.1); 
+        border-bottom: 1px solid var(--glass-border);
+        background: rgba(255,255,255,0.02); 
         display: flex; flex-direction: column; 
-        gap: 12px;
+        gap: 12px; /* Spazio verticale tra le righe */
     }
 
-    /* RIGA 1 */
+    /* RIGA 1: Maniglia, Badge, Bottoni Azione */
     .riga-1 { display: flex; align-items: center; justify-content: space-between; width: 100%; }
     .riga-1-left { display: flex; align-items: center; gap: 10px; }
 
-    /* RIGA 2 */
+    /* RIGA 2: Nome Step (Full Width) */
     .riga-2 { width: 100%; }
     .riga-2 input { 
-        font-size: 17px; padding: 5px 0; width: 100%; display: block;
+        font-size: 17px; padding: 8px 0; width: 100%; display: block;
         border-bottom: 1px solid rgba(255,255,255,0.2);
     }
 
-    /* RIGA 3 */
+    /* RIGA 3: Tempo (Largo 270px a sinistra) */
     .riga-3 { width: 100%; display: flex; justify-content: flex-start; }
 
-    /* BOX TEMPO (Largo a sinistra) */
+    /* BOX TEMPO */
     .time-box-fixed {
         display: flex; align-items: center; justify-content: flex-start;
         background: rgba(255,255,255,0.05);
-        border: 1px solid var(--glass-border, rgba(255,255,255,0.1));
+        border: 1px solid var(--glass-border);
         border-radius: 8px;
         height: 50px;
-        width: 270px;
+        width: 270px; /* FISSO COME RICHIESTO */
         max-width: 100%;
         padding: 0 15px;
         box-sizing: border-box;
     }
-    .time-box-fixed i { font-size: 20px; color: var(--primary, #007aff); margin-right: 15px; }
+    .time-box-fixed i { font-size: 20px; color: var(--primary); margin-right: 15px; }
     .time-box-fixed input {
         flex: 1; background: transparent; border: none; 
         border-bottom: 1px solid rgba(255,255,255,0.3);
         color: white; text-align: center; font-size: 20px !important; font-weight: bold;
         margin-right: 10px; padding-bottom: 2px;
     }
-    .time-box-fixed span { font-size: 14px; color: var(--text-muted, #8e8e93); white-space: nowrap; }
+    .time-box-fixed span { font-size: 14px; color: var(--text-muted); white-space: nowrap; }
 
     /* BADGE */
     .badge { font-size: 11px; padding: 4px 8px; border-radius: 4px; font-weight: 700; text-transform: uppercase; }
@@ -101,18 +131,19 @@
     /* BOTTONI INTERNI */
     .btn-group { display: flex; gap: 8px; }
     .btn-icon {
-        width: 34px; height: 34px; border-radius: 8px; border: none;
-        background: rgba(255,255,255,0.05); color: var(--text-muted, #8e8e93);
+        width: 36px; height: 36px; border-radius: 8px; border: none;
+        background: rgba(255,255,255,0.08); color: var(--text-muted);
         display: flex; align-items: center; justify-content: center;
         cursor: pointer; transition: 0.2s;
     }
-    .btn-icon:hover { background: var(--primary, #007aff); color: white; }
-    .btn-icon.active { background: var(--primary, #007aff); color: white; }
+    .btn-icon:hover { background: var(--primary); color: white; }
+    .btn-icon.active { background: var(--primary); color: white; }
     .btn-icon.del:hover { background: #ff453a; color: white; }
 
     /* DETTAGLI */
     .step-details { display: none; margin-top: 10px; padding-top: 15px; border-top: 1px dashed var(--glass-border); }
-    .step-details.open { display: block; }
+    .step-details.open { display: block; animation: slideDown 0.2s; }
+    
     .input-block { margin-bottom: 15px; }
     .input-block label { display: block; font-size: 11px; color: var(--text-muted); margin-bottom: 5px; font-weight: 700; text-transform: uppercase; }
     .full-area { 
@@ -121,15 +152,16 @@
     }
     .full-area:focus { outline: none; border-color: var(--primary); }
 
-    /* FABs - STILE IDENTICO AL PROGETTO */
+    /* --- FABs (BOTTONI FLUTTUANTI) --- */
+    /* IMPORTANT: position fixed e z-index alto per stare sempre visibili */
     .fab-container {
-        position: fixed;
-        bottom: 20px;
-        right: 20px; /* A DESTRA */
+        position: fixed !important;
+        bottom: 20px !important;
+        right: 20px !important; /* A DESTRA */
         display: flex;
-        flex-direction: column; /* Impilati verticalmente */
+        flex-direction: column; /* Impilati */
         gap: 15px;
-        z-index: 1010;
+        z-index: 9999 !important; /* SOPRA TUTTO */
     }
 
     .fab-btn {
@@ -141,28 +173,46 @@
         align-items: center;
         justify-content: center;
         font-size: 20px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.4); /* TUA OMBRA */
+        box-shadow: 0 4px 12px rgba(0,0,0,0.4); /* OMBRA */
         cursor: pointer;
         transition: transform 0.2s;
         color: white;
+        background-color: var(--primary); /* Default */
     }
 
-    .fab-btn:active {
-        transform: scale(0.95); /* TUO EFFETTO CLICK */
-    }
+    .fab-btn:active { transform: scale(0.95); }
 
-    .fab-primary { background-color: var(--primary, #007aff); }
+    .fab-primary { background-color: var(--primary); }
     .fab-secondary { background-color: #333; border: 1px solid rgba(255,255,255,0.2); }
     
-    .hidden { display: none; }
+    /* UTILITY */
+    .hidden { display: none !important; }
+    .btn-block { width: 100%; padding: 15px; background: rgba(255,255,255,0.1); border: 1px dashed #666; color: white; border-radius: 8px; cursor: pointer; }
+    
+    /* LOADER */
+    #loadingOverlay {
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: #000; z-index: 10000;
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+    }
+    .spinner-ring {
+        width: 40px; height: 40px; border: 4px solid rgba(255,255,255,0.1);
+        border-left-color: var(--primary); border-radius: 50%;
+        animation: spin 1s linear infinite; margin-bottom: 15px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @keyframes slideDown { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+
 </style>
 </head>
 <body>
 
+
   <div id="loadingOverlay">
     <div class="spinner-ring"></div>
-    <div id="loaderText" data-i18n="loading"></div>
+    <div id="loaderText" data-i18n="loading">Loading...</div>
   </div>
+
 
   <div class="container hidden fade-in" id="mainContent">
     
@@ -173,7 +223,7 @@
         </div>
     </div>
 
-    <div class="cat-card" style="padding: 15px;">
+    <div class="cat-card">
         <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
             <label style="font-size:10px; color:var(--text-muted); font-weight:700;">DESCRIZIONE BLUEPRINT</label>
             <span id="serviceSku" style="font-family:monospace; font-size:10px; color:var(--primary);">SKU: ...</span>
@@ -183,13 +233,15 @@
 
     <div id="stagesContainer"></div>
 
-    <button class="btn btn-secondary btn-block" style="border-style:dashed; margin-top:20px; opacity:0.8; padding: 15px;" id="btnAddStageBtn">
-        <i class="fas fa-plus"></i> <span data-i18n="btnAddStage"></span>
+    <button class="btn-block" id="btnAddStageBtn">
+        <i class="fas fa-plus"></i> <span data-i18n="btnAddStage">Nuova Fase</span>
     </button>
+    
 
-    <div style="height: 120px;"></div> 
+    <div style="height: 100px;"></div>
 
   </div>
+
 
   <div class="fab-container">
       <button class="fab-btn fab-primary" id="saveBtn">
