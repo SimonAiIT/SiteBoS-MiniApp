@@ -68,17 +68,15 @@ function applyTranslations() {
 async function loadProduct() {
     showLoader(t.loading);
     try {
-        const res = await fetch(WEBHOOK_URL, {
+       const res = await fetch(WEBHOOK_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ 
-                body: { 
-                    action: 'GET', 
-                    type: 'PRODUCT', 
-                    productId: productId, 
-                    token: token, 
-                    vat: vat 
-                }
+            body: JSON.stringify({ // NESSUN WRAPPER 'body' QUI
+                action: 'GET', 
+                type: 'PRODUCT', 
+                productId: productId, 
+                token: token, 
+                vat: vat 
             })
         });
         
