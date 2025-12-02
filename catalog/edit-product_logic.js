@@ -1,5 +1,5 @@
 /**
- * EDIT PRODUCT LOGIC (v1.5 - INTEGRAL & DIRTY CHECKING)
+ * EDIT PRODUCT LOGIC (vFINAL - FULL)
  */
 'use strict';
 
@@ -49,7 +49,7 @@ const dom = {
 function init() {
     applyTranslations();
     if (!productId || !token || !vat) {
-        dom.loaderText.textContent = "Error: Missing VAT/Token/ID Parameters";
+        dom.loaderText.textContent = "Error: Missing VAT/Token/ID";
         return;
     }
     loadProduct();
@@ -71,27 +71,40 @@ async function loadProduct() {
         const res = await fetch(WEBHOOK_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ action: 'GET', type: 'PRODUCT', productId: productId, token: token, vat: vat })
+            body: JSON.stringify({ 
+                body: { 
+                    action: 'GET', 
+                    type: 'PRODUCT', 
+                    productId: productId, 
+                    token: token, 
+                    vat: vat 
+                }
+            })
         });
         
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         
-        // --- PARSING PULITO E DIRETTO ---
-        // Leggiamo il JSON e gestiamo il caso in cui n8n lo wrappi in un array.
         const rawData = await res.json();
-        const productData = Array.isArray(rawData) ? rawData[0] : rawData;
-        // ---------------------------------
+        const firstItem = Array.isArray(rawData) ? rawData[0] : rawData;
+        
+        // ESTRAZIONE CORRETTA: I dati sono dentro 'catalog_item'
+        const productData = firstItem.catalog_item; 
 
         if (!productData || !productData.identity) {
-            throw new Error("Formato risposta non valido: dati del prodotto mancanti.");
+            throw new Error("Dati prodotto non trovati (Missing catalog_item).");
         }
         
         currentData = productData;
+        
+        // Fotografia stato iniziale per dirty checking
+        initialDataString = JSON.stringify(collectDataFromForm()); 
+        
         populateForm(productData);
 
-        // Setup dei tag e degli eventi (invariato)
         setupTagInput(dom.skillInput, dom.skillContainer, skillTags);
         setupTagInput(dom.keywordInput, dom.keywordContainer, keywords);
+        
+        dom.form.addEventListener('input', checkDirty);
         dom.form.addEventListener('submit', handleSave);
 
         hideLoader();
@@ -101,57 +114,88 @@ async function loadProduct() {
 }
 
 function populateForm(data) {
-    const val = (id, v) => document.getElementById(id).value = v || '';
-    const chk = (id, v) => document.getElementById(id).checked = !!v;
+    const val = (id, v) => { const el = document.getElementById(id); if (el) el.value = v != null ? v : ''; };
+    const chk = (id, v) => { const el = document.getElementById(id); if (el) el.checked = !!v; };
 
-    val('itemName', data.identity?.item_name);
-    val('itemSku', data.identity?.item_sku);
-    val('itemType', data.identity?.item_type);
-    val('descShort', data.identity?.description?.short);
-    val('descLong', data.identity?.description?.long);
-    val('internalNotes', data.identity?.description?.internal_notes);
-    val('basePrice', data.pricing?.base_price);
-    val('currency', data.pricing?.currency);
-    val('unitOfMeasure', data.pricing?.unit_of_measure);
-    val('taxRate', data.pricing?.tax_info?.tax_rate_percentage);
-    chk('requiresBooking', data.operations?.requires_booking);
-    chk('requiresInventory', data.operations?.requires_inventory_check);
+    const identity = data.identity || {};
+    const pricing = data.pricing || {};
+    const desc = identity.description || {};
+    const operations = data.operations || {};
+    const provider = operations.provider_info || {};
+    const tax = pricing.tax_info || {};
 
-    skillTags = data.operations?.provider_info?.required_skill_tags || [];
-    keywords = data.identity?.keywords || [];
+    val('itemName', identity.item_name);
+    val('itemSku', identity.item_sku);
+    val('itemType', identity.item_type);
+    val('descShort', desc.short);
+    val('descLong', desc.long);
+    val('internalNotes', desc.internal_notes);
+    val('basePrice', pricing.base_price);
+    val('currency', pricing.currency);
+    val('unitOfMeasure', pricing.unit_of_measure);
+    val('taxRate', tax.tax_rate_percentage);
+    
+    chk('requiresBooking', operations.requires_booking);
+    chk('requiresInventory', operations.requires_inventory_check);
+
+    skillTags = Array.isArray(provider.required_skill_tags) ? provider.required_skill_tags : [];
+    keywords = Array.isArray(identity.keywords) ? identity.keywords : [];
     
     renderTags(dom.skillContainer, skillTags);
     renderTags(dom.keywordContainer, keywords);
 
-    document.getElementById('pageTitle').textContent = `✏️ ${data.identity?.item_name || 'Prodotto'}`;
+    document.getElementById('pageTitle').textContent = `✏️ ${identity.item_name || 'Prodotto'}`;
 }
 
 async function handleSave(e) {
     e.preventDefault();
-    if (!isDirty) return; // Blocco se non ci sono modifiche
+    if (!isDirty) return;
 
     setButtonLoading(dom.saveBtn, true, t.saving);
 
-    currentData.identity.item_name = document.getElementById('itemName').value;
-    currentData.identity.item_type = document.getElementById('itemType').value;
-    currentData.identity.description.short = document.getElementById('descShort').value;
-    currentData.identity.description.long = document.getElementById('descLong').value;
-    currentData.identity.description.internal_notes = document.getElementById('internalNotes').value;
+    // Update currentData structure
+    if(!currentData.identity) currentData.identity = {};
+    if(!currentData.identity.description) currentData.identity.description = {};
+    if(!currentData.pricing) currentData.pricing = {};
+    if(!currentData.pricing.tax_info) currentData.pricing.tax_info = {};
+    if(!currentData.operations) currentData.operations = {};
+    if(!currentData.operations.provider_info) currentData.operations.provider_info = {};
+
+    const get = (id) => document.getElementById(id).value;
+    const getChk = (id) => document.getElementById(id).checked;
+
+    currentData.identity.item_name = get('itemName');
+    currentData.identity.item_type = get('itemType');
+    currentData.identity.description.short = get('descShort');
+    currentData.identity.description.long = get('descLong');
+    currentData.identity.description.internal_notes = get('internalNotes');
     currentData.identity.keywords = keywords;
-    currentData.pricing.base_price = parseFloat(document.getElementById('basePrice').value);
-    currentData.pricing.currency = document.getElementById('currency').value;
-    currentData.pricing.unit_of_measure = document.getElementById('unitOfMeasure').value;
-    currentData.pricing.tax_info.tax_rate_percentage = parseInt(document.getElementById('taxRate').value);
-    currentData.operations.requires_booking = document.getElementById('requiresBooking').checked;
-    currentData.operations.requires_inventory_check = document.getElementById('requiresInventory').checked;
+
+    currentData.pricing.base_price = parseFloat(get('basePrice')) || 0;
+    currentData.pricing.currency = get('currency');
+    currentData.pricing.unit_of_measure = get('unitOfMeasure');
+    currentData.pricing.tax_info.tax_rate_percentage = parseInt(get('taxRate')) || 22;
+
+    currentData.operations.requires_booking = getChk('requiresBooking');
+    currentData.operations.requires_inventory_check = getChk('requiresInventory');
     currentData.operations.provider_info.required_skill_tags = skillTags;
 
     try {
         const res = await fetch(WEBHOOK_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ action: 'SAVE', type: 'PRODUCT', productId: productId, token: token, vat: vat, payload: currentData })
+            body: JSON.stringify({ 
+                body: {
+                    action: 'SAVE', 
+                    type: 'PRODUCT', 
+                    productId: productId, 
+                    token: token, 
+                    vat: vat, 
+                    payload: currentData
+                }
+            })
         });
+        
         if (!res.ok) throw new Error("Save failed");
         
         setButtonLoading(dom.saveBtn, false, t.saved, true);
@@ -168,32 +212,25 @@ async function handleSave(e) {
 function collectDataFromForm() {
     return {
         itemName: document.getElementById('itemName').value,
-        itemType: document.getElementById('itemType').value,
         descShort: document.getElementById('descShort').value,
-        descLong: document.getElementById('descLong').value,
-        internalNotes: document.getElementById('internalNotes').value,
         basePrice: document.getElementById('basePrice').value,
-        currency: document.getElementById('currency').value,
-        unitOfMeasure: document.getElementById('unitOfMeasure').value,
-        taxRate: document.getElementById('taxRate').value,
-        requiresBooking: document.getElementById('requiresBooking').checked,
-        requiresInventory: document.getElementById('requiresInventory').checked,
-        skillTags: skillTags.join(','),
-        keywords: keywords.join(',')
+        tags: skillTags.join(',') + keywords.join(',')
     };
 }
 
 function checkDirty() {
-    const currentFormState = JSON.stringify(collectDataFromForm());
-    isDirty = currentFormState !== initialDataString;
-    dom.saveBtn.disabled = !isDirty;
+    // Semplice check: se i dati sono caricati, abilitiamo il salvataggio al primo input
+    if (currentData) {
+        isDirty = true;
+        dom.saveBtn.disabled = false;
+    }
 }
 
 function setupTagInput(input, container, tags) {
     const onRemove = (idx) => {
         tags.splice(idx, 1);
         renderTags(container, tags);
-        checkDirty(); // Check dopo rimozione
+        checkDirty();
     };
     input.addEventListener('keydown', (e) => {
         if (e.key === 'Enter' || e.key === ',') {
@@ -203,15 +240,15 @@ function setupTagInput(input, container, tags) {
                 tags.push(val);
                 input.value = '';
                 renderTags(container, tags);
-                checkDirty(); // Check dopo aggiunta
+                checkDirty();
             }
         } else if (e.key === 'Backspace' && input.value === '' && tags.length > 0) {
             tags.pop();
             renderTags(container, tags);
-            checkDirty(); // Check dopo rimozione
+            checkDirty();
         }
     });
-    renderTags(container, tags); // Chiamata iniziale per associare onRemove
+    renderTags(container, tags);
 }
 
 function renderTags(container, tags) {
@@ -232,17 +269,12 @@ function renderTags(container, tags) {
 
 function showLoader(text) { dom.loaderText.textContent = text; dom.loader.classList.remove('hidden'); dom.content.classList.add('hidden'); }
 function hideLoader() { dom.loader.classList.remove('hidden'); dom.content.classList.add('hidden'); }
-function handleError(e) { console.error(e); dom.loaderText.textContent = t.error + " " + e.message; }
-
+function handleError(e) { console.error(e); dom.loaderText.textContent = t.error + ": " + e.message; }
 function setButtonLoading(btn, isLoading, text, isSuccess = false) {
     btn.disabled = isLoading;
     btn.innerHTML = isLoading ? `<i class="fas fa-circle-notch fa-spin"></i> ${text}` : text;
-    if(isSuccess) {
-        btn.classList.remove('btn-primary');
-        btn.classList.add('btn-success');
-    }
+    if(isSuccess) { btn.classList.remove('btn-primary'); btn.classList.add('btn-success'); }
 }
-
 window.goBackToCatalog = () => {
     const params = new URLSearchParams(window.location.search);
     params.delete('productId');
