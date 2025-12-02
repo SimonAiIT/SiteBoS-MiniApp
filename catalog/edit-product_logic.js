@@ -32,7 +32,7 @@ const i18n = {
 };
 const t = i18n[langParam.slice(0,2)] || i18n.it;
 
-// 3. DOM CACHE
+// 3. DOM
 const dom = {
     loader: document.getElementById('loader'),
     loaderText: document.getElementById('loaderText'),
@@ -45,7 +45,7 @@ const dom = {
     saveBtn: document.getElementById('saveBtn')
 };
 
-// 4. FUNZIONI PRINCIPALI
+// 4. MAIN
 function init() {
     applyTranslations();
     if (!productId || !token || !vat) {
@@ -68,7 +68,7 @@ function applyTranslations() {
 async function loadProduct() {
     showLoader(t.loading);
     try {
-       const res = await fetch(WEBHOOK_URL, {
+        const res = await fetch(WEBHOOK_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ // NESSUN WRAPPER 'body' QUI
@@ -85,19 +85,19 @@ async function loadProduct() {
         const rawData = await res.json();
         const firstItem = Array.isArray(rawData) ? rawData[0] : rawData;
         
-        // ESTRAZIONE CORRETTA: I dati sono dentro 'catalog_item'
-        const productData = firstItem.catalog_item; 
+        // ESTRAZIONE CRITICA:
+        // Cerca 'catalog_item'. Se non c'è, usa l'oggetto intero (fallback)
+        const productData = firstItem.catalog_item || firstItem;
 
         if (!productData || !productData.identity) {
-            throw new Error("Dati prodotto non trovati (Missing catalog_item).");
+            console.error("Dati ricevuti:", firstItem);
+            throw new Error("Dati prodotto non trovati (Manca 'identity').");
         }
         
         currentData = productData;
         
-        // Fotografia stato iniziale per dirty checking
-        initialDataString = JSON.stringify(collectDataFromForm()); 
-        
         populateForm(productData);
+        initialDataString = JSON.stringify(collectDataFromForm()); 
 
         setupTagInput(dom.skillInput, dom.skillContainer, skillTags);
         setupTagInput(dom.keywordInput, dom.keywordContainer, keywords);
@@ -113,10 +113,9 @@ async function loadProduct() {
 
 function populateForm(inputData) {
     try {
-        // 1. NORMALIZZAZIONE
+        // Normalizzazione interna (ridondante ma sicura)
         const data = inputData.catalog_item || inputData;
 
-        // 2. HELPER
         const val = (id, v) => { 
             const el = document.getElementById(id); 
             if (el) el.value = (v !== undefined && v !== null) ? v : ''; 
@@ -126,50 +125,103 @@ function populateForm(inputData) {
             if (el) el.checked = !!v; 
         };
 
-        // 3. ESTRAZIONE
         const identity = data.identity || {};
-        const description = identity.description || {};
         const pricing = data.pricing || {};
-        const tax_info = pricing.tax_info || {};
+        const desc = identity.description || {};
         const operations = data.operations || {};
-        const provider_info = operations.provider_info || {};
+        const provider = operations.provider_info || {};
+        const tax = pricing.tax_info || {};
 
-        // 4. POPOLAMENTO
         val('itemName', identity.item_name);
         val('itemSku', identity.item_sku);
         val('itemType', identity.item_type);
         
-        val('descShort', description.short);
-        val('descLong', description.long);
-        val('internalNotes', description.internal_notes);
+        val('descShort', desc.short);
+        val('descLong', desc.long);
+        val('internalNotes', desc.internal_notes);
         
         val('basePrice', pricing.base_price);
         val('currency', pricing.currency);
         val('unitOfMeasure', pricing.unit_of_measure);
-        val('taxRate', tax_info.tax_rate_percentage);
+        val('taxRate', tax.tax_rate_percentage);
         
         chk('requiresBooking', operations.requires_booking);
         chk('requiresInventory', operations.requires_inventory_check);
 
-        // 5. TAGS (Punto Critico)
-        skillTags = Array.isArray(provider_info.required_skill_tags) ? provider_info.required_skill_tags : [];
+        skillTags = Array.isArray(provider.required_skill_tags) ? provider.required_skill_tags : [];
         keywords = Array.isArray(identity.keywords) ? identity.keywords : [];
         
-        // Verifica esistenza container prima di chiamare renderTags
         if (dom.skillContainer) renderTags(dom.skillContainer, skillTags);
         if (dom.keywordContainer) renderTags(dom.keywordContainer, keywords);
 
-        // 6. TITOLO
         const titleEl = document.getElementById('pageTitle');
-        if (titleEl) titleEl.textContent = `✏️ ${identity.item_name || 'Prodotto'}`;
+        if(titleEl) titleEl.textContent = `✏️ ${identity.item_name || 'Prodotto'}`;
 
-        // 7. SUCCESSO: NASCONDI LOADER
         hideLoader();
 
     } catch (e) {
-        console.error("CRASH in populateForm:", e);
-        alert("Errore nel visualizzare i dati: " + e.message);
-        hideLoader(); // Nascondi comunque per sbloccare la UI
+        console.error("Populate Error:", e);
+        alert("Errore UI: " + e.message);
+        hideLoader();
+    }
+}
+
+async function handleSave(e) {
+    e.preventDefault();
+    if (!isDirty) return;
+
+    setButtonLoading(dom.saveBtn, true, t.saving);
+
+    // Update currentData structure
+    if(!currentData.identity) currentData.identity = {};
+    if(!currentData.identity.description) currentData.identity.description = {};
+    if(!currentData.pricing) currentData.pricing = {};
+    if(!currentData.pricing.tax_info) currentData.pricing.tax_info = {};
+    if(!currentData.operations) currentData.operations = {};
+    if(!currentData.operations.provider_info) currentData.operations.provider_info = {};
+
+    const get = (id) => document.getElementById(id).value;
+    const getChk = (id) => document.getElementById(id).checked;
+
+    currentData.identity.item_name = get('itemName');
+    currentData.identity.item_type = get('itemType');
+    currentData.identity.description.short = get('descShort');
+    currentData.identity.description.long = get('descLong');
+    currentData.identity.description.internal_notes = get('internalNotes');
+    currentData.identity.keywords = keywords;
+
+    currentData.pricing.base_price = parseFloat(get('basePrice')) || 0;
+    currentData.pricing.currency = get('currency');
+    currentData.pricing.unit_of_measure = get('unitOfMeasure');
+    currentData.pricing.tax_info.tax_rate_percentage = parseInt(get('taxRate')) || 22;
+
+    currentData.operations.requires_booking = getChk('requiresBooking');
+    currentData.operations.requires_inventory_check = getChk('requiresInventory');
+    currentData.operations.provider_info.required_skill_tags = skillTags;
+
+    try {
+        const res = await fetch(WEBHOOK_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ // NESSUN WRAPPER 'body' QUI
+                action: 'SAVE', 
+                type: 'PRODUCT', 
+                productId: productId, 
+                token: token, 
+                vat: vat, 
+                payload: currentData
+            })
+        });
+        
+        if (!res.ok) throw new Error("Save failed");
+        
+        setButtonLoading(dom.saveBtn, false, t.saved, true);
+        try { tg.HapticFeedback.notificationOccurred('success'); } catch (e) {}
+        setTimeout(() => { try { tg.close(); } catch (e) { goBackToCatalog(); } }, 1500);
+
+    } catch (e) {
+        handleError(e);
+        setButtonLoading(dom.saveBtn, false, t.btnSave);
     }
 }
 
@@ -184,11 +236,9 @@ function collectDataFromForm() {
 }
 
 function checkDirty() {
-    // Semplice check: se i dati sono caricati, abilitiamo il salvataggio al primo input
-    if (currentData) {
-        isDirty = true;
-        dom.saveBtn.disabled = false;
-    }
+    const currentFormState = JSON.stringify(collectDataFromForm());
+    isDirty = currentFormState !== initialDataString;
+    dom.saveBtn.disabled = !isDirty;
 }
 
 function setupTagInput(input, container, tags) {
