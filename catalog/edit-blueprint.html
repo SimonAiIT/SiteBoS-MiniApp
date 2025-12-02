@@ -55,55 +55,68 @@
     .step-name-box { width: 100%; min-width: 0; }
     .step-actions-box { display: flex; align-items: center; gap: 5px; }
 
-    /* RIGA SOTTO HEADER - AGGIORNATA PER ALLINEAMENTO A SINISTRA */
-    /* RIGA SOTTO HEADER - FORZATURA TOTALE A SINISTRA */
+    /* --- MODIFICHE RICHIESTE PER ORARIO --- */
+
+    /* RIGA CONTROLLI: ALLINEAMENTO TOTALE A SINISTRA */
     .step-controls-row {
         display: flex !important;
         align-items: center !important;
-        justify-content: flex-start !important; /* ALLINEAMENTO A SINISTRA FORZATO */
+        justify-content: flex-start !important; /* A Sinistra */
         gap: 15px;
-        margin-top: 10px;
-        padding-left: 0 !important; /* RIMOSSO INDENTAZIONI CHE SPOSTAVANO AL CENTRO */
+        margin-top: 12px;
+        padding-left: 0 !important; /* Nessun rientro */
         width: 100%;
     }
 
-    /* BOX TEMPO - PIÙ LARGO E ALLINEATO */
+    /* BOX TEMPO: MOLTO PIÙ LARGO E SPAZIOSO */
     .step-time-box {
         display: flex !important;
         align-items: center !important;
-        justify-content: flex-start !important; /* Contenuto interno a sinistra */
+        justify-content: flex-start !important;
         background: rgba(255,255,255,0.08);
-        padding: 8px 15px !important; /* Più spazio interno */
+        padding: 0 15px !important; /* Padding laterale */
         border-radius: 8px;
         color: var(--text-muted);
-        min-width: 140px !important; /* FORZO LARGHEZZA MINIMA MOLTO PIÙ AMPIA */
-        height: 40px; /* Altezza fissa comoda */
-    }
-
-    /* INPUT TEMPO - PIÙ GRANDE E VISIBILE */
-    .step-time-box input {
-        width: 60px !important; /* Input numerico molto più largo */
-        background: transparent;
-        border: none;
-        color: white;
-        text-align: center; /* Numero al centro dell'input, ma box a sinistra */
-        font-weight: bold;
-        font-size: 16px !important; /* Font più grande */
-        border-bottom: 1px solid rgba(255,255,255,0.3);
-        margin-right: 5px;
+        min-width: 220px !important; /* LARGHEZZA FORZATA COME RICHIESTO */
+        height: 46px; /* Altezza comoda */
+        border: 1px solid rgba(255,255,255,0.05);
     }
 
     /* ICONA OROLOGIO */
     .step-time-box i {
-        margin-right: 8px;
-        font-size: 16px;
+        font-size: 18px;
+        margin-right: 12px; /* Più spazio tra icona e numero */
+        color: var(--primary);
     }
 
-    /* BADGE STYLES - RIPRISTINATI */
+    /* INPUT TEMPO: SI ALLARGA PER PRENDERE SPAZIO */
+    .step-time-box input {
+        flex: 1; /* Occupa lo spazio disponibile */
+        background: transparent;
+        border: none;
+        color: white;
+        text-align: center;
+        font-weight: bold;
+        font-size: 18px !important; /* Numero più grande */
+        border-bottom: 1px solid rgba(255,255,255,0.3);
+        margin-right: 10px;
+        padding-bottom: 2px;
+    }
+    
+    .step-time-box span {
+        font-size: 14px;
+        font-weight: 500;
+        white-space: nowrap;
+    }
+
+    /* --- FINE MODIFICHE ORARIO --- */
+
+    /* BADGE STYLES */
     .badge { 
         font-size: 10px; padding: 4px 8px; border-radius: 6px; 
         text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;
         border: 1px solid transparent;
+        white-space: nowrap;
     }
     .badge-wip { 
         border-color: var(--warning); color: var(--warning); 
