@@ -131,30 +131,80 @@ document.addEventListener('DOMContentLoaded', () => {
         `).join('');
     }
 
-    function renderFragmentDetails(fragment, cardElement) {
-        const body = cardElement.querySelector('.kb-body');
-        const id = fragment.fragment_id || fragment._id;
-        body.innerHTML = `
-            <h3>Titolo</h3>
-            <input type="text" class="editable-input" data-id="${id}" data-field="title" value="${fragment.title}">
-            <h3>Riepilogo</h3>
-            <textarea class="editable-textarea" data-id="${id}" data-field="summary" rows="3">${fragment.summary}</textarea>
-            <h3>Risposta Diretta</h3>
-            <textarea class="editable-textarea" data-id="${id}" data-field="answer_fragment" rows="5">${fragment.answer_fragment}</textarea>
-            <h3>Domande Utente (una per riga)</h3>
-            <textarea class="editable-textarea" data-id="${id}" data-field="user_utterances" rows="4">${fragment.user_utterances.join('\n')}</textarea>
-            <h3>Approfondimenti (Q&A)</h3>
-            <div class="qa-container">
-            ${fragment.sections.map((section, index) => `
-                <div class="kb-section">
-                    <input type="text" class="editable-input" placeholder="Domanda" data-id="${id}" data-field="sections.${index}.question" value="${section.question}">
-                    <textarea class="editable-textarea" placeholder="Risposta" data-id="${id}" data-field="sections.${index}.answer" rows="3">${section.answer}</textarea>
-                    <textarea class="editable-textarea analogy" placeholder="Analogia" data-id="${id}" data-field="sections.${index}.analogy" rows="2">${section.analogy}</textarea>
-                </div>
-            `).join('')}
+function renderFragmentDetails(fragment, cardElement) {
+    const body = cardElement.querySelector('.kb-body');
+    const id = fragment.fragment_id || fragment._id;
+    
+    // Stili inline per la barra delle azioni per renderla pulita e visibile in alto
+    const actionsBarStyle = `
+        display: flex; 
+        justify-content: flex-end; 
+        margin-bottom: 15px; 
+        padding-bottom: 10px; 
+        border-bottom: 1px solid #eee;
+    `;
+
+    const btnStyle = `
+        background: linear-gradient(135deg, #6c5ce7, #a29bfe); 
+        color: white; 
+        border: none; 
+        padding: 8px 15px; 
+        border-radius: 6px; 
+        cursor: pointer; 
+        font-size: 0.85rem; 
+        font-weight: 600; 
+        display: flex; 
+        align-items: center; 
+        gap: 6px; 
+        box-shadow: 0 2px 5px rgba(108, 92, 231, 0.2);
+        transition: transform 0.1s ease;
+    `;
+
+    body.innerHTML = `
+        <!-- BARRA AZIONI IN ALTO -->
+        <div class="actions-bar" style="${actionsBarStyle}">
+            <button class="btn-blog-deploy" data-id="${id}" style="${btnStyle}" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">
+                <i class="fas fa-magic"></i> Genera Blog Post
+            </button>
+        </div>
+
+        <!-- CONTENUTO ESISTENTE -->
+        <h3>Titolo</h3>
+        <input type="text" class="editable-input" data-id="${id}" data-field="title" value="${fragment.title}">
+        <h3>Riepilogo</h3>
+        <textarea class="editable-textarea" data-id="${id}" data-field="summary" rows="3">${fragment.summary}</textarea>
+        <h3>Risposta Diretta</h3>
+        <textarea class="editable-textarea" data-id="${id}" data-field="answer_fragment" rows="5">${fragment.answer_fragment}</textarea>
+        <h3>Domande Utente (una per riga)</h3>
+        <textarea class="editable-textarea" data-id="${id}" data-field="user_utterances" rows="4">${fragment.user_utterances.join('\n')}</textarea>
+        <h3>Approfondimenti (Q&A)</h3>
+        <div class="qa-container">
+        ${fragment.sections.map((section, index) => `
+            <div class="kb-section">
+                <input type="text" class="editable-input" placeholder="Domanda" data-id="${id}" data-field="sections.${index}.question" value="${section.question}">
+                <textarea class="editable-textarea" placeholder="Risposta" data-id="${id}" data-field="sections.${index}.answer" rows="3">${section.answer}</textarea>
+                <textarea class="editable-textarea analogy" placeholder="Analogia" data-id="${id}" data-field="sections.${index}.analogy" rows="2">${section.analogy}</textarea>
             </div>
-        `;
+        `).join('')}
+        </div>
+    `;
+
+    // Gestione click del pulsante Blog
+    const blogBtn = body.querySelector('.btn-blog-deploy');
+    if (blogBtn) {
+        blogBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation(); // Importante: evita che il click si propaghi chiudendo l'accordion
+            
+            // Feedback aptico leggero se su Telegram
+            if (window.Telegram?.WebApp?.HapticFeedback) {
+                window.Telegram.WebApp.HapticFeedback.impactOccurred('light');
+            }
+            
+            goToDeployBlog(id);
+        });
     }
+}
 
     // --- 5. GESTIONE EVENTI ---
     kbContainer.addEventListener('click', (e) => {
