@@ -1,1 +1,41 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Knowledge Base</title>
+    
+    <!-- Font Awesome (già usato nel progetto) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Link al tuo styles.css unificato -->
+    <link rel="stylesheet" href="../styles.css">
 
+</head>
+<body>
+
+    <!-- === LOADER INIZIALE === -->
+    <div id="loader">
+        <div class="spinner-ring"></div>
+        <p>Caricamento Knowledge Base...</p>
+    </div>
+
+    <!-- === CONTENUTO PRINCIPALE === -->
+    <div class="container hidden" id="mainContent">
+        <header class="dashboard-header">
+            <div class="header-info">
+                <h1>Knowledge Base</h1>
+                <small id="companyName">Documenti e procedure per </small>
+            </div>
+        </header>
+
+        <main id="kb-container">
+            <!-- Le card verranno inserite qui dal JavaScript -->
+        </main>
+    </div>
+
+    <!-- Logic Script -->
+    <script src="knowledge.js"></script>
+
+</body>
+</html>
