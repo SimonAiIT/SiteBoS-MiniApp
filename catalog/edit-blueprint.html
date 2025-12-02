@@ -11,145 +11,140 @@
   <link rel="stylesheet" href="../styles.css">
   
 <style>
-    /* STILE GENERALE */
-    :root {
-        --card-bg: #1c1c1e;
-        --glass-border: rgba(255, 255, 255, 0.1);
-        --primary: #007aff;
-        --text-muted: #8e8e93;
-        --text-main: #ffffff;
-        --warning: #ff9f0a;
-        --success: #30d158;
-        --error: #ff453a;
-    }
-    
+    /* STILE GENERALE CHE RIPRENDE LE TUE VARIABILI */
     body {
-        background-color: #000;
-        color: var(--text-main);
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-        margin: 0; padding: 0;
         padding-bottom: 80px; /* Spazio per i FAB */
+        /* Non sovrascrivo background o font-family così usa i tuoi di default */
     }
 
-    /* STAGE CARD */
+    /* STAGE CARD - Ripristinato il bordo colorato a sinistra */
     .stage-card {
-        background: var(--card-bg); border: 1px solid var(--glass-border);
-        border-radius: 12px; margin-bottom: 15px; overflow: hidden;
-        border-left: 4px solid var(--primary);
+        background: var(--card-bg, #1c1c1e); 
+        border: 1px solid var(--glass-border, rgba(255,255,255,0.1));
+        border-radius: 12px; margin-bottom: 20px; 
+        overflow: hidden;
+        border-left: 4px solid var(--primary, #007aff); /* RIPRISTINATO */
     }
     .stage-header {
-        padding: 15px; background: rgba(255,255,255,0.03);
+        padding: 15px; 
+        background: rgba(255,255,255,0.03);
         display: flex; align-items: flex-start; gap: 10px;
-        border-bottom: 1px solid var(--glass-border);
+        border-bottom: 1px solid var(--glass-border, rgba(255,255,255,0.1));
     }
 
     /* INPUT GENERALE */
     .edit-input {
-        background: transparent; border: none; border-bottom: 1px dashed var(--glass-border);
-        color: white; width: 100%; padding: 5px 0; font-size: 15px; font-weight: 600;
-        transition: border-color 0.2s;
+        background: transparent; border: none; 
+        border-bottom: 1px dashed var(--glass-border, rgba(255,255,255,0.3));
+        color: white; width: 100%; padding: 5px 0; 
+        font-size: 16px; font-weight: 600;
     }
-    .edit-input:focus { outline: none; border-bottom-color: var(--primary); }
+    .edit-input:focus { outline: none; border-bottom-color: var(--primary, #007aff); }
+    
     .edit-textarea {
-        background: transparent; border: none; width: 100%; color: var(--text-muted);
+        background: transparent; border: none; width: 100%; 
+        color: var(--text-muted, #8e8e93);
         font-size: 13px; resize: none; margin-top: 5px; font-style: italic;
     }
     .edit-textarea:focus { outline: none; color: white; }
 
-    /* STEP ITEM - STRUTTURA A 3 RIGHE */
+    /* --- STEP ITEM: STRUTTURA A 3 RIGHE (FIX MOBILE) --- */
     .step-list-container { padding: 0; }
     
     .step-item {
         padding: 15px; 
-        border-bottom: 1px solid var(--glass-border);
-        background: rgba(255,255,255,0.02); 
-        display: flex; flex-direction: column; gap: 12px; /* Spazio verticale tra le righe */
+        border-bottom: 1px solid var(--glass-border, rgba(255,255,255,0.1));
+        background: rgba(0,0,0,0.1); /* Sfondo leggero glass */
+        display: flex; flex-direction: column; 
+        gap: 12px; /* Spazio verticale tra le righe */
     }
 
-    /* RIGA 1: Drag Handle + Badge + Bottoni */
-    .step-row-1 {
+    /* RIGA 1: Icona, Badge, Bottoni */
+    .riga-1 {
         display: flex; align-items: center; justify-content: space-between; width: 100%;
     }
-    .row-1-left { display: flex; align-items: center; gap: 10px; }
+    .riga-1-left { display: flex; align-items: center; gap: 10px; }
 
     /* RIGA 2: Nome Step */
-    .step-row-2 { width: 100%; }
-    .step-row-2 input {
-        font-size: 16px; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.2);
+    .riga-2 { width: 100%; }
+    .riga-2 input { 
+        font-size: 17px; padding: 5px 0; width: 100%; display: block;
+        border-bottom: 1px solid rgba(255,255,255,0.2);
     }
 
     /* RIGA 3: Tempo */
-    .step-row-3 { width: 100%; display: flex; justify-content: flex-start; }
+    .riga-3 { width: 100%; display: flex; justify-content: flex-start; }
 
-    /* BOX TEMPO - LARGHEZZA 270px */
-    .step-time-box {
+    /* BOX TEMPO (Largo e fisso a sinistra) */
+    .time-box-fixed {
         display: flex; align-items: center; justify-content: flex-start;
-        background: rgba(255,255,255,0.08);
-        padding: 0 15px;
+        background: rgba(255,255,255,0.05);
+        border: 1px solid var(--glass-border, rgba(255,255,255,0.1));
         border-radius: 8px;
-        color: var(--text-muted);
-        width: 270px; /* RICHIESTA UTENTE */
-        max-width: 100%; /* Per schermi piccolissimi */
-        height: 50px; /* Alto e comodo per il touch */
-        border: 1px solid rgba(255,255,255,0.05);
-    }
-
-    .step-time-box i { font-size: 20px; margin-right: 15px; color: var(--primary); }
-    
-    .step-time-box input {
-        flex: 1; background: transparent; border: none; color: white;
-        text-align: center; font-weight: bold; font-size: 20px;
-        border-bottom: 1px solid rgba(255,255,255,0.3); margin-right: 10px;
+        height: 50px;
+        width: 270px; /* Larghezza richiesta */
+        max-width: 100%;
+        padding: 0 15px;
+        box-sizing: border-box;
     }
     
-    .step-time-box span { font-size: 14px; font-weight: 500; white-space: nowrap; }
+    .time-box-fixed i { font-size: 20px; color: var(--primary, #007aff); margin-right: 15px; } /* Icona colorata */
+    
+    .time-box-fixed input {
+        flex: 1; background: transparent; border: none; 
+        border-bottom: 1px solid rgba(255,255,255,0.3);
+        color: white; text-align: center; font-size: 20px !important; font-weight: bold;
+        margin-right: 10px; padding-bottom: 2px;
+    }
 
-    /* BADGE STYLES */
+    .time-box-fixed span { font-size: 14px; color: var(--text-muted, #8e8e93); white-space: nowrap; }
+
+    /* BADGE */
     .badge { 
-        font-size: 11px; padding: 5px 10px; border-radius: 6px; 
-        text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;
-        border: 1px solid transparent; white-space: nowrap;
+        font-size: 11px; padding: 4px 8px; border-radius: 4px; 
+        font-weight: 700; text-transform: uppercase;
     }
-    .badge-wip { border-color: var(--warning); color: var(--warning); background: rgba(245, 158, 11, 0.15); }
-    .badge-fin { border-color: var(--success); color: var(--success); background: rgba(76, 217, 100, 0.15); }
+    .badge-wip { background: rgba(245, 158, 11, 0.15); color: #f59e0b; border: 1px solid #f59e0b; }
+    .badge-fin { background: rgba(76, 217, 100, 0.15); color: #30d158; border: 1px solid #30d158; }
 
-    /* BOTTONCINI */
-    .btn-icon-sm {
-        width: 36px; height: 36px; border-radius: 8px;
+    /* BOTTONI AZIONI */
+    .btn-group { display: flex; gap: 8px; }
+    
+    .btn-icon {
+        width: 34px; height: 34px; border-radius: 8px; border: none;
+        background: rgba(255,255,255,0.05); color: var(--text-muted, #8e8e93);
         display: flex; align-items: center; justify-content: center;
-        background: rgba(255,255,255,0.08); color: var(--text-muted); border: none;
         cursor: pointer; transition: 0.2s;
     }
-    .btn-icon-sm.active { background: var(--primary); color: white; }
-    .btn-icon-sm:hover { background: rgba(255,255,255,0.2); color: white; }
-    .btn-icon-sm.delete:hover { background: var(--error); }
+    .btn-icon:hover { background: var(--primary, #007aff); color: white; }
+    .btn-icon.active { background: var(--primary, #007aff); color: white; } /* Colore attivo ripristinato */
+    .btn-icon.del:hover { background: #ff453a; color: white; } /* Rosso errore */
 
-    /* DETTAGLI (Nascosti) */
-    .step-details { display: none; margin-top: 10px; border-top: 1px dashed var(--glass-border); padding-top: 15px; }
-    .step-details.open { display: block; animation: slideDown 0.2s ease-out; }
-
-    .input-group { margin-bottom: 15px; }
-    .input-group label { display: block; font-size: 11px; font-weight: 700; margin-bottom: 5px; color: var(--text-muted); }
-    .detail-textarea, .detail-input-full {
-        width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--glass-border);
-        border-radius: 8px; padding: 10px; color: white; font-size: 14px; box-sizing: border-box;
+    /* DETTAGLI */
+    .step-details { display: none; margin-top: 10px; padding-top: 15px; border-top: 1px dashed var(--glass-border); }
+    .step-details.open { display: block; }
+    
+    .input-block { margin-bottom: 15px; }
+    .input-block label { display: block; font-size: 11px; color: var(--text-muted); margin-bottom: 5px; font-weight: 700; text-transform: uppercase; }
+    .full-area { 
+        width: 100%; background: rgba(0,0,0,0.2); border: 1px solid var(--glass-border);
+        color: white; padding: 10px; border-radius: 8px; box-sizing: border-box; font-size: 13px;
     }
+    .full-area:focus { outline: none; border-color: var(--primary); }
 
-    /* FABs */
+    /* FABs - Ripristinati i colori originali */
     .fab-container { position: fixed; bottom: 20px; right: 20px; display: flex; gap: 15px; z-index: 100; }
-    .fab-btn {
-        width: 56px; height: 56px; border-radius: 50%; border: none; color: white;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.5); font-size: 22px; cursor: pointer;
+    .fab {
+        width: 56px; height: 56px; border-radius: 50%; border: none;
         display: flex; align-items: center; justify-content: center;
+        font-size: 20px; color: white; cursor: pointer;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.4);
     }
-    .fab-primary { background: var(--primary); }
-    .fab-secondary { background: #2c2c2e; border: 1px solid var(--glass-border); }
-
-    /* UTILITY */
-    .hidden { display: none !important; }
-    @keyframes slideDown { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+    .fab-primary { background: var(--primary, #007aff); }
+    .fab-secondary { background: var(--card-bg, #1c1c1e); border: 1px solid var(--glass-border); }
+    
+    .hidden { display: none; }
 </style>
-
 </head>
 <body>
 
