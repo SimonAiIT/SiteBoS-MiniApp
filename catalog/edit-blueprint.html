@@ -55,28 +55,48 @@
     .step-name-box { width: 100%; min-width: 0; }
     .step-actions-box { display: flex; align-items: center; gap: 5px; }
 
-    /* RIGA SOTTO HEADER */
+    /* RIGA SOTTO HEADER - AGGIORNATA PER ALLINEAMENTO A SINISTRA */
     .step-controls-row {
-        display: flex; align-items: center; justify-content: space-between;
-        margin-top: 8px; padding-left: 30px;
+        display: flex; 
+        align-items: center; 
+        justify-content: flex-start; /* TUTTO A SINISTRA */
+        gap: 15px; /* Spazio tra tempo e badge */
+        margin-top: 8px; 
+        padding-left: 30px; /* Allineato sotto il nome */
     }
 
     .step-time-box {
         display: flex; align-items: center; gap: 8px;
-        background: rgba(255,255,255,0.05); padding: 4px 10px; border-radius: 6px;
+        background: rgba(255,255,255,0.08); padding: 4px 12px; border-radius: 8px;
         font-size: 13px; color: var(--text-muted);
+        min-width: 100px; /* Un po' più largo */
     }
     .step-time-box input {
-        width: 50px; background: transparent; border: none; color: white; 
+        width: 40px; background: transparent; border: none; color: white; 
         text-align: center; font-weight: bold; font-size: 14px;
-        border-bottom: 1px solid rgba(255,255,255,0.2);
+        border-bottom: 1px solid rgba(255,255,255,0.3);
     }
 
-    /* DETTAGLI ESPANSI - FIX LARGHEZZA MASSIMA */
+    /* BADGE STYLES - RIPRISTINATI */
+    .badge { 
+        font-size: 10px; padding: 4px 8px; border-radius: 6px; 
+        text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;
+        border: 1px solid transparent;
+    }
+    .badge-wip { 
+        border-color: var(--warning); color: var(--warning); 
+        background: rgba(245, 158, 11, 0.15); 
+    }
+    .badge-fin { 
+        border-color: var(--success); color: var(--success); 
+        background: rgba(76, 217, 100, 0.15); 
+    }
+
+    /* DETTAGLI ESPANSI */
     .step-details { 
         display: none; margin-top: 15px; padding-top: 15px; 
         border-top: 1px dashed var(--glass-border); 
-        width: 100%; /* Forza larghezza piena */
+        width: 100%;
     }
     .step-details.open { display: block; animation: slideDown 0.2s ease-out; }
 
@@ -86,22 +106,15 @@
         margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.5px;
     }
     
-    /* Textarea e Input dei dettagli a piena larghezza */
     .detail-textarea, .detail-input-full {
-        display: block;
-        width: 100%; /* OCCUPA TUTTO LO SPAZIO */
-        box-sizing: border-box; /* Include padding nella larghezza */
-        background: rgba(0,0,0,0.2); 
-        border: 1px solid var(--glass-border);
+        display: block; width: 100%; box-sizing: border-box;
+        background: rgba(0,0,0,0.2); border: 1px solid var(--glass-border);
         border-radius: 8px; padding: 10px; color: white; 
         font-size: 13px; line-height: 1.4;
     }
     .detail-textarea { resize: vertical; min-height: 60px; }
     .detail-input-full { height: 38px; }
-    
-    .detail-textarea:focus, .detail-input-full:focus { 
-        outline: none; border-color: var(--primary); 
-    }
+    .detail-textarea:focus, .detail-input-full:focus { outline: none; border-color: var(--primary); }
 
     /* CHECKBOX ROW */
     .checkbox-row {
@@ -114,13 +127,11 @@
     }
     .checkbox-label input { width: 16px; height: 16px; accent-color: var(--primary); }
 
-    /* FAB CORRETTO: A DESTRA MA IN RIGA */
+    /* FAB A DESTRA IN RIGA */
     .fab-container {
-        position: fixed; bottom: 20px; right: 20px; /* Posizione a destra */
-        display: flex; flex-direction: row; /* Disposizione in riga */
-        gap: 15px; z-index: 100;
+        position: fixed; bottom: 20px; right: 20px;
+        display: flex; flex-direction: row; gap: 15px; z-index: 100;
     }
-    
     .fab-btn {
         width: 56px; height: 56px; border-radius: 50%; border: none; color: white;
         box-shadow: 0 4px 15px rgba(0,0,0,0.4); font-size: 20px;
@@ -128,7 +139,6 @@
         transition: transform 0.2s;
     }
     .fab-btn:active { transform: scale(0.9); }
-    
     .fab-primary { background: var(--primary); }
     .fab-secondary { background: var(--card-bg); border: 1px solid var(--glass-border); color: var(--text-main); }
 
