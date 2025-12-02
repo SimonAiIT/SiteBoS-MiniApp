@@ -1,7 +1,8 @@
 /**
  * BLUEPRINT EDITOR LOGIC (vFINAL - UI FIXED)
  * - Grid Layout per Steps
- * - FABs Allineati
+ * - FABs Allineati Orizzontalmente
+ * - Minuti su riga separata
  */
 'use strict';
 
@@ -116,7 +117,6 @@ function renderSteps(steps, sIdx) {
         const activeClass = step._ui_open ? 'active' : '';
         const wipBadge = step.logistics_flags?.requires_wip ? `<span class="badge badge-wip">${t.lblWip}</span>` : '';
         const finBadge = step.logistics_flags?.requires_finished ? `<span class="badge badge-fin">${t.lblFin}</span>` : '';
-        const qcColor = step.quality_check?.check_description ? 'var(--success)' : 'var(--text-muted)';
         
         return `
         <div class="step-item" data-sidx="${sIdx}" data-stidx="${stIdx}">
@@ -132,26 +132,30 @@ function renderSteps(steps, sIdx) {
                            data-type="step-name" data-sidx="${sIdx}" data-stidx="${stIdx}">
                 </div>
 
-                <!-- 3. Controlli (Tempo e Azioni) -->
-                <div style="display: flex; align-items: center; gap: 10px;">
-                    <!-- Tempo -->
-                    <div class="step-time-box">
-                        <span>⏱️</span>
-                        <input type="number" value="${step.estimated_time_minutes||0}" 
-                               data-type="step-time" data-sidx="${sIdx}" data-stidx="${stIdx}">
-                        <span>${t.min}</span>
-                    </div>
+                <!-- 3. Azioni (solo pulsanti) -->
+                <div class="step-actions-box">
+                    <button class="btn-icon-sm ${activeClass}" data-action="toggle-step" data-sidx="${sIdx}" data-stidx="${stIdx}">
+                        <i class="fas fa-chevron-${isOpen ? 'up' : 'down'}"></i>
+                    </button>
+                    <button class="btn-icon-sm delete" data-action="delete-step" data-sidx="${sIdx}" data-stidx="${stIdx}">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
 
-                    <!-- Azioni -->
-                    <div class="step-actions-box">
-                        ${wipBadge} ${finBadge}
-                        <button class="btn-icon-sm ${activeClass}" data-action="toggle-step" data-sidx="${sIdx}" data-stidx="${stIdx}">
-                            <i class="fas fa-chevron-${isOpen ? 'up' : 'down'}"></i>
-                        </button>
-                        <button class="btn-icon-sm delete" data-action="delete-step" data-sidx="${sIdx}" data-stidx="${stIdx}">
-                            <i class="fas fa-times"></i>
-                        </button>
-                    </div>
+            <!-- Riga Controlli (Tempo e Badge) - SOTTO IL NOME -->
+            <div class="step-controls-row">
+                <!-- Tempo a sinistra -->
+                <div class="step-time-box">
+                    <span>⏱️</span>
+                    <input type="number" value="${step.estimated_time_minutes||0}" 
+                           data-type="step-time" data-sidx="${sIdx}" data-stidx="${stIdx}">
+                    <span>${t.min}</span>
+                </div>
+
+                <!-- Badge a destra -->
+                <div style="display: flex; gap: 5px;">
+                    ${wipBadge} ${finBadge}
                 </div>
             </div>
 
@@ -304,7 +308,7 @@ async function loadBlueprint() {
 
 async function handleSave(e) {
     e.preventDefault();
-    showLoader(t.saving);
+    showLoader(t.saving || 'Salvataggio...');
     
     currentData.blueprint_description = dom.desc.value;
     const payload = JSON.parse(JSON.stringify(currentData));
