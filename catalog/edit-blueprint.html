@@ -37,7 +37,7 @@
     }
     .edit-textarea:focus { outline: none; color: white; }
 
-    /* STEP ITEM - IL CUORE DEL REFACTORING */
+    /* STEP ITEM - LAYOUT VERTICALE PULITO */
     .step-list-container { padding: 0; }
     
     .step-item {
@@ -45,13 +45,13 @@
         border-bottom: 1px solid var(--glass-border);
         background: rgba(0,0,0,0.1); 
         display: flex; 
-        flex-direction: column; /* Per gestire l'accordion */
+        flex-direction: column;
     }
     
-    /* Griglia per l'header dello step: Drag | Nome | Controlli */
+    /* Griglia per l'header dello step: Drag | Nome | Azioni */
     .step-header-grid {
         display: grid;
-        grid-template-columns: 20px 1fr auto; /* Drag | Nome espandibile | Controlli */
+        grid-template-columns: 20px 1fr auto;
         align-items: center;
         gap: 10px;
         width: 100%;
@@ -60,21 +60,32 @@
     /* Nome Step */
     .step-name-box { 
         width: 100%;
-        min-width: 0; /* FIX: Permette al box di restringersi per far spazio agli altri elementi */
+        min-width: 0;
     }
     .step-name-box input { font-size: 14px; font-weight: 500; margin: 0; }
 
+    /* Riga Controlli (sotto il nome) */
+    .step-controls-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 8px;
+        padding-left: 30px; /* Allineato con il nome */
+    }
+
     /* Tempo */
     .step-time-box {
-        display: flex; align-items: center; gap: 4px;
-        background: rgba(255,255,255,0.05); padding: 4px 8px; border-radius: 6px;
-        white-space: nowrap; font-size: 11px; color: var(--text-muted);
-        flex-shrink: 0; /* FIX: Evita che questo box venga compresso dal flex container padre */
+        display: flex; align-items: center; gap: 6px;
+        background: rgba(255,255,255,0.08); padding: 6px 12px; border-radius: 8px;
+        white-space: nowrap; font-size: 12px; color: var(--text-muted);
+        font-weight: 600;
     }
     .step-time-box input {
-        width: 30px; background: transparent; border: none; color: white; 
-        text-align: center; font-weight: bold; border-bottom: 1px solid rgba(255,255,255,0.2);
+        width: 35px; background: transparent; border: none; color: white; 
+        text-align: center; font-weight: bold; font-size: 13px;
+        border-bottom: 1px solid rgba(255,255,255,0.3);
     }
+    .step-time-box input:focus { outline: none; border-bottom-color: var(--primary); }
 
     /* Azioni */
     .step-actions-box { display: flex; align-items: center; gap: 5px; }
@@ -101,21 +112,38 @@
     .badge-wip { border-color: var(--warning); color: var(--warning); background: rgba(245, 158, 11, 0.1); }
     .badge-fin { border-color: var(--success); color: var(--success); background: rgba(76, 217, 100, 0.1); }
 
-    /* FAB Container a Destra - CORRETTO */
+    /* FAB Container ORIZZONTALE in basso */
     .fab-container {
-        position: fixed; bottom: 20px; right: 20px;
-        display: flex; flex-direction: column; gap: 15px; z-index: 100;
-        align-items: center; /* Allinea al centro della colonna */
+        position: fixed; 
+        bottom: 20px; 
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex; 
+        flex-direction: row; /* RIGA ORIZZONTALE */
+        gap: 15px; 
+        z-index: 100;
+        align-items: center;
     }
     
     .fab-btn {
-        width: 56px; height: 56px; border-radius: 50%; /* Cerchi perfetti */
-        border: none; color: white;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.4); font-size: 20px;
-        display: flex; align-items: center; justify-content: center;
-        transition: transform 0.2s; cursor: pointer;
+        min-width: 120px; /* Larghezza minima per testo */
+        height: 50px; 
+        border-radius: 25px; /* Pillola */
+        border: none; 
+        color: white;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.4); 
+        font-size: 15px;
+        font-weight: 600;
+        display: flex; 
+        align-items: center; 
+        justify-content: center;
+        gap: 8px;
+        transition: transform 0.2s, box-shadow 0.2s;
+        cursor: pointer;
+        padding: 0 20px;
     }
-    .fab-btn:active { transform: scale(0.9); }
+    .fab-btn:active { transform: scale(0.95); }
+    .fab-btn:hover { box-shadow: 0 6px 20px rgba(0,0,0,0.5); }
     
     .fab-primary { background: var(--primary); }
     .fab-secondary { background: var(--card-bg); border: 1px solid var(--glass-border); color: var(--text-main); }
@@ -157,14 +185,16 @@
 
   </div>
 
-  <!-- FABs IDENTICI E ALLINEATI -->
+  <!-- FABs IN RIGA ORIZZONTALE -->
   <div class="fab-container">
-      <button class="fab-btn fab-secondary" onclick="history.back()">
-        <i class="fas fa-arrow-left"></i>
-      </button>
-      
       <button class="fab-btn fab-primary" id="saveBtn">
         <i class="fas fa-save"></i>
+        <span data-i18n="btnSave">Salva</span>
+      </button>
+      
+      <button class="fab-btn fab-secondary" onclick="history.back()">
+        <i class="fas fa-arrow-left"></i>
+        <span>Indietro</span>
       </button>
   </div>
 
