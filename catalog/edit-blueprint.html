@@ -10,304 +10,56 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <!-- Se hai il file styles.css nel progetto, questo lo caricherà, ma ho incluso lo stile qui sotto per sicurezza -->
   <link rel="stylesheet" href="../styles.css"> 
-  
-<style>
-    /* ========================================
-       1. VARIABLES & THEME (DAL TUO CSS)
-       ======================================== */
-    :root {
-      --bg-start: #4a5b8f;
-      --bg-end: #2a3d5f;
-      --bg-overlay: rgba(0, 0, 0, 0.4);
-      
-      --primary: #5B6FED;
-      --primary-hover: #4a5ecf;
-      --secondary: rgba(255, 255, 255, 0.1);
-      --success: #4cd964;
-      --error: #ff6b6b;
-      --warning: #f59e0b;
-      --info: #32ade6;
 
-      --text-main: #ffffff;
-      --text-muted: rgba(255, 255, 255, 0.75);
-      
-      --card-bg: rgba(0, 0, 0, 0.22);
-      --glass: rgba(255, 255, 255, 0.05);
-      --glass-border: rgba(255, 255, 255, 0.15);
-      --input-bg: rgba(255, 255, 255, 0.08);
-      
-      --radius-md: 12px;
-    }
-
-    /* ========================================
-       2. BASE STYLES
-       ======================================== */
-    body {
-        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-        /* GRADIENTE DEL TUO TEMA */
-        background: linear-gradient(135deg, var(--bg-start) 0%, var(--bg-end) 100%);
-        background-attachment: fixed;
-        color: var(--text-main);
-        margin: 0; padding: 0;
-        padding-bottom: 100px; /* Spazio per i FAB */
-        min-height: 100vh;
-    }
-
-    .container {
-        padding: 20px;
-        max-width: 600px;
-        margin: 0 auto;
-    }
-
-    /* HEADER */
-    .dashboard-header { 
-        display: flex; align-items: flex-start; justify-content: space-between;
-        margin-bottom: 25px; padding-bottom: 15px; border-bottom: 1px solid var(--glass-border);
-    }
-    .header-info h1 { font-size: 24px; font-weight: 700; margin: 0; }
-    .header-info small { color: var(--text-muted); font-size: 14px; }
-
-    /* CARD GENERICA */
-    .cat-card {
-        background: var(--card-bg); backdrop-filter: blur(10px);
-        border: 1px solid var(--glass-border);
-        border-radius: var(--radius-md); margin-bottom: 20px; padding: 15px;
-    }
-
-    /* --- STAGE CARD --- */
-    .stage-card {
-        background: var(--card-bg); backdrop-filter: blur(10px);
-        border: 1px solid var(--glass-border);
-        border-radius: var(--radius-md); margin-bottom: 20px; 
-        overflow: hidden;
-        border-left: 4px solid var(--primary); /* Bordo colorato tuo tema */
-    }
-    .stage-header {
-        padding: 15px; 
-        background: var(--glass);
-        display: flex; align-items: flex-start; gap: 10px;
-        border-bottom: 1px solid var(--glass-border);
-    }
-
-    /* INPUT STYLES (Match theme) */
-    .edit-input {
-        background: transparent; border: none; 
-        border-bottom: 1px dashed var(--glass-border);
-        color: white; width: 100%; padding: 5px 0; 
-        font-size: 16px; font-weight: 600;
-    }
-    .edit-input:focus { outline: none; border-bottom-color: var(--primary); }
-    
-    .edit-textarea {
-        background: transparent; border: none; width: 100%; 
-        color: var(--text-muted); font-size: 13px; resize: none; margin-top: 5px; font-style: italic;
-    }
-    .edit-textarea:focus { outline: none; color: white; }
-
-    /* --- STEP ITEM (LAYOUT 3 RIGHE) --- */
-    .step-list-container { padding: 0; }
-    
-    .step-item {
-        padding: 15px; 
-        border-bottom: 1px solid var(--glass-border);
-        background: rgba(255,255,255,0.03); /* Dal tuo CSS .step-item */
-        border-left: 3px solid var(--secondary); /* Dal tuo CSS .step-item */
-        display: flex; flex-direction: column; 
-        gap: 15px;
-        margin-bottom: 0; /* Override per la lista continua */
-    }
-
-    /* RIGA 1: Maniglia, Badge, Bottoni Azione */
-    .riga-1 { display: flex; align-items: center; justify-content: space-between; width: 100%; }
-    .riga-1-left { display: flex; align-items: center; gap: 10px; }
-
-    /* RIGA 2: Nome Step (Full Width) */
-    .riga-2 { width: 100%; }
-    .riga-2 input { 
-        font-size: 17px; padding: 10px; width: 100%; display: block;
-        background: var(--input-bg); /* Sfondo input del tema */
-        border: 1px solid var(--glass-border);
-        border-radius: 8px;
-        color: white;
-    }
-
-    /* RIGA 3: Tempo (Largo 270px a sinistra) */
-    .riga-3 { width: 100%; display: flex; justify-content: flex-start; }
-
-    /* BOX TEMPO */
-    .time-box-fixed {
-        display: flex; align-items: center; justify-content: flex-start;
-        background: var(--input-bg); /* Sfondo del tema */
-        border: 1px solid var(--glass-border);
-        border-radius: 8px;
-        height: 50px;
-        width: 270px; /* FISSO */
-        max-width: 100%;
-        padding: 0 15px;
-        box-sizing: border-box;
-    }
-    .time-box-fixed i { font-size: 20px; color: var(--primary); margin-right: 15px; }
-    .time-box-fixed input {
-        flex: 1; background: transparent; border: none; 
-        border-bottom: 1px solid rgba(255,255,255,0.3);
-        color: white; text-align: center; font-size: 20px !important; font-weight: bold;
-        margin-right: 10px; padding-bottom: 2px;
-    }
-    .time-box-fixed span { font-size: 14px; color: var(--text-muted); white-space: nowrap; }
-
-    /* BADGE */
-    .badge { font-size: 11px; padding: 4px 8px; border-radius: 4px; font-weight: 700; text-transform: uppercase; }
-    .badge-wip { background: rgba(245, 158, 11, 0.2); color: var(--warning); border: 1px solid var(--warning); }
-    .badge-fin { background: rgba(76, 217, 100, 0.2); color: var(--success); border: 1px solid var(--success); }
-
-    /* BOTTONI PICCOLI (Toggle/Delete) */
-    .btn-group { display: flex; gap: 8px; }
-    .btn-icon {
-        width: 36px; height: 36px; border-radius: 50%; /* Tondi come nel tema */
-        border: none;
-        background: rgba(255,255,255,0.1); 
-        color: white;
-        display: flex; align-items: center; justify-content: center;
-        cursor: pointer; transition: 0.2s;
-    }
-    .btn-icon:hover { background: var(--primary); }
-    .btn-icon.active { background: var(--primary); }
-    .btn-icon.del:hover { background: var(--error); }
-
-    /* --- DETTAGLI FULL WIDTH --- */
-    .step-details { 
-        display: none; 
-        margin-top: 15px; 
-        padding-top: 15px; 
-        border-top: 1px dashed var(--glass-border);
-        width: 100%; 
-        box-sizing: border-box;
-    }
-    .step-details.open { display: block; animation: slideDown 0.2s; }
-    
-    .input-block { margin-bottom: 15px; width: 100%; display: block; }
-    .input-block label { 
-        display: block; font-size: 12px; color: var(--text-muted); 
-        margin-bottom: 5px; font-weight: 600; text-transform: uppercase; 
-    }
-    
-    .full-area { 
-        width: 100% !important; 
-        background: var(--input-bg); /* Dal tema */
-        border: 1px solid var(--glass-border);
-        color: white; 
-        padding: 12px; 
-        border-radius: var(--radius-md); 
-        box-sizing: border-box; 
-        font-size: 14px; display: block;
-    }
-    .full-area:focus { outline: none; border-color: var(--primary); background: rgba(91, 111, 237, 0.1); }
-
-    /* --- FABs (BOTTONI FLUTTUANTI) --- STILE DAL TUO CSS */
-    .fab-container {
-        position: fixed !important;
-        bottom: 20px !important;
-        right: 20px !important;
-        display: flex;
-        flex-direction: column;
-        gap: 15px;
-        z-index: 9999 !important;
-    }
-
-    /* Stile preso esattamente dal tuo .back-fab */
-    .fab-btn {
-        width: 50px !important;
-        height: 50px !important;
-        background-color: var(--primary);
-        color: white;
-        border-radius: 50% !important; /* TONDI 50% */
-        border: none;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 20px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.4);
-        cursor: pointer;
-        transition: transform 0.2s;
-    }
-
-    .fab-btn:active { transform: scale(0.95); }
-
-    .fab-secondary { background-color: #2c2c2e; border: 1px solid rgba(255,255,255,0.2); }
-    
-    /* UTILITY */
-    .hidden { display: none !important; }
-    .btn-block { 
-        width: 100%; padding: 15px; 
-        background: var(--glass); 
-        border: 1px dashed var(--glass-border); 
-        color: white; border-radius: var(--radius-md); cursor: pointer; 
-        font-weight: 600;
-    }
-    .btn-block:hover { background: var(--input-bg); }
-    
-    #loadingOverlay {
-        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-        background: var(--bg-end); z-index: 10000;
-        display: flex; flex-direction: column; align-items: center; justify-content: center;
-    }
-    .spinner-ring {
-        width: 40px; height: 40px; border: 4px solid rgba(255,255,255,0.1);
-        border-left-color: var(--primary); border-radius: 50%;
-        animation: spin 1s linear infinite; margin-bottom: 15px;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    @keyframes slideDown { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
-
-</style>
 </head>
+
 <body>
-
-  <!-- LOADER -->
-  <div id="loadingOverlay">
-    <div class="spinner-ring"></div>
-    <div id="loaderText" data-i18n="loading">Loading...</div>
-  </div>
-
-  <!-- MAIN CONTENT -->
-  <div class="container hidden fade-in" id="mainContent">
-    
-    <div class="dashboard-header">
-        <div class="header-info">
-            <h1 data-i18n="title">Blueprint Operativo</h1>
-            <small data-i18n="subtitle">Definisci il processo</small>
-        </div>
+  
+    <!-- LOADER -->
+    <div id="loadingOverlay">
+      <div class="spinner-ring"></div>
+      <div id="loaderText" data-i18n="loading">Loading...</div>
     </div>
-
-    <div class="cat-card">
-        <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
-            <label style="font-size:10px; color:var(--text-muted); font-weight:700;">DESCRIZIONE BLUEPRINT</label>
-            <span id="serviceSku" style="font-family:monospace; font-size:10px; color:var(--primary);">SKU: ...</span>
-        </div>
-        <textarea id="blueprintDesc" rows="2" class="edit-textarea" style="color: white; font-style: normal; border: 1px solid var(--glass-border); padding: 8px; border-radius: 8px;"></textarea>
-    </div>
-
-    <div id="stagesContainer"></div>
-
-    <button class="btn-block" id="btnAddStageBtn">
-        <i class="fas fa-plus"></i> <span data-i18n="btnAddStage">Nuova Fase</span>
-    </button>
-    
-    <div style="height: 120px;"></div>
-
-  </div>
-
-  <!-- FAB CONTAINER (FISSO A DESTRA, STILE .back-fab) -->
-  <div class="fab-container">
-      <button class="fab-btn" id="saveBtn">
-        <i class="fas fa-save"></i>
+  
+    <!-- MAIN CONTENT -->
+    <div class="container hidden fade-in" id="mainContent">
+      
+      <div class="dashboard-header">
+          <div class="header-info">
+              <h1 data-i18n="title">Blueprint Operativo</h1>
+              <small data-i18n="subtitle">Definisci il processo</small>
+          </div>
+      </div>
+  
+      <div class="cat-card">
+          <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
+              <label style="font-size:10px; color:var(--text-muted); font-weight:700;">DESCRIZIONE BLUEPRINT</label>
+              <span id="serviceSku" style="font-family:monospace; font-size:10px; color:var(--primary);">SKU: ...</span>
+          </div>
+          <textarea id="blueprintDesc" rows="2" class="edit-textarea" style="color: white; font-style: normal; border: 1px solid var(--glass-border); padding: 8px; border-radius: 8px;"></textarea>
+      </div>
+  
+      <div id="stagesContainer"></div>
+  
+      <button class="btn-block" id="btnAddStageBtn">
+          <i class="fas fa-plus"></i> <span data-i18n="btnAddStage">Nuova Fase</span>
       </button>
       
-      <button class="fab-btn fab-secondary" onclick="history.back()">
-        <i class="fas fa-arrow-left"></i>
-      </button>
-  </div>
-
-  <script src="edit-blueprint_logic.js"></script>
+      <div style="height: 120px;"></div>
+  
+    </div>
+  
+    <!-- FAB CONTAINER (FISSO A DESTRA, STILE .back-fab) -->
+    <div class="fab-container">
+        <button class="fab-btn" id="saveBtn">
+          <i class="fas fa-save"></i>
+        </button>
+        
+        <button class="fab-btn fab-secondary" onclick="history.back()">
+          <i class="fas fa-arrow-left"></i>
+        </button>
+    </div>
+  
+    <script src="edit-blueprint_logic.js"></script>
 </body>
 </html>
