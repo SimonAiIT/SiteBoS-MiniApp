@@ -5,6 +5,15 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- 1. CONFIGURAZIONE E ELEMENTI DOM ---
     const WEBHOOK_URL = "https://trinai.api.workflow.dcmake.it/webhook/0ca76af1-8c02-47f4-a3a4-fd19ad495afe";
     
+    // INIZIALIZZAZIONE TELEGRAM WEB APP
+    const tg = window.Telegram.WebApp;
+    try {
+        tg.ready();
+        tg.expand();
+    } catch (e) {
+        console.error("Telegram WebApp non disponibile.", e);
+    }
+    
     const loader = document.getElementById('loader');
     const mainContent = document.getElementById('mainContent');
     const kbContainer = document.getElementById('kb-container');
@@ -45,7 +54,6 @@ document.addEventListener('DOMContentLoaded', () => {
             
             const data = await response.json();
             
-            // Gestisce la tua struttura dati: un array che contiene un oggetto con la chiave "Fragment"
             const fragments = data?.[0]?.Fragment || data?.Fragment;
 
             if (fragments) {
@@ -86,6 +94,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const fragment = data?.[0]?.Fragment?.[0] || data?.Fragment?.[0];
             
             if (fragment) {
+                if(tg && tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
                 renderFragmentDetails(fragment, cardElement);
                 cardElement.dataset.loaded = 'true';
                 cardElement.classList.add('open');
@@ -95,6 +104,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         } catch (error) {
             alert(`Errore nel caricare il dettaglio: ${error.message}`);
+            if(tg && tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('error');
         } finally {
             cardElement.classList.remove('loading');
         }
