@@ -81,8 +81,8 @@
         font-weight: 600;
     }
     .step-time-box input {
-        width: 35px; background: transparent; border: none; color: white; 
-        text-align: center; font-weight: bold; font-size: 13px;
+        width: 40px; background: transparent; border: none; color: white; 
+        text-align: center; font-weight: bold; font-size: 14px;
         border-bottom: 1px solid rgba(255,255,255,0.3);
     }
     .step-time-box input:focus { outline: none; border-bottom-color: var(--primary); }
@@ -112,38 +112,21 @@
     .badge-wip { border-color: var(--warning); color: var(--warning); background: rgba(245, 158, 11, 0.1); }
     .badge-fin { border-color: var(--success); color: var(--success); background: rgba(76, 217, 100, 0.1); }
 
-    /* FAB Container ORIZZONTALE in basso */
+    /* FAB Container A DESTRA IN COLONNA (STILE ORIGINALE) */
     .fab-container {
-        position: fixed; 
-        bottom: 20px; 
-        left: 50%;
-        transform: translateX(-50%);
-        display: flex; 
-        flex-direction: row; /* RIGA ORIZZONTALE */
-        gap: 15px; 
-        z-index: 100;
+        position: fixed; bottom: 20px; right: 20px;
+        display: flex; flex-direction: column; gap: 15px; z-index: 100;
         align-items: center;
     }
     
     .fab-btn {
-        min-width: 120px; /* Larghezza minima per testo */
-        height: 50px; 
-        border-radius: 25px; /* Pillola */
-        border: none; 
-        color: white;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.4); 
-        font-size: 15px;
-        font-weight: 600;
-        display: flex; 
-        align-items: center; 
-        justify-content: center;
-        gap: 8px;
-        transition: transform 0.2s, box-shadow 0.2s;
-        cursor: pointer;
-        padding: 0 20px;
+        width: 56px; height: 56px; border-radius: 50%;
+        border: none; color: white;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.4); font-size: 20px;
+        display: flex; align-items: center; justify-content: center;
+        transition: transform 0.2s; cursor: pointer;
     }
-    .fab-btn:active { transform: scale(0.95); }
-    .fab-btn:hover { box-shadow: 0 6px 20px rgba(0,0,0,0.5); }
+    .fab-btn:active { transform: scale(0.9); }
     
     .fab-primary { background: var(--primary); }
     .fab-secondary { background: var(--card-bg); border: 1px solid var(--glass-border); color: var(--text-main); }
@@ -185,16 +168,14 @@
 
   </div>
 
-  <!-- FABs IN RIGA ORIZZONTALE -->
+  <!-- FABs A DESTRA IN COLONNA (ORIGINALE) -->
   <div class="fab-container">
       <button class="fab-btn fab-primary" id="saveBtn">
         <i class="fas fa-save"></i>
-        <span data-i18n="btnSave">Salva</span>
       </button>
       
       <button class="fab-btn fab-secondary" onclick="history.back()">
         <i class="fas fa-arrow-left"></i>
-        <span>Indietro</span>
       </button>
   </div>
 
