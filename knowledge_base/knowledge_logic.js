@@ -206,6 +206,26 @@ function renderFragmentDetails(fragment, cardElement) {
     }
 }
 
+function goToDeployBlog(fragmentId) {
+    // Crea l'URL per la nuova pagina
+    const targetUrl = new URL('deployblog.html', window.location.href);
+    
+    // Prende tutti i parametri attuali dell'URL (vat, token, owner, ragione_sociale)
+    // e li copia nel nuovo URL per non perdere l'autenticazione
+    const currentParams = new URLSearchParams(window.location.search);
+    currentParams.forEach((value, key) => {
+        targetUrl.searchParams.set(key, value);
+    });
+
+    // Aggiunge l'ID specifico del frammento che vogliamo processare
+    targetUrl.searchParams.set('fragment_id', fragmentId);
+    
+    // Reindirizza l'utente
+    window.location.href = targetUrl.toString();
+}
+
+
+    
     // --- 5. GESTIONE EVENTI ---
     kbContainer.addEventListener('click', (e) => {
         const header = e.target.closest('.kb-header');
