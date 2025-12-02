@@ -166,42 +166,41 @@ function escapeHtml(str) {
 }
 
 // ==========================================
-// 4. NAVIGATION CORRETTA
+// 4. NAVIGATION (BLINDATA)
 // ==========================================
 
 window.goBack = () => window.location.href = `../dashboard.html?${urlParams.toString()}`;
 window.goToAddCategory = () => window.location.href = `add-category.html?${urlParams.toString()}`;
 
-// Parametro 1: catId (ID della categoria, OBBLIGATORIO)
-// Parametro 2: prodId (ID del ghost, OPZIONALE)
+// Apre add-product.html
 window.goToAddProduct = (catId, prodId) => {
-    if (!catId) {
-        alert("Errore: ID Categoria mancante");
-        return;
+    if (!catId) return alert("Errore: ID Categoria mancante");
+
+    // Prende tutti i parametri attuali (vat, owner, ecc.)
+    const params = new URLSearchParams(window.location.search);
+    
+    // Aggiunge quelli specifici per questa pagina
+    params.set('catId', catId);
+    if (prodId) {
+        params.set('ghostId', prodId);
+    } else {
+        params.delete('ghostId'); // Pulizia
     }
 
-    // Costruiamo l'URL base con il Token e l'ID Categoria
-    let url = `add-product.html?token=${token}&catId=${encodeURIComponent(catId)}`;
-    
-    // Se c'è un Ghost ID (Attivazione), lo aggiungiamo
-    if (prodId) {
-        url += `&ghostId=${encodeURIComponent(prodId)}`;
-    }
-    
-    // Manteniamo gli altri parametri (lang, owner, ecc.) per coerenza
-    // Nota: rimuoviamo token/catId dai vecchi params per evitare duplicati sporchi
-    const currentParams = new URLSearchParams(window.location.search);
-    currentParams.delete('token'); 
-    
-    location.href = `${url}&${currentParams.toString()}`;
+    location.href = `add-product.html?${params.toString()}`;
 };
 
-
+// Apre edit-product.html o edit-blueprint.html
 window.openProduct = (page, productId) => {
-    const currentParams = new URLSearchParams(window.location.search);
-    currentParams.delete('token');
+    if (!productId) return alert("Errore: ID Prodotto mancante");
     
-    location.href = `${page}?token=${token}&productId=${encodeURIComponent(productId)}`;
+    // Prende tutti i parametri attuali
+    const params = new URLSearchParams(window.location.search);
+
+    // Aggiunge l'ID del prodotto da modificare
+    params.set('productId', productId);
+
+    location.href = `${page}?${params.toString()}`;
 };
 
 // ==========================================
@@ -274,7 +273,7 @@ async function loadCatalog(forceRefresh = false) {
 }
 
 // ==========================================
-// FUNZIONE RENDER (vFINAL v2 - AREE CLICCABILI)
+// FUNZIONE RENDER (vFINAL v3 - PASSAGGIO PARAMETRI CORRETTO)
 // ==========================================
 function renderCatalog() {
     const container = document.getElementById('catalog-list');
@@ -300,7 +299,6 @@ function renderCatalog() {
         const catEl = document.createElement('div');
         catEl.className = 'cat-card';
         
-        // La parte dell'header categoria non cambia
         catEl.innerHTML = `
             <div class="cat-header" onclick="this.parentElement.classList.toggle('open')">
                 <div class="cat-title" title="${escapeHtml(cat.name)}">${displayTitle}<span class="cat-badge">${subcats.length}</span></div>
@@ -327,30 +325,26 @@ function renderCatalog() {
             const prodId = prod.callback_data; 
             
             let actionFunction, btnIcon, btnLabel, btnClass;
-            let infoAreaOnClick = ''; // Per l'area cliccabile
-            let infoAreaClass = '';   // Classe per lo stile
-            let infoAreaTitle = '';   // Tooltip
+            let infoAreaOnClick = '', infoAreaClass = '', infoAreaTitle = '';
 
             if (isRealProduct) {
                 // PRODOTTO ATTIVO
                 btnIcon = '<i class="fas fa-sliders-h"></i>';
                 btnLabel = t('btn_manage') || "Gestisci";
                 btnClass = 'btn-edit';
-                actionFunction = `openProduct('edit-blueprint.html', '${prodId}')`; // Bottone va al Blueprint
+                // IL BOTTONE VA AL BLUEPRINT
+                actionFunction = `openProduct('edit-blueprint.html', '${prodId}')`; 
 
-                // --- NUOVA LOGICA QUI ---
-                // L'area cliccabile apre l'editor del prodotto
+                // L'AREA INFO VA ALLA SCHEDA PRODOTTO
                 infoAreaOnClick = `onclick="openProduct('edit-product.html', '${prodId}')"`;
-                infoAreaClass = 'clickable-area'; // Per CSS
+                infoAreaClass = 'clickable-area';
                 infoAreaTitle = `title="Modifica scheda prodotto"`;
-                // -------------------------
-
             } else {
-                // PRODOTTO GHOST (NON ATTIVO)
+                // PRODOTTO GHOST
                 btnIcon = '<i class="fas fa-plus"></i>';
                 btnLabel = t('btn_activate') || "Aggiungi";
                 btnClass = 'btn-create';
-                actionFunction = `goToAddProduct('${catId}', '${prodId}')`; // Bottone va ad Aggiungi
+                actionFunction = `goToAddProduct('${catId}', '${prodId}')`;
             }
 
             const statusClass = isRealProduct ? 'status-active' : 'status-ghost';
@@ -363,7 +357,6 @@ function renderCatalog() {
             prodEl.className = `prod-item ${statusClass}`;
             
             prodEl.innerHTML = `
-                <!-- Area Info ora è cliccabile se 'isRealProduct' -->
                 <div class="prod-info ${infoAreaClass}" ${infoAreaOnClick} ${infoAreaTitle}>
                     <div class="prod-name">${prodDisplay} ${isRealProduct ? `<i class="fas fa-check-circle" style="color:var(--success); font-size:10px;"></i>` : ''}</div>
                     ${prodSub ? `<div class="prod-full-name">${prodSub}</div>` : ''}
