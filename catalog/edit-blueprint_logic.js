@@ -116,40 +116,40 @@ function renderSteps(steps, sIdx) {
         const isOpen = step._ui_open ? 'open' : '';
         const activeClass = step._ui_open ? 'active' : '';
         
-        // Badge generati per essere inseriti nella Riga 1
         const wipBadge = step.logistics_flags?.requires_wip ? `<span class="badge badge-wip">WIP</span>` : '';
         const finBadge = step.logistics_flags?.requires_finished ? `<span class="badge badge-fin">FINISHED</span>` : '';
-        
         const mins = parseInt(step.estimated_time_minutes) || 0;
         
         return `
         <div class="step-item" data-sidx="${sIdx}" data-stidx="${stIdx}">
             
-            <div class="step-row-1">
-                <div class="row-1-left">
-                    <i class="fas fa-grip-lines drag-handle" style="color:var(--text-muted); cursor:grab; font-size: 18px; padding: 5px;"></i>
+            <!-- RIGA 1: Drag (=) | Badge | Bottoni (Tornati colorati al click) -->
+            <div class="riga-1">
+                <div class="riga-1-left">
+                    <i class="fas fa-grip-lines drag-handle" style="color:var(--text-muted); cursor:grab; font-size: 18px;"></i>
                     ${wipBadge} ${finBadge}
                 </div>
                 
-                <div style="display: flex; gap: 8px;">
-                    <button class="btn-icon-sm ${activeClass}" data-action="toggle-step" data-sidx="${sIdx}" data-stidx="${stIdx}">
+                <div class="btn-group">
+                    <button class="btn-icon ${activeClass}" data-action="toggle-step" data-sidx="${sIdx}" data-stidx="${stIdx}">
                         <i class="fas fa-chevron-${isOpen ? 'up' : 'down'}"></i>
                     </button>
-                    <button class="btn-icon-sm delete" data-action="delete-step" data-sidx="${sIdx}" data-stidx="${stIdx}">
+                    <button class="btn-icon del" data-action="delete-step" data-sidx="${sIdx}" data-stidx="${stIdx}">
                         <i class="fas fa-times"></i>
                     </button>
                 </div>
             </div>
 
-            <div class="step-row-2">
+            <!-- RIGA 2: Nome Step -->
+            <div class="riga-2">
                 <input type="text" class="edit-input" 
                        value="${step.step_name || ''}" placeholder="${t.phStepName}" 
                        data-type="step-name" data-sidx="${sIdx}" data-stidx="${stIdx}">
             </div>
 
-            <!-- RIGA 3: Tempo (Largo 270px) -->
-            <div class="step-row-3">
-                <div class="step-time-box">
+            <!-- RIGA 3: Tempo (Lungo a sinistra) -->
+            <div class="riga-3">
+                <div class="time-box-fixed">
                     <i class="far fa-clock"></i>
                     <input type="number" min="0" value="${mins}" 
                            data-type="step-time" data-sidx="${sIdx}" data-stidx="${stIdx}">
@@ -157,39 +157,38 @@ function renderSteps(steps, sIdx) {
                 </div>
             </div>
 
+            <!-- DETTAGLI -->
             <div class="step-details ${isOpen}">
                 
-                <div class="input-group">
+                <div class="input-block">
                     <label>${t.lblInstr}</label>
-                    <textarea class="detail-textarea" rows="3" placeholder="${t.phStepInstr}" 
+                    <textarea class="full-area" rows="3" placeholder="${t.phStepInstr}" 
                               data-type="step-instr" data-sidx="${sIdx}" data-stidx="${stIdx}">${step.instructions||''}</textarea>
                 </div>
 
-                <div class="input-group">
-                    <label style="color:var(--success);">${t.lblQC}</label>
-                    <textarea class="detail-textarea" rows="2" placeholder="${t.phQC}" 
+                <div class="input-block">
+                    <label style="color:#30d158;">${t.lblQC}</label>
+                    <textarea class="full-area" rows="2" placeholder="${t.phQC}" 
                               data-type="step-qc" data-sidx="${sIdx}" data-stidx="${stIdx}">${step.quality_check?.check_description||''}</textarea>
                 </div>
 
-                <div class="input-group">
+                <div class="input-block">
                     <label>${t.lblSkills}</label>
-                    <input type="text" class="detail-input-full" 
+                    <input type="text" class="full-area" 
                            value="${(step.resources_needed?.labor?.required_skill_tags||[]).join(', ')}" 
                            placeholder="${t.phSkills}" 
                            data-type="step-skills" data-sidx="${sIdx}" data-stidx="${stIdx}">
                 </div>
 
-                <div class="checkbox-row" style="display:flex; gap:20px; margin-top:10px;">
-                    <label class="checkbox-label" style="display:flex; align-items:center; gap:8px; color:white; font-size:12px;">
+                <div style="display:flex; gap:20px; margin-top:10px; border-top:1px dashed var(--glass-border); padding-top:10px;">
+                    <label style="display:flex; align-items:center; gap:8px; font-size:12px; color:white;">
                         <input type="checkbox" ${step.logistics_flags?.requires_wip?'checked':''} 
-                               data-type="flag-wip" data-sidx="${sIdx}" data-stidx="${stIdx}"
-                               style="width:18px; height:18px;"> 
+                               data-type="flag-wip" data-sidx="${sIdx}" data-stidx="${stIdx}"> 
                         ${t.lblWip}
                     </label>
-                    <label class="checkbox-label" style="display:flex; align-items:center; gap:8px; color:white; font-size:12px;">
+                    <label style="display:flex; align-items:center; gap:8px; font-size:12px; color:white;">
                         <input type="checkbox" ${step.logistics_flags?.requires_finished?'checked':''} 
-                               data-type="flag-fin" data-sidx="${sIdx}" data-stidx="${stIdx}"
-                               style="width:18px; height:18px;"> 
+                               data-type="flag-fin" data-sidx="${sIdx}" data-stidx="${stIdx}"> 
                         ${t.lblFin}
                     </label>
                 </div>
