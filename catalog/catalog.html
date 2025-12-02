@@ -102,6 +102,16 @@
 }
 .btn-prod-delete:hover { background: var(--error); color: white; }
 
+/* Stile per l'area cliccabile del prodotto */
+.prod-info.clickable-area {
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.prod-info.clickable-area:hover {
+    background-color: rgba(255, 255, 255, 0.05); /* Leggero highlight al passaggio del mouse */
+}
+
     @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
   </style>
 </head>
