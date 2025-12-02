@@ -67,42 +67,96 @@ function applyTranslations() {
 }
 
 // 5. RENDERER
-function renderStages() {
-    dom.stagesContainer.innerHTML = '';
-    if (!currentData.stages) currentData.stages = [];
-
-    currentData.stages.forEach((stage, sIdx) => {
-        const stageEl = document.createElement('div');
-        stageEl.className = 'stage-card';
-        stageEl.dataset.idx = sIdx;
-
-        stageEl.innerHTML = `
-            <div class="stage-header">
-                <i class="fas fa-grip-vertical drag-handle" style="color:var(--text-muted); margin-top:5px;"></i>
-                <div style="flex:1;">
-                    <input type="text" class="edit-input" style="font-size:16px;" value="${stage.stage_name || ''}" placeholder="${t.phStageName}" data-type="stage-name" data-sidx="${sIdx}">
-                    <textarea class="edit-textarea" rows="1" placeholder="${t.phStageDesc}" data-type="stage-desc" data-sidx="${sIdx}">${stage.description || ''}</textarea>
+function renderSteps(steps, sIdx) {
+    if (!steps || steps.length === 0) return '';
+    return steps.map((step, stIdx) => {
+        const isOpen = step._ui_open ? 'open' : '';
+        const activeClass = step._ui_open ? 'active' : '';
+        const wipBadge = step.logistics_flags?.requires_wip ? `<span class="badge badge-wip">WIP</span>` : '';
+        const finBadge = step.logistics_flags?.requires_finished ? `<span class="badge badge-fin">FINISHED</span>` : '';
+        
+        // Assicura che sia un numero valido
+        const mins = parseInt(step.estimated_time_minutes) || 0;
+        
+        return `
+        <div class="step-item" data-sidx="${sIdx}" data-stidx="${stIdx}">
+            
+            <!-- HEADER RIGA 1: Icona, Nome, Pulsanti -->
+            <div class="step-header-grid">
+                <i class="fas fa-grip-lines drag-handle" style="color:var(--text-muted); cursor:grab;"></i>
+                
+                <div class="step-name-box">
+                    <input type="text" class="edit-input" style="border-bottom:none; padding:0;" 
+                           value="${step.step_name || ''}" placeholder="Nome Step..." 
+                           data-type="step-name" data-sidx="${sIdx}" data-stidx="${stIdx}">
                 </div>
-                <button class="btn-icon-sm delete" data-action="delete-stage" data-sidx="${sIdx}"><i class="fas fa-trash"></i></button>
-            </div>
-            
-            <div class="step-list-container" data-sidx="${sIdx}">
-                ${renderSteps(stage.steps, sIdx)}
-            </div>
-            
-            <div style="padding: 10px; text-align: center;">
-                <button class="btn btn-sm btn-secondary" data-action="add-step" data-sidx="${sIdx}" style="width:100%; border-style:dashed;">
-                    <i class="fas fa-plus"></i> ${t.step}
-                </button>
-            </div>
-        `;
-        dom.stagesContainer.appendChild(stageEl);
 
-        new Sortable(stageEl.querySelector('.step-list-container'), {
-            group: 'steps', handle: '.drag-handle', animation: 150,
-            onEnd: handleSortEnd
-        });
-    });
+                <div class="step-actions-box">
+                    <button class="btn-icon-sm ${activeClass}" data-action="toggle-step" data-sidx="${sIdx}" data-stidx="${stIdx}">
+                        <i class="fas fa-chevron-${isOpen ? 'up' : 'down'}"></i>
+                    </button>
+                    <button class="btn-icon-sm delete" data-action="delete-step" data-sidx="${sIdx}" data-stidx="${stIdx}">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- HEADER RIGA 2: Tempo e Badges (Indentato) -->
+            <div class="step-controls-row">
+                <div class="step-time-box">
+                    <i class="far fa-clock"></i>
+                    <input type="number" min="0" value="${mins}" 
+                           data-type="step-time" data-sidx="${sIdx}" data-stidx="${stIdx}">
+                    <span>min</span>
+                </div>
+                <div style="display: flex; gap: 5px;">${wipBadge} ${finBadge}</div>
+            </div>
+
+            <!-- DETTAGLI (Espandibile) -->
+            <div class="step-details ${isOpen}">
+                
+                <!-- Istruzioni -->
+                <div class="input-group">
+                    <label style="color:var(--primary);">ISTRUZIONI OPERATIVE</label>
+                    <textarea class="detail-textarea" rows="3" placeholder="Cosa fare in questo step..." 
+                              data-type="step-instr" data-sidx="${sIdx}" data-stidx="${stIdx}">${step.instructions||''}</textarea>
+                </div>
+
+                <!-- Quality Check -->
+                <div class="input-group">
+                    <label style="color:var(--success);">QUALITY CHECK</label>
+                    <textarea class="detail-textarea" rows="2" placeholder="Criteri di accettazione..." 
+                              data-type="step-qc" data-sidx="${sIdx}" data-stidx="${stIdx}">${step.quality_check?.check_description||''}</textarea>
+                </div>
+
+                <!-- Skills -->
+                <div class="input-group">
+                    <label style="color:var(--text-muted);">SKILLS RICHIESTE</label>
+                    <input type="text" class="detail-textarea" style="height:40px; min-height:auto;" 
+                           value="${(step.resources_needed?.labor?.required_skill_tags||[]).join(', ')}" 
+                           placeholder="Es. Senior Dev, Legal..." 
+                           data-type="step-skills" data-sidx="${sIdx}" data-stidx="${stIdx}">
+                </div>
+
+                <!-- Checkbox Flags -->
+                <div class="checkbox-row">
+                    <label class="checkbox-label">
+                        <input type="checkbox" ${step.logistics_flags?.requires_wip?'checked':''} 
+                               data-type="flag-wip" data-sidx="${sIdx}" data-stidx="${stIdx}"> 
+                        RICHIEDE WIP
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" ${step.logistics_flags?.requires_finished?'checked':''} 
+                               data-type="flag-fin" data-sidx="${sIdx}" data-stidx="${stIdx}"> 
+                        RICHIEDE FINISHED
+                    </label>
+                </div>
+
+            </div>
+        </div>
+        `;
+    }).join('');
+}
 
     new Sortable(dom.stagesContainer, {
         handle: '.stage-header .drag-handle', animation: 150,
