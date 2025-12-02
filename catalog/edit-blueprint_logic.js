@@ -1,8 +1,7 @@
 /**
- * BLUEPRINT EDITOR LOGIC (vFINAL - UI ALIGNED)
- * - Coerente con Catalog.html
- * - Bottoni a destra
- * - Input leggibili
+ * BLUEPRINT EDITOR LOGIC (vFINAL - UI FIXED)
+ * - Grid Layout per Steps
+ * - FABs Allineati
  */
 'use strict';
 
@@ -51,10 +50,8 @@ function init() {
     }
     loadBlueprint();
     
-    // Delegation
     dom.stagesContainer.addEventListener('click', handleContainerClick);
     dom.stagesContainer.addEventListener('input', handleInput);
-    
     document.getElementById('btnAddStageBtn').addEventListener('click', addStage);
     document.getElementById('saveBtn').addEventListener('click', handleSave);
 }
@@ -116,19 +113,37 @@ function renderSteps(steps, sIdx) {
     if (!steps || steps.length === 0) return '';
     return steps.map((step, stIdx) => {
         const isOpen = step._ui_open ? 'open' : '';
-        const wipBadge = step.logistics_flags?.requires_wip ? `<span class="badge badge-wip">WIP</span>` : '';
-        const finBadge = step.logistics_flags?.requires_finished ? `<span class="badge badge-fin">FIN</span>` : '';
+        const activeClass = step._ui_open ? 'active' : '';
+        const wipBadge = step.logistics_flags?.requires_wip ? `<span class="badge badge-wip">${t.lblWip}</span>` : '';
+        const finBadge = step.logistics_flags?.requires_finished ? `<span class="badge badge-fin">${t.lblFin}</span>` : '';
         const qcColor = step.quality_check?.check_description ? 'var(--success)' : 'var(--text-muted)';
         
         return `
         <div class="step-item" data-sidx="${sIdx}" data-stidx="${stIdx}">
-            <div class="step-header-row">
+            
+            <div class="step-header-grid">
+                <!-- 1. Drag -->
                 <i class="fas fa-grip-lines drag-handle" style="color:var(--text-muted);"></i>
-                <div style="flex:1;">
-                    <input type="text" class="edit-input" style="border-bottom:none; padding:0;" value="${step.step_name || ''}" placeholder="${t.phStepName}" data-type="step-name" data-sidx="${sIdx}" data-stidx="${stIdx}">
+                
+                <!-- 2. Nome -->
+                <div class="step-name-box">
+                    <input type="text" class="edit-input" style="border-bottom:none; padding:0;" 
+                           value="${step.step_name || ''}" placeholder="${t.phStepName}" 
+                           data-type="step-name" data-sidx="${sIdx}" data-stidx="${stIdx}">
                 </div>
-                <div class="action-group">
-                    <button class="btn-icon-sm" data-action="toggle-step" data-sidx="${sIdx}" data-stidx="${stIdx}">
+
+                <!-- 3. Tempo -->
+                <div class="step-time-box">
+                    <span>⏱️</span>
+                    <input type="number" value="${step.estimated_time_minutes||0}" 
+                           data-type="step-time" data-sidx="${sIdx}" data-stidx="${stIdx}">
+                    <span>${t.min}</span>
+                </div>
+
+                <!-- 4. Azioni -->
+                <div class="step-actions-box">
+                    ${wipBadge} ${finBadge}
+                    <button class="btn-icon-sm ${activeClass}" data-action="toggle-step" data-sidx="${sIdx}" data-stidx="${stIdx}">
                         <i class="fas fa-chevron-${isOpen ? 'up' : 'down'}"></i>
                     </button>
                     <button class="btn-icon-sm delete" data-action="delete-step" data-sidx="${sIdx}" data-stidx="${stIdx}">
@@ -136,13 +151,8 @@ function renderSteps(steps, sIdx) {
                     </button>
                 </div>
             </div>
-            
-            <div style="display:flex; align-items:center; gap:10px; font-size:11px; color:var(--text-secondary);">
-                <span>⏱️ <input type="number" value="${step.estimated_time_minutes||0}" style="width:30px; background:transparent; border:none; color:inherit; text-align:center; border-bottom:1px solid rgba(255,255,255,0.1);" data-type="step-time" data-sidx="${sIdx}" data-stidx="${stIdx}"> ${t.min}</span>
-                ${wipBadge} ${finBadge}
-                <i class="fas fa-clipboard-check" style="color:${qcColor}; margin-left:auto;"></i>
-            </div>
 
+            <!-- Dettagli Collapsed -->
             <div class="step-details ${isOpen}">
                 <div class="input-group">
                     <label style="font-size:10px; font-weight:700; color:var(--primary);">${t.lblInstr}</label>
@@ -308,9 +318,18 @@ async function handleSave(e) {
     } catch(err) { showError(err.message); }
 }
 
-// UTILS
-function showLoader(msg) { dom.loaderText.innerText=msg; dom.loader.style.display='flex'; dom.content.classList.add('hidden'); }
-function hideLoader() { dom.content.classList.remove('hidden'); dom.loader.style.display='none'; }
+// 9. UTILS
+function showLoader(msg) { 
+    dom.loaderText.innerText = msg; 
+    dom.loader.classList.remove('hidden'); 
+    dom.content.classList.add('hidden'); 
+}
+
+function hideLoader() { 
+    dom.loader.classList.add('hidden'); 
+    dom.content.classList.remove('hidden'); 
+}
+
 function showError(msg) { alert(msg); hideLoader(); }
 
 // START
