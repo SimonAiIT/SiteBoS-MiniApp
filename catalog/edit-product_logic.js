@@ -73,23 +73,25 @@ async function loadProduct() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ action: 'GET', type: 'PRODUCT', productId: productId, token: token, vat: vat })
         });
+        
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         
-        let data;
-        const text = await res.text();
-        try { data = JSON.parse(text); } catch (e) { data = JSON.parse(text.replace(/^"|"$/g, '').replace(/\\"/g, '"')); }
-        
-        currentData = data;
-        populateForm(data);
-        
-        // Dopo aver popolato, facciamo la fotografia dello stato
-        initialDataString = JSON.stringify(collectDataFromForm());
-        checkDirty(); // Chiamata iniziale per disabilitare il bottone
+        // --- PARSING PULITO E DIRETTO ---
+        // Leggiamo il JSON e gestiamo il caso in cui n8n lo wrappi in un array.
+        const rawData = await res.json();
+        const productData = Array.isArray(rawData) ? rawData[0] : rawData;
+        // ---------------------------------
 
+        if (!productData || !productData.identity) {
+            throw new Error("Formato risposta non valido: dati del prodotto mancanti.");
+        }
+        
+        currentData = productData;
+        populateForm(productData);
+
+        // Setup dei tag e degli eventi (invariato)
         setupTagInput(dom.skillInput, dom.skillContainer, skillTags);
         setupTagInput(dom.keywordInput, dom.keywordContainer, keywords);
-        
-        dom.form.addEventListener('input', checkDirty);
         dom.form.addEventListener('submit', handleSave);
 
         hideLoader();
