@@ -230,20 +230,18 @@ async function handleSave(e) {
     const sessionKey = `pending_payload_${token}`;
     
     try {
-        // Mettiamo il payload in valigia per il Processor
         sessionStorage.setItem(sessionKey, JSON.stringify(n8nPayload));
         
-        // RECUPERIAMO LA CHIAVE COMPOSITA DALL'URL
-        const vat = urlParams.get('vat'); 
-        if (!vat) {
-            alert("Errore critico: P.IVA (vat) mancante. Impossibile procedere.");
-            return;
-        }
+        // --- CORREZIONE QUI ---
+        // Ricostruiamo l'URL di ritorno per la dashboard, prendendo TUTTI i parametri
+        // e rimuovendo quelli specifici di add-product per pulizia.
+        const returnParams = new URLSearchParams(window.location.search);
+        returnParams.delete('catId');
+        returnParams.delete('ghostId');
+
+        const returnUrl = encodeURIComponent(`../dashboard.html?${returnParams.toString()}`);
         
-        // COSTRUIAMO L'URL DI RITORNO CON LA CHIAVE COMPOSITA
-        const returnUrl = encodeURIComponent(`catalog/catalog.html?token=${token}&vat=${vat}`);
-        
-        // REDIRECT AL PROCESSOR, passando l'azione, la chiave e la destinazione finale
+        // Redirect al Processor con l'URL di ritorno corretto
         window.location.href = `../processor.html?call=save_product&owner_key=${token}&return_url=${returnUrl}`;
         
     } catch (err) {
