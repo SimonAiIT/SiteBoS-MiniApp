@@ -71,7 +71,7 @@ async function loadProduct() {
         const res = await fetch(WEBHOOK_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ // NESSUN WRAPPER 'body' QUI
+            body: JSON.stringify({ // BODY PIATTO
                 action: 'GET', 
                 type: 'PRODUCT', 
                 productId: productId, 
@@ -82,22 +82,29 @@ async function loadProduct() {
         
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         
-        const rawData = await res.json();
+        // --- PARSING ROBUSTO (DAL VECCHIO CODICE) ---
+        const text = await res.text();
+        let rawData;
+        try { 
+            rawData = JSON.parse(text); 
+        } catch (e) { 
+            // Fallback per JSON "sporchi" (escaped string)
+            rawData = JSON.parse(text.replace(/^"|"$/g, '').replace(/\\"/g, '"')); 
+        }
+        // ---------------------------------------------
+
         const firstItem = Array.isArray(rawData) ? rawData[0] : rawData;
-        
-        // ESTRAZIONE CRITICA:
-        // Cerca 'catalog_item'. Se non c'è, usa l'oggetto intero (fallback)
-        const productData = firstItem.catalog_item || firstItem;
+        const productData = firstItem.catalog_item || firstItem; // Fallback
 
         if (!productData || !productData.identity) {
             console.error("Dati ricevuti:", firstItem);
-            throw new Error("Dati prodotto non trovati (Manca 'identity').");
+            throw new Error("Dati mancanti o struttura errata.");
         }
         
         currentData = productData;
+        initialDataString = JSON.stringify(collectDataFromForm()); 
         
         populateForm(productData);
-        initialDataString = JSON.stringify(collectDataFromForm()); 
 
         setupTagInput(dom.skillInput, dom.skillContainer, skillTags);
         setupTagInput(dom.keywordInput, dom.keywordContainer, keywords);
