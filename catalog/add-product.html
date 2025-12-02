@@ -1,188 +1,295 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title data-i18n="page_title">Nuovo Prodotto</title>
-    
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <!-- CSS Unificato -->
-    <link rel="stylesheet" href="../styles.css">
-    <!-- Sponsor Engine -->
-    <script src="../sponsor.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title data-i18n="page_title">Blueprint Editor</title>
+  
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
 
-    <style>
-        /* Loader con Sponsor */
-        #loader {
-            background: rgba(15, 23, 42, 0.95);
-            backdrop-filter: blur(10px);
-            z-index: 9999;
-            position: fixed; inset: 0; display: flex; justify-content: center; align-items: center;
-        }
-        .loader-content {
-            width: 90%; max-width: 350px;
-            text-align: center;
-            background: var(--card-bg);
-            padding: 30px; border-radius: 20px;
-            border: 1px solid var(--glass-border);
-            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
-        }
-    </style>
+  <link rel="stylesheet" href="../styles.css"> 
+  
+<style>
+    /* --- VARIABILI GLOBALI (Fallbacks per il tema scuro) --- */
+    :root {
+        --primary: #007aff;
+        --card-bg: #1c1c1e; /* Colore base card */
+        --glass-border: rgba(255, 255, 255, 0.1);
+        --text-muted: #8e8e93;
+        --text-main: #ffffff;
+        --bg-color: #000000;
+        --input-bg: rgba(255,255,255,0.05);
+    }
+
+    /* STILE GENERALE */
+    body {
+        background-color: var(--bg-color);
+        color: var(--text-main);
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        margin: 0; padding: 0;
+        padding-bottom: 100px; /* Spazio per i FAB */
+    }
+
+    /* CONTAINER PRINCIPALE */
+    .container {
+        padding: 15px;
+        max-width: 600px;
+        margin: 0 auto;
+    }
+
+    /* HEADER */
+    .dashboard-header { margin-bottom: 20px; }
+    .header-info h1 { margin: 0; font-size: 24px; font-weight: 800; }
+    .header-info small { color: var(--text-muted); font-size: 14px; }
+
+    /* CARD DESCRIZIONE */
+    .cat-card {
+        background: var(--card-bg); 
+        border: 1px solid var(--glass-border);
+        border-radius: 12px; margin-bottom: 20px; padding: 15px;
+    }
+
+    /* --- STAGE CARD (Fase) --- */
+    .stage-card {
+        background: var(--card-bg); 
+        border: 1px solid var(--glass-border);
+        border-radius: 12px; margin-bottom: 20px; 
+        overflow: hidden;
+        /* BORDO SINISTRO COLORATO RIPRISTINATO */
+        border-left: 4px solid var(--primary);
+    }
+    .stage-header {
+        padding: 15px; 
+        background: rgba(255,255,255,0.03); /* Leggero stacco */
+        display: flex; align-items: flex-start; gap: 10px;
+        border-bottom: 1px solid var(--glass-border);
+    }
+
+    /* INPUT TEXT */
+    .edit-input {
+        background: transparent; border: none; 
+        border-bottom: 1px dashed var(--glass-border);
+        color: white; width: 100%; padding: 5px 0; 
+        font-size: 16px; font-weight: 600;
+    }
+    .edit-input:focus { outline: none; border-bottom-color: var(--primary); }
+    
+    .edit-textarea {
+        background: transparent; border: none; width: 100%; 
+        color: var(--text-muted); font-size: 13px; resize: none; margin-top: 5px; font-style: italic;
+    }
+    .edit-textarea:focus { outline: none; color: white; }
+
+    /* --- STEP ITEM (Step singolo) --- */
+    .step-list-container { padding: 0; }
+    
+    .step-item {
+        padding: 15px; 
+        border-bottom: 1px solid var(--glass-border);
+        background: rgba(255,255,255,0.02); /* Sfondo leggermente più chiaro del nero */
+        display: flex; flex-direction: column; 
+        gap: 15px; /* Spazio verticale tra le righe aumentato */
+    }
+
+    /* RIGA 1: Maniglia, Badge, Bottoni Azione */
+    .riga-1 { display: flex; align-items: center; justify-content: space-between; width: 100%; }
+    .riga-1-left { display: flex; align-items: center; gap: 10px; }
+
+    /* RIGA 2: Nome Step (Full Width) */
+    .riga-2 { width: 100%; }
+    .riga-2 input { 
+        font-size: 17px; padding: 8px 0; width: 100%; display: block;
+        border-bottom: 1px solid rgba(255,255,255,0.1);
+        background: var(--input-bg); /* Sfondo input leggero come da tema originale */
+        padding-left: 10px; border-radius: 6px;
+        border: none;
+    }
+
+    /* RIGA 3: Tempo (Largo 270px a sinistra) */
+    .riga-3 { width: 100%; display: flex; justify-content: flex-start; }
+
+    /* BOX TEMPO - STILE ORIGINALE DARK/GLASS */
+    .time-box-fixed {
+        display: flex; align-items: center; justify-content: flex-start;
+        background: var(--input-bg);
+        border: 1px solid var(--glass-border);
+        border-radius: 8px;
+        height: 50px;
+        width: 270px; /* FISSO */
+        max-width: 100%;
+        padding: 0 15px;
+        box-sizing: border-box;
+    }
+    .time-box-fixed i { font-size: 20px; color: var(--primary); margin-right: 15px; }
+    .time-box-fixed input {
+        flex: 1; background: transparent; border: none; 
+        border-bottom: 1px solid rgba(255,255,255,0.3);
+        color: white; text-align: center; font-size: 20px !important; font-weight: bold;
+        margin-right: 10px; padding-bottom: 2px;
+    }
+    .time-box-fixed span { font-size: 14px; color: var(--text-muted); white-space: nowrap; }
+
+    /* BADGE */
+    .badge { font-size: 11px; padding: 4px 8px; border-radius: 4px; font-weight: 700; text-transform: uppercase; }
+    .badge-wip { background: rgba(245, 158, 11, 0.2); color: #f59e0b; border: 1px solid #f59e0b; }
+    .badge-fin { background: rgba(76, 217, 100, 0.2); color: #30d158; border: 1px solid #30d158; }
+
+    /* BOTTONI PICCOLI (Toggle/Delete) - STILE ORIGINALE */
+    .btn-group { display: flex; gap: 8px; }
+    .btn-icon {
+        width: 36px; height: 36px; border-radius: 8px; border: none;
+        background: var(--primary); /* Blu di default come nel tuo screen */
+        color: white;
+        display: flex; align-items: center; justify-content: center;
+        cursor: pointer; transition: 0.2s;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+    .btn-icon:hover { opacity: 0.9; }
+    .btn-icon.del { background: transparent; border: 1px solid var(--glass-border); color: var(--text-muted); } /* Delete trasparente */
+    .btn-icon.del:hover { background: #ff453a; color: white; border-color: #ff453a; }
+
+    /* --- SOTTOCARD (DETTAGLI) --- CORREZIONE LARGHEZZA */
+    .step-details { 
+        display: none; 
+        margin-top: 15px; 
+        padding-top: 15px; 
+        border-top: 1px dashed var(--glass-border);
+        width: 100%; /* FORZA LARGHEZZA TOTALE */
+        box-sizing: border-box;
+    }
+    .step-details.open { display: block; animation: slideDown 0.2s; }
+    
+    .input-block { 
+        margin-bottom: 15px; 
+        width: 100%; display: block; 
+    }
+    .input-block label { 
+        display: block; font-size: 11px; color: var(--text-muted); 
+        margin-bottom: 5px; font-weight: 700; text-transform: uppercase; 
+    }
+    
+    /* INPUT AREA GRANDE (Istruzioni, QC, Skills) */
+    .full-area { 
+        width: 100% !important; 
+        background: rgba(0,0,0,0.3); /* Sfondo scuro per contrasto */
+        border: 1px solid var(--glass-border);
+        color: white; 
+        padding: 12px; 
+        border-radius: 8px; 
+        box-sizing: border-box; 
+        font-size: 13px;
+        display: block;
+    }
+    .full-area:focus { outline: none; border-color: var(--primary); }
+
+    /* --- FABs (BOTTONI FLUTTUANTI) --- STILE QUADRATO ARROTONDATO */
+    .fab-container {
+        position: fixed !important;
+        bottom: 20px !important;
+        right: 20px !important;
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        z-index: 9999 !important;
+    }
+
+    .fab-btn {
+        width: 50px !important;
+        height: 50px !important;
+        /* BORDO ARROTONDATO (SQUIRCLE) COME DA TUO SCREEN */
+        border-radius: 14px !important; 
+        border: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+        cursor: pointer;
+        transition: transform 0.2s;
+        color: white;
+    }
+
+    .fab-btn:active { transform: scale(0.95); }
+
+    .fab-primary { background-color: var(--primary); }
+    /* Secondo bottone grigio scuro/trasparente */
+    .fab-secondary { background-color: #2c2c2e; border: 1px solid rgba(255,255,255,0.1); }
+    
+    /* UTILITY */
+    .hidden { display: none !important; }
+    .btn-block { 
+        width: 100%; padding: 15px; 
+        background: rgba(255,255,255,0.05); 
+        border: 1px dashed var(--glass-border); 
+        color: white; border-radius: 8px; cursor: pointer; 
+    }
+    
+    /* LOADER */
+    #loadingOverlay {
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: #000; z-index: 10000;
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+    }
+    .spinner-ring {
+        width: 40px; height: 40px; border: 4px solid rgba(255,255,255,0.1);
+        border-left-color: var(--primary); border-radius: 50%;
+        animation: spin 1s linear infinite; margin-bottom: 15px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @keyframes slideDown { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+
+</style>
 </head>
 <body>
+
+
+  <div id="loadingOverlay">
+    <div class="spinner-ring"></div>
+    <div id="loaderText" data-i18n="loading">Loading...</div>
+  </div>
+
+
+  <div class="container hidden fade-in" id="mainContent">
     
-    <!-- LOADER (SPONSORIZZATO) -->
-    <div id="loader" class="hidden">
-        <div class="loader-content fade-in">
-            <div class="spinner-ring" style="width: 40px; height: 40px; margin-bottom: 15px;"></div>
-            <h3 id="loader-title" style="margin-bottom: 5px; font-size: 16px;">AI al Lavoro...</h3>
-            <div id="loader-text" style="margin-bottom: 20px; font-size: 13px; color: var(--text-muted);">Analisi in corso</div>
-            
-            <div style="border-top: 1px dashed var(--glass-border); padding-top: 15px; margin-top: 15px;">
-                <div style="font-size: 9px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; opacity: 0.5;">Sponsored Partner</div>
-                <div id="loader-ad-slot" style="min-height: 80px;"></div>
-            </div>
+    <div class="dashboard-header">
+        <div class="header-info">
+            <h1 data-i18n="title">Blueprint Operativo</h1>
+            <small data-i18n="subtitle">Definisci il processo</small>
         </div>
     </div>
 
-    <div class="container fade-in" id="app-content">
-        
-        <!-- SECTION 1: INPUT INIZIALE (Nascosta se Ghost Mode) -->
-        <div id="inputSection">
-            <h1 data-i18n="title">Nuovo Prodotto</h1>
-            <p class="subtitle"><span data-i18n="sub">Categoria:</span> <b id="displayCatName">...</b></p>
-            
-            <div class="card">
-                <div class="form-group">
-                    <label data-i18n="lName" class="required">Nome Richiesta</label>
-                    <input type="text" id="inName" required autocomplete="off" placeholder="...">
-                </div>
-                
-                <div class="form-group">
-                    <label data-i18n="lDesc">Istruzioni Base</label>
-                    <textarea id="inDesc" rows="3" placeholder="..."></textarea>
-                </div>
-                
-                <div class="form-group">
-                    <label data-i18n="lFile">Allegato</label>
-                    <div class="upload-box" id="uploadBox">
-                        <input type="file" id="inFile" accept="image/*,application/pdf">
-                        <div class="upload-icon"><i class="fas fa-cloud-upload-alt"></i></div>
-                        <span id="lblFileBtn" class="upload-text" data-i18n="lFileBtn">Carica Foto/PDF</span>
-                        <div id="filePreview" class="mt-2"></div>
-                    </div>
-                </div>
-                
-                <div class="btn-container">
-                    <button id="btnEnrich" class="btn btn-primary btn-block">
-                        <i class="fas fa-magic"></i> <span data-i18n="btnEnrich">Genera Bozza AI</span>
-                    </button>
-                </div>
-            </div>
+    <div class="cat-card">
+        <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
+            <label style="font-size:10px; color:var(--text-muted); font-weight:700;">DESCRIZIONE BLUEPRINT</label>
+            <span id="serviceSku" style="font-family:monospace; font-size:10px; color:var(--primary);">SKU: ...</span>
         </div>
-
-        <!-- SECTION 2: EDIT FORM (Generato da AI) -->
-        <form id="editForm" class="hidden fade-in">
-            
-            <div id="duplicateBanner" class="note note-warning hidden">
-                <span>⚠️</span> <span data-i18n="dup">Possibile Duplicato!</span>
-            </div>
-
-            <!-- IDENTITÀ -->
-            <div class="section-title" data-i18n="secId">Identità Prodotto</div>
-            <div class="form-section">
-                <div class="form-group">
-                    <label data-i18n="outName" class="required">Nome Ufficiale</label>
-                    <input type="text" id="outName" required>
-                </div>
-                
-                <div class="row">
-                    <div class="col">
-                        <label data-i18n="outSku">SKU</label>
-                        <input type="text" id="outSku" required>
-                    </div>
-                    <div class="col">
-                        <label data-i18n="outType">Tipo</label>
-                        <select id="outType">
-                            <option value="SERVICE">SERVICE</option>
-                            <option value="PRODUCT">PRODUCT</option>
-                        </select>
-                    </div>
-                </div>
-                
-                <div class="form-group">
-                    <label data-i18n="outShort">Descrizione Breve</label>
-                    <input type="text" id="outShortDesc">
-                </div>
-                
-                <div class="form-group">
-                    <label data-i18n="outLong">Descrizione Estesa</label>
-                    <textarea id="outLongDesc" rows="4"></textarea>
-                </div>
-                
-                <div class="form-group">
-                    <label data-i18n="outInt">Note Interne</label>
-                    <textarea id="outInternal" rows="2" class="monospace"></textarea>
-                </div>
-            </div>
-
-            <!-- PRICING & OPS -->
-            <div class="section-title" data-i18n="secPrice">Prezzi & Operazioni</div>
-            <div class="form-section">
-                <div class="row">
-                    <div class="col">
-                        <label data-i18n="outPrice">Prezzo (€)</label>
-                        <input type="number" id="outPrice" step="0.01">
-                    </div>
-                    <div class="col">
-                        <label data-i18n="outUnit">Unità</label>
-                        <input type="text" id="outUnit" placeholder="es. hour, item">
-                    </div>
-                </div>
-                
-                <div class="checkbox-group">
-                    <input type="checkbox" id="outDynamicPrice">
-                    <label for="outDynamicPrice"><span data-i18n="outDyn">Prezzo Dinamico?</span></label>
-                </div>
-                
-                <div class="checkbox-group">
-                    <input type="checkbox" id="outBooking">
-                    <label for="outBooking"><span data-i18n="outBook">Richiede Prenotazione?</span></label>
-                </div>
-            </div>
-
-            <!-- MARKETING -->
-            <div class="section-title" data-i18n="secMark">Marketing & Target</div>
-            <div class="form-section">
-                <div class="form-group">
-                    <label data-i18n="outTags">Tags (SEO)</label>
-                    <input type="text" id="outTags" placeholder="Tag1, Tag2...">
-                </div>
-                <div class="form-group">
-                    <label data-i18n="outTarget">Target Audience</label>
-                    <input type="text" id="outTarget" placeholder="PMI, Hotel...">
-                </div>
-            </div>
-
-            <div class="btn-container">
-                <button type="button" class="btn btn-secondary" onclick="resetForm()">
-                    <i class="fas fa-arrow-left"></i>
-                </button>
-                <button type="submit" id="btnSave" class="btn btn-success flex-1">
-                    <i class="fas fa-check"></i> <span data-i18n="btnSave">Salva Definitivo</span>
-                </button>
-            </div>
-        </form>
-
+        <textarea id="blueprintDesc" rows="2" class="edit-textarea" style="color: white; font-style: normal; border: 1px solid var(--glass-border); padding: 8px; border-radius: 8px;"></textarea>
     </div>
 
-    <!-- TASTO INDIETRO (FAB) -->
-    <button class="back-fab" onclick="history.back()">
-        <i class="fas fa-arrow-left"></i>
+    <div id="stagesContainer"></div>
+
+    <button class="btn-block" id="btnAddStageBtn">
+        <i class="fas fa-plus"></i> <span data-i18n="btnAddStage">Nuova Fase</span>
     </button>
+    
+    <div style="height: 120px;"></div>
 
-    <script src="add-product_logic.js"></script>
+  </div>
+
+
+  <div class="fab-container">
+      <button class="fab-btn fab-primary" id="saveBtn">
+        <i class="fas fa-save"></i>
+      </button>
+      
+      <button class="fab-btn fab-secondary" onclick="history.back()">
+        <i class="fas fa-arrow-left"></i>
+      </button>
+  </div>
+
+  <script src="edit-blueprint_logic.js"></script>
 </body>
 </html>
