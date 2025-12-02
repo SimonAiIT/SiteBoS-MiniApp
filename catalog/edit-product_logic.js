@@ -7,11 +7,12 @@
 const WEBHOOK_URL = "https://trinai.api.workflow.dcmake.it/webhook/2c6416b1-32c6-4661-bd8f-b175d24fd035";
 
 const tg = window.Telegram.WebApp;
-try { tg.ready(); tg.expand(); } catch (e) { console.warn("TG WebApp not found"); }
+try { tg.ready(); tg.expand(); } catch (e) {}
 
 const urlParams = new URLSearchParams(window.location.search);
 const productId = urlParams.get('productId');
 const token = urlParams.get('token');
+const vat = urlParams.get('vat'); // <-- RECUPERIAMO IL VAT
 const langParam = urlParams.get('lang') || 'it';
 
 let currentData = null;
@@ -45,8 +46,8 @@ const dom = {
 // 4. FUNZIONI PRINCIPALI
 function init() {
     applyTranslations();
-    if (!productId || !token) {
-        dom.loaderText.textContent = "Error: Missing Parameters";
+    if (!productId || !token || !vat) {
+        document.getElementById('loaderText').textContent = "Error: Missing VAT/Token/ID Parameters";
         return;
     }
     loadProduct();
@@ -68,7 +69,13 @@ async function loadProduct() {
         const res = await fetch(WEBHOOK_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ action: 'GET', type: 'PRODUCT', productId: productId, token: token })
+            body: JSON.stringify({ 
+                action: 'GET', 
+                type: 'PRODUCT', 
+                productId: productId, 
+                token: token, 
+                vat: vat // <-- AGGIUNTO QUI
+            })
         });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         
@@ -138,7 +145,14 @@ async function handleSave(e) {
         const res = await fetch(WEBHOOK_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ action: 'SAVE', type: 'PRODUCT', productId: productId, token: token, payload: currentData })
+            body: JSON.stringify({ 
+                action: 'SAVE', 
+                type: 'PRODUCT', 
+                productId: productId, 
+                token: token, 
+                vat: vat, // <-- AGGIUNTO QUI
+                payload: currentData 
+            })
         });
         if (!res.ok) throw new Error("Save failed");
         
