@@ -67,6 +67,51 @@ function applyTranslations() {
 }
 
 // 5. RENDERER
+function renderStages() {
+    dom.stagesContainer.innerHTML = '';
+    if (!currentData.stages) currentData.stages = [];
+
+    currentData.stages.forEach((stage, sIdx) => {
+        const stageEl = document.createElement('div');
+        stageEl.className = 'stage-card';
+        stageEl.dataset.idx = sIdx;
+
+        stageEl.innerHTML = `
+            <div class="stage-header">
+                <i class="fas fa-grip-vertical drag-handle" style="color:var(--text-muted); margin-top:5px; cursor:grab;"></i>
+                <div style="flex:1;">
+                    <input type="text" class="edit-input" style="font-size:16px;" value="${stage.stage_name || ''}" placeholder="${t.phStageName}" data-type="stage-name" data-sidx="${sIdx}">
+                    <textarea class="edit-textarea" rows="1" placeholder="${t.phStageDesc}" data-type="stage-desc" data-sidx="${sIdx}">${stage.description || ''}</textarea>
+                </div>
+                <button class="btn-icon-sm delete" data-action="delete-stage" data-sidx="${sIdx}"><i class="fas fa-trash"></i></button>
+            </div>
+            
+            <div class="step-list-container" data-sidx="${sIdx}">
+                ${renderSteps(stage.steps, sIdx)}
+            </div>
+            
+            <div style="padding: 10px; text-align: center;">
+                <button class="btn btn-sm btn-secondary" data-action="add-step" data-sidx="${sIdx}" style="width:100%; border-style:dashed;">
+                    <i class="fas fa-plus"></i> ${t.step}
+                </button>
+            </div>
+        `;
+        dom.stagesContainer.appendChild(stageEl);
+
+        // Sortable per gli Step dentro ogni Stage
+        new Sortable(stageEl.querySelector('.step-list-container'), {
+            group: 'steps', handle: '.drag-handle', animation: 150,
+            onEnd: handleSortEnd
+        });
+    });
+
+    // Sortable per gli Stages (drag delle card intere)
+    new Sortable(dom.stagesContainer, {
+        handle: '.stage-header .drag-handle', animation: 150,
+        onEnd: handleSortEnd
+    });
+}
+
 function renderSteps(steps, sIdx) {
     if (!steps || steps.length === 0) return '';
     return steps.map((step, stIdx) => {
@@ -75,7 +120,6 @@ function renderSteps(steps, sIdx) {
         const wipBadge = step.logistics_flags?.requires_wip ? `<span class="badge badge-wip">WIP</span>` : '';
         const finBadge = step.logistics_flags?.requires_finished ? `<span class="badge badge-fin">FINISHED</span>` : '';
         
-        // Assicura che sia un numero valido
         const mins = parseInt(step.estimated_time_minutes) || 0;
         
         return `
@@ -87,7 +131,7 @@ function renderSteps(steps, sIdx) {
                 
                 <div class="step-name-box">
                     <input type="text" class="edit-input" style="border-bottom:none; padding:0;" 
-                           value="${step.step_name || ''}" placeholder="Nome Step..." 
+                           value="${step.step_name || ''}" placeholder="${t.phStepName}" 
                            data-type="step-name" data-sidx="${sIdx}" data-stidx="${stIdx}">
                 </div>
 
@@ -107,7 +151,7 @@ function renderSteps(steps, sIdx) {
                     <i class="far fa-clock"></i>
                     <input type="number" min="0" value="${mins}" 
                            data-type="step-time" data-sidx="${sIdx}" data-stidx="${stIdx}">
-                    <span>min</span>
+                    <span>${t.min}</span>
                 </div>
                 <div style="display: flex; gap: 5px;">${wipBadge} ${finBadge}</div>
             </div>
@@ -117,24 +161,24 @@ function renderSteps(steps, sIdx) {
                 
                 <!-- Istruzioni -->
                 <div class="input-group">
-                    <label style="color:var(--primary);">ISTRUZIONI OPERATIVE</label>
-                    <textarea class="detail-textarea" rows="3" placeholder="Cosa fare in questo step..." 
+                    <label style="color:var(--primary);">${t.lblInstr}</label>
+                    <textarea class="detail-textarea" rows="3" placeholder="${t.phStepInstr}" 
                               data-type="step-instr" data-sidx="${sIdx}" data-stidx="${stIdx}">${step.instructions||''}</textarea>
                 </div>
 
                 <!-- Quality Check -->
                 <div class="input-group">
-                    <label style="color:var(--success);">QUALITY CHECK</label>
-                    <textarea class="detail-textarea" rows="2" placeholder="Criteri di accettazione..." 
+                    <label style="color:var(--success);">${t.lblQC}</label>
+                    <textarea class="detail-textarea" rows="2" placeholder="${t.phQC}" 
                               data-type="step-qc" data-sidx="${sIdx}" data-stidx="${stIdx}">${step.quality_check?.check_description||''}</textarea>
                 </div>
 
                 <!-- Skills -->
                 <div class="input-group">
-                    <label style="color:var(--text-muted);">SKILLS RICHIESTE</label>
-                    <input type="text" class="detail-textarea" style="height:40px; min-height:auto;" 
+                    <label style="color:var(--text-muted);">${t.lblSkills}</label>
+                    <input type="text" class="detail-input-full" 
                            value="${(step.resources_needed?.labor?.required_skill_tags||[]).join(', ')}" 
-                           placeholder="Es. Senior Dev, Legal..." 
+                           placeholder="${t.phSkills}" 
                            data-type="step-skills" data-sidx="${sIdx}" data-stidx="${stIdx}">
                 </div>
 
@@ -143,12 +187,12 @@ function renderSteps(steps, sIdx) {
                     <label class="checkbox-label">
                         <input type="checkbox" ${step.logistics_flags?.requires_wip?'checked':''} 
                                data-type="flag-wip" data-sidx="${sIdx}" data-stidx="${stIdx}"> 
-                        RICHIEDE WIP
+                        ${t.lblWip}
                     </label>
                     <label class="checkbox-label">
                         <input type="checkbox" ${step.logistics_flags?.requires_finished?'checked':''} 
                                data-type="flag-fin" data-sidx="${sIdx}" data-stidx="${stIdx}"> 
-                        RICHIEDE FINISHED
+                        ${t.lblFin}
                     </label>
                 </div>
 
@@ -158,94 +202,6 @@ function renderSteps(steps, sIdx) {
     }).join('');
 }
 
-    new Sortable(dom.stagesContainer, {
-        handle: '.stage-header .drag-handle', animation: 150,
-        onEnd: handleSortEnd
-    });
-}
-
-function renderSteps(steps, sIdx) {
-    if (!steps || steps.length === 0) return '';
-    return steps.map((step, stIdx) => {
-        const isOpen = step._ui_open ? 'open' : '';
-        const activeClass = step._ui_open ? 'active' : '';
-        const wipBadge = step.logistics_flags?.requires_wip ? `<span class="badge badge-wip">${t.lblWip}</span>` : '';
-        const finBadge = step.logistics_flags?.requires_finished ? `<span class="badge badge-fin">${t.lblFin}</span>` : '';
-        
-        // FIX: Assicurati che estimated_time_minutes sia un numero
-        const timeValue = parseInt(step.estimated_time_minutes) || 0;
-        
-        return `
-        <div class="step-item" data-sidx="${sIdx}" data-stidx="${stIdx}">
-            
-            <div class="step-header-grid">
-                <!-- 1. Drag -->
-                <i class="fas fa-grip-lines drag-handle" style="color:var(--text-muted);"></i>
-                
-                <!-- 2. Nome -->
-                <div class="step-name-box">
-                    <input type="text" class="edit-input" style="border-bottom:none; padding:0;" 
-                           value="${step.step_name || ''}" placeholder="${t.phStepName}" 
-                           data-type="step-name" data-sidx="${sIdx}" data-stidx="${stIdx}">
-                </div>
-
-                <!-- 3. Azioni (solo pulsanti) -->
-                <div class="step-actions-box">
-                    <button class="btn-icon-sm ${activeClass}" data-action="toggle-step" data-sidx="${sIdx}" data-stidx="${stIdx}">
-                        <i class="fas fa-chevron-${isOpen ? 'up' : 'down'}"></i>
-                    </button>
-                    <button class="btn-icon-sm delete" data-action="delete-step" data-sidx="${sIdx}" data-stidx="${stIdx}">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
-            </div>
-
-            <!-- Riga Controlli (Tempo e Badge) - SOTTO IL NOME -->
-            <div class="step-controls-row">
-                <!-- Tempo a sinistra -->
-                <div class="step-time-box">
-                    <span>⏱️</span>
-                    <input type="number" min="0" value="${timeValue}" 
-                           data-type="step-time" data-sidx="${sIdx}" data-stidx="${stIdx}">
-                    <span>${t.min}</span>
-                </div>
-
-                <!-- Badge a destra -->
-                <div style="display: flex; gap: 5px;">
-                    ${wipBadge} ${finBadge}
-                </div>
-            </div>
-
-            <!-- Dettagli Collapsed -->
-            <div class="step-details ${isOpen}">
-                <div class="input-group">
-                    <label style="font-size:10px; font-weight:700; color:var(--primary);">${t.lblInstr}</label>
-                    <textarea class="edit-textarea" style="background:rgba(0,0,0,0.2); padding:10px; border-radius:8px; color:white;" rows="2" placeholder="${t.phStepInstr}" data-type="step-instr" data-sidx="${sIdx}" data-stidx="${stIdx}">${step.instructions||''}</textarea>
-                </div>
-
-                <div class="input-group" style="margin-top:10px;">
-                    <label style="font-size:10px; font-weight:700; color:var(--success);">${t.lblQC}</label>
-                    <textarea class="edit-textarea" style="background:rgba(0,0,0,0.2); padding:10px; border-radius:8px; color:white;" rows="1" placeholder="${t.phQC}" data-type="step-qc" data-sidx="${sIdx}" data-stidx="${stIdx}">${step.quality_check?.check_description||''}</textarea>
-                </div>
-
-                <div class="input-group" style="margin-top:10px;">
-                    <label style="font-size:10px; font-weight:700;">${t.lblSkills}</label>
-                    <input type="text" class="edit-input" style="font-size:12px; background:rgba(0,0,0,0.2); padding:5px 10px; border-radius:6px; border:none; color:white;" value="${(step.resources_needed?.labor?.required_skill_tags||[]).join(', ')}" placeholder="${t.phSkills}" data-type="step-skills" data-sidx="${sIdx}" data-stidx="${stIdx}">
-                </div>
-
-                <div style="display:flex; gap:15px; margin-top:15px; padding-top:10px; border-top:1px dashed rgba(255,255,255,0.1);">
-                    <label style="font-size:11px; display:flex; align-items:center; gap:5px; cursor:pointer;">
-                        <input type="checkbox" ${step.logistics_flags?.requires_wip?'checked':''} data-type="flag-wip" data-sidx="${sIdx}" data-stidx="${stIdx}"> ${t.lblWip}
-                    </label>
-                    <label style="font-size:11px; display:flex; align-items:center; gap:5px; cursor:pointer;">
-                        <input type="checkbox" ${step.logistics_flags?.requires_finished?'checked':''} data-type="flag-fin" data-sidx="${sIdx}" data-stidx="${stIdx}"> ${t.lblFin}
-                    </label>
-                </div>
-            </div>
-        </div>
-        `;
-    }).join('');
-}
 
 // 6. EVENT HANDLERS
 function handleContainerClick(e) {
