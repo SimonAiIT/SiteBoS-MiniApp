@@ -116,29 +116,22 @@ function renderSteps(steps, sIdx) {
         const isOpen = step._ui_open ? 'open' : '';
         const activeClass = step._ui_open ? 'active' : '';
         
-        // RIPRISTINO BADGE STILOSI
-        const wipBadge = step.logistics_flags?.requires_wip 
-            ? `<span class="badge badge-wip">WIP</span>` 
-            : '';
-        const finBadge = step.logistics_flags?.requires_finished 
-            ? `<span class="badge badge-fin">FINISHED</span>` 
-            : '';
+        // Badge generati per essere inseriti nella Riga 1
+        const wipBadge = step.logistics_flags?.requires_wip ? `<span class="badge badge-wip">WIP</span>` : '';
+        const finBadge = step.logistics_flags?.requires_finished ? `<span class="badge badge-fin">FINISHED</span>` : '';
         
         const mins = parseInt(step.estimated_time_minutes) || 0;
         
         return `
         <div class="step-item" data-sidx="${sIdx}" data-stidx="${stIdx}">
             
-            <div class="step-header-grid">
-                <i class="fas fa-grip-lines drag-handle" style="color:var(--text-muted); cursor:grab;"></i>
-                
-                <div class="step-name-box">
-                    <input type="text" class="edit-input" style="border-bottom:none; padding:0;" 
-                           value="${step.step_name || ''}" placeholder="${t.phStepName}" 
-                           data-type="step-name" data-sidx="${sIdx}" data-stidx="${stIdx}">
+            <div class="step-row-1">
+                <div class="row-1-left">
+                    <i class="fas fa-grip-lines drag-handle" style="color:var(--text-muted); cursor:grab; font-size: 18px; padding: 5px;"></i>
+                    ${wipBadge} ${finBadge}
                 </div>
-
-                <div class="step-actions-box">
+                
+                <div style="display: flex; gap: 8px;">
                     <button class="btn-icon-sm ${activeClass}" data-action="toggle-step" data-sidx="${sIdx}" data-stidx="${stIdx}">
                         <i class="fas fa-chevron-${isOpen ? 'up' : 'down'}"></i>
                     </button>
@@ -148,22 +141,26 @@ function renderSteps(steps, sIdx) {
                 </div>
             </div>
 
-            <!-- CONTROLS ROW: Tempo a Sinistra + Badge -->
-            <div class="step-controls-row">
+            <div class="step-row-2">
+                <input type="text" class="edit-input" 
+                       value="${step.step_name || ''}" placeholder="${t.phStepName}" 
+                       data-type="step-name" data-sidx="${sIdx}" data-stidx="${stIdx}">
+            </div>
+
+            <!-- RIGA 3: Tempo (Largo 270px) -->
+            <div class="step-row-3">
                 <div class="step-time-box">
                     <i class="far fa-clock"></i>
                     <input type="number" min="0" value="${mins}" 
                            data-type="step-time" data-sidx="${sIdx}" data-stidx="${stIdx}">
                     <span>${t.min}</span>
                 </div>
-                <!-- Badge subito dopo il tempo -->
-                <div style="display: flex; gap: 8px;">${wipBadge} ${finBadge}</div>
             </div>
 
             <div class="step-details ${isOpen}">
                 
                 <div class="input-group">
-                    <label style="color:var(--primary);">${t.lblInstr}</label>
+                    <label>${t.lblInstr}</label>
                     <textarea class="detail-textarea" rows="3" placeholder="${t.phStepInstr}" 
                               data-type="step-instr" data-sidx="${sIdx}" data-stidx="${stIdx}">${step.instructions||''}</textarea>
                 </div>
@@ -175,22 +172,24 @@ function renderSteps(steps, sIdx) {
                 </div>
 
                 <div class="input-group">
-                    <label style="color:var(--text-muted);">${t.lblSkills}</label>
+                    <label>${t.lblSkills}</label>
                     <input type="text" class="detail-input-full" 
                            value="${(step.resources_needed?.labor?.required_skill_tags||[]).join(', ')}" 
                            placeholder="${t.phSkills}" 
                            data-type="step-skills" data-sidx="${sIdx}" data-stidx="${stIdx}">
                 </div>
 
-                <div class="checkbox-row">
-                    <label class="checkbox-label">
+                <div class="checkbox-row" style="display:flex; gap:20px; margin-top:10px;">
+                    <label class="checkbox-label" style="display:flex; align-items:center; gap:8px; color:white; font-size:12px;">
                         <input type="checkbox" ${step.logistics_flags?.requires_wip?'checked':''} 
-                               data-type="flag-wip" data-sidx="${sIdx}" data-stidx="${stIdx}"> 
+                               data-type="flag-wip" data-sidx="${sIdx}" data-stidx="${stIdx}"
+                               style="width:18px; height:18px;"> 
                         ${t.lblWip}
                     </label>
-                    <label class="checkbox-label">
+                    <label class="checkbox-label" style="display:flex; align-items:center; gap:8px; color:white; font-size:12px;">
                         <input type="checkbox" ${step.logistics_flags?.requires_finished?'checked':''} 
-                               data-type="flag-fin" data-sidx="${sIdx}" data-stidx="${stIdx}"> 
+                               data-type="flag-fin" data-sidx="${sIdx}" data-stidx="${stIdx}"
+                               style="width:18px; height:18px;"> 
                         ${t.lblFin}
                     </label>
                 </div>
