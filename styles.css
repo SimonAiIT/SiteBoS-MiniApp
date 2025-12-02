@@ -787,6 +787,102 @@ canvas { display: block; width: 100%; height: 100%; }
     
 .affiliate-disclaimer { font-size: 11px; font-style: italic; opacity: 0.7; margin-top: 20px; border-top: 1px dashed var(--glass-border); padding-top: 10px; }
 
+
+/* ========================================
+   18. KNOWLEDGE BASE SPECIFIC
+   ======================================== */
+.kb-card {
+  background: var(--card-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-md);
+  margin-bottom: 12px;
+  overflow: hidden;
+  transition: background-color 0.2s;
+}
+
+.kb-header {
+  padding: 15px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+.kb-header:hover { background-color: var(--hover-bg); }
+
+.kb-title {
+  font-size: 15px;
+  font-weight: 600;
+  padding-right: 15px;
+}
+
+.kb-card.loading .chevron {
+    animation: spin 1s linear infinite;
+    color: var(--primary);
+}
+
+.kb-body {
+  display: none;
+  padding: 20px;
+  border-top: 1px solid var(--glass-border);
+  background: rgba(0,0,0,0.2);
+}
+
+.kb-card.open .kb-body {
+  display: block;
+  animation: fadeIn 0.5s ease;
+}
+
+.kb-body h3 {
+  font-size: 13px;
+  color: var(--primary);
+  margin: 15px 0 10px 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 700;
+}
+.kb-body h3:first-child { margin-top: 0; }
+
+.kb-body .summary, .kb-body .answer-fragment {
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--text-muted);
+    padding-left: 15px;
+    border-left: 2px solid var(--primary);
+}
+
+.kb-section {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px dashed var(--glass-border);
+}
+.kb-section .question { font-weight: 600; margin-bottom: 8px; color: var(--text-main); }
+.kb-section .answer { font-size: 13px; color: var(--text-muted); line-height: 1.6; }
+.kb-section .analogy {
+    margin-top: 10px;
+    padding: 10px;
+    background: rgba(0,0,0,0.2);
+    border-left: 2px solid var(--text-secondary);
+    border-radius: 4px;
+    font-size: 12px;
+    font-style: italic;
+    color: var(--text-secondary);
+}
+
+.utterance-list {
+    list-style: none;
+    padding: 0;
+}
+.utterance-list li {
+    background: rgba(255,255,255,0.05);
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    margin-bottom: 6px;
+    color: var(--text-muted);
+    font-style: italic;
+}
+
 /* ========================================
    17. ANIMATIONS
    ======================================== */
