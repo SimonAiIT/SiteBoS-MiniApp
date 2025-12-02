@@ -10,7 +10,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="../styles.css">
   
-  <style>
+<style>
     /* STAGE CARD */
     .stage-card {
         background: var(--card-bg); border: 1px solid var(--glass-border);
@@ -23,7 +23,7 @@
         border-bottom: 1px solid var(--glass-border);
     }
 
-    /* INPUT STYLES */
+    /* INPUT & TEXTAREA GENERALI */
     .edit-input {
         background: transparent; border: none; border-bottom: 1px dashed var(--glass-border);
         color: white; width: 100%; padding: 5px 0; font-size: 15px; font-weight: 600;
@@ -31,108 +31,102 @@
     }
     .edit-input:focus { outline: none; border-bottom-color: var(--primary); }
     
-    .edit-textarea {
-        background: transparent; border: none; width: 100%; color: var(--text-muted);
-        font-size: 13px; resize: none; margin-top: 5px; font-style: italic;
-    }
-    .edit-textarea:focus { outline: none; color: white; }
-
-    /* STEP ITEM - LAYOUT VERTICALE PULITO */
+    /* STEP ITEM - STRUTTURA */
     .step-list-container { padding: 0; }
     
     .step-item {
         padding: 12px 15px; 
         border-bottom: 1px solid var(--glass-border);
         background: rgba(0,0,0,0.1); 
-        display: flex; 
-        flex-direction: column;
+        display: flex; flex-direction: column;
     }
     
-    /* Griglia per l'header dello step: Drag | Nome | Azioni */
+    /* HEADER STEP (Nome + Drag + Azioni) */
     .step-header-grid {
         display: grid;
-        grid-template-columns: 20px 1fr auto;
-        align-items: center;
-        gap: 10px;
-        width: 100%;
+        grid-template-columns: 20px 1fr auto; /* Icona | Nome | Azioni */
+        align-items: center; gap: 10px; width: 100%;
     }
+    .step-name-box { width: 100%; min-width: 0; }
+    .step-actions-box { display: flex; align-items: center; gap: 5px; }
 
-    /* Nome Step */
-    .step-name-box { 
-        width: 100%;
-        min-width: 0;
-    }
-    .step-name-box input { font-size: 14px; font-weight: 500; margin: 0; }
-
-    /* Riga Controlli (sotto il nome) */
+    /* RIGA SOTTO HEADER (Minuti + Badge) */
     .step-controls-row {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-top: 8px;
-        padding-left: 30px; /* Allineato con il nome */
+        display: flex; align-items: center; justify-content: space-between;
+        margin-top: 8px; padding-left: 30px; /* Indentato sotto il nome */
     }
 
-    /* Tempo */
     .step-time-box {
-        display: flex; align-items: center; gap: 6px;
-        background: rgba(255,255,255,0.08); padding: 6px 12px; border-radius: 8px;
-        white-space: nowrap; font-size: 12px; color: var(--text-muted);
-        font-weight: 600;
+        display: flex; align-items: center; gap: 8px;
+        background: rgba(255,255,255,0.05); padding: 4px 10px; border-radius: 6px;
+        font-size: 13px; color: var(--text-muted);
     }
     .step-time-box input {
-        width: 40px; background: transparent; border: none; color: white; 
+        width: 50px; background: transparent; border: none; color: white; 
         text-align: center; font-weight: bold; font-size: 14px;
-        border-bottom: 1px solid rgba(255,255,255,0.3);
+        border-bottom: 1px solid rgba(255,255,255,0.2);
     }
-    .step-time-box input:focus { outline: none; border-bottom-color: var(--primary); }
 
-    /* Azioni */
-    .step-actions-box { display: flex; align-items: center; gap: 5px; }
+    /* DETTAGLI ESPANSI (Sistemati!) */
+    .step-details { 
+        display: none; margin-top: 15px; padding-top: 15px; 
+        border-top: 1px dashed var(--glass-border); 
+        text-align: left; /* FIX IMPORTANTE: Allinea tutto a sinistra */
+    }
+    .step-details.open { display: block; animation: slideDown 0.2s ease-out; }
+
+    /* Gruppi di input nei dettagli */
+    .input-group { margin-bottom: 15px; width: 100%; }
+    .input-group label {
+        display: block; font-size: 11px; font-weight: 700; 
+        margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.5px;
+    }
     
+    /* Textarea pulite */
+    .detail-textarea {
+        width: 100%; background: rgba(0,0,0,0.2); border: 1px solid var(--glass-border);
+        border-radius: 8px; padding: 10px; color: white; font-size: 13px; line-height: 1.4;
+        resize: vertical; min-height: 60px;
+    }
+    .detail-textarea:focus { outline: none; border-color: var(--primary); }
+
+    /* CHECKBOX ROW */
+    .checkbox-row {
+        display: flex; align-items: center; gap: 20px; 
+        padding-top: 10px; border-top: 1px dashed rgba(255,255,255,0.1);
+    }
+    .checkbox-label {
+        display: flex; align-items: center; gap: 8px; cursor: pointer;
+        font-size: 12px; font-weight: 600; color: var(--text-main);
+    }
+    .checkbox-label input { width: 16px; height: 16px; accent-color: var(--primary); }
+
+    /* BOTTONCINI */
     .btn-icon-sm {
         width: 32px; height: 32px; border-radius: 8px;
         display: flex; align-items: center; justify-content: center;
         background: rgba(255,255,255,0.05); color: var(--text-muted); border: none;
-        cursor: pointer; transition: all 0.2s;
+        cursor: pointer;
     }
     .btn-icon-sm:hover { background: var(--primary); color: white; }
     .btn-icon-sm.delete:hover { background: var(--error); }
-    .btn-icon-sm.active { background: var(--primary); color: white; }
 
-    /* Dettagli Step (Accordion) */
-    .step-details { display: none; margin-top: 15px; padding-top: 15px; border-top: 1px dashed var(--glass-border); }
-    .step-details.open { display: block; animation: slideDown 0.2s ease-out; }
-
-    /* Badge */
-    .badge { 
-        font-size: 9px; padding: 2px 6px; border-radius: 4px; text-transform: uppercase; font-weight: 700;
-        border: 1px solid; display: inline-block; margin-right: 5px;
-    }
-    .badge-wip { border-color: var(--warning); color: var(--warning); background: rgba(245, 158, 11, 0.1); }
-    .badge-fin { border-color: var(--success); color: var(--success); background: rgba(76, 217, 100, 0.1); }
-
-    /* FAB Container A DESTRA IN COLONNA (STILE ORIGINALE) */
+    /* FAB A DESTRA (Tuo stile originale) */
     .fab-container {
         position: fixed; bottom: 20px; right: 20px;
-        display: flex; flex-direction: column; gap: 15px; z-index: 100;
-        align-items: center;
+        display: flex; flex-direction: column; gap: 15px; z-index: 100; align-items: center;
     }
-    
     .fab-btn {
-        width: 56px; height: 56px; border-radius: 50%;
-        border: none; color: white;
+        width: 56px; height: 56px; border-radius: 50%; border: none; color: white;
         box-shadow: 0 4px 15px rgba(0,0,0,0.4); font-size: 20px;
-        display: flex; align-items: center; justify-content: center;
-        transition: transform 0.2s; cursor: pointer;
+        display: flex; align-items: center; justify-content: center; cursor: pointer;
     }
-    .fab-btn:active { transform: scale(0.9); }
-    
     .fab-primary { background: var(--primary); }
     .fab-secondary { background: var(--card-bg); border: 1px solid var(--glass-border); color: var(--text-main); }
 
     @keyframes slideDown { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
-  </style>
+</style>
+
 </head>
 <body>
 
