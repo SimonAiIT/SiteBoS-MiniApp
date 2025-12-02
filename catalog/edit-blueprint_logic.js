@@ -132,23 +132,26 @@ function renderSteps(steps, sIdx) {
                            data-type="step-name" data-sidx="${sIdx}" data-stidx="${stIdx}">
                 </div>
 
-                <!-- 3. Tempo -->
-                <div class="step-time-box">
-                    <span>⏱️</span>
-                    <input type="number" value="${step.estimated_time_minutes||0}" 
-                           data-type="step-time" data-sidx="${sIdx}" data-stidx="${stIdx}">
-                    <span>${t.min}</span>
-                </div>
+                <!-- 3. Controlli (Tempo e Azioni) -->
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <!-- Tempo -->
+                    <div class="step-time-box">
+                        <span>⏱️</span>
+                        <input type="number" value="${step.estimated_time_minutes||0}" 
+                               data-type="step-time" data-sidx="${sIdx}" data-stidx="${stIdx}">
+                        <span>${t.min}</span>
+                    </div>
 
-                <!-- 4. Azioni -->
-                <div class="step-actions-box">
-                    ${wipBadge} ${finBadge}
-                    <button class="btn-icon-sm ${activeClass}" data-action="toggle-step" data-sidx="${sIdx}" data-stidx="${stIdx}">
-                        <i class="fas fa-chevron-${isOpen ? 'up' : 'down'}"></i>
-                    </button>
-                    <button class="btn-icon-sm delete" data-action="delete-step" data-sidx="${sIdx}" data-stidx="${stIdx}">
-                        <i class="fas fa-times"></i>
-                    </button>
+                    <!-- Azioni -->
+                    <div class="step-actions-box">
+                        ${wipBadge} ${finBadge}
+                        <button class="btn-icon-sm ${activeClass}" data-action="toggle-step" data-sidx="${sIdx}" data-stidx="${stIdx}">
+                            <i class="fas fa-chevron-${isOpen ? 'up' : 'down'}"></i>
+                        </button>
+                        <button class="btn-icon-sm delete" data-action="delete-step" data-sidx="${sIdx}" data-stidx="${stIdx}">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
                 </div>
             </div>
 
