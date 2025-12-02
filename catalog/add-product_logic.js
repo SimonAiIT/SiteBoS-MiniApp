@@ -181,15 +181,15 @@ function populateForm(data) {
     window.scrollTo(0,0);
 }
 
-// 11. SAVE FINAL
+// --- SALVATAGGIO VIA PROCESSOR (CAPSULA) ---
 async function handleSave(e) {
     e.preventDefault();
-    showLoader(t.status_save);
-
+    
+    // 1. Raccogli i dati dal form (LOGICA INVARIATA)
     const get = (id) => document.getElementById(id).value;
     const getChk = (id) => document.getElementById(id).checked;
 
-    // Update Draft Object
+    // Aggiornamento oggetto draftData (Identico a prima)
     if(!draftData.identity) draftData.identity = {};
     draftData.identity.item_name = get('outName');
     draftData.identity.item_sku = get('outSku');
@@ -216,33 +216,30 @@ async function handleSave(e) {
     if(!draftData.relations.marketing_info) draftData.relations.marketing_info = {};
     draftData.relations.marketing_info.target_audience_tags = get('outTarget').split(',').map(s=>s.trim()).filter(Boolean);
 
-    const savePayload = {
+    // 2. COSTRUZIONE PAYLOAD ESATTO PER N8N
+    // Questo oggetto corrisponde esattamente al "body" del tuo esempio
+    const n8nPayload = {
         token: token,
         category_id: catId,
         new_product_block: draftData
     };
 
+    // 3. HANDOVER AL PROCESSOR
+    // Usiamo il token come chiave univoca temporanea
+    const sessionKey = `pending_payload_${token}`;
+    
     try {
-        const res = await fetch(SAVE_WEBHOOK, {
-            method: 'POST', 
-            headers: {'Content-Type':'application/json'},
-            body: JSON.stringify(savePayload)
-        });
-
-        if(res.ok) {
-            hideLoader();
-            try { if(tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success'); } catch(e){}
-            
-            // ALERT CLASSICO + REDIRECT SICURO
-            alert(t.ok_saved);
-            window.location.href = `catalog.html?token=${token}`;
-            
-        } else throw new Error("Server Error");
-
-    } catch(e) {
-        console.error(e);
-        alert(t.err_generic);
-        hideLoader();
+        sessionStorage.setItem(sessionKey, JSON.stringify(n8nPayload));
+        
+        // Definiamo dove tornare dopo il salvataggio (Catalogo)
+        const returnUrl = encodeURIComponent(`catalog/catalog.html?token=${token}`);
+        
+        // REDIRECT: Scendiamo di un livello (../) verso la root dove sta processor.html
+        // call=save_product -> Istruisce il processor su quale webhook chiamare
+        window.location.href = `../processor.html?call=save_product&owner_key=${token}&return_url=${returnUrl}`;
+        
+    } catch (err) {
+        alert("Errore Browser: Memoria piena o accesso negato.");
     }
 }
 
