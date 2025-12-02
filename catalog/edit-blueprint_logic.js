@@ -1,7 +1,7 @@
 /**
  * BLUEPRINT EDITOR LOGIC (vFINAL - UI FIXED)
  * - Grid Layout per Steps
- * - FABs a destra in colonna
+ * - FABs a destra in riga
  * - FIX: Caricamento minuti corretto
  */
 'use strict';
@@ -98,14 +98,12 @@ function renderStages() {
         `;
         dom.stagesContainer.appendChild(stageEl);
 
-        // Sortable per gli Step dentro ogni Stage
         new Sortable(stageEl.querySelector('.step-list-container'), {
             group: 'steps', handle: '.drag-handle', animation: 150,
             onEnd: handleSortEnd
         });
     });
 
-    // Sortable per gli Stages (drag delle card intere)
     new Sortable(dom.stagesContainer, {
         handle: '.stage-header .drag-handle', animation: 150,
         onEnd: handleSortEnd
@@ -119,13 +117,11 @@ function renderSteps(steps, sIdx) {
         const activeClass = step._ui_open ? 'active' : '';
         const wipBadge = step.logistics_flags?.requires_wip ? `<span class="badge badge-wip">WIP</span>` : '';
         const finBadge = step.logistics_flags?.requires_finished ? `<span class="badge badge-fin">FINISHED</span>` : '';
-        
         const mins = parseInt(step.estimated_time_minutes) || 0;
         
         return `
         <div class="step-item" data-sidx="${sIdx}" data-stidx="${stIdx}">
             
-            <!-- HEADER RIGA 1: Icona, Nome, Pulsanti -->
             <div class="step-header-grid">
                 <i class="fas fa-grip-lines drag-handle" style="color:var(--text-muted); cursor:grab;"></i>
                 
@@ -145,7 +141,6 @@ function renderSteps(steps, sIdx) {
                 </div>
             </div>
 
-            <!-- HEADER RIGA 2: Tempo e Badges (Indentato) -->
             <div class="step-controls-row">
                 <div class="step-time-box">
                     <i class="far fa-clock"></i>
@@ -156,24 +151,20 @@ function renderSteps(steps, sIdx) {
                 <div style="display: flex; gap: 5px;">${wipBadge} ${finBadge}</div>
             </div>
 
-            <!-- DETTAGLI (Espandibile) -->
             <div class="step-details ${isOpen}">
                 
-                <!-- Istruzioni -->
                 <div class="input-group">
                     <label style="color:var(--primary);">${t.lblInstr}</label>
                     <textarea class="detail-textarea" rows="3" placeholder="${t.phStepInstr}" 
                               data-type="step-instr" data-sidx="${sIdx}" data-stidx="${stIdx}">${step.instructions||''}</textarea>
                 </div>
 
-                <!-- Quality Check -->
                 <div class="input-group">
                     <label style="color:var(--success);">${t.lblQC}</label>
                     <textarea class="detail-textarea" rows="2" placeholder="${t.phQC}" 
                               data-type="step-qc" data-sidx="${sIdx}" data-stidx="${stIdx}">${step.quality_check?.check_description||''}</textarea>
                 </div>
 
-                <!-- Skills -->
                 <div class="input-group">
                     <label style="color:var(--text-muted);">${t.lblSkills}</label>
                     <input type="text" class="detail-input-full" 
@@ -182,7 +173,6 @@ function renderSteps(steps, sIdx) {
                            data-type="step-skills" data-sidx="${sIdx}" data-stidx="${stIdx}">
                 </div>
 
-                <!-- Checkbox Flags -->
                 <div class="checkbox-row">
                     <label class="checkbox-label">
                         <input type="checkbox" ${step.logistics_flags?.requires_wip?'checked':''} 
@@ -201,7 +191,6 @@ function renderSteps(steps, sIdx) {
         `;
     }).join('');
 }
-
 
 // 6. EVENT HANDLERS
 function handleContainerClick(e) {
@@ -250,7 +239,7 @@ function handleInput(e) {
         if(!step.logistics_flags) step.logistics_flags={};
         if(type==='flag-wip') step.logistics_flags.requires_wip = val;
         if(type==='flag-fin') step.logistics_flags.requires_finished = val;
-        renderStages(); // Re-render per aggiornare i badge
+        renderStages();
     }
 }
 
@@ -310,12 +299,11 @@ async function loadBlueprint() {
         });
         const data = await res.json();
         
-        console.log('Raw data received:', data); // DEBUG
+        console.log('Raw data received:', data);
         
-        // Il JSON arriva come array, quindi prendiamo il primo elemento
         const bp = Array.isArray(data) ? data[0] : data;
         
-        console.log('Blueprint parsed:', bp); // DEBUG
+        console.log('Blueprint parsed:', bp);
         
         currentData = bp || { stages: [] };
         dom.desc.value = currentData.blueprint_description || '';
@@ -325,7 +313,7 @@ async function loadBlueprint() {
         renderStages(); 
         hideLoader();
     } catch(e) { 
-        console.error('Load error:', e); // DEBUG
+        console.error('Load error:', e);
         showError(e.message); 
     }
 }
