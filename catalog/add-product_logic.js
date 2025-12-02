@@ -184,14 +184,11 @@ function populateForm(data) {
 async function handleSave(e) {
     e.preventDefault();
     
-    // 1. Raccogli i dati dal form e aggiorna l'oggetto 'draftData'
+    // --- PARTE 1: RACCOLTA DATI (INVARIATA) ---
     const get = (id) => document.getElementById(id).value;
     const getChk = (id) => document.getElementById(id).checked;
 
-    if(!draftData) {
-        alert("Errore: dati della bozza non trovati. Riprova il processo di generazione.");
-        return;
-    }
+    if(!draftData) return alert("Errore: Bozza mancante.");
 
     if(!draftData.identity) draftData.identity = {};
     draftData.identity.item_name = get('outName');
@@ -219,34 +216,37 @@ async function handleSave(e) {
     if(!draftData.relations.marketing_info) draftData.relations.marketing_info = {};
     draftData.relations.marketing_info.target_audience_tags = get('outTarget').split(',').map(s=>s.trim()).filter(Boolean);
 
-    // 2. Costruzione payload per il webhook n8n
+    // --- PARTE 2: PAYLOAD PER N8N (INVARIATA) ---
     const n8nPayload = {
         token: token,
         category_id: catId,
         new_product_block: draftData
     };
 
-    // 3. Handover al Processor
+    // --- PARTE 3: HANDOVER CORRETTO ---
     const sessionKey = `pending_payload_${token}`;
     
     try {
         sessionStorage.setItem(sessionKey, JSON.stringify(n8nPayload));
         
-        // --- CORREZIONE QUI ---
-        // Ricostruiamo l'URL di ritorno per la dashboard, prendendo TUTTI i parametri
-        // e rimuovendo quelli specifici di add-product per pulizia.
+        // 1. Clona i parametri attuali
         const returnParams = new URLSearchParams(window.location.search);
-        returnParams.delete('catId');
-        returnParams.delete('ghostId');
-
-        const returnUrl = encodeURIComponent(`../dashboard.html?${returnParams.toString()}`);
         
-        // Redirect al Processor con l'URL di ritorno corretto
+        // 2. Pulisce i parametri inutili per il ritorno
+        returnParams.delete('ghostId'); // Non serve più
+        
+        // 3. TARGET: IL CATALOGO
+        // Il path è relativo alla posizione di processor.html (root)
+        // Quindi è semplicemente "catalog/catalog.html"
+        const returnPath = "catalog/catalog.html";
+        const returnUrl = encodeURIComponent(`${returnPath}?${returnParams.toString()}`);
+        
+        // 4. VAI AL PROCESSOR (che sta un livello sopra da qui: ../)
         window.location.href = `../processor.html?call=save_product&owner_key=${token}&return_url=${returnUrl}`;
         
     } catch (err) {
-        console.error("SessionStorage Error:", err);
-        alert("Errore del Browser: impossibile salvare i dati per il passaggio successivo. Disattiva eventuali blocchi di sicurezza e riprova.");
+        console.error(err);
+        alert("Errore salvataggio locale.");
     }
 }
 
