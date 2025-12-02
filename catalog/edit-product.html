@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title data-i18n="page_title">Product Editor</title>
+  
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+
+  <!-- LOADING OVERLAY -->
+  <div id="loader">
+    <div class="spinner-ring"></div>
+    <div id="loaderText" data-i18n="loading">Caricamento...</div>
+  </div>
+
+  <div class="container hidden fade-in" id="app-content">
+    <h1 id="pageTitle" data-i18n="title">✏️ Modifica Prodotto</h1>
+    <p class="subtitle" id="pageSubtitle" data-i18n="subtitle">Gestione dettagli e prezzi</p>
+    
+    <form id="productForm">
+      
+      <!-- IDENTITÀ -->
+      <div class="form-section">
+        <div class="form-section-title" data-i18n="secIdentity">📋 Identità</div>
+        
+        <div class="form-group">
+          <label for="itemName" class="required" data-i18n="lblName">Nome Prodotto</label>
+          <input type="text" id="itemName" required placeholder="...">
+        </div>
+
+        <div class="row">
+          <div class="col">
+            <div class="form-group">
+              <label>SKU</label>
+              <input type="text" id="itemSku" disabled style="opacity: 0.7;">
+            </div>
+          </div>
+          <div class="col">
+            <div class="form-group">
+              <label for="itemType" data-i18n="lblType">Tipo</label>
+              <select id="itemType">
+                <option value="SERVICE" data-i18n="optService">Servizio</option>
+                <option value="PRODUCT" data-i18n="optProduct">Prodotto</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="descShort" class="required" data-i18n="lblShort">Descrizione Breve</label>
+          <input type="text" id="descShort" maxlength="100" required>
+        </div>
+
+        <div class="form-group">
+          <label for="descLong" data-i18n="lblLong">Descrizione Completa</label>
+          <textarea id="descLong" rows="4"></textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="internalNotes" data-i18n="lblInternal">Note Interne</label>
+          <textarea id="internalNotes" rows="2" class="monospace"></textarea>
+        </div>
+      </div>
+
+      <!-- PRICING -->
+      <div class="form-section">
+        <div class="form-section-title" data-i18n="secPricing">💰 Pricing</div>
+        <div class="row">
+          <div class="col">
+            <div class="form-group">
+              <label for="basePrice" class="required" data-i18n="lblPrice">Prezzo Base</label>
+              <input type="number" id="basePrice" step="0.01" min="0" required>
+            </div>
+          </div>
+          <div class="col">
+            <div class="form-group">
+              <label for="currency" data-i18n="lblCurrency">Valuta</label>
+              <select id="currency">
+                <option value="EUR">EUR (€)</option>
+                <option value="USD">USD ($)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col">
+            <div class="form-group">
+              <label for="unitOfMeasure" class="required" data-i18n="lblUnit">Unità</label>
+              <select id="unitOfMeasure" required>
+                <option value="item" data-i18n="optItem">Pezzo</option>
+                <option value="hour" data-i18n="optHour">Ora</option>
+                <option value="day" data-i18n="optDay">Giorno</option>
+                <option value="project" data-i18n="optProject">Progetto</option>
+                <option value="month" data-i18n="optMonth">Mese</option>
+              </select>
+            </div>
+          </div>
+          <div class="col">
+            <div class="form-group">
+              <label for="taxRate" data-i18n="lblTax">IVA (%)</label>
+              <input type="number" id="taxRate" step="1" min="0" max="100" value="22">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- OPERATIONS & TAGS -->
+      <div class="form-section">
+        <div class="form-section-title" data-i18n="secOps">⚙️ Operatività</div>
+        <div class="checkbox-group">
+          <input type="checkbox" id="requiresBooking"><label for="requiresBooking" data-i18n="chkBooking">Prenotazione</label>
+          <input type="checkbox" id="requiresInventory"><label for="requiresInventory" data-i18n="chkInventory">Inventario</label>
+        </div>
+
+        <div class="form-group">
+          <label for="skillTagInput" data-i18n="lblSkills">Skill Richieste</label>
+          <div class="tag-input-container" id="skillTagsContainer">
+            <input type="text" id="skillTagInput" placeholder="...">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="keywordInput" data-i18n="lblKeywords">Keywords (SEO)</label>
+          <div class="tag-input-container" id="keywordsContainer">
+            <input type="text" id="keywordInput" placeholder="...">
+          </div>
+        </div>
+      </div>
+
+      <!-- ACTIONS -->
+      <div class="button-container">
+        <button type="submit" id="saveBtn" class="btn btn-primary btn-block" data-i18n="btnSave">Salva Modifiche</button>
+      </div>
+      <p class="cancel-hint" data-i18n="hintCancel">Chiudi per annullare</p>
+    </form>
+  </div>
+
+  <!-- FAB BACK -->
+  <button class="back-fab" onclick="goBackToCatalog()">
+    <i class="fas fa-arrow-left"></i>
+  </button>
+
+  <script src="edit-product_logic.js"></script>
+</body>
+</html>
