@@ -112,111 +112,64 @@ async function loadProduct() {
 }
 
 function populateForm(inputData) {
-    // 1. NORMALIZZAZIONE: Rimuove eventuale wrapper 'catalog_item' se presente
-    const data = inputData.catalog_item || inputData;
-
-    // 2. FUNZIONI HELPER
-    const val = (id, v) => { 
-        const el = document.getElementById(id); 
-        if (el) el.value = (v !== undefined && v !== null) ? v : ''; 
-    };
-    const chk = (id, v) => { 
-        const el = document.getElementById(id); 
-        if (el) el.checked = !!v; 
-    };
-
-    // 3. ESTRAZIONE DATI CON FALLBACK SICURI
-    const identity = data.identity || {};
-    const description = identity.description || {}; // ATTENZIONE: description è dentro identity
-    const pricing = data.pricing || {};
-    const tax_info = pricing.tax_info || {};
-    const operations = data.operations || {};
-    const provider_info = operations.provider_info || {};
-
-    // 4. POPOLAMENTO CAMPI
-    val('itemName', identity.item_name);
-    val('itemSku', identity.item_sku);
-    val('itemType', identity.item_type);
-    
-    val('descShort', description.short);
-    val('descLong', description.long);
-    val('internalNotes', description.internal_notes);
-    
-    val('basePrice', pricing.base_price);
-    val('currency', pricing.currency);
-    val('unitOfMeasure', pricing.unit_of_measure);
-    val('taxRate', tax_info.tax_rate_percentage);
-    
-    chk('requiresBooking', operations.requires_booking);
-    chk('requiresInventory', operations.requires_inventory_check);
-
-    // 5. GESTIONE TAGS (Array sicuri)
-    skillTags = Array.isArray(provider_info.required_skill_tags) ? provider_info.required_skill_tags : [];
-    keywords = Array.isArray(identity.keywords) ? identity.keywords : [];
-    
-    renderTags(dom.skillContainer, skillTags);
-    renderTags(dom.keywordContainer, keywords);
-
-    // 6. TITOLO PAGINA
-    document.getElementById('pageTitle').textContent = `✏️ ${identity.item_name || 'Prodotto'}`;
-}
-
-async function handleSave(e) {
-    e.preventDefault();
-    if (!isDirty) return;
-
-    setButtonLoading(dom.saveBtn, true, t.saving);
-
-    // Update currentData structure
-    if(!currentData.identity) currentData.identity = {};
-    if(!currentData.identity.description) currentData.identity.description = {};
-    if(!currentData.pricing) currentData.pricing = {};
-    if(!currentData.pricing.tax_info) currentData.pricing.tax_info = {};
-    if(!currentData.operations) currentData.operations = {};
-    if(!currentData.operations.provider_info) currentData.operations.provider_info = {};
-
-    const get = (id) => document.getElementById(id).value;
-    const getChk = (id) => document.getElementById(id).checked;
-
-    currentData.identity.item_name = get('itemName');
-    currentData.identity.item_type = get('itemType');
-    currentData.identity.description.short = get('descShort');
-    currentData.identity.description.long = get('descLong');
-    currentData.identity.description.internal_notes = get('internalNotes');
-    currentData.identity.keywords = keywords;
-
-    currentData.pricing.base_price = parseFloat(get('basePrice')) || 0;
-    currentData.pricing.currency = get('currency');
-    currentData.pricing.unit_of_measure = get('unitOfMeasure');
-    currentData.pricing.tax_info.tax_rate_percentage = parseInt(get('taxRate')) || 22;
-
-    currentData.operations.requires_booking = getChk('requiresBooking');
-    currentData.operations.requires_inventory_check = getChk('requiresInventory');
-    currentData.operations.provider_info.required_skill_tags = skillTags;
-
     try {
-        const res = await fetch(WEBHOOK_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ // NESSUN WRAPPER 'body' QUI
-                action: 'SAVE', 
-                type: 'PRODUCT', 
-                productId: productId, 
-                token: token, 
-                vat: vat, 
-                payload: currentData 
-            })
-        });
+        // 1. NORMALIZZAZIONE
+        const data = inputData.catalog_item || inputData;
+
+        // 2. HELPER
+        const val = (id, v) => { 
+            const el = document.getElementById(id); 
+            if (el) el.value = (v !== undefined && v !== null) ? v : ''; 
+        };
+        const chk = (id, v) => { 
+            const el = document.getElementById(id); 
+            if (el) el.checked = !!v; 
+        };
+
+        // 3. ESTRAZIONE
+        const identity = data.identity || {};
+        const description = identity.description || {};
+        const pricing = data.pricing || {};
+        const tax_info = pricing.tax_info || {};
+        const operations = data.operations || {};
+        const provider_info = operations.provider_info || {};
+
+        // 4. POPOLAMENTO
+        val('itemName', identity.item_name);
+        val('itemSku', identity.item_sku);
+        val('itemType', identity.item_type);
         
-        if (!res.ok) throw new Error("Save failed");
+        val('descShort', description.short);
+        val('descLong', description.long);
+        val('internalNotes', description.internal_notes);
         
-        setButtonLoading(dom.saveBtn, false, t.saved, true);
-        try { tg.HapticFeedback.notificationOccurred('success'); } catch (e) {}
-        setTimeout(() => { try { tg.close(); } catch (e) { goBackToCatalog(); } }, 1500);
+        val('basePrice', pricing.base_price);
+        val('currency', pricing.currency);
+        val('unitOfMeasure', pricing.unit_of_measure);
+        val('taxRate', tax_info.tax_rate_percentage);
+        
+        chk('requiresBooking', operations.requires_booking);
+        chk('requiresInventory', operations.requires_inventory_check);
+
+        // 5. TAGS (Punto Critico)
+        skillTags = Array.isArray(provider_info.required_skill_tags) ? provider_info.required_skill_tags : [];
+        keywords = Array.isArray(identity.keywords) ? identity.keywords : [];
+        
+        // Verifica esistenza container prima di chiamare renderTags
+        if (dom.skillContainer) renderTags(dom.skillContainer, skillTags);
+        if (dom.keywordContainer) renderTags(dom.keywordContainer, keywords);
+
+        // 6. TITOLO
+        const titleEl = document.getElementById('pageTitle');
+        if (titleEl) titleEl.textContent = `✏️ ${identity.item_name || 'Prodotto'}`;
+
+        // 7. SUCCESSO: NASCONDI LOADER
+        hideLoader();
 
     } catch (e) {
-        handleError(e);
-        setButtonLoading(dom.saveBtn, false, t.btnSave);
+        console.error("CRASH in populateForm:", e);
+        alert("Errore nel visualizzare i dati: " + e.message);
+        hideLoader(); // Nascondi comunque per sbloccare la UI
     }
 }
 
