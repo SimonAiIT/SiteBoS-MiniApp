@@ -56,25 +56,47 @@
     .step-actions-box { display: flex; align-items: center; gap: 5px; }
 
     /* RIGA SOTTO HEADER - AGGIORNATA PER ALLINEAMENTO A SINISTRA */
+    /* RIGA SOTTO HEADER - FORZATURA TOTALE A SINISTRA */
     .step-controls-row {
-        display: flex; 
-        align-items: center; 
-        justify-content: flex-start; /* TUTTO A SINISTRA */
-        gap: 15px; /* Spazio tra tempo e badge */
-        margin-top: 8px; 
-        padding-left: 30px; /* Allineato sotto il nome */
+        display: flex !important;
+        align-items: center !important;
+        justify-content: flex-start !important; /* ALLINEAMENTO A SINISTRA FORZATO */
+        gap: 15px;
+        margin-top: 10px;
+        padding-left: 0 !important; /* RIMOSSO INDENTAZIONI CHE SPOSTAVANO AL CENTRO */
+        width: 100%;
     }
 
+    /* BOX TEMPO - PIÙ LARGO E ALLINEATO */
     .step-time-box {
-        display: flex; align-items: center; gap: 8px;
-        background: rgba(255,255,255,0.08); padding: 4px 12px; border-radius: 8px;
-        font-size: 13px; color: var(--text-muted);
-        min-width: 100px; /* Un po' più largo */
+        display: flex !important;
+        align-items: center !important;
+        justify-content: flex-start !important; /* Contenuto interno a sinistra */
+        background: rgba(255,255,255,0.08);
+        padding: 8px 15px !important; /* Più spazio interno */
+        border-radius: 8px;
+        color: var(--text-muted);
+        min-width: 140px !important; /* FORZO LARGHEZZA MINIMA MOLTO PIÙ AMPIA */
+        height: 40px; /* Altezza fissa comoda */
     }
+
+    /* INPUT TEMPO - PIÙ GRANDE E VISIBILE */
     .step-time-box input {
-        width: 40px; background: transparent; border: none; color: white; 
-        text-align: center; font-weight: bold; font-size: 14px;
+        width: 60px !important; /* Input numerico molto più largo */
+        background: transparent;
+        border: none;
+        color: white;
+        text-align: center; /* Numero al centro dell'input, ma box a sinistra */
+        font-weight: bold;
+        font-size: 16px !important; /* Font più grande */
         border-bottom: 1px solid rgba(255,255,255,0.3);
+        margin-right: 5px;
+    }
+
+    /* ICONA OROLOGIO */
+    .step-time-box i {
+        margin-right: 8px;
+        font-size: 16px;
     }
 
     /* BADGE STYLES - RIPRISTINATI */
