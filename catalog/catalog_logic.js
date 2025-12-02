@@ -220,18 +220,52 @@ async function loadCatalog(forceRefresh = false) {
     const loader = document.getElementById('loader');
     const content = document.getElementById('app-content');
     
-    if(forceRefresh) {
+    if (forceRefresh) {
         document.getElementById('catalog-list').innerHTML = '';
         loader.classList.remove('hidden');
         content.classList.add('hidden');
     }
     
     try {
-        const payload = { action: 'get_catalog', token: token, ...getAllUrlParams() };
-        const res = await fetch(CATALOG_WEBHOOK, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+        // 1. PREPARA PAYLOAD BASE
+        const currentUrlParams = new URLSearchParams(window.location.search);
+        const payload = { 
+            action: 'get_catalog', 
+            token: token
+        };
+        
+        // Passa TUTTI i parametri URL nel payload per n8n
+        for (const [key, value] of currentUrlParams.entries()) {
+            payload[key] = value;
+        }
+
+        // 2. GESTIONE BONUS CREDITS (BROWSER-SAFE)
+        const bonus = currentUrlParams.get('bonus_credits');
+        if (bonus && parseInt(bonus) > 0) {
+            
+            // FEEDBACK UTENTE UNIVERSALE (alert)
+            const gameTitle = t('game_title') || "Game Over!";
+            const gameMsg = (t('game_msg') || "You earned {points} credits!").replace('{points}', bonus);
+            alert(`${gameTitle}\n${gameMsg}`);
+
+            // PULIZIA URL (CRITICO)
+            currentUrlParams.delete('bonus_credits');
+            const newUrl = window.location.pathname + '?' + currentUrlParams.toString();
+            window.history.replaceState({}, document.title, newUrl);
+        }
+
+        // 3. CHIAMATA UNICA A N8N
+        const res = await fetch(CATALOG_WEBHOOK, { 
+            method: 'POST', 
+            headers: { 'Content-Type': 'application/json' }, 
+            body: JSON.stringify(payload) 
+        });
+        
         if (!res.ok) throw new Error(`HTTP Error: ${res.status}`);
+        
         catalogData = parseN8nResponse(await res.json());
         renderCatalog();
+
     } catch (e) {
         const emptyState = document.getElementById('empty-state');
         if(emptyState) {
@@ -243,7 +277,6 @@ async function loadCatalog(forceRefresh = false) {
         content.classList.remove('hidden');
     }
 }
-
 // ==========================================
 // FUNZIONE RENDER CORRETTA (Passa ID, non indici)
 // ==========================================
