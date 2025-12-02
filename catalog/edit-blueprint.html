@@ -11,19 +11,18 @@
   <link rel="stylesheet" href="../styles.css">
   
 <style>
-    /* STILE GENERALE CHE RIPRENDE LE TUE VARIABILI */
+    /* STILE GENERALE */
     body {
-        padding-bottom: 80px; /* Spazio per i FAB */
-        /* Non sovrascrivo background o font-family così usa i tuoi di default */
+        padding-bottom: 80px; 
     }
 
-    /* STAGE CARD - Ripristinato il bordo colorato a sinistra */
+    /* STAGE CARD */
     .stage-card {
         background: var(--card-bg, #1c1c1e); 
         border: 1px solid var(--glass-border, rgba(255,255,255,0.1));
         border-radius: 12px; margin-bottom: 20px; 
         overflow: hidden;
-        border-left: 4px solid var(--primary, #007aff); /* RIPRISTINATO */
+        border-left: 4px solid var(--primary, #007aff);
     }
     .stage-header {
         padding: 15px; 
@@ -48,68 +47,59 @@
     }
     .edit-textarea:focus { outline: none; color: white; }
 
-    /* --- STEP ITEM: STRUTTURA A 3 RIGHE (FIX MOBILE) --- */
+    /* --- STEP ITEM: 3 RIGHE FISSE --- */
     .step-list-container { padding: 0; }
     
     .step-item {
         padding: 15px; 
         border-bottom: 1px solid var(--glass-border, rgba(255,255,255,0.1));
-        background: rgba(0,0,0,0.1); /* Sfondo leggero glass */
+        background: rgba(0,0,0,0.1); 
         display: flex; flex-direction: column; 
-        gap: 12px; /* Spazio verticale tra le righe */
+        gap: 12px;
     }
 
-    /* RIGA 1: Icona, Badge, Bottoni */
-    .riga-1 {
-        display: flex; align-items: center; justify-content: space-between; width: 100%;
-    }
+    /* RIGA 1 */
+    .riga-1 { display: flex; align-items: center; justify-content: space-between; width: 100%; }
     .riga-1-left { display: flex; align-items: center; gap: 10px; }
 
-    /* RIGA 2: Nome Step */
+    /* RIGA 2 */
     .riga-2 { width: 100%; }
     .riga-2 input { 
         font-size: 17px; padding: 5px 0; width: 100%; display: block;
         border-bottom: 1px solid rgba(255,255,255,0.2);
     }
 
-    /* RIGA 3: Tempo */
+    /* RIGA 3 */
     .riga-3 { width: 100%; display: flex; justify-content: flex-start; }
 
-    /* BOX TEMPO (Largo e fisso a sinistra) */
+    /* BOX TEMPO (Largo a sinistra) */
     .time-box-fixed {
         display: flex; align-items: center; justify-content: flex-start;
         background: rgba(255,255,255,0.05);
         border: 1px solid var(--glass-border, rgba(255,255,255,0.1));
         border-radius: 8px;
         height: 50px;
-        width: 270px; /* Larghezza richiesta */
+        width: 270px;
         max-width: 100%;
         padding: 0 15px;
         box-sizing: border-box;
     }
-    
-    .time-box-fixed i { font-size: 20px; color: var(--primary, #007aff); margin-right: 15px; } /* Icona colorata */
-    
+    .time-box-fixed i { font-size: 20px; color: var(--primary, #007aff); margin-right: 15px; }
     .time-box-fixed input {
         flex: 1; background: transparent; border: none; 
         border-bottom: 1px solid rgba(255,255,255,0.3);
         color: white; text-align: center; font-size: 20px !important; font-weight: bold;
         margin-right: 10px; padding-bottom: 2px;
     }
-
     .time-box-fixed span { font-size: 14px; color: var(--text-muted, #8e8e93); white-space: nowrap; }
 
     /* BADGE */
-    .badge { 
-        font-size: 11px; padding: 4px 8px; border-radius: 4px; 
-        font-weight: 700; text-transform: uppercase;
-    }
+    .badge { font-size: 11px; padding: 4px 8px; border-radius: 4px; font-weight: 700; text-transform: uppercase; }
     .badge-wip { background: rgba(245, 158, 11, 0.15); color: #f59e0b; border: 1px solid #f59e0b; }
     .badge-fin { background: rgba(76, 217, 100, 0.15); color: #30d158; border: 1px solid #30d158; }
 
-    /* BOTTONI AZIONI */
+    /* BOTTONI INTERNI */
     .btn-group { display: flex; gap: 8px; }
-    
     .btn-icon {
         width: 34px; height: 34px; border-radius: 8px; border: none;
         background: rgba(255,255,255,0.05); color: var(--text-muted, #8e8e93);
@@ -117,13 +107,12 @@
         cursor: pointer; transition: 0.2s;
     }
     .btn-icon:hover { background: var(--primary, #007aff); color: white; }
-    .btn-icon.active { background: var(--primary, #007aff); color: white; } /* Colore attivo ripristinato */
-    .btn-icon.del:hover { background: #ff453a; color: white; } /* Rosso errore */
+    .btn-icon.active { background: var(--primary, #007aff); color: white; }
+    .btn-icon.del:hover { background: #ff453a; color: white; }
 
     /* DETTAGLI */
     .step-details { display: none; margin-top: 10px; padding-top: 15px; border-top: 1px dashed var(--glass-border); }
     .step-details.open { display: block; }
-    
     .input-block { margin-bottom: 15px; }
     .input-block label { display: block; font-size: 11px; color: var(--text-muted); margin-bottom: 5px; font-weight: 700; text-transform: uppercase; }
     .full-area { 
@@ -132,40 +121,40 @@
     }
     .full-area:focus { outline: none; border-color: var(--primary); }
 
-    /* FABs - Ripristinati i colori originali */
-<style>
-    /* ... (tutto il resto del CSS rimane uguale a prima) ... */
-
-    /* --- STEP ITEM: STRUTTURA A 3 RIGHE (FIX MOBILE) --- */
-    /* ... (codice righe 1, 2, 3 ok) ... */
-
-    /* FABs - CORRETTI: TORNANO TONDI E QUADRATI (56x56) */
-    .fab-container { 
-        position: fixed; bottom: 20px; right: 20px; 
-        display: flex; flex-direction: row; gap: 15px; z-index: 100; 
+    /* FABs - STILE IDENTICO AL PROGETTO */
+    .fab-container {
+        position: fixed;
+        bottom: 20px;
+        right: 20px; /* A DESTRA */
+        display: flex;
+        flex-direction: column; /* Impilati verticalmente */
+        gap: 15px;
+        z-index: 1010;
     }
-    
+
     .fab-btn {
-        width: 56px !important; 
-        height: 56px !important; 
-        border-radius: 50% !important; /* Tondo perfetto */
-        border: none; 
-        color: white;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.4); 
+        width: 50px !important; /* TUA MISURA */
+        height: 50px !important; /* TUA MISURA */
+        border-radius: 50% !important; /* TONDI */
+        border: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
         font-size: 20px;
-        display: flex; align-items: center; justify-content: center; 
+        box-shadow: 0 4px 12px rgba(0,0,0,0.4); /* TUA OMBRA */
         cursor: pointer;
         transition: transform 0.2s;
+        color: white;
     }
-    
-    .fab-btn:active { transform: scale(0.9); }
-    
-    /* RIPRISTINO COLORI ORIGINALI */
-    .fab-primary { background: var(--primary, #007aff); }
-    .fab-secondary { background: var(--card-bg, #1c1c1e); border: 1px solid var(--glass-border, rgba(255,255,255,0.1)); }
+
+    .fab-btn:active {
+        transform: scale(0.95); /* TUO EFFETTO CLICK */
+    }
+
+    .fab-primary { background-color: var(--primary, #007aff); }
+    .fab-secondary { background-color: #333; border: 1px solid rgba(255,255,255,0.2); }
     
     .hidden { display: none; }
-</style>
 </style>
 </head>
 <body>
