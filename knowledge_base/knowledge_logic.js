@@ -156,7 +156,7 @@ function renderFragmentDetails(fragment, cardElement) {
         display: flex; 
         align-items: center; 
         gap: 6px; 
-        box-shadow: 0 2px 5px rgba(9, 132, 227, 0.25); /* Ombra blu coordinata */
+        box-shadow: 0 2px 5px rgba(9, 132, 227, 0.25);
         transition: transform 0.1s ease, background 0.2s;
     `;
 
