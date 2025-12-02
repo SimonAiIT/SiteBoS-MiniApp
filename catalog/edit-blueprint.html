@@ -48,17 +48,20 @@
         flex-direction: column; /* Per gestire l'accordion */
     }
     
-    /* Griglia per l'header dello step: Drag | Nome | Tempo | Azioni */
+    /* Griglia per l'header dello step: Drag | Nome | Controlli */
     .step-header-grid {
         display: grid;
-        grid-template-columns: 20px 1fr auto auto; /* Drag | Nome espandibile | Tempo | Azioni */
+        grid-template-columns: 20px 1fr auto; /* Drag | Nome espandibile | Controlli */
         align-items: center;
         gap: 10px;
         width: 100%;
     }
 
     /* Nome Step */
-    .step-name-box { width: 100%; }
+    .step-name-box { 
+        width: 100%;
+        min-width: 0; /* FIX: Permette al box di restringersi per far spazio agli altri elementi */
+    }
     .step-name-box input { font-size: 14px; font-weight: 500; margin: 0; }
 
     /* Tempo */
@@ -66,6 +69,7 @@
         display: flex; align-items: center; gap: 4px;
         background: rgba(255,255,255,0.05); padding: 4px 8px; border-radius: 6px;
         white-space: nowrap; font-size: 11px; color: var(--text-muted);
+        flex-shrink: 0; /* FIX: Evita che questo box venga compresso dal flex container padre */
     }
     .step-time-box input {
         width: 30px; background: transparent; border: none; color: white; 
@@ -73,7 +77,7 @@
     }
 
     /* Azioni */
-    .step-actions-box { display: flex; gap: 5px; }
+    .step-actions-box { display: flex; align-items: center; gap: 5px; }
     
     .btn-icon-sm {
         width: 32px; height: 32px; border-radius: 8px;
