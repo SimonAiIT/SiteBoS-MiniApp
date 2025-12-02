@@ -181,15 +181,18 @@ function populateForm(data) {
     window.scrollTo(0,0);
 }
 
-// --- SALVATAGGIO VIA PROCESSOR (CAPSULA) ---
 async function handleSave(e) {
     e.preventDefault();
     
-    // 1. Raccogli i dati dal form (LOGICA INVARIATA)
+    // 1. Raccogli i dati dal form e aggiorna l'oggetto 'draftData'
     const get = (id) => document.getElementById(id).value;
     const getChk = (id) => document.getElementById(id).checked;
 
-    // Aggiornamento oggetto draftData (Identico a prima)
+    if(!draftData) {
+        alert("Errore: dati della bozza non trovati. Riprova il processo di generazione.");
+        return;
+    }
+
     if(!draftData.identity) draftData.identity = {};
     draftData.identity.item_name = get('outName');
     draftData.identity.item_sku = get('outSku');
@@ -216,30 +219,36 @@ async function handleSave(e) {
     if(!draftData.relations.marketing_info) draftData.relations.marketing_info = {};
     draftData.relations.marketing_info.target_audience_tags = get('outTarget').split(',').map(s=>s.trim()).filter(Boolean);
 
-    // 2. COSTRUZIONE PAYLOAD ESATTO PER N8N
-    // Questo oggetto corrisponde esattamente al "body" del tuo esempio
+    // 2. Costruzione payload per il webhook n8n
     const n8nPayload = {
         token: token,
         category_id: catId,
         new_product_block: draftData
     };
 
-    // 3. HANDOVER AL PROCESSOR
-    // Usiamo il token come chiave univoca temporanea
+    // 3. Handover al Processor
     const sessionKey = `pending_payload_${token}`;
     
     try {
+        // Mettiamo il payload in valigia per il Processor
         sessionStorage.setItem(sessionKey, JSON.stringify(n8nPayload));
         
-        // Definiamo dove tornare dopo il salvataggio (Catalogo)
-        const returnUrl = encodeURIComponent(`catalog/catalog.html?token=${token}`);
+        // RECUPERIAMO LA CHIAVE COMPOSITA DALL'URL
+        const vat = urlParams.get('vat'); 
+        if (!vat) {
+            alert("Errore critico: P.IVA (vat) mancante. Impossibile procedere.");
+            return;
+        }
         
-        // REDIRECT: Scendiamo di un livello (../) verso la root dove sta processor.html
-        // call=save_product -> Istruisce il processor su quale webhook chiamare
+        // COSTRUIAMO L'URL DI RITORNO CON LA CHIAVE COMPOSITA
+        const returnUrl = encodeURIComponent(`catalog/catalog.html?token=${token}&vat=${vat}`);
+        
+        // REDIRECT AL PROCESSOR, passando l'azione, la chiave e la destinazione finale
         window.location.href = `../processor.html?call=save_product&owner_key=${token}&return_url=${returnUrl}`;
         
     } catch (err) {
-        alert("Errore Browser: Memoria piena o accesso negato.");
+        console.error("SessionStorage Error:", err);
+        alert("Errore del Browser: impossibile salvare i dati per il passaggio successivo. Disattiva eventuali blocchi di sicurezza e riprova.");
     }
 }
 
