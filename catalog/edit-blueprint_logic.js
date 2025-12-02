@@ -115,8 +115,15 @@ function renderSteps(steps, sIdx) {
     return steps.map((step, stIdx) => {
         const isOpen = step._ui_open ? 'open' : '';
         const activeClass = step._ui_open ? 'active' : '';
-        const wipBadge = step.logistics_flags?.requires_wip ? `<span class="badge badge-wip">WIP</span>` : '';
-        const finBadge = step.logistics_flags?.requires_finished ? `<span class="badge badge-fin">FINISHED</span>` : '';
+        
+        // RIPRISTINO BADGE STILOSI
+        const wipBadge = step.logistics_flags?.requires_wip 
+            ? `<span class="badge badge-wip">WIP</span>` 
+            : '';
+        const finBadge = step.logistics_flags?.requires_finished 
+            ? `<span class="badge badge-fin">FINISHED</span>` 
+            : '';
+        
         const mins = parseInt(step.estimated_time_minutes) || 0;
         
         return `
@@ -141,6 +148,7 @@ function renderSteps(steps, sIdx) {
                 </div>
             </div>
 
+            <!-- CONTROLS ROW: Tempo a Sinistra + Badge -->
             <div class="step-controls-row">
                 <div class="step-time-box">
                     <i class="far fa-clock"></i>
@@ -148,7 +156,8 @@ function renderSteps(steps, sIdx) {
                            data-type="step-time" data-sidx="${sIdx}" data-stidx="${stIdx}">
                     <span>${t.min}</span>
                 </div>
-                <div style="display: flex; gap: 5px;">${wipBadge} ${finBadge}</div>
+                <!-- Badge subito dopo il tempo -->
+                <div style="display: flex; gap: 8px;">${wipBadge} ${finBadge}</div>
             </div>
 
             <div class="step-details ${isOpen}">
