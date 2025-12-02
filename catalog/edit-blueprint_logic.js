@@ -1,8 +1,5 @@
 /**
- * BLUEPRINT EDITOR LOGIC (vREMASTERED - SEXY UI)
- * - Compact Cards
- * - Inline Editing
- * - Collapsible Details
+ * BLUEPRINT EDITOR LOGIC (vFINAL - FULL LANGS)
  */
 'use strict';
 
@@ -20,11 +17,19 @@ const langParam = urlParams.get('lang') || 'it';
 
 let currentData = null;
 
-// 2. I18N (FULL)
+// 2. I18N (FULL 6 LANGUAGES)
 const i18n = {
-    it: { title: "Blueprint Operativo", subtitle: "Definisci il processo produttivo", btnAddStage: "Aggiungi Fase", btnSave: "Salva", loading: "Caricamento...", saved: "✅ Salvato!", error: "❌ Errore", phDesc: "Scopo del processo...", phStageName: "Nome Fase (es. Analisi)", phStepName: "Nome Step", phStageDesc: "Descrizione fase...", phStepInstr: "Istruzioni operative...", phQC: "Check Qualità...", phSkills: "Skill (es. Dev, Legal)", lblDesc: "DESCRIZIONE", min: "min", confirmDel: "Eliminare?" },
-    en: { title: "Operational Blueprint", subtitle: "Define production process", btnAddStage: "Add Stage", btnSave: "Save", loading: "Loading...", saved: "✅ Saved!", error: "❌ Error", phDesc: "Process purpose...", phStageName: "Stage Name", phStepName: "Step Name", phStageDesc: "Stage description...", phStepInstr: "Instructions...", phQC: "Quality Check...", phSkills: "Skills (e.g. Dev)", lblDesc: "DESCRIPTION", min: "min", confirmDel: "Delete?" }
-    // ... (aggiungi le altre lingue se necessario, fallback su EN)
+    it: { title: "Blueprint Operativo", subtitle: "Definisci il processo produttivo", btnAddStage: "Aggiungi Fase", btnSave: "Salva", loading: "Caricamento...", saved: "✅ Salvato!", error: "❌ Errore", phDesc: "Scopo del processo...", phStageName: "Nome Fase (es. Analisi)", phStepName: "Nome Step", phStageDesc: "Descrizione fase...", phStepInstr: "Istruzioni operative...", phQC: "Check Qualità...", phSkills: "Skill (es. Dev, Legal)", lblDesc: "DESCRIZIONE", min: "min", confirmDel: "Eliminare?", step: "Step", lblInstr: "ISTRUZIONI", lblQC: "QUALITY CHECK", lblSkills: "SKILLS", lblWip: "WIP", lblFin: "FINISHED" },
+    
+    en: { title: "Operational Blueprint", subtitle: "Define production process", btnAddStage: "Add Stage", btnSave: "Save", loading: "Loading...", saved: "✅ Saved!", error: "❌ Error", phDesc: "Process purpose...", phStageName: "Stage Name", phStepName: "Step Name", phStageDesc: "Stage description...", phStepInstr: "Instructions...", phQC: "Quality Check...", phSkills: "Skills (e.g. Dev)", lblDesc: "DESCRIPTION", min: "min", confirmDel: "Delete?", step: "Step", lblInstr: "INSTRUCTIONS", lblQC: "QUALITY CHECK", lblSkills: "SKILLS", lblWip: "WIP", lblFin: "FINISHED" },
+    
+    fr: { title: "Blueprint Opérationnel", subtitle: "Définir processus de production", btnAddStage: "Ajouter Phase", btnSave: "Enregistrer", loading: "Chargement...", saved: "✅ Enregistré !", error: "❌ Erreur", phDesc: "But du processus...", phStageName: "Nom Phase", phStepName: "Nom Étape", phStageDesc: "Description phase...", phStepInstr: "Instructions...", phQC: "Contrôle Qualité...", phSkills: "Compétences (ex: Dev)", lblDesc: "DESCRIPTION", min: "min", confirmDel: "Supprimer ?", step: "Étape", lblInstr: "INSTRUCTIONS", lblQC: "CONTRÔLE QUALITÉ", lblSkills: "COMPÉTENCES", lblWip: "EN COURS", lblFin: "TERMINÉ" },
+    
+    de: { title: "Operativer Blueprint", subtitle: "Produktionsprozess definieren", btnAddStage: "Phase Hinzufügen", btnSave: "Speichern", loading: "Laden...", saved: "✅ Gespeichert!", error: "❌ Fehler", phDesc: "Prozesszweck...", phStageName: "Phasenname", phStepName: "Schrittname", phStageDesc: "Phasenbeschreibung...", phStepInstr: "Anweisungen...", phQC: "Qualitätsprüfung...", phSkills: "Fähigkeiten (z.B. Dev)", lblDesc: "BESCHREIBUNG", min: "Min", confirmDel: "Löschen?", step: "Schritt", lblInstr: "ANWEISUNGEN", lblQC: "QUALITÄTSPRÜFUNG", lblSkills: "FÄHIGKEITEN", lblWip: "IN ARBEIT", lblFin: "FERTIG" },
+    
+    es: { title: "Blueprint Operativo", subtitle: "Definir proceso productivo", btnAddStage: "Añadir Fase", btnSave: "Guardar", loading: "Cargando...", saved: "✅ ¡Guardado!", error: "❌ Error", phDesc: "Propósito proceso...", phStageName: "Nombre Fase", phStepName: "Nombre Paso", phStageDesc: "Descripción fase...", phStepInstr: "Instrucciones...", phQC: "Control Calidad...", phSkills: "Habilidades (ej: Dev)", lblDesc: "DESCRIPCIÓN", min: "min", confirmDel: "¿Eliminar?", step: "Paso", lblInstr: "INSTRUCCIONES", lblQC: "CONTROL CALIDAD", lblSkills: "HABILIDADES", lblWip: "EN PROCESO", lblFin: "TERMINADO" },
+    
+    pt: { title: "Blueprint Operacional", subtitle: "Definir processo produtivo", btnAddStage: "Adicionar Fase", btnSave: "Salvar", loading: "Carregando...", saved: "✅ Salvo!", error: "❌ Erro", phDesc: "Propósito do processo...", phStageName: "Nome da Fase", phStepName: "Nome da Etapa", phStageDesc: "Descrição da fase...", phStepInstr: "Instruções...", phQC: "Verificação de Qualidade...", phSkills: "Habilidades (ex: Dev)", lblDesc: "DESCRIÇÃO", min: "min", confirmDel: "Excluir?", step: "Etapa", lblInstr: "INSTRUÇÕES", lblQC: "CONTROLE QUALIDADE", lblSkills: "HABILIDADES", lblWip: "EM ANDAMENTO", lblFin: "CONCLUÍDO" }
 };
 const t = i18n[langParam.slice(0,2)] || i18n.it;
 
@@ -42,10 +47,13 @@ const dom = {
 // 4. INIT
 function init() {
     applyTranslations();
-    if (!productId || !token || !vat) return showError("Missing Parameters");
+    if (!productId || !token || !vat) {
+        alert("Error: Missing Parameters");
+        return;
+    }
     loadBlueprint();
     
-    // Global Event Delegation (Più efficiente di mille listener)
+    // Global Event Delegation
     dom.stagesContainer.addEventListener('click', handleContainerClick);
     dom.stagesContainer.addEventListener('input', handleInput);
     
@@ -61,9 +69,10 @@ function applyTranslations() {
     document.querySelector('[data-i18n="btnAddStage"]').innerText = t.btnAddStage;
     document.querySelector('[data-i18n="btnSave"]').innerText = t.btnSave;
     dom.desc.placeholder = t.phDesc;
+    dom.loaderText.textContent = t.loading;
 }
 
-// 5. RENDERER (IL CUORE DEL DESIGN)
+// 5. RENDERER
 function renderStages() {
     dom.stagesContainer.innerHTML = '';
     if (!currentData.stages) currentData.stages = [];
@@ -73,7 +82,6 @@ function renderStages() {
         stageEl.className = 'stage-card';
         stageEl.dataset.idx = sIdx;
 
-        // Header Fase: Input Inline
         stageEl.innerHTML = `
             <div class="stage-header">
                 <i class="fas fa-grip-vertical drag-handle"></i>
@@ -90,20 +98,18 @@ function renderStages() {
             
             <div style="padding: 10px; border-top: 1px solid rgba(255,255,255,0.05); text-align: center;">
                 <button class="btn-mini" data-action="add-step" data-sidx="${sIdx}" style="width:100%; border:1px dashed var(--glass-border); opacity:0.6;">
-                    <i class="fas fa-plus"></i> Step
+                    <i class="fas fa-plus"></i> ${t.step}
                 </button>
             </div>
         `;
         dom.stagesContainer.appendChild(stageEl);
 
-        // Sortable per gli Step
         new Sortable(stageEl.querySelector('.step-list-container'), {
             group: 'steps', handle: '.drag-handle', animation: 150,
             onEnd: handleSortEnd
         });
     });
 
-    // Sortable per le Fasi
     new Sortable(dom.stagesContainer, {
         handle: '.stage-header .drag-handle', animation: 150,
         onEnd: handleSortEnd
@@ -115,10 +121,9 @@ function renderSteps(steps, sIdx) {
     return steps.map((step, stIdx) => {
         const isOpen = step._ui_open ? 'open' : '';
         const activeClass = step._ui_open ? 'active' : '';
-        const wipBadge = step.logistics_flags?.requires_wip ? `<span class="mini-badge badge-wip">WIP</span>` : '';
-        const finBadge = step.logistics_flags?.requires_finished ? `<span class="mini-badge badge-fin">FIN</span>` : '';
-        const qcActive = step.quality_check?.check_description ? 'color:var(--success)' : 'color:var(--text-muted)';
-
+        const wipBadge = step.logistics_flags?.requires_wip ? `<span class="mini-badge badge-wip">${t.lblWip}</span>` : '';
+        const finBadge = step.logistics_flags?.requires_finished ? `<span class="mini-badge badge-fin">${t.lblFin}</span>` : '';
+        
         return `
         <div class="step-item" data-sidx="${sIdx}" data-stidx="${stIdx}">
             <div class="step-header">
@@ -143,32 +148,29 @@ function renderSteps(steps, sIdx) {
             </div>
 
             <div class="step-details ${isOpen}" id="details-${sIdx}-${stIdx}">
-                <!-- Istruzioni -->
                 <div class="form-group" style="margin-bottom:10px;">
-                    <label style="font-size:10px; color:var(--primary);">ISTRUZIONI</label>
+                    <label style="font-size:10px; color:var(--primary);">${t.lblInstr}</label>
                     <textarea class="ghost-textarea" style="background:rgba(0,0,0,0.2); padding:8px;" rows="2" placeholder="${t.phStepInstr}" data-type="step-instr" data-sidx="${sIdx}" data-stidx="${stIdx}">${step.instructions||''}</textarea>
                 </div>
 
-                <!-- Quality Check -->
                 <div class="form-group" style="margin-bottom:10px;">
-                    <label style="font-size:10px; color:var(--success);"><i class="fas fa-check-circle"></i> QUALITY CHECK</label>
+                    <label style="font-size:10px; color:var(--success);"><i class="fas fa-check-circle"></i> ${t.lblQC}</label>
                     <textarea class="ghost-textarea" style="background:rgba(0,0,0,0.2); padding:8px;" rows="1" placeholder="${t.phQC}" data-type="step-qc" data-sidx="${sIdx}" data-stidx="${stIdx}">${step.quality_check?.check_description||''}</textarea>
                 </div>
 
                 <div class="row" style="margin-bottom:0;">
                     <div class="col">
-                        <label style="font-size:10px;">SKILLS</label>
+                        <label style="font-size:10px;">${t.lblSkills}</label>
                         <input type="text" class="ghost-input" style="font-size:12px; border-bottom:1px solid rgba(255,255,255,0.1);" value="${(step.resources_needed?.labor?.required_skill_tags||[]).join(', ')}" placeholder="${t.phSkills}" data-type="step-skills" data-sidx="${sIdx}" data-stidx="${stIdx}">
                     </div>
                 </div>
 
-                <!-- Flags -->
                 <div style="display:flex; gap:15px; margin-top:10px; padding-top:10px; border-top:1px dashed rgba(255,255,255,0.1);">
                     <label style="font-size:11px; display:flex; align-items:center; gap:5px;">
-                        <input type="checkbox" ${step.logistics_flags?.requires_wip?'checked':''} data-type="flag-wip" data-sidx="${sIdx}" data-stidx="${stIdx}"> WIP
+                        <input type="checkbox" ${step.logistics_flags?.requires_wip?'checked':''} data-type="flag-wip" data-sidx="${sIdx}" data-stidx="${stIdx}"> ${t.lblWip}
                     </label>
                     <label style="font-size:11px; display:flex; align-items:center; gap:5px;">
-                        <input type="checkbox" ${step.logistics_flags?.requires_finished?'checked':''} data-type="flag-fin" data-sidx="${sIdx}" data-stidx="${stIdx}"> Finished
+                        <input type="checkbox" ${step.logistics_flags?.requires_finished?'checked':''} data-type="flag-fin" data-sidx="${sIdx}" data-stidx="${stIdx}"> ${t.lblFin}
                     </label>
                 </div>
             </div>
@@ -177,7 +179,7 @@ function renderSteps(steps, sIdx) {
     }).join('');
 }
 
-// 6. EVENT HANDLERS (Delegation)
+// 6. EVENT HANDLERS
 function handleContainerClick(e) {
     const btn = e.target.closest('button');
     if (!btn) return;
@@ -194,7 +196,7 @@ function handleContainerClick(e) {
     } else if (action === 'toggle-step') {
         const step = currentData.stages[sIdx].steps[stIdx];
         step._ui_open = !step._ui_open;
-        renderStages(); // Re-render per aggiornare UI e Icona
+        renderStages();
     }
 }
 
@@ -224,15 +226,18 @@ function handleInput(e) {
         if(!step.logistics_flags) step.logistics_flags={};
         if(type==='flag-wip') step.logistics_flags.requires_wip = val;
         if(type==='flag-fin') step.logistics_flags.requires_finished = val;
-        // Re-render parziale o update classi visive (qui ricarichiamo per semplicità sui badge)
-        // Se rallenta, ottimizzare.
+        // Aggiorna solo badge visivi per performance
+        const p = el.closest('.step-item').querySelector('.step-meta');
+        const wip = step.logistics_flags.requires_wip ? `<span class="mini-badge badge-wip">${t.lblWip}</span>` : '';
+        const fin = step.logistics_flags.requires_finished ? `<span class="mini-badge badge-fin">${t.lblFin}</span>` : '';
+        p.innerHTML = `<span>⏱️ <input type="number" value="${step.estimated_time_minutes||0}" style="width:30px; background:transparent; border:none; color:inherit; text-align:center;" data-type="step-time" data-sidx="${sIdx}" data-stidx="${stIdx}"> ${t.min}</span> ${wip} ${fin}`;
     }
 }
 
 // 7. DATA HELPERS
 function addStage() {
     if (!currentData.stages) currentData.stages = [];
-    currentData.stages.push({ stage_name: "Nuova Fase", description: "", steps: [] });
+    currentData.stages.push({ stage_name: "New Stage", description: "", steps: [] });
     updateIndexes(); renderStages();
     setTimeout(() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }), 100);
 }
@@ -240,7 +245,7 @@ function addStage() {
 function addStep(sIdx) {
     if (!currentData.stages[sIdx].steps) currentData.stages[sIdx].steps = [];
     currentData.stages[sIdx].steps.push({ 
-        step_name: "Nuovo Step", instructions: "", estimated_time_minutes: 15, 
+        step_name: "New Step", instructions: "", estimated_time_minutes: 15, 
         _ui_open: true 
     });
     updateIndexes(); renderStages();
@@ -261,85 +266,13 @@ function updateIndexes() {
 }
 
 function handleSortEnd(evt) {
-    // La logica di Sortable aggiorna il DOM, ma noi dobbiamo aggiornare il JSON
-    // Per semplicità con framework non-reattivi, ricarichiamo i dati dal DOM o
-    // (meglio) usiamo gli indici vecchi/nuovi forniti da Sortable per muovere l'array.
-    
-    // FIX RAPIDO: Ricostruiamo il model leggendo il DOM (metodo "Brute Force" ma sicuro per Drag&Drop complessi)
-    // Nota: con liste grandi meglio muovere array. Qui va bene.
-    // ... Implementiamo la mossa array:
-    
-    const isStage = evt.item.classList.contains('stage-card');
-    if (isStage) {
-        const moved = currentData.stages.splice(evt.oldIndex, 1)[0];
-        currentData.stages.splice(evt.newIndex, 0, moved);
-    } else {
-        // È uno step. Trova padre e indici.
-        // SortableJS modifica il DOM. Noi dobbiamo sincronizzare i dati.
-        // Per evitare disallineamenti, ricarichiamo tutto basandoci sui data-attributes dopo il drop?
-        // No, meglio muovere l'array.
-        
-        // Il problema è che Sortable sposta l'elemento HTML.
-        // Dobbiamo capire da quale stage a quale stage (se cross-list).
-        
-        // Semplifichiamo: RenderStages distrugge il DOM. Sortable ha appena cambiato il DOM.
-        // Conflict! 
-        // Soluzione: Recuperiamo i dati prima del re-render.
-        
-        // Strategia Migliore per Vanilla JS + Sortable:
-        // 1. Lasciare che Sortable muova il DOM.
-        // 2. Leggere il nuovo ordine dal DOM.
-        // 3. Aggiornare currentData.
-        // 4. (Opzionale) Re-render per pulire.
-        
-        rebuildDataFromDOM();
-    }
-    updateIndexes();
-    renderStages(); // Re-render pulito
-}
-
-function rebuildDataFromDOM() {
-    // Ricostruisce currentData.stages scansionando il DOM attuale
-    const newStages = [];
-    const stageEls = dom.stagesContainer.querySelectorAll('.stage-card');
-    
-    stageEls.forEach(stageEl => {
-        // Recupera l'oggetto stage originale usando l'indice vecchio (salvato in memoria o data attr)
-        // Ma attenzione: gli input potrebbero essere cambiati.
-        // Approccio Ibrido:
-        // L'oggetto stage originale è legato all'elemento DOM? No.
-        
-        // Facciamo così: usiamo la logica di Sortable `onEnd` classica (array move)
-        // Perché il renderStages() è chiamato ALLA FINE.
-        
-        // Ok, torniamo alla logica "Array Move" nel `handleSortEnd` sopra, 
-        // ma dobbiamo passare i riferimenti corretti.
-        
-        // (Per brevità nel codice sopra ho messo la logica array move nel `if(isStage)`).
-        // Per gli step serve il contesto `evt.from` e `evt.to`.
-    });
-    
-    // CORREZIONE LOGICA SORTABLE NELLA FUNZIONE SOPRA:
-    // Poiché RenderStages viene chiamato, esso sovrascrive il DOM.
-    // Dobbiamo assicurarci che i dati siano aggiornati PRIMA di chiamare renderStages.
-    // Vedi implementazione aggiornata sotto.
-}
-
-// FIX SORTABLE HANDLER
-function handleSortEnd(evt) {
     const item = evt.item;
     if (item.classList.contains('stage-card')) {
         const moved = currentData.stages.splice(evt.oldIndex, 1)[0];
         currentData.stages.splice(evt.newIndex, 0, moved);
     } else {
-        // Step Sort
-        // Trova gli indici degli stage guardando i container
-        // Il container .step-list-container ha un data-sidx? No, aggiungiamolo nel render!
-        // (Fatto nel render: data-sidx="${sIdx}")
-        
         const fromStageIdx = parseInt(evt.from.dataset.sidx);
         const toStageIdx = parseInt(evt.to.dataset.sidx);
-        
         const movedStep = currentData.stages[fromStageIdx].steps.splice(evt.oldIndex, 1)[0];
         currentData.stages[toStageIdx].steps.splice(evt.newIndex, 0, movedStep);
     }
@@ -347,7 +280,7 @@ function handleSortEnd(evt) {
     renderStages();
 }
 
-// 8. NETWORK (Load & Save)
+// 8. NETWORK
 async function loadBlueprint() {
     showLoader(t.loading);
     try {
@@ -371,8 +304,6 @@ async function handleSave(e) {
     showLoader(t.saving);
     
     currentData.blueprint_description = dom.desc.value;
-    
-    // Clean UI flags
     const payload = JSON.parse(JSON.stringify(currentData));
     payload.stages.forEach(s => s.steps.forEach(st => delete st._ui_open));
 
@@ -381,17 +312,14 @@ async function handleSave(e) {
             method: 'POST', headers: {'Content-Type':'application/json'},
             body: JSON.stringify({ action: 'SAVE', type: 'BLUEPRINT', productId, token, vat, payload })
         });
-        
         hideLoader();
         tg.showPopup({ message: t.saved });
         setTimeout(() => tg.close(), 1000);
-    } catch(err) {
-        showError(err.message);
-    }
+    } catch(err) { showError(err.message); }
 }
 
 // UTILS
-function showLoader(msg) { dom.loaderText.innerText=msg; dom.loader.style.display='flex'; }
+function showLoader(msg) { dom.loaderText.innerText=msg; dom.loader.style.display='flex'; dom.content.classList.add('hidden'); }
 function hideLoader() { dom.loader.style.display='none'; dom.content.classList.remove('hidden'); }
 function showError(msg) { alert(msg); hideLoader(); }
 
