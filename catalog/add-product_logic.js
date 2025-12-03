@@ -16,7 +16,7 @@ const SAVE_WEBHOOK = "https://trinai.api.workflow.dcmake.it/webhook/20fd95c0-421
 const tg = window.Telegram.WebApp; 
 try { tg.ready(); tg.expand(); } catch(e){}
 
-
+// 2. PARAMETRI URL
 // 2. PARAMETRI URL
 const urlParams = new URLSearchParams(window.location.search);
 const token = urlParams.get('token');
@@ -110,20 +110,12 @@ function manualEnrich() {
 async function callEnrichWebhook(customData) {
     showLoader(t.status_ai);
 
-    // 1. Prendiamo TUTTI i parametri presenti nell'URL (vat, owner, token, catId, ecc.)
-    // Questo assicura che qualsiasi cosa ci sia nell'link venga passata al server.
-    const allUrlData = Object.fromEntries(urlParams.entries());
-
     const payload = {
-        // Inseriamo prima tutti i dati dell'URL
-        ...allUrlData,
-
-        // Poi forziamo i campi specifici che il tuo script gestisce (per sicurezza sui nomi)
         token: token,
-        category_id: catId,  // Manda sia 'catId' (dall'URL) che 'category_id' (qui)
+        category_id: catId,
         language: langParam,
-        
-        // Infine i dati custom (es. ghost_id o dati manuali)
+        vat: vat,       // <-- AGGIUNGI QUESTA RIGA
+        owner: owner,   // <-- AGGIUNGI QUESTA RIGA
         ...customData
     };
 
@@ -137,10 +129,6 @@ async function callEnrichWebhook(customData) {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         
         const json = await res.json();
-        
-        // Controllo extra: a volte il server risponde 200 ma con un JSON di errore
-        if (json.error) throw new Error(json.error);
-
         const data = Array.isArray(json) ? json[0] : json;
 
         if (!data) throw new Error("Empty Data");
@@ -149,8 +137,7 @@ async function callEnrichWebhook(customData) {
 
     } catch(e) {
         console.error(e);
-        // Mostriamo l'errore esatto per capire cosa succede
-        alert("Server Error:\n" + e.message);
+        alert(t.err_generic + "\n" + e.message);
         hideLoader();
         if (customData.ghost_id) dom.inputSection.classList.remove('hidden');
     }
@@ -247,19 +234,19 @@ async function handleSave(e) {
     try {
         sessionStorage.setItem(sessionKey, JSON.stringify(n8nPayload));
         
-        // 1. Clona i parametri attuali
-        const returnParams = new URLSearchParams(window.location.search);
+        // 1. Crea parametri puliti SOLO con i necessari per il catalogo
+        const returnParams = new URLSearchParams();
+        returnParams.set('token', token);
+        returnParams.set('vat', vat);
+        returnParams.set('owner', owner);
+        returnParams.set('lang', langParam);
         
-        // 2. Pulisce i parametri inutili per il ritorno
-        returnParams.delete('ghostId'); // Non serve più
-        
-        // 3. TARGET: IL CATALOGO
+        // 2. TARGET: IL CATALOGO (senza productId o ghostId!)
         // Il path è relativo alla posizione di processor.html (root)
-        // Quindi è semplicemente "catalog/catalog.html"
         const returnPath = "catalog/catalog.html";
         const returnUrl = encodeURIComponent(`${returnPath}?${returnParams.toString()}`);
         
-        // 4. VAI AL PROCESSOR (che sta un livello sopra da qui: ../)
+        // 3. VAI AL PROCESSOR (che sta un livello sopra da qui: ../)
         window.location.href = `../processor.html?call=save_product&owner_key=${token}&return_url=${returnUrl}`;
         
     } catch (err) {
