@@ -17,14 +17,11 @@ const tg = window.Telegram.WebApp;
 try { tg.ready(); tg.expand(); } catch(e){}
 
 // 2. PARAMETRI URL
-// 2. PARAMETRI URL
 const urlParams = new URLSearchParams(window.location.search);
 const token = urlParams.get('token');
 const catId = urlParams.get('catId');
 const ghostId = urlParams.get('ghostId');
 const langParam = urlParams.get('lang') || 'it';
-const vat = urlParams.get('vat');     // <-- AGGIUNGI QUESTA RIGA
-const owner = urlParams.get('owner'); // <-- AGGIUNGI QUESTA RIGA
 
 // 3. STATO GLOBALE
 let draftData = null;
@@ -114,8 +111,6 @@ async function callEnrichWebhook(customData) {
         token: token,
         category_id: catId,
         language: langParam,
-        vat: vat,       // <-- AGGIUNGI QUESTA RIGA
-        owner: owner,   // <-- AGGIUNGI QUESTA RIGA
         ...customData
     };
 
