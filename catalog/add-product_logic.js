@@ -234,19 +234,19 @@ async function handleSave(e) {
     try {
         sessionStorage.setItem(sessionKey, JSON.stringify(n8nPayload));
         
-        // 1. Crea parametri puliti SOLO con i necessari per il catalogo
-        const returnParams = new URLSearchParams();
-        returnParams.set('token', token);
-        returnParams.set('vat', vat);
-        returnParams.set('owner', owner);
-        returnParams.set('lang', langParam);
+        // 1. Clona i parametri attuali
+        const returnParams = new URLSearchParams(window.location.search);
         
-        // 2. TARGET: IL CATALOGO (senza productId o ghostId!)
+        // 2. Pulisce i parametri inutili per il ritorno
+        returnParams.delete('ghostId'); // Non serve più
+        
+        // 3. TARGET: IL CATALOGO
         // Il path è relativo alla posizione di processor.html (root)
+        // Quindi è semplicemente "catalog/catalog.html"
         const returnPath = "catalog/catalog.html";
         const returnUrl = encodeURIComponent(`${returnPath}?${returnParams.toString()}`);
         
-        // 3. VAI AL PROCESSOR (che sta un livello sopra da qui: ../)
+        // 4. VAI AL PROCESSOR (che sta un livello sopra da qui: ../)
         window.location.href = `../processor.html?call=save_product&owner_key=${token}&return_url=${returnUrl}`;
         
     } catch (err) {
