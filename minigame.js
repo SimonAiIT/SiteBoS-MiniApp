@@ -28,14 +28,13 @@ const MiniGame = {
     // Speed Config (RALLENTATI)
     baseSpeed: 0.20,
     boostSpeed: 0.45,
-    enemySpeedSmart: 0.08,  // Era 0.11-0.12, ora più lento
-    enemySpeedDumb: 0.06,   // Era 0.08, ora più lento
+    enemySpeed: 0.07,  // Velocità unica per entrambi i nemici (rallentata)
     boostTimer: null,
     
     // Sprites
     sprites: {
         player: '🤖',
-        enemies: ['📧', '💼'], // Solo 2 nemici
+        enemies: ['📧', '💼'], // Solo 2 nemici smart
         items: [
             { id: 'heart', icon: '❤️' },
             { id: 'house', icon: '🏠' },
@@ -229,10 +228,10 @@ const MiniGame = {
             collected: false
         }));
         
-        // Enemies - SOLO 2 NEMICI (1 smart, 1 dumb)
+        // Enemies - ENTRAMBI SMART (pathfinding AI)
         this.enemies = [
-            { type: 'smart', icon: this.sprites.enemies[0], x: freeSpots[4].x, y: freeSpots[4].y, dir: {x:0,y:0}, progress:0, speed: this.enemySpeedSmart },
-            { type: 'dumb',  icon: this.sprites.enemies[1], x: freeSpots[5].x, y: freeSpots[5].y, dir: {x:0,y:0}, progress:0, speed: this.enemySpeedDumb }
+            { type: 'smart', icon: this.sprites.enemies[0], x: freeSpots[4].x, y: freeSpots[4].y, dir: {x:0,y:0}, progress:0, speed: this.enemySpeed },
+            { type: 'smart', icon: this.sprites.enemies[1], x: freeSpots[5].x, y: freeSpots[5].y, dir: {x:0,y:0}, progress:0, speed: this.enemySpeed }
         ];
     },
     
@@ -240,21 +239,13 @@ const MiniGame = {
         // Movement
         this.moveActor(this.player, true);
         
+        // Entrambi i nemici usano pathfinding
         this.enemies.forEach(enemy => {
             if(enemy.progress === 0) {
-                if(enemy.type === 'smart') {
-                    const path = this.Pathfinder.findPath(this.map, enemy, this.player);
-                    if(path.length > 0) enemy.dir = path[0];
-                } else {
-                    const possible = [{x:0,y:1},{x:0,y:-1},{x:1,y:0},{x:-1,y:0}]
-                        .filter(d => {
-                            const nx = Math.round(enemy.x) + d.x;
-                            const ny = Math.round(enemy.y) + d.y;
-                            return this.isValid(nx, ny) && this.map[ny][nx] === 0;
-                        });
-                    if(possible.length > 0) {
-                        enemy.dir = possible[Math.floor(Math.random()*possible.length)];
-                    }
+                // Calcola percorso verso player
+                const path = this.Pathfinder.findPath(this.map, enemy, this.player);
+                if(path.length > 0) {
+                    enemy.dir = path[0];
                 }
             }
             this.moveActor(enemy, false);
