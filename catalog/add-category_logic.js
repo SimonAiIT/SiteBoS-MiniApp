@@ -19,7 +19,7 @@ let generatedCategoryData = null;
 // I18N COMPLETE
 const i18n = {
     it: {
-        page_title: "Nuova Categoria", title: "➕ Nuova Categoria", subtitle: "Configura la nuova area di business.",
+        page_title: "Nuova Categoria", title: "➥ Nuova Categoria", subtitle: "Configura la nuova area di business.",
         lblCatName: "Nome Categoria", lblCatDesc: "Descrizione (Opzionale)",
         divider_text: "E / O CARICA LISTINO (PDF/JSON)",
         upload_hint: "Tocca per caricare File",
@@ -32,7 +32,7 @@ const i18n = {
         err_generic: "Errore. Riprova."
     },
     en: {
-        page_title: "New Category", title: "➕ New Category", subtitle: "Setup new business area.",
+        page_title: "New Category", title: "➥ New Category", subtitle: "Setup new business area.",
         lblCatName: "Category Name", lblCatDesc: "Description (Optional)",
         divider_text: "AND / OR UPLOAD LIST (PDF/JSON)",
         upload_hint: "Tap to upload File",
@@ -45,7 +45,7 @@ const i18n = {
         err_generic: "Error. Retry."
     },
     fr: {
-        page_title: "Nouvelle Catégorie", title: "➕ Nouvelle Catégorie", subtitle: "Configurez la nouvelle zone.",
+        page_title: "Nouvelle Catégorie", title: "➥ Nouvelle Catégorie", subtitle: "Configurez la nouvelle zone.",
         lblCatName: "Nom Catégorie", lblCatDesc: "Description (Optionnel)",
         divider_text: "ET / OU CHARGER FICHIER",
         upload_hint: "Touchez pour charger",
@@ -58,7 +58,7 @@ const i18n = {
         err_generic: "Erreur. Réessayer."
     },
     de: {
-        page_title: "Neue Kategorie", title: "➕ Neue Kategorie", subtitle: "Neuen Bereich einrichten.",
+        page_title: "Neue Kategorie", title: "➥ Neue Kategorie", subtitle: "Neuen Bereich einrichten.",
         lblCatName: "Kategoriename", lblCatDesc: "Beschreibung (Optional)",
         divider_text: "UND / ODER DATEI LADEN",
         upload_hint: "Tippen zum Laden",
@@ -71,7 +71,7 @@ const i18n = {
         err_generic: "Fehler. Wiederholen."
     },
     es: {
-        page_title: "Nueva Categoría", title: "➕ Nueva Categoría", subtitle: "Configura nueva área.",
+        page_title: "Nueva Categoría", title: "➥ Nueva Categoría", subtitle: "Configura nueva área.",
         lblCatName: "Nombre Categoría", lblCatDesc: "Descripción (Opcional)",
         divider_text: "Y / O CARGAR ARCHIVO",
         upload_hint: "Toca para cargar",
@@ -84,7 +84,7 @@ const i18n = {
         err_generic: "Error. Reintentar."
     },
     pt: {
-        page_title: "Nova Categoria", title: "➕ Nova Categoria", subtitle: "Configurar nova área.",
+        page_title: "Nova Categoria", title: "➥ Nova Categoria", subtitle: "Configurar nova área.",
         lblCatName: "Nome Categoria", lblCatDesc: "Descrição (Opcional)",
         divider_text: "E / OU CARREGAR ARQUIVO",
         upload_hint: "Toque para carregar",
@@ -157,6 +157,10 @@ window.resetForm = function() {
     dom.fileBox.classList.remove('success');
     dom.fileName.innerText = "";
     generatedCategoryData = null;
+    
+    // 👉 NASCONDI FAB SALVA
+    const saveFab = document.getElementById('saveBtn');
+    if(saveFab) saveFab.classList.add('hidden');
 }
 
 async function handleGenerate() {
@@ -214,6 +218,10 @@ function handleAnalysisResult(data) {
     
     dom.inputPhase.classList.add('hidden');
     dom.reviewPhase.classList.remove('hidden');
+    
+    // 👉 MOSTRA FAB SALVA
+    const saveFab = document.getElementById('saveBtn');
+    if(saveFab) saveFab.classList.remove('hidden');
     
     hideLoader();
 }
