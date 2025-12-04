@@ -516,14 +516,22 @@ const MiniGame = {
     // ===== UTILITIES =====
     resize: function() {
         const wrapper = this.canvas.parentElement;
+        
+        // Calcola spazio disponibile
         const w = wrapper.clientWidth - 10;
-        const h = wrapper.clientHeight - 10;
+        
+        // IMPORTANTE: Sottrai spazio per banner pubblicitario in basso
+        // Banner height: 80px + instruction text: ~25px + margini: ~10px = ~115px totale
+        const adFooterHeight = 115;
+        const h = wrapper.clientHeight - adFooterHeight - 10;
         
         const cellW = Math.floor(w / this.cols);
         const cellH = Math.floor(h / this.rows);
         
+        // Usa la dimensione più piccola per mantenere proporzioni
         this.gridSize = Math.min(cellW, cellH);
         
+        // Imposta dimensioni canvas
         this.canvas.width = this.gridSize * this.cols;
         this.canvas.height = this.gridSize * this.rows;
     },
