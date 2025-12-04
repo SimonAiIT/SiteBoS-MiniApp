@@ -1,9 +1,8 @@
 /**
- * BLUEPRINT EDITOR LOGIC (v2.1 - UX FIXES)
- * - Stage CHIUSE di default
- * - Step fields full-width
- * - Trash icon invece di X
- * - Allineamento migliorato
+ * BLUEPRINT EDITOR LOGIC (v2.2 - ALIGNED LAYOUT)
+ * - Stage header: Drag a SX, Chevron+Trash a DX (come step)
+ * - Tutti i campi full-width
+ * - Layout perfettamente allineato
  */
 'use strict';
 
@@ -63,13 +62,12 @@ function applyTranslations() {
     dom.loaderText.textContent = t.loading;
 }
 
-// 5. RENDERER CON STAGES CHIUSE DI DEFAULT
+// 5. RENDERER - STAGE HEADER ALLINEATO COME STEP
 function renderStages() {
     dom.stagesContainer.innerHTML = '';
     if (!currentData.stages) currentData.stages = [];
 
     currentData.stages.forEach((stage, sIdx) => {
-        // 👉 DEFAULT: CHIUSO (solo se _ui_open non è esplicitamente true)
         const isOpen = stage._ui_open === true;
         const stepCount = stage.steps?.length || 0;
         const totalTime = (stage.steps || []).reduce((sum, st) => sum + (parseInt(st.estimated_time_minutes) || 0), 0);
@@ -79,21 +77,27 @@ function renderStages() {
         stageEl.dataset.idx = sIdx;
 
         stageEl.innerHTML = `
-            <!-- HEADER COLLASSABILE -->
-            <div class="stage-header-collapsible" data-action="toggle-stage" data-sidx="${sIdx}" 
-                 style="cursor:pointer; display:flex; justify-content:space-between; align-items:center; padding:15px; background:rgba(255,255,255,0.03); border-bottom:1px solid var(--glass-border);">
-                <div style="display:flex; align-items:center; gap:12px; flex:1;">
+            <!-- 👉 HEADER FASE: DRAG SX | NOME | CHEVRON+TRASH DX (come step) -->
+            <div class="stage-header-collapsible" data-sidx="${sIdx}" 
+                 style="display:flex; justify-content:space-between; align-items:center; padding:15px; background:rgba(255,255,255,0.03); border-bottom:1px solid var(--glass-border); cursor:pointer;">
+                
+                <!-- SINISTRA: Drag + Nome -->
+                <div style="display:flex; align-items:center; gap:12px; flex:1;" data-action="toggle-stage">
                     <i class="fas fa-grip-vertical drag-handle" style="color:var(--text-muted); cursor:grab; font-size:16px;" onclick="event.stopPropagation();"></i>
                     <div style="flex:1;">
                         <div style="font-weight:600; font-size:15px; color:white; margin-bottom:3px;">${stage.stage_name || 'Fase Senza Nome'}</div>
                         <div style="font-size:11px; color:var(--text-muted);">${stepCount} ${t.stepsCount} • ${totalTime} ${t.min}</div>
                     </div>
                 </div>
-                <div style="display:flex; align-items:center; gap:8px;">
-                    <button class="btn-icon-sm text-error" data-action="delete-stage" data-sidx="${sIdx}" onclick="event.stopPropagation();" title="Elimina Fase">
+                
+                <!-- DESTRA: Chevron + Trash (COME STEP) -->
+                <div style="display:flex; align-items:center; gap:6px;">
+                    <button class="btn-icon-sm" data-action="toggle-stage-btn" data-sidx="${sIdx}" title="Espandi/Comprimi">
+                        <i class="fas fa-chevron-${isOpen ? 'up' : 'down'}"></i>
+                    </button>
+                    <button class="btn-icon-sm text-error" data-action="delete-stage" data-sidx="${sIdx}" title="Elimina Fase">
                         <i class="fas fa-trash"></i>
                     </button>
-                    <i class="fas fa-chevron-${isOpen ? 'up' : 'down'}" style="color:var(--text-muted); font-size:14px; transition:transform 0.3s;"></i>
                 </div>
             </div>
             
@@ -144,7 +148,7 @@ function renderSteps(steps, sIdx) {
         <div class="step-item" data-sidx="${sIdx}" data-stidx="${stIdx}" 
              style="background:rgba(0,0,0,0.2); border:1px solid var(--glass-border); border-radius:10px; padding:12px; margin-bottom:10px;">
             
-            <!-- 👉 RIGA 1: Allineata con fase (Drag | Badges | Bottoni) -->
+            <!-- HEADER STEP: DRAG SX | BADGES | CHEVRON+TRASH DX -->
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
                 <div style="display:flex; align-items:center; gap:10px;">
                     <i class="fas fa-grip-vertical drag-handle" style="color:var(--text-muted); cursor:grab; font-size:16px;"></i>
@@ -157,29 +161,28 @@ function renderSteps(steps, sIdx) {
                     <button class="btn-icon-sm ${activeClass}" data-action="toggle-step" data-sidx="${sIdx}" data-stidx="${stIdx}" title="Espandi/Comprimi">
                         <i class="fas fa-chevron-${isOpen ? 'up' : 'down'}"></i>
                     </button>
-                    <!-- 👉 TRASH ICON invece di X -->
                     <button class="btn-icon-sm text-error" data-action="delete-step" data-sidx="${sIdx}" data-stidx="${stIdx}" title="Elimina Step">
                         <i class="fas fa-trash"></i>
                     </button>
                 </div>
             </div>
 
-            <!-- 👉 RIGA 2: Nome Step FULL WIDTH -->
+            <!-- NOME STEP FULL WIDTH -->
             <input type="text" class="edit-input" 
                    style="font-size:14px; font-weight:500; margin-bottom:10px; width:100%;"
                    value="${step.step_name || ''}" placeholder="${t.phStepName}" 
                    data-type="step-name" data-sidx="${sIdx}" data-stidx="${stIdx}">
 
-            <!-- RIGA 3: Tempo -->
-            <div style="display:flex; align-items:center; gap:8px; padding:6px 10px; background:rgba(255,255,255,0.05); border-radius:6px; width:fit-content;">
-                <i class="far fa-clock" style="color:var(--primary);"></i>
+            <!-- TEMPO FULL WIDTH -->
+            <div style="display:flex; align-items:center; gap:8px; padding:8px 12px; background:rgba(255,255,255,0.05); border-radius:6px; width:100%;">
+                <i class="far fa-clock" style="color:var(--primary); flex-shrink:0;"></i>
                 <input type="number" min="0" value="${mins}" 
-                       style="width:50px; background:transparent; border:none; color:white; font-size:13px; text-align:center;"
+                       style="width:60px; background:transparent; border:none; color:white; font-size:13px; text-align:center;"
                        data-type="step-time" data-sidx="${sIdx}" data-stidx="${stIdx}">
                 <span style="font-size:12px; color:var(--text-muted);">${t.min}</span>
             </div>
 
-            <!-- 👉 DETTAGLI ESPANDIBILI: Tutti i campi FULL WIDTH -->
+            <!-- DETTAGLI ESPANDIBILI -->
             <div style="display:${isOpen ? 'block' : 'none'}; margin-top:15px; padding-top:15px; border-top:1px dashed var(--glass-border);">
                 
                 <div style="margin-bottom:12px;">
@@ -227,11 +230,11 @@ function renderSteps(steps, sIdx) {
 // 6. EVENT HANDLERS
 function handleContainerClick(e) {
     const btn = e.target.closest('button');
-    const header = e.target.closest('.stage-header-collapsible');
+    const toggleArea = e.target.closest('[data-action="toggle-stage"]');
     
-    // Toggle stage collapse
-    if (header && !btn) {
-        const sIdx = parseInt(header.dataset.sidx);
+    // Toggle stage da area nome (non dai bottoni)
+    if (toggleArea && !btn) {
+        const sIdx = parseInt(toggleArea.closest('[data-sidx]').dataset.sidx);
         currentData.stages[sIdx]._ui_open = !currentData.stages[sIdx]._ui_open;
         renderStages();
         return;
@@ -242,7 +245,7 @@ function handleContainerClick(e) {
     const sIdx = parseInt(btn.dataset.sidx);
     const stIdx = parseInt(btn.dataset.stidx);
 
-    if (action === 'toggle-stage') {
+    if (action === 'toggle-stage-btn') {
         currentData.stages[sIdx]._ui_open = !currentData.stages[sIdx]._ui_open;
         renderStages();
     } else if (action === 'delete-stage') {
@@ -291,7 +294,6 @@ function handleInput(e) {
 // 7. DATA HELPERS
 function addStage() {
     if (!currentData.stages) currentData.stages = [];
-    // 👉 Nuove fasi si aprono automaticamente
     currentData.stages.push({ stage_name: "Nuova Fase", description: "", steps: [], _ui_open: true });
     updateIndexes(); renderStages();
     setTimeout(() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }), 100);
@@ -301,7 +303,7 @@ function addStep(sIdx) {
     if (!currentData.stages[sIdx].steps) currentData.stages[sIdx].steps = [];
     currentData.stages[sIdx].steps.push({ 
         step_name: "Nuovo Step", instructions: "", estimated_time_minutes: 15, 
-        _ui_open: true // Nuovo step aperto
+        _ui_open: true
     });
     updateIndexes(); renderStages();
 }
