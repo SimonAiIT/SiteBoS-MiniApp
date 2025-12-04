@@ -416,15 +416,12 @@ const App = {
         current[keys[keys.length - 1]] = value;
     },
 
-// ... dentro App ...
-
     save: async (e) => { 
-        if (e) e.preventDefault(); // BLOCCHIAMO IL REFRESH
+        if (e) e.preventDefault();
         
         UI.setLoading(true, DOM.saveBtn, 'saving_progress');
         
         try {
-            // 1. PREPARAZIONE DATI LOCALI
             const hp = STATE.data || {};
             const assets = hp.assets || {};
             
@@ -434,36 +431,24 @@ const App = {
                              (hp.offer?.description && hp.offer.description.length > 5);
 
             const isComplete = hasLogo && hasPhoto && hasOffer;
-            
-            // Check se è la prima volta (flag locale)
             const isFirstRun = !hp.config?.onboarding_completed;
 
-            // --- SCENARIO A: TUTTO COMPLETO + PRIMA VOLTA -> LANCIA SITO ---
             if (isComplete && isFirstRun) {
-                
-                // Aggiorniamo flag locali prima dell'invio
                 if (!STATE.data.config) STATE.data.config = {};
                 STATE.data.config.onboarding_completed = true;
                 STATE.data.config.completed_at = new Date().toISOString();
 
-                // >>> QUI LA MODIFICA: CATTURIAMO LA RISPOSTA DEL SERVER <<<
-                // Il tuo webhook deve restituire il JSON dell'HoneyPot aggiornato
                 const serverResponse = await Api.saveData(STATE.data);
-
-                // Determiniamo quale dato usare per il payload successivo.
-                // Se il server risponde con l'oggetto, usiamo quello (è più affidabile).
-                // Se per caso risponde vuoto, usiamo il locale STATE.data come fallback.
                 const finalHoneypotData = serverResponse && Object.keys(serverResponse).length > 0 
                                           ? (serverResponse.HoneyPot || serverResponse) 
                                           : STATE.data;
 
-                // Prepara Payload usando i dati definitivi
                 const ownerKey = STATE.ownerId;
                 const fullPayload = {
                     vat_number: STATE.vatNumber,
                     access_token: STATE.accessToken,
                     owner_id: STATE.ownerId,
-                    honeypot_data: finalHoneypotData, // Usiamo i dati tornati dal server
+                    honeypot_data: finalHoneypotData,
                     command: "BUILD_SITE"
                 };
 
@@ -473,24 +458,16 @@ const App = {
                     console.warn("SessionStorage Error", err);
                 }
 
-                // Feedback Visivo
                 DOM.saveBtn.innerHTML = `<i class="fas fa-rocket"></i> ${I18n.get('launching_process')}`;
 
-                // REDIRECT A PROCESSOR
                 setTimeout(() => {
-                    // Corretto da processing.html a processor.html
                     window.location.replace(`processor.html?call=honeypot_build_trigger&owner_key=${ownerKey}`);
                 }, 500);
 
                 return; 
-            }
-
-            // --- SCENARIO B: SALVATAGGIO STANDARD ---
-            else {
-                // Anche qui catturiamo la risposta per tenere la UI sincronizzata
+            } else {
                 const res = await Api.saveData(STATE.data);
                 
-                // Opzionale: aggiorniamo lo stato locale se il server ha cambiato qualcosa
                 if(res && (res.HoneyPot || Object.keys(res).length > 0)) {
                     STATE.data = res.HoneyPot || res;
                 }
@@ -534,69 +511,93 @@ const App = {
             const res = await Api.linkBot(token);
             if (res && res.ok === true) {
                 if (!STATE.data.config) STATE.data.config = {};
-                STATE.data.config.bot_token = token; STATE.data.config.bot_linked = true;
-                UI.renderBotConfig(); UI.toggleDirty(); tg.HapticFeedback.notificationOccurred('success');
+                STATE.data.config.bot_token = token; 
+                STATE.data.config.bot_linked = true;
+                UI.renderBotConfig(); 
+                UI.toggleDirty(); 
+                tg.HapticFeedback.notificationOccurred('success');
             } else throw new Error(res.description || 'Unknown Error');
-        } catch (e) { if (e.message !== "AI_ERROR_501_HANDLED") tg.showAlert(`${I18n.get('alert_link_error')}: ${e.message}`); } 
-        finally { if(!STATE.data.config?.bot_linked) UI.setLoading(false, DOM.btnLinkBot); }
+        } catch (e) { 
+            if (e.message !== "AI_ERROR_501_HANDLED") tg.showAlert(`${I18n.get('alert_link_error')}: ${e.message}`); 
+        } 
+        finally { 
+            if(!STATE.data.config?.bot_linked) UI.setLoading(false, DOM.btnLinkBot); 
+        }
     },
 
-uploadAsset: async (type, file) => {
-    if (!file) return;
-    
-    const previewEl = document.getElementById(`${type}-preview`);
-    
-    // 🔧 FIX: Spinner animato con Font Awesome + testo
-    previewEl.innerHTML = `
-        <div style="text-align:center; padding:20px;">
-            <i class="fas fa-circle-notch fa-spin" style="font-size:32px; color:var(--primary);"></i>
-            <p style="margin-top:10px; color:#ccc; font-size:13px;">
-                ${I18n.get('generating')}
-            </p>
-        </div>
-    `;
-    
-    try {
-        const reader = new FileReader(); 
-        reader.readAsDataURL(file);
+    uploadAsset: async (type, file) => {
+        if (!file) return;
         
-        reader.onload = async () => {
-            const base64 = reader.result.split(',')[1]; 
-            const mime = reader.result.match(/:(.*?);/)[1];
-            
-            const res = await Api.analyzeAsset(type, base64, mime);
-            
-            if (res) {
-                const desc = res.response_data?.description || res.description || "Analisi completata";
-                
-                if (!STATE.data.assets) STATE.data.assets = {};
-                STATE.data.assets[type] = { 
-                    description: desc, 
-                    mime: mime, 
-                    url: res.url || null, 
-                    base64: res.url ? null : base64 
-                };
-                
-                UI.renderAssets(); 
-                UI.toggleDirty();
-            } else { 
-                previewEl.innerHTML = '<p style="color:#ff6b6b;">Errore analisi</p>'; 
-            }
-        };
+        const previewEl = document.getElementById(`${type}-preview`);
         
-    } catch (e) { 
-        console.error("Upload error:", e);
-        previewEl.innerHTML = '<p style="color:#ff6b6b;">Errore caricamento</p>'; 
-    }
-}
-
+        previewEl.innerHTML = `
+            <div style="text-align:center; padding:20px;">
+                <i class="fas fa-circle-notch fa-spin" style="font-size:32px; color:var(--primary);"></i>
+                <p style="margin-top:10px; color:#ccc; font-size:13px;">
+                    ${I18n.get('generating')}
+                </p>
+            </div>
+        `;
+        
+        try {
+            const reader = new FileReader(); 
+            reader.readAsDataURL(file);
+            
+            reader.onload = async () => {
+                const base64 = reader.result.split(',')[1]; 
+                const mime = reader.result.match(/:(.*?);/)[1];
+                
+                const res = await Api.analyzeAsset(type, base64, mime);
+                
+                if (res) {
+                    const desc = res.response_data?.description || res.description || "Analisi completata";
+                    
+                    if (!STATE.data.assets) STATE.data.assets = {};
+                    STATE.data.assets[type] = { 
+                        description: desc, 
+                        mime: mime, 
+                        url: res.url || null, 
+                        base64: res.url ? null : base64 
+                    };
+                    
+                    UI.renderAssets(); 
+                    UI.toggleDirty();
+                } else { 
+                    previewEl.innerHTML = '<p style="color:#ff6b6b;">Errore analisi</p>'; 
+                }
+            };
+            
+        } catch (e) { 
+            console.error("Upload error:", e);
+            previewEl.innerHTML = '<p style="color:#ff6b6b;">Errore caricamento</p>'; 
+        }
+    },
 
     copyOffer: () => {
-        const html = DOM.offerStorage.value; if (!html) return;
+        const html = DOM.offerStorage.value; 
+        if (!html) return;
         let text = html.replace(/<br\s*\/?>/gi, '\n').replace(/<\/p>/gi, '\n\n').replace(/<\/?[^>]+(>|$)/g, "").trim();
         const link = `https://simonaiit.github.io/SiteBoS-MiniApp/SiteBos.html?vat=${STATE.vatNumber}`;
         if (!text.includes(link)) text += `\n\n👉 Accedi qui: ${link}`;
-        navigator.clipboard.writeText(text).then(() => { tg.HapticFeedback.notificationOccurred('success'); tg.showAlert(I18n.get('alert_copied')); });
+        navigator.clipboard.writeText(text).then(() => { 
+            tg.HapticFeedback.notificationOccurred('success'); 
+            tg.showAlert(I18n.get('alert_copied')); 
+        });
+    },
+
+    addDeepDive: (fIndex) => {
+        if (!STATE.data.knowledge_fragments[fIndex].sections) {
+            STATE.data.knowledge_fragments[fIndex].sections = [];
+        }
+        STATE.data.knowledge_fragments[fIndex].sections.push({ question: '', answer: '' });
+        UI.renderDeepDivesList(fIndex);
+        UI.toggleDirty();
+    },
+
+    removeDeepDive: (fIndex, sIndex) => {
+        STATE.data.knowledge_fragments[fIndex].sections.splice(sIndex, 1);
+        UI.renderDeepDivesList(fIndex);
+        UI.toggleDirty();
     }
 };
 
