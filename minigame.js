@@ -35,7 +35,7 @@ const MiniGame = {
     // Sprites
     sprites: {
         player: '🤖',
-        enemies: ['📧', '💼', '📞'],
+        enemies: ['📧', '💼'], // Solo 2 nemici
         items: [
             { id: 'heart', icon: '❤️' },
             { id: 'house', icon: '🏠' },
@@ -221,7 +221,7 @@ const MiniGame = {
             return distB - distA;
         });
         
-        // Items
+        // Items (4 oggetti)
         this.items = this.sprites.items.map((item, i) => ({
             ...item,
             x: freeSpots[i].x,
@@ -229,11 +229,10 @@ const MiniGame = {
             collected: false
         }));
         
-        // Enemies (RALLENTATI)
+        // Enemies - SOLO 2 NEMICI (1 smart, 1 dumb)
         this.enemies = [
             { type: 'smart', icon: this.sprites.enemies[0], x: freeSpots[4].x, y: freeSpots[4].y, dir: {x:0,y:0}, progress:0, speed: this.enemySpeedSmart },
-            { type: 'dumb',  icon: this.sprites.enemies[1], x: freeSpots[5].x, y: freeSpots[5].y, dir: {x:0,y:0}, progress:0, speed: this.enemySpeedDumb },
-            { type: 'smart', icon: this.sprites.enemies[2], x: freeSpots[6].x, y: freeSpots[6].y, dir: {x:0,y:0}, progress:0, speed: this.enemySpeedSmart }
+            { type: 'dumb',  icon: this.sprites.enemies[1], x: freeSpots[5].x, y: freeSpots[5].y, dir: {x:0,y:0}, progress:0, speed: this.enemySpeedDumb }
         ];
     },
     
