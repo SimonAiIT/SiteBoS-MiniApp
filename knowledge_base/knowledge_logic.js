@@ -32,19 +32,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let knowledgeData = [];
 
-    // ⬅️ GESTIONE BOTTONE TORNA INDIETRO
+    // ⬅️ GESTIONE BOTTONE TORNA INDIETRO (CORRETTO: dashboard.html)
     if (backToManagerBtn) {
         backToManagerBtn.addEventListener('click', () => {
             if (tg?.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
             
-            // Costruisci URL Manager Desk mantenendo i parametri
-            const managerUrl = new URL('../manager_desk.html', window.location.href);
+            // ✅ Costruisci URL DASHBOARD mantenendo i parametri
+            const dashboardUrl = new URL('../dashboard.html', window.location.href);
             const currentParams = new URLSearchParams(window.location.search);
             currentParams.forEach((value, key) => {
-                managerUrl.searchParams.set(key, value);
+                dashboardUrl.searchParams.set(key, value);
             });
             
-            window.location.href = managerUrl.toString();
+            window.location.href = dashboardUrl.toString();
         });
     }
 
@@ -81,7 +81,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (response) {
             const fragment = response.Fragment || response; 
             if (fragment) {
-                tg?.HapticFeedback?.impactOccurred('light'); // Sicuro: non si rompe se tg non esiste
+                tg?.HapticFeedback?.impactOccurred('light');
                 knowledgeData.push(fragment);
                 renderFragmentDetails(fragment, cardElement);
                 cardElement.dataset.loaded = 'true';
@@ -105,7 +105,6 @@ document.addEventListener('DOMContentLoaded', () => {
         saveBtn.disabled = false;
         
         if(response) {
-            // Feedback specifico di Telegram (se disponibile), altrimenti un alert
             if (tg && tg.showPopup) {
                 tg.showPopup({ message: "✅ Salvataggio completato!" });
             } else {
@@ -152,7 +151,6 @@ function renderFragmentDetails(fragment, cardElement) {
     const body = cardElement.querySelector('.kb-body');
     const id = fragment.fragment_id || fragment._id;
     
-    // 🎨 STILI ALLINEATI AL DESIGN SYSTEM (usa variabili CSS)
     const actionsBarStyle = `
         display: flex; 
         justify-content: flex-end; 
@@ -161,7 +159,6 @@ function renderFragmentDetails(fragment, cardElement) {
         border-bottom: 1px solid rgba(255, 255, 255, 0.15);
     `;
 
-    // ✅ USA IL COLORE PRIMARIO DEL DESIGN SYSTEM (#5B6FED)
     const btnStyle = `
         background: #5B6FED;
         color: white; 
@@ -185,7 +182,6 @@ function renderFragmentDetails(fragment, cardElement) {
     `;
 
     body.innerHTML = `
-        <!-- BARRA AZIONI IN ALTO -->
         <div class="actions-bar" style="${actionsBarStyle}">
             <button 
                 class="btn-blog-deploy" 
@@ -199,7 +195,6 @@ function renderFragmentDetails(fragment, cardElement) {
             </button>
         </div>
 
-        <!-- CONTENUTO ESISTENTE -->
         <h3>Titolo</h3>
         <input type="text" class="editable-input" data-id="${id}" data-field="title" value="${fragment.title}">
         <h3>Riepilogo</h3>
@@ -220,14 +215,12 @@ function renderFragmentDetails(fragment, cardElement) {
         </div>
     `;
 
-    // Gestione click del pulsante Blog
     const blogBtn = body.querySelector('.btn-blog-deploy');
     if (blogBtn) {
         blogBtn.addEventListener('click', (e) => {
             e.preventDefault();
-            e.stopPropagation(); // Importante: evita che il click si propaghi chiudendo l'accordion
+            e.stopPropagation();
             
-            // Feedback aptico leggero se su Telegram
             if (window.Telegram?.WebApp?.HapticFeedback) {
                 window.Telegram.WebApp.HapticFeedback.impactOccurred('light');
             }
@@ -238,25 +231,15 @@ function renderFragmentDetails(fragment, cardElement) {
 }
 
 function goToDeployBlog(fragmentId) {
-    // Crea l'URL per la nuova pagina
     const targetUrl = new URL('deployblog.html', window.location.href);
-    
-    // Prende tutti i parametri attuali dell'URL (vat, token, owner, ragione_sociale)
-    // e li copia nel nuovo URL per non perdere l'autenticazione
     const currentParams = new URLSearchParams(window.location.search);
     currentParams.forEach((value, key) => {
         targetUrl.searchParams.set(key, value);
     });
-
-    // Aggiunge l'ID specifico del frammento che vogliamo processare
     targetUrl.searchParams.set('fragment_id', fragmentId);
-    
-    // Reindirizza l'utente
     window.location.href = targetUrl.toString();
 }
 
-
-    
     // --- 5. GESTIONE EVENTI ---
     kbContainer.addEventListener('click', (e) => {
         const header = e.target.closest('.kb-header');
