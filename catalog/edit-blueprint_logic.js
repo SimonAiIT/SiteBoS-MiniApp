@@ -1,8 +1,9 @@
 /**
- * BLUEPRINT EDITOR LOGIC (v2.0 - COLLAPSIBLE STAGES)
- * - Stage collassabili con summary view
- * - Step details espandibili
- * - Fix UI completo
+ * BLUEPRINT EDITOR LOGIC (v2.1 - UX FIXES)
+ * - Stage CHIUSE di default
+ * - Step fields full-width
+ * - Trash icon invece di X
+ * - Allineamento migliorato
  */
 'use strict';
 
@@ -62,13 +63,14 @@ function applyTranslations() {
     dom.loaderText.textContent = t.loading;
 }
 
-// 5. RENDERER CON COLLAPSIBLE STAGES
+// 5. RENDERER CON STAGES CHIUSE DI DEFAULT
 function renderStages() {
     dom.stagesContainer.innerHTML = '';
     if (!currentData.stages) currentData.stages = [];
 
     currentData.stages.forEach((stage, sIdx) => {
-        const isOpen = stage._ui_open !== false; // Default aperto
+        // 👉 DEFAULT: CHIUSO (solo se _ui_open non è esplicitamente true)
+        const isOpen = stage._ui_open === true;
         const stepCount = stage.steps?.length || 0;
         const totalTime = (stage.steps || []).reduce((sum, st) => sum + (parseInt(st.estimated_time_minutes) || 0), 0);
         
@@ -77,8 +79,9 @@ function renderStages() {
         stageEl.dataset.idx = sIdx;
 
         stageEl.innerHTML = `
-            <!-- 👉 HEADER COLLASSABILE -->
-            <div class="stage-header-collapsible" data-action="toggle-stage" data-sidx="${sIdx}" style="cursor:pointer; display:flex; justify-content:space-between; align-items:center; padding:15px; background:rgba(255,255,255,0.03); border-bottom:1px solid var(--glass-border);">
+            <!-- HEADER COLLASSABILE -->
+            <div class="stage-header-collapsible" data-action="toggle-stage" data-sidx="${sIdx}" 
+                 style="cursor:pointer; display:flex; justify-content:space-between; align-items:center; padding:15px; background:rgba(255,255,255,0.03); border-bottom:1px solid var(--glass-border);">
                 <div style="display:flex; align-items:center; gap:12px; flex:1;">
                     <i class="fas fa-grip-vertical drag-handle" style="color:var(--text-muted); cursor:grab; font-size:16px;" onclick="event.stopPropagation();"></i>
                     <div style="flex:1;">
@@ -94,11 +97,11 @@ function renderStages() {
                 </div>
             </div>
             
-            <!-- 👉 BODY (COLLASSABILE) -->
+            <!-- BODY (COLLASSABILE) -->
             <div class="stage-body" style="display:${isOpen ? 'block' : 'none'}; padding:15px;">
                 <div style="margin-bottom:15px;">
-                    <input type="text" class="edit-input" style="font-size:15px; font-weight:600; margin-bottom:8px;" value="${stage.stage_name || ''}" placeholder="${t.phStageName}" data-type="stage-name" data-sidx="${sIdx}">
-                    <textarea class="edit-textarea" rows="2" placeholder="${t.phStageDesc}" data-type="stage-desc" data-sidx="${sIdx}" style="font-size:12px;">${stage.description || ''}</textarea>
+                    <input type="text" class="edit-input" style="font-size:15px; font-weight:600; margin-bottom:8px; width:100%;" value="${stage.stage_name || ''}" placeholder="${t.phStageName}" data-type="stage-name" data-sidx="${sIdx}">
+                    <textarea class="edit-textarea" rows="2" placeholder="${t.phStageDesc}" data-type="stage-desc" data-sidx="${sIdx}" style="font-size:12px; width:100%;">${stage.description || ''}</textarea>
                 </div>
                 
                 <div class="step-list-container" data-sidx="${sIdx}">
@@ -138,62 +141,71 @@ function renderSteps(steps, sIdx) {
         const mins = parseInt(step.estimated_time_minutes) || 0;
         
         return `
-        <div class="step-item" data-sidx="${sIdx}" data-stidx="${stIdx}" style="background:rgba(0,0,0,0.2); border:1px solid var(--glass-border); border-radius:10px; padding:12px; margin-bottom:10px;">
+        <div class="step-item" data-sidx="${sIdx}" data-stidx="${stIdx}" 
+             style="background:rgba(0,0,0,0.2); border:1px solid var(--glass-border); border-radius:10px; padding:12px; margin-bottom:10px;">
             
-            <!-- RIGA 1: Drag | Badges | Bottoni -->
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-                <div style="display:flex; align-items:center; gap:8px;">
-                    <i class="fas fa-grip-lines drag-handle" style="color:var(--text-muted); cursor:grab; font-size:16px;"></i>
-                    ${wipBadge} ${finBadge}
+            <!-- 👉 RIGA 1: Allineata con fase (Drag | Badges | Bottoni) -->
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <i class="fas fa-grip-vertical drag-handle" style="color:var(--text-muted); cursor:grab; font-size:16px;"></i>
+                    <div style="display:flex; gap:6px;">
+                        ${wipBadge} ${finBadge}
+                    </div>
                 </div>
                 
                 <div style="display:flex; gap:6px;">
                     <button class="btn-icon-sm ${activeClass}" data-action="toggle-step" data-sidx="${sIdx}" data-stidx="${stIdx}" title="Espandi/Comprimi">
                         <i class="fas fa-chevron-${isOpen ? 'up' : 'down'}"></i>
                     </button>
+                    <!-- 👉 TRASH ICON invece di X -->
                     <button class="btn-icon-sm text-error" data-action="delete-step" data-sidx="${sIdx}" data-stidx="${stIdx}" title="Elimina Step">
-                        <i class="fas fa-times"></i>
+                        <i class="fas fa-trash"></i>
                     </button>
                 </div>
             </div>
 
-            <!-- RIGA 2: Nome Step -->
-            <input type="text" class="edit-input" style="font-size:14px; font-weight:500; margin-bottom:8px;"
+            <!-- 👉 RIGA 2: Nome Step FULL WIDTH -->
+            <input type="text" class="edit-input" 
+                   style="font-size:14px; font-weight:500; margin-bottom:10px; width:100%;"
                    value="${step.step_name || ''}" placeholder="${t.phStepName}" 
                    data-type="step-name" data-sidx="${sIdx}" data-stidx="${stIdx}">
 
             <!-- RIGA 3: Tempo -->
             <div style="display:flex; align-items:center; gap:8px; padding:6px 10px; background:rgba(255,255,255,0.05); border-radius:6px; width:fit-content;">
                 <i class="far fa-clock" style="color:var(--primary);"></i>
-                <input type="number" min="0" value="${mins}" style="width:50px; background:transparent; border:none; color:white; font-size:13px; text-align:center;"
+                <input type="number" min="0" value="${mins}" 
+                       style="width:50px; background:transparent; border:none; color:white; font-size:13px; text-align:center;"
                        data-type="step-time" data-sidx="${sIdx}" data-stidx="${stIdx}">
                 <span style="font-size:12px; color:var(--text-muted);">${t.min}</span>
             </div>
 
-            <!-- DETTAGLI ESPANDIBILI -->
-            <div style="display:${isOpen ? 'block' : 'none'}; margin-top:12px; padding-top:12px; border-top:1px dashed var(--glass-border);">
+            <!-- 👉 DETTAGLI ESPANDIBILI: Tutti i campi FULL WIDTH -->
+            <div style="display:${isOpen ? 'block' : 'none'}; margin-top:15px; padding-top:15px; border-top:1px dashed var(--glass-border);">
                 
-                <div style="margin-bottom:10px;">
+                <div style="margin-bottom:12px;">
                     <label style="font-size:10px; color:var(--text-muted); font-weight:700; display:block; margin-bottom:5px;">${t.lblInstr}</label>
-                    <textarea rows="3" placeholder="${t.phStepInstr}" style="width:100%; background:var(--input-bg); border:1px solid var(--glass-border); padding:8px; border-radius:6px; color:white; font-size:12px;"
+                    <textarea rows="3" placeholder="${t.phStepInstr}" 
+                              style="width:100%; background:var(--input-bg); border:1px solid var(--glass-border); padding:8px; border-radius:6px; color:white; font-size:12px; resize:vertical;"
                               data-type="step-instr" data-sidx="${sIdx}" data-stidx="${stIdx}">${step.instructions||''}</textarea>
                 </div>
 
-                <div style="margin-bottom:10px;">
+                <div style="margin-bottom:12px;">
                     <label style="font-size:10px; color:#30d158; font-weight:700; display:block; margin-bottom:5px;">${t.lblQC}</label>
-                    <textarea rows="2" placeholder="${t.phQC}" style="width:100%; background:var(--input-bg); border:1px solid var(--glass-border); padding:8px; border-radius:6px; color:white; font-size:12px;"
+                    <textarea rows="2" placeholder="${t.phQC}" 
+                              style="width:100%; background:var(--input-bg); border:1px solid var(--glass-border); padding:8px; border-radius:6px; color:white; font-size:12px; resize:vertical;"
                               data-type="step-qc" data-sidx="${sIdx}" data-stidx="${stIdx}">${step.quality_check?.check_description||''}</textarea>
                 </div>
 
-                <div style="margin-bottom:10px;">
+                <div style="margin-bottom:12px;">
                     <label style="font-size:10px; color:var(--text-muted); font-weight:700; display:block; margin-bottom:5px;">${t.lblSkills}</label>
-                    <input type="text" style="width:100%; background:var(--input-bg); border:1px solid var(--glass-border); padding:8px; border-radius:6px; color:white; font-size:12px;"
+                    <input type="text" 
+                           style="width:100%; background:var(--input-bg); border:1px solid var(--glass-border); padding:8px; border-radius:6px; color:white; font-size:12px;"
                            value="${(step.resources_needed?.labor?.required_skill_tags||[]).join(', ')}" 
                            placeholder="${t.phSkills}" 
                            data-type="step-skills" data-sidx="${sIdx}" data-stidx="${stIdx}">
                 </div>
 
-                <div style="display:flex; gap:15px; padding-top:10px;">
+                <div style="display:flex; gap:15px; padding-top:10px; border-top:1px dashed var(--glass-border);">
                     <label style="display:flex; align-items:center; gap:6px; font-size:11px; color:white; cursor:pointer;">
                         <input type="checkbox" ${step.logistics_flags?.requires_wip?'checked':''} 
                                data-type="flag-wip" data-sidx="${sIdx}" data-stidx="${stIdx}"> 
@@ -279,6 +291,7 @@ function handleInput(e) {
 // 7. DATA HELPERS
 function addStage() {
     if (!currentData.stages) currentData.stages = [];
+    // 👉 Nuove fasi si aprono automaticamente
     currentData.stages.push({ stage_name: "Nuova Fase", description: "", steps: [], _ui_open: true });
     updateIndexes(); renderStages();
     setTimeout(() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }), 100);
@@ -288,7 +301,7 @@ function addStep(sIdx) {
     if (!currentData.stages[sIdx].steps) currentData.stages[sIdx].steps = [];
     currentData.stages[sIdx].steps.push({ 
         step_name: "Nuovo Step", instructions: "", estimated_time_minutes: 15, 
-        _ui_open: true 
+        _ui_open: true // Nuovo step aperto
     });
     updateIndexes(); renderStages();
 }
