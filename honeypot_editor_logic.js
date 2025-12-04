@@ -525,53 +525,121 @@ const App = {
         }
     },
 
-    uploadAsset: async (type, file) => {
-        if (!file) return;
+uploadAsset: async (type, file) => {
+    if (!file) return;
+    
+    const previewEl = document.getElementById(`${type}-preview`);
+    
+    previewEl.innerHTML = `
+        <div style="text-align:center; padding:20px;">
+            <i class="fas fa-circle-notch fa-spin" style="font-size:32px; color:var(--primary);"></i>
+            <p style="margin-top:10px; color:#ccc; font-size:13px;">
+                ${I18n.get('generating')}
+            </p>
+        </div>
+    `;
+    
+    try {
+        // ==========================================
+        // 🔧 COMPRESSIONE AGGRESSIVA
+        // ==========================================
+        const MAX_WIDTH = 800;          // ⬇️ Da 1024 a 800
+        const MAX_HEIGHT = 800;         // ⬇️ Da 1024 a 800
+        const JPEG_QUALITY = 0.80;      // ⬇️ Da 0.85 a 0.80
+        const MAX_SIZE_KB = 500;        // ⬇️ Da 800 a 500KB
         
-        const previewEl = document.getElementById(`${type}-preview`);
-        
-        previewEl.innerHTML = `
-            <div style="text-align:center; padding:20px;">
-                <i class="fas fa-circle-notch fa-spin" style="font-size:32px; color:var(--primary);"></i>
-                <p style="margin-top:10px; color:#ccc; font-size:13px;">
-                    ${I18n.get('generating')}
-                </p>
-            </div>
-        `;
-        
-        try {
-            const reader = new FileReader(); 
-            reader.readAsDataURL(file);
+        const compressedBlob = await new Promise((resolve, reject) => {
+            const img = new Image();
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
             
-            reader.onload = async () => {
-                const base64 = reader.result.split(',')[1]; 
-                const mime = reader.result.match(/:(.*?);/)[1];
+            img.onload = () => {
+                // Calcola nuove dimensioni mantenendo aspect ratio
+                let width = img.width;
+                let height = img.height;
                 
-                const res = await Api.analyzeAsset(type, base64, mime);
-                
-                if (res) {
-                    const desc = res.response_data?.description || res.description || "Analisi completata";
-                    
-                    if (!STATE.data.assets) STATE.data.assets = {};
-                    STATE.data.assets[type] = { 
-                        description: desc, 
-                        mime: mime, 
-                        url: res.url || null, 
-                        base64: res.url ? null : base64 
-                    };
-                    
-                    UI.renderAssets(); 
-                    UI.toggleDirty();
-                } else { 
-                    previewEl.innerHTML = '<p style="color:#ff6b6b;">Errore analisi</p>'; 
+                if (width > MAX_WIDTH || height > MAX_HEIGHT) {
+                    const ratio = Math.min(MAX_WIDTH / width, MAX_HEIGHT / height);
+                    width = Math.floor(width * ratio);
+                    height = Math.floor(height * ratio);
                 }
+                
+                canvas.width = width;
+                canvas.height = height;
+                
+                // Disegna immagine ridimensionata
+                ctx.drawImage(img, 0, 0, width, height);
+                
+                // Converti in JPEG compresso
+                canvas.toBlob((blob) => {
+                    if (blob) {
+                        console.log(`📦 Original: ${(file.size / 1024).toFixed(2)} KB`);
+                        console.log(`✅ Compressed: ${(blob.size / 1024).toFixed(2)} KB`);
+                        console.log(`📉 Reduction: ${((1 - blob.size / file.size) * 100).toFixed(1)}%`);
+                        
+                        // Se ancora troppo grande, riduci qualità drasticamente
+                        if (blob.size > MAX_SIZE_KB * 1024) {
+                            console.log(`⚠️ Still too large, aggressive re-compression...`);
+                            canvas.toBlob((blob2) => {
+                                console.log(`🔄 Final: ${(blob2.size / 1024).toFixed(2)} KB`);
+                                resolve(blob2);
+                            }, 'image/jpeg', 0.60); // ⬇️ Da 0.70 a 0.60
+                        } else {
+                            resolve(blob);
+                        }
+                    } else {
+                        reject(new Error('Canvas to Blob failed'));
+                    }
+                }, 'image/jpeg', JPEG_QUALITY);
             };
             
-        } catch (e) { 
-            console.error("Upload error:", e);
-            previewEl.innerHTML = '<p style="color:#ff6b6b;">Errore caricamento</p>'; 
-        }
-    },
+            img.onerror = reject;
+            img.src = URL.createObjectURL(file);
+        });
+        
+        // Converti blob in base64
+        const reader = new FileReader();
+        reader.readAsDataURL(compressedBlob);
+        
+        reader.onload = async () => {
+            const base64 = reader.result.split(',')[1];
+            const mime = 'image/jpeg';
+            
+            // 🛡️ SAFETY CHECK FINALE
+            const estimatedSizeKB = (base64.length * 0.75) / 1024;
+            if (estimatedSizeKB > 600) { // Hard limit 600KB
+                throw new Error(`File troppo grande dopo compressione: ${estimatedSizeKB.toFixed(0)}KB`);
+            }
+            
+            const res = await Api.analyzeAsset(type, base64, mime);
+            
+            if (res) {
+                const desc = res.response_data?.description || res.description || "Analisi completata";
+                
+                if (!STATE.data.assets) STATE.data.assets = {};
+                STATE.data.assets[type] = { 
+                    description: desc, 
+                    mime: mime, 
+                    url: res.url || null, 
+                    base64: res.url ? null : base64 
+                };
+                
+                UI.renderAssets(); 
+                UI.toggleDirty();
+            } else { 
+                previewEl.innerHTML = '<p style="color:#ff6b6b;">Errore analisi</p>'; 
+            }
+        };
+        
+        reader.onerror = () => {
+            throw new Error('File reader error');
+        };
+        
+    } catch (e) { 
+        console.error("Upload error:", e);
+        previewEl.innerHTML = `<p style="color:#ff6b6b;">${e.message || 'Errore caricamento'}</p>`; 
+    }
+},
 
     copyOffer: () => {
         const html = DOM.offerStorage.value; 
