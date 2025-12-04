@@ -22,12 +22,6 @@
                 <h1>Knowledge Base</h1>
                 <small id="companyName">Modifica documenti e procedure per </small>
             </div>
-            <!-- ⬅️ BOTTONE TORNA INDIETRO -->
-            <div class="header-actions">
-                <button class="btn-icon" id="backToManagerBtn" title="Torna a Manager Desk">
-                    <i class="fas fa-arrow-left"></i>
-                </button>
-            </div>
         </header>
 
         <main id="kb-container">
@@ -37,9 +31,15 @@
         <div style="height: 100px;"></div>
     </div>
 
-    <!-- BOTTONE DI SALVATAGGIO CON SPINNER INTERNO -->
+    <!-- 👉 FAB CONTAINER: Bottoni sempre visibili in basso a destra -->
     <div class="fab-container">
-        <button class="fab-btn" id="saveBtn">
+        <!-- Bottone Torna Indietro -->
+        <button class="fab-btn fab-secondary" id="backToManagerBtn" title="Torna a Dashboard">
+            <i class="fas fa-arrow-left"></i>
+        </button>
+        
+        <!-- Bottone Salva -->
+        <button class="fab-btn" id="saveBtn" title="Salva modifiche">
             <i class="fas fa-save save-icon"></i>
             <i class="fas fa-spinner fa-spin spinner-icon hidden"></i>
         </button>
