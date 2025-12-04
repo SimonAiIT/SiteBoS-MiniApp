@@ -273,7 +273,15 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
     transition: transform 0.2s, background-color 0.2s;
 }
 .fab-btn:active { transform: scale(0.95); }
-.fab-secondary { background-color: #2c2c2e; border: 1px solid rgba(255,255,255,0.2); }
+
+/* ✅ STILE PER FAB SECONDARIO (Bottone Torna Indietro) */
+.fab-btn.fab-secondary { 
+    background-color: rgba(255,255,255,0.1); 
+    border: 1px solid var(--glass-border); 
+}
+.fab-btn.fab-secondary:hover { 
+    background-color: var(--hover-bg); 
+}
 
 /* ========================================
    7. CARDS & COMPONENTS
