@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>Work Escape V5 - Smart AI & Boost</title>
+  <title>Work Escape V6 - Chrome Fix</title>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
@@ -22,7 +22,7 @@
       background-color: var(--bg-color);
       color: #f8fafc;
       font-family: 'Inter', sans-serif;
-      overflow: hidden; touch-action: none;
+      overflow: hidden; touch-action: none; /* Fondamentale per Chrome Mobile */
       display: flex; flex-direction: column;
       height: 100vh; user-select: none;
       -webkit-tap-highlight-color: transparent;
@@ -37,7 +37,6 @@
     }
     .score-container { font-family: 'Orbitron', sans-serif; font-size: 18px; color: #fff; text-shadow: 0 0 5px var(--primary); transition: all 0.2s; }
     .score-boosted { color: var(--boost) !important; text-shadow: 0 0 15px var(--boost) !important; transform: scale(1.1); }
-    
     .close-btn { background: none; border: none; color: #94a3b8; font-size: 20px; cursor: pointer; }
 
     #game-wrapper {
@@ -45,11 +44,13 @@
       display: flex; justify-content: center; align-items: center;
       background: var(--bg-color);
       overflow: hidden;
+      touch-action: none; /* Impedisce zoom/scroll browser */
     }
 
     canvas {
       box-shadow: 0 0 30px rgba(0,0,0,0.6);
       border-radius: 4px;
+      image-rendering: pixelated; /* Nitidezza */
     }
 
     .overlay {
@@ -77,9 +78,19 @@
     .items-hud { display: flex; gap: 15px; margin-bottom: 20px; }
     .hud-item { font-size: 24px; opacity: 0.3; filter: grayscale(100%); transition: all 0.3s; }
     .hud-item.collected { opacity: 1; filter: grayscale(0%); transform: scale(1.3); text-shadow: 0 0 10px var(--accent); }
-
-    /* Boost Effect on Canvas Container */
     .game-boosted canvas { box-shadow: 0 0 40px rgba(250, 204, 21, 0.3); border: 1px solid rgba(250, 204, 21, 0.5); }
+    
+    /* Indicatore Tocco */
+    .touch-indicator {
+        position: absolute; width: 40px; height: 40px; border-radius: 50%;
+        border: 2px solid white; opacity: 0; pointer-events: none;
+        transform: translate(-50%, -50%) scale(0.5);
+        z-index: 100;
+    }
+    @keyframes touchPulse {
+        0% { opacity: 1; transform: translate(-50%, -50%) scale(0.2); }
+        100% { opacity: 0; transform: translate(-50%, -50%) scale(1.5); }
+    }
   </style>
 </head>
 <body>
@@ -95,8 +106,8 @@
     <div id="start-screen" class="overlay">
       <div style="font-size:60px; margin-bottom:10px;">🤖</div>
       <h2>WORK ESCAPE</h2>
-      <p style="color:#94a3b8; font-size:14px; margin-bottom:5px;">Evita: 📧 💼 📞 (Sono intelligenti!)</p>
-      <p style="color:#facc15; font-size:12px; margin-bottom:20px;">Oggetti = +100 Punti & BOOST Velocità ⚡</p>
+      <p style="color:#94a3b8; font-size:14px; margin-bottom:5px;">Evita: 📧 💼 📞</p>
+      <p style="color:#facc15; font-size:12px; margin-bottom:20px;">Oggetti = +100 Punti & BOOST ⚡</p>
       
       <div class="items-hud">
         <span id="hud-heart" class="hud-item">❤️</span>
@@ -106,13 +117,13 @@
       </div>
 
       <button class="btn-action" onclick="MazeGame.start()">INIZIA SFIDA</button>
-      <div style="font-size:11px; color:#64748b; margin-top:15px;">TOCCA PER MUOVERTI</div>
+      <div style="font-size:11px; color:#64748b; margin-top:15px;">TOCCA UN PUNTO PER MUOVERTI</div>
     </div>
 
     <div id="game-over-screen" class="overlay hidden">
       <div style="font-size:60px; margin-bottom:10px;">💀</div>
       <h2 class="lose-text">CATTURATO!</h2>
-      <p style="color:#cbd5e1;">L'intelligenza artificiale ti ha preso.</p>
+      <p style="color:#cbd5e1;">L'AI ti ha preso.</p>
       <p style="font-family:'Orbitron'; font-size:20px;">Punti: <span id="final-score-lose">0</span></p>
       <button class="btn-action" onclick="MazeGame.start()">RIPROVA</button>
     </div>
@@ -120,7 +131,7 @@
     <div id="win-screen" class="overlay hidden">
       <div style="font-size:60px; margin-bottom:10px;">🏆</div>
       <h2 class="win-text">LIBERTÀ!</h2>
-      <p style="color:#cbd5e1;">Sei più veloce del lavoro!</p>
+      <p style="color:#cbd5e1;">Vittoria!</p>
       <div style="background:rgba(76, 217, 100, 0.2); color:#4cd964; padding:10px 20px; border-radius:10px; margin-top:15px; font-weight:bold; font-family:'Orbitron';">
         TOTALE: 500 PUNTI
       </div>
@@ -129,17 +140,15 @@
   </div>
 
   <script>
-    // --- PATHFINDER (BFS) Condiviso (Player & Enemies) ---
+    // --- PATHFINDER (BFS) ---
     const Pathfinder = {
         findPath: function(map, start, end) {
             const rows = map.length;
             const cols = map[0].length;
-            
-            // Approssimiamo le coordinate a interi per la griglia
             const sNode = {x: Math.round(start.x), y: Math.round(start.y)};
             const eNode = {x: Math.round(end.x), y: Math.round(end.y)};
 
-            if(map[eNode.y][eNode.x] === 1) return []; // Muro
+            if(map[eNode.y][eNode.x] === 1) return []; 
 
             const queue = [sNode];
             const cameFrom = {};
@@ -148,10 +157,8 @@
             const dirs = [{x:0, y:-1}, {x:0, y:1}, {x:-1, y:0}, {x:1, y:0}];
             
             let found = false;
-            // Limite iterazioni per performance nemici (non bloccare il thread)
             let iterations = 0; 
-
-            while(queue.length > 0 && iterations < 500) {
+            while(queue.length > 0 && iterations < 800) {
                 iterations++;
                 const current = queue.shift();
                 if(current.x === eNode.x && current.y === eNode.y) { found = true; break; }
@@ -167,9 +174,7 @@
                 }
             }
 
-            if(!found) return []; // Nessun percorso
-
-            // Ricostruzione
+            if(!found) return [];
             let current = eNode;
             const path = [];
             while(current.x !== sNode.x || current.y !== sNode.y) {
@@ -189,7 +194,6 @@
             const stack = [{x:1, y:1}];
             map[1][1] = 0;
             const dirs = [{x:0,y:-2},{x:0,y:2},{x:-2,y:0},{x:2,y:0}];
-
             while(stack.length > 0) {
                 const cur = stack[stack.length-1];
                 const neighbors = [];
@@ -205,9 +209,8 @@
                     stack.push({x:next.x, y:next.y});
                 } else stack.pop();
             }
-            // Meno vicoli ciechi
             for(let y=1; y<rows-1; y++) for(let x=1; x<cols-1; x++) 
-                if(map[y][x]===1 && Math.random()<0.25) { // 25% muri rimossi
+                if(map[y][x]===1 && Math.random()<0.25) {
                     let c=0; 
                     if(map[y-1][x])c++; if(map[y+1][x])c++; if(map[y][x-1])c++; if(map[y][x+1])c++;
                     if(c>=2) map[y][x]=0;
@@ -224,9 +227,6 @@
       loopId: null, score: 0, state: 'stop',
       mapLayout: [], items: [], enemies: [],
       
-      // Settings Velocità
-      // Player: Base 0.20, Boost 0.40
-      // Enemies: Smart 0.12, Dumb 0.10
       playerBaseSpeed: 0.20,
       playerBoostSpeed: 0.40,
       
@@ -241,34 +241,70 @@
         this.resize();
         window.addEventListener('resize', () => this.resize());
         
+        // --- INPUT FIX (Pointer Events) ---
         const handleInput = (e) => {
             if(this.state !== 'playing') return;
-            e.preventDefault();
+            e.preventDefault(); // Previene scroll e zoom
+            
             const rect = this.canvas.getBoundingClientRect();
-            let cx, cy;
-            if(e.type.startsWith('touch')) { cx = e.changedTouches[0].clientX; cy = e.changedTouches[0].clientY; }
-            else { cx = e.clientX; cy = e.clientY; }
+            const cx = e.clientX;
+            const cy = e.clientY;
 
-            const tx = Math.floor((cx - rect.left) / this.gridSize);
-            const ty = Math.floor((cy - rect.top) / this.gridSize);
+            // Calcolo cella
+            let tx = Math.floor((cx - rect.left) / this.gridSize);
+            let ty = Math.floor((cy - rect.top) / this.gridSize);
 
-            if(tx >= 0 && tx < this.cols && ty >= 0 && ty < this.rows && this.mapLayout[ty][tx] === 0) {
+            // Bounds check
+            if(tx < 0) tx = 0; if(tx >= this.cols) tx = this.cols-1;
+            if(ty < 0) ty = 0; if(ty >= this.rows) ty = this.rows-1;
+
+            // --- SMART TOUCH (Se clicchi un muro, cerca vicino libero) ---
+            if(this.mapLayout[ty][tx] === 1) {
+                const neighbors = [{x:0,y:1},{x:0,y:-1},{x:1,y:0},{x:-1,y:0},
+                                   {x:1,y:1},{x:-1,y:-1},{x:1,y:-1},{x:-1,y:1}]; // Anche diagonali per tolleranza
+                for(let n of neighbors) {
+                    const nx = tx+n.x; const ny = ty+n.y;
+                    if(nx>=0 && nx<this.cols && ny>=0 && ny<this.rows && this.mapLayout[ny][nx]===0) {
+                        tx = nx; ty = ny;
+                        break; // Trovato vicino libero
+                    }
+                }
+            }
+
+            // Mostra Feedback Visivo
+            this.spawnTouchEffect(cx, cy, this.mapLayout[ty][tx] === 0 ? '#4cd964' : '#ff6b6b');
+
+            if(this.mapLayout[ty][tx] === 0) {
                 this.targetPos = {x: tx, y: ty};
                 
-                // Se mi sto muovendo, calcolo dalla prossima cella, altrimenti da quella attuale
                 let startNode = { x: Math.round(this.player.x), y: Math.round(this.player.y) };
-                if(this.player.progress > 0) {
+                // Se stiamo muovendo, calcola dal prossimo tile
+                if(this.player.progress > 0.1) {
                     startNode.x += this.player.currentDir.x;
                     startNode.y += this.player.currentDir.y;
                 }
 
                 const newPath = Pathfinder.findPath(this.mapLayout, startNode, this.targetPos);
-                this.moveQueue = newPath;
+                
+                if(newPath.length > 0) {
+                   this.moveQueue = newPath;
+                }
             }
         };
 
-        this.canvas.addEventListener('mousedown', handleInput);
-        this.canvas.addEventListener('touchstart', handleInput, {passive: false});
+        // Usa pointerdown per supportare sia Mouse che Touch su Chrome
+        this.canvas.addEventListener('pointerdown', handleInput);
+      },
+
+      spawnTouchEffect: function(x, y, color) {
+          const el = document.createElement('div');
+          el.className = 'touch-indicator';
+          el.style.left = x + 'px';
+          el.style.top = y + 'px';
+          el.style.borderColor = color;
+          el.style.animation = 'touchPulse 0.4s ease-out forwards';
+          document.body.appendChild(el);
+          setTimeout(() => el.remove(), 400);
       },
 
       resize: function() {
@@ -284,11 +320,9 @@
       start: function() {
         document.querySelectorAll('.overlay').forEach(el => el.classList.add('hidden'));
         document.querySelectorAll('.hud-item').forEach(el => el.classList.remove('collected'));
-        this.endBoost(); // Reset boost
-
+        this.endBoost(); 
         this.mapLayout = MazeGen.generate(this.rows, this.cols);
         this.placeEntities();
-        
         this.score = 0;
         this.moveQueue = [];
         this.targetPos = null;
@@ -300,14 +334,9 @@
       activateBoost: function() {
         if(this.boostTimer) clearTimeout(this.boostTimer);
         this.player.speed = this.playerBoostSpeed;
-        
-        // Visual effects
         document.getElementById('score-box').classList.add('score-boosted');
         document.getElementById('game-wrapper').classList.add('game-boosted');
-        
-        this.boostTimer = setTimeout(() => {
-            this.endBoost();
-        }, 3000); // 3 secondi
+        this.boostTimer = setTimeout(() => { this.endBoost(); }, 3000);
       },
 
       endBoost: function() {
@@ -328,7 +357,6 @@
         this.player = { x: pSpot.x, y: pSpot.y, currentDir: {x:0, y:0}, speed: this.playerBaseSpeed, progress: 0 };
         
         free = free.filter(s => s!==pSpot);
-        // Distanza massima per oggetti e nemici
         free.sort((a,b) => {
             const dA = Math.abs(a.x-pSpot.x)+Math.abs(a.y-pSpot.y);
             const dB = Math.abs(b.x-pSpot.x)+Math.abs(b.y-pSpot.y);
@@ -344,38 +372,25 @@
 
         let eSpots = free.slice(4, 7);
         this.enemies = [
-            // Valigetta: Stupida (Random), Lenta
             { type: 'dumb', icon: '💼', x: eSpots[0].x, y: eSpots[0].y, dir: {x:0, y:0}, speed: 0.10, progress: 0 },
-            // Mail: Intelligente (Pathfinder), Media velocità
             { type: 'smart', icon: '📧', x: eSpots[1].x, y: eSpots[1].y, dir: {x:0, y:0}, speed: 0.12, progress: 0 },
-            // Telefono: Intelligente, Un po' più veloce
             { type: 'smart', icon: '📞', x: eSpots[2].x, y: eSpots[2].y, dir: {x:0, y:0}, speed: 0.13, progress: 0 }
         ];
       },
 
-      // --- LOGICA NEMICI ---
       decideEnemyMove: function(enemy) {
-          // Se è intelligente, usa il pathfinder verso il player
           if(enemy.type === 'smart') {
-              // Calcola percorso verso player
-              // Nota: Calcoliamo il path partendo dalla posizione intera corrente
               const path = Pathfinder.findPath(this.mapLayout, enemy, this.player);
-              if(path && path.length > 0) {
-                  return path[0]; // Prendi il primo passo
-              }
+              if(path && path.length > 0) return path[0];
           }
-          
-          // Fallback per "dumb" o se il path fallisce (random)
           const dirs = [{x:0,y:-1},{x:0,y:1},{x:-1,y:0},{x:1,y:0}];
           let valid = [];
           dirs.forEach(d => {
               if(enemy.x+d.x>=0 && enemy.x+d.x<this.cols && enemy.y+d.y>=0 && enemy.y+d.y<this.rows && this.mapLayout[enemy.y+d.y][enemy.x+d.x]!==1) {
-                  // Non tornare indietro subito se possibile
                   if(!(enemy.dir && d.x===-enemy.dir.x && d.y===-enemy.dir.y)) valid.push(d);
               }
           });
-          
-          if(valid.length === 0) return {x:0, y:0}; // Stuck
+          if(valid.length === 0) return {x:0, y:0};
           return valid[Math.floor(Math.random() * valid.length)];
       },
 
@@ -383,12 +398,10 @@
         if(actor.progress > 0) {
             actor.progress += actor.speed;
             if(actor.progress >= 1) {
-                // Fine movimento tile
                 actor.progress = 0;
                 actor.x += actor.currentDir.x;
                 actor.y += actor.currentDir.y;
                 actor.currentDir = {x:0, y:0};
-                
                 if(isPlayer && this.targetPos && actor.x === this.targetPos.x && actor.y === this.targetPos.y) {
                     this.targetPos = null;
                 }
@@ -396,26 +409,20 @@
             return;
         }
 
-        // Se fermo, decidi prossima mossa
         if(isPlayer) {
             if(this.moveQueue.length > 0) {
                 actor.currentDir = this.moveQueue.shift();
                 actor.progress = actor.speed;
             }
         } else {
-            // Nemici decidono ORA dove andare
             actor.currentDir = this.decideEnemyMove(actor);
-            if(actor.currentDir.x !== 0 || actor.currentDir.y !== 0) {
-                actor.progress = actor.speed;
-            }
+            if(actor.currentDir.x !== 0 || actor.currentDir.y !== 0) actor.progress = actor.speed;
         }
       },
 
       checkCollisions: function() {
         const px = this.player.x + (this.player.currentDir.x * this.player.progress);
         const py = this.player.y + (this.player.currentDir.y * this.player.progress);
-        
-        // Items
         this.items.forEach(i => {
             if(!i.collected) {
                 if(Math.sqrt((px-i.x)**2 + (py-i.y)**2) < 0.6) {
@@ -423,16 +430,11 @@
                     this.score += 100;
                     document.getElementById('score-val').innerText = this.score;
                     document.getElementById(`hud-${i.id}`).classList.add('collected');
-                    
-                    // BOOST!
                     this.activateBoost();
-
                     if(this.items.every(x => x.collected)) this.gameOver(true);
                 }
             }
         });
-        
-        // Enemies (Hitbox leggermente più permissiva per dare chance)
         this.enemies.forEach(e => {
             const ex = e.x + (e.currentDir.x * e.progress);
             const ey = e.y + (e.currentDir.y * e.progress);
@@ -465,7 +467,6 @@
         ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--bg-color');
         ctx.fillRect(0,0,this.canvas.width, this.canvas.height);
 
-        // Mappa
         for(let r=0; r<this.rows; r++) {
             for(let c=0; c<this.cols; c++) {
                 if(this.mapLayout[r][c] === 1) {
@@ -475,31 +476,26 @@
             }
         }
 
-        // Target Marker
         if(this.targetPos) {
             ctx.strokeStyle = '#4cd964'; ctx.lineWidth = 2;
             const tx = this.targetPos.x*gs + gs/2; const ty = this.targetPos.y*gs + gs/2;
-            const pulse = (Math.sin(Date.now()/100) + 1) * 0.5; 
-            const size = (gs*0.2) + (pulse * 4);
+            const size = (gs*0.2) + ((Math.sin(Date.now()/100)+1)*2);
             ctx.beginPath(); ctx.arc(tx, ty, size, 0, Math.PI*2); ctx.stroke();
         }
 
-        // Items
         ctx.font = `${gs*0.6}px Arial`; ctx.textAlign='center'; ctx.textBaseline='middle';
         this.items.forEach(i => {
             if(!i.collected) ctx.fillText(i.icon, i.x*gs+gs/2, i.y*gs+gs/2+2);
         });
 
-        // Player
         const px = (this.player.x + this.player.currentDir.x*this.player.progress)*gs + gs/2;
         const py = (this.player.y + this.player.currentDir.y*this.player.progress)*gs + gs/2;
         ctx.font = `${gs*0.8}px Arial`;
-        ctx.shadowBlur = this.player.speed > 0.3 ? 15 : 0; // Glow se veloce
+        ctx.shadowBlur = this.player.speed > 0.3 ? 15 : 0; 
         ctx.shadowColor = '#facc15';
         ctx.fillText('🤖', px, py+3);
         ctx.shadowBlur = 0;
 
-        // Enemies
         this.enemies.forEach(e => {
             const ex = (e.x + e.currentDir.x*e.progress)*gs + gs/2;
             const ey = (e.y + e.currentDir.y*e.progress)*gs + gs/2;
