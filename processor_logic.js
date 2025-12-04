@@ -116,46 +116,82 @@ async function runProcessor() {
             if(scoreEl) bonusPoints = parseInt(scoreEl.innerText) || 0;
         }
 
-        sessionStorage.removeItem(sessionKey);
+sessionStorage.removeItem(sessionKey);
 
-        // --- LOGICA DI REDIRECT (ROUTING) ---
-        
-        // 1. Priorità: Checkout URL (Onboarding Stripe)
-        if (normalizedResult.checkout_url) {
-            window.location.href = normalizedResult.checkout_url;
-        } 
-        // 2. Onboarding Dashboard Redirect (Legacy)
-        else if (normalizedResult.owner_data && callAction === 'onboarding') {
-            const vat = normalizedResult.owner_data.vat_number;
-            const ownerId = normalizedResult.owner_data.chat_id;
-            const name = encodeURIComponent(normalizedResult.owner_data.ragione_sociale || "Company");
-            const token = normalizedResult.owner_data.access_token;
-            
-            let finalUrl = `dashboard.html?vat=${vat}&owner=${ownerId}&ragione_sociale=${name}&token=${token}`;
-            if (finalCommand) finalUrl += `&cmd=${finalCommand}`;
+// --- LOGICA DI REDIRECT (ROUTING MULTI-STRATEGY) ---
+
+// 1. Priorità: Checkout URL (Onboarding Stripe)
+if (normalizedResult.checkout_url) {
+    console.log("🛒 Redirecting to Checkout:", normalizedResult.checkout_url);
+    window.location.href = normalizedResult.checkout_url;
+} 
+// 2. NUOVO: Comando Esplicito (Legge field "command")
+else if (normalizedResult.command && normalizedResult.owner_data) {
+    const cmd = normalizedResult.command;
+    const ownerData = normalizedResult.owner_data;
+    const vat = ownerData.vat_number;
+    const ownerId = ownerData.chat_id;
+    const name = encodeURIComponent(ownerData.ragione_sociale || "Company");
+    const token = ownerData.access_token;
+    
+    let finalUrl;
+    
+    switch(cmd) {
+        case 'MANAGER_DESK':
+            finalUrl = `dashboard.html?vat=${vat}&owner=${ownerId}&ragione_sociale=${name}&token=${token}`;
             if (bonusPoints > 0) finalUrl += `&bonus_credits=${bonusPoints}`;
+            console.log("🏠 Redirecting to Dashboard:", finalUrl);
+            break;
             
-            console.log("🚀 Redirecting to Dashboard:", finalUrl);
-            window.location.href = finalUrl;
-        } 
-        // 3. NUOVO: Return URL Generico (Save Product)
-        else if (returnUrl) {
-            let finalUrl = decodeURIComponent(returnUrl);
-            // Appendiamo i crediti se non ci sono già
-            if (bonusPoints > 0 && !finalUrl.includes('bonus_credits')) {
-                finalUrl += (finalUrl.includes('?') ? '&' : '?') + `bonus_credits=${bonusPoints}`;
-            }
-            console.log("🚀 Returning to Origin:", finalUrl);
-            window.location.href = finalUrl;
-        }
-        // 4. Gestione Errori Logici n8n
-        else if (normalizedResult.status === 'error') {
-            handleLogicError(normalizedResult.error, originalPayload);
-        }
-        // 5. Fallback generico per successo senza redirect (es. API pure)
-        else {
-            showError("Operazione completata con successo, ma nessuna destinazione trovata.");
-        }
+        case 'BUILD_SITE':
+            finalUrl = `SiteBos.html?vat=${vat}`;
+            console.log("🌐 Redirecting to Generated Site:", finalUrl);
+            break;
+            
+        case 'HONEYPOT_EDITOR':
+            finalUrl = `honeypot_editor.html?vat=${vat}&token=${token}&owner=${ownerId}&ragione_sociale=${name}`;
+            console.log("✏️ Redirecting to Editor:", finalUrl);
+            break;
+            
+        default:
+            finalUrl = `dashboard.html?vat=${vat}&owner=${ownerId}&ragione_sociale=${name}&token=${token}`;
+            console.warn(`⚠️ Unknown command: ${cmd}, fallback to dashboard`);
+    }
+    
+    window.location.href = finalUrl;
+}
+// 3. Onboarding Dashboard Redirect (Legacy)
+else if (normalizedResult.owner_data && callAction === 'onboarding') {
+    const vat = normalizedResult.owner_data.vat_number;
+    const ownerId = normalizedResult.owner_data.chat_id;
+    const name = encodeURIComponent(normalizedResult.owner_data.ragione_sociale || "Company");
+    const token = normalizedResult.owner_data.access_token;
+    
+    let finalUrl = `dashboard.html?vat=${vat}&owner=${ownerId}&ragione_sociale=${name}&token=${token}`;
+    if (finalCommand) finalUrl += `&cmd=${finalCommand}`;
+    if (bonusPoints > 0) finalUrl += `&bonus_credits=${bonusPoints}`;
+    
+    console.log("🚀 Redirecting to Dashboard (Legacy):", finalUrl);
+    window.location.href = finalUrl;
+} 
+// 4. Return URL Generico (Save Product)
+else if (returnUrl) {
+    let finalUrl = decodeURIComponent(returnUrl);
+    if (bonusPoints > 0 && !finalUrl.includes('bonus_credits')) {
+        finalUrl += (finalUrl.includes('?') ? '&' : '?') + `bonus_credits=${bonusPoints}`;
+    }
+    console.log("🚀 Returning to Origin:", finalUrl);
+    window.location.href = finalUrl;
+}
+// 5. Gestione Errori Logici n8n
+else if (normalizedResult.status === 'error') {
+    handleLogicError(normalizedResult.error, originalPayload);
+}
+// 6. Fallback
+else {
+    showError("Operazione completata con successo, ma nessuna destinazione trovata.");
+}
+
 
     } catch (err) {
         if(window.SiteBoSGame) SiteBoSGame.stop();
