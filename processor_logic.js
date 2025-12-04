@@ -68,113 +68,98 @@ async function runProcessor() {
         };
     }
 
-try {
-    console.log(`📡 Calling Processor Action: ${callAction} -> ${targetWebhook}`);
-    
-    const response = await fetch(targetWebhook, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(finalPayload)
-    });
-
-    // --- GESTIONE SPECIALE ERRORE 501 (AI FAIL) ---
-    if (response.status === 501) {
-        if(window.SiteBoSGame) SiteBoSGame.stop();
+    try {
+        console.log(`📡 Calling Processor Action: ${callAction} -> ${targetWebhook}`);
         
-        const overlay = document.getElementById('error-overlay');
-        overlay.innerHTML = `
-            <div style="font-size:50px; margin-bottom:20px;">🎲</div>
-            <h2 style="color:#f59e0b; font-family:'Orbitron', sans-serif;">${txt.t}</h2>
-            <p style="color:#ccc; font-size:14px; margin-bottom:30px;">${txt.m}</p>
-            <button class="btn-game" onclick="window.location.reload()">
-                ${txt.b}
-            </button>
-        `;
-        overlay.classList.remove('hidden');
-        return; 
-    }
+        const response = await fetch(targetWebhook, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(finalPayload)
+        });
 
-    if(!response.ok) throw new Error(`HTTP ${response.status}`);
-    
-    const result = await response.json();
-    
-    // 🔧 FIX: Normalizza risposta se è array
-    const normalizedResult = Array.isArray(result) ? result[0] : result;
-    
-    // ==========================================
-    // SUCCESSO!
-    // ==========================================
-    
-    if(window.SiteBoSGame) SiteBoSGame.stop();
-
-    // Recupera Punti
-    let bonusPoints = 0;
-    if (window.SiteBoSGame && typeof window.SiteBoSGame.score === 'number') {
-        bonusPoints = window.SiteBoSGame.score;
-    } else {
-        const scoreEl = document.getElementById('score');
-        if(scoreEl) bonusPoints = parseInt(scoreEl.innerText) || 0;
-    }
-
-    sessionStorage.removeItem(sessionKey);
-
-    // --- LOGICA DI REDIRECT (ROUTING) ---
-    
-    // 1. Priorità: Checkout URL (Onboarding Stripe)
-    if (normalizedResult.checkout_url) {
-        window.location.href = normalizedResult.checkout_url;
-    } 
-    // 2. Onboarding Dashboard Redirect (Legacy)
-    else if (normalizedResult.owner_data && callAction === 'onboarding') {
-        const vat = normalizedResult.owner_data.vat_number;
-        const ownerId = normalizedResult.owner_data.chat_id;
-        const name = encodeURIComponent(normalizedResult.owner_data.ragione_sociale || "Company");
-        const token = normalizedResult.owner_data.access_token;
-        
-        let finalUrl = `dashboard.html?vat=${vat}&owner=${ownerId}&ragione_sociale=${name}&token=${token}`;
-        if (finalCommand) finalUrl += `&cmd=${finalCommand}`;
-        if (bonusPoints > 0) finalUrl += `&bonus_credits=${bonusPoints}`;
-        
-        console.log("🚀 Redirecting to Dashboard:", finalUrl);
-        window.location.href = finalUrl;
-    } 
-    // 3. NUOVO: Return URL Generico (Save Product)
-    else if (returnUrl) {
-        let finalUrl = decodeURIComponent(returnUrl);
-        // Appendiamo i crediti se non ci sono già
-        if (bonusPoints > 0 && !finalUrl.includes('bonus_credits')) {
-            finalUrl += (finalUrl.includes('?') ? '&' : '?') + `bonus_credits=${bonusPoints}`;
+        // --- GESTIONE SPECIALE ERRORE 501 (AI FAIL) ---
+        if (response.status === 501) {
+            if(window.SiteBoSGame) SiteBoSGame.stop();
+            
+            const overlay = document.getElementById('error-overlay');
+            overlay.innerHTML = `
+                <div style="font-size:50px; margin-bottom:20px;">🎲</div>
+                <h2 style="color:#f59e0b; font-family:'Orbitron', sans-serif;">${txt.t}</h2>
+                <p style="color:#ccc; font-size:14px; margin-bottom:30px;">${txt.m}</p>
+                <button class="btn-game" onclick="window.location.reload()">
+                    ${txt.b}
+                </button>
+            `;
+            overlay.classList.remove('hidden');
+            return; 
         }
-        console.log("🚀 Returning to Origin:", finalUrl);
-        window.location.href = finalUrl;
-    }
-    // 4. Gestione Errori Logici n8n
-    else if (normalizedResult.status === 'error') {
-        handleLogicError(normalizedResult.error, originalPayload);
-    }
-    // 5. Fallback generico per successo senza redirect (es. API pure)
-    else {
-        showError("Operazione completata con successo, ma nessuna destinazione trovata.");
-    }
 
-} catch (err) {
-    if(window.SiteBoSGame) SiteBoSGame.stop();
-    showError("SYSTEM ERROR: " + err.message);
-}
+        if(!response.ok) throw new Error(`HTTP ${response.status}`);
+        
+        const result = await response.json();
+        
+        // 🔧 FIX: Normalizza risposta se è array
+        const normalizedResult = Array.isArray(result) ? result[0] : result;
+        
+        // ==========================================
+        // SUCCESSO!
+        // ==========================================
+        
+        if(window.SiteBoSGame) SiteBoSGame.stop();
 
-function handleLogicError(errorObj, payload) {
-    if (errorObj && errorObj.code === 'SETUP_FAILED_RETRYABLE') {
-        const overlay = document.getElementById('error-overlay');
-        overlay.innerHTML = `
-            <div style="font-size:40px; color:#ff6b6b; margin-bottom:20px;"><i class="fas fa-tools"></i></div>
-            <p class="error-msg">${errorObj.message}</p>
-            <button class="btn-game" onclick="location.href='reset.html?vat=${payload.owner_data.vat_number}'">
-                RESET CONFIG
-            </button>
-        `;
-        overlay.classList.remove('hidden');
-    } else {
-        showError(`${errorObj?.title || 'Error'}\n${errorObj?.message || 'Unknown error'}`);
+        // Recupera Punti
+        let bonusPoints = 0;
+        if (window.SiteBoSGame && typeof window.SiteBoSGame.score === 'number') {
+            bonusPoints = window.SiteBoSGame.score;
+        } else {
+            const scoreEl = document.getElementById('score');
+            if(scoreEl) bonusPoints = parseInt(scoreEl.innerText) || 0;
+        }
+
+        sessionStorage.removeItem(sessionKey);
+
+        // --- LOGICA DI REDIRECT (ROUTING) ---
+        
+        // 1. Priorità: Checkout URL (Onboarding Stripe)
+        if (normalizedResult.checkout_url) {
+            window.location.href = normalizedResult.checkout_url;
+        } 
+        // 2. Onboarding Dashboard Redirect (Legacy)
+        else if (normalizedResult.owner_data && callAction === 'onboarding') {
+            const vat = normalizedResult.owner_data.vat_number;
+            const ownerId = normalizedResult.owner_data.chat_id;
+            const name = encodeURIComponent(normalizedResult.owner_data.ragione_sociale || "Company");
+            const token = normalizedResult.owner_data.access_token;
+            
+            let finalUrl = `dashboard.html?vat=${vat}&owner=${ownerId}&ragione_sociale=${name}&token=${token}`;
+            if (finalCommand) finalUrl += `&cmd=${finalCommand}`;
+            if (bonusPoints > 0) finalUrl += `&bonus_credits=${bonusPoints}`;
+            
+            console.log("🚀 Redirecting to Dashboard:", finalUrl);
+            window.location.href = finalUrl;
+        } 
+        // 3. NUOVO: Return URL Generico (Save Product)
+        else if (returnUrl) {
+            let finalUrl = decodeURIComponent(returnUrl);
+            // Appendiamo i crediti se non ci sono già
+            if (bonusPoints > 0 && !finalUrl.includes('bonus_credits')) {
+                finalUrl += (finalUrl.includes('?') ? '&' : '?') + `bonus_credits=${bonusPoints}`;
+            }
+            console.log("🚀 Returning to Origin:", finalUrl);
+            window.location.href = finalUrl;
+        }
+        // 4. Gestione Errori Logici n8n
+        else if (normalizedResult.status === 'error') {
+            handleLogicError(normalizedResult.error, originalPayload);
+        }
+        // 5. Fallback generico per successo senza redirect (es. API pure)
+        else {
+            showError("Operazione completata con successo, ma nessuna destinazione trovata.");
+        }
+
+    } catch (err) {
+        if(window.SiteBoSGame) SiteBoSGame.stop();
+        showError("SYSTEM ERROR: " + err.message);
     }
 }
 
