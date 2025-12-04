@@ -369,12 +369,30 @@
         }
     };
     
-    function openGame() { 
-        document.getElementById('game-layer').classList.remove('hidden'); 
-        if(!SiteBoSGame.ctx) SiteBoSGame.init(); 
-        SiteBoSGame.start(); 
-        setTimeout(() => SiteBoSGame.resize(), 100); 
+function openGame() { 
+    const gameLayer = document.getElementById('game-layer');
+    const canvas = document.getElementById('gameCanvas');
+    
+    // FIX: Verifica che gli elementi esistano
+    if(!gameLayer || !canvas) {
+        console.error('Game elements not found in DOM!');
+        return;
     }
+    
+    gameLayer.classList.remove('hidden'); 
+    
+    if(!SiteBoSGame.ctx) {
+        SiteBoSGame.init(); 
+    }
+    
+    SiteBoSGame.start(); 
+    
+    // Resize dopo render completo
+    setTimeout(() => {
+        SiteBoSGame.resize();
+    }, 100); 
+}
+
     
     function closeGame() { 
         document.getElementById('game-layer').classList.add('hidden'); 
@@ -394,13 +412,22 @@
   <script src="processor_logic.js"></script>
   
   <script>
-    document.addEventListener('DOMContentLoaded', () => {
-        if(window.SponsorManager) {
-            console.log("Inietta Pubblicità...");
-            SponsorManager.inject('#loader-ad-slot', 'loader');
-            SponsorManager.inject('#game-ad-slot', 'game');
-        }
-    });
+// Sostituisci la sezione finale degli script con:
+document.addEventListener('DOMContentLoaded', () => {
+    // Inizializza sponsor ads
+    if(window.SponsorManager) {
+        console.log("Inietta Pubblicità...");
+        SponsorManager.inject('#loader-ad-slot', 'loader');
+        SponsorManager.inject('#game-ad-slot', 'game');
+    }
+    
+    // Pre-inizializza il canvas quando la pagina è pronta
+    const canvas = document.getElementById('gameCanvas');
+    if(canvas && !SiteBoSGame.ctx) {
+        SiteBoSGame.init();
+    }
+});
+
   </script>
 </body>
 </html>
