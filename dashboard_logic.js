@@ -203,7 +203,7 @@ function renderDashboard(data, vat) {
     // Header
     document.getElementById('companyName').innerText = owner.ragione_sociale || "Azienda";
     document.getElementById('vatDisplay').innerText = `P.IVA: ${vat}`;
-    document.getElementById('credits-display').innerText = owner.credits || 0;
+    document.getElementById('credits-display').innerText = owner.credits_balance || owner.credits || 0;  
 
     if (owner.logo_url) {
         const img = document.getElementById('header-logo');
