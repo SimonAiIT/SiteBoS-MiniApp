@@ -61,6 +61,15 @@ function init() {
     document.getElementById('btnEnrich').addEventListener('click', manualEnrich);
     document.getElementById('editForm').addEventListener('submit', handleSave);
     dom.fileInput.addEventListener('change', handleFileSelect);
+    
+    // 👉 Collega FAB Salva (usa ID diverso per evitare conflitti con form submit)
+    const fabSave = document.getElementById('fab-save-product');
+    if(fabSave) {
+        fabSave.addEventListener('click', (e) => {
+            e.preventDefault();
+            handleSave(e);
+        });
+    }
 
     // GHOST MODE AUTO-START
     if (ghostId) {
@@ -177,6 +186,11 @@ function populateForm(data) {
 
     dom.inputSection.classList.add('hidden');
     dom.editForm.classList.remove('hidden');
+    
+    // 👉 MOSTRA FAB SALVA
+    const fabSave = document.getElementById('fab-save-product');
+    if(fabSave) fabSave.classList.remove('hidden');
+    
     hideLoader();
     window.scrollTo(0,0);
 }
