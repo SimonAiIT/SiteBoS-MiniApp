@@ -1,8 +1,9 @@
 /**
- * BLUEPRINT EDITOR LOGIC (v3.0 - FIX COMPLETO)
- * ✅ Campi full-width FORZATI
- * ✅ Bottoni allineati destra (fase + step)
- * ✅ Drag mobile PERSISTENTE (no re-render)
+ * BLUEPRINT EDITOR LOGIC (v3.1 - CSS CLASSES REMOVED)
+ * ⚠️ RIMOSSE tutte le classi .edit-input, .edit-textarea che causavano width ridotto
+ * ✅ Solo stili inline con width:100%
+ * ✅ Bottoni allineati destra con flex
+ * ✅ Drag mobile persistente
  */
 'use strict';
 
@@ -61,7 +62,6 @@ function applyTranslations() {
 }
 
 function renderStages() {
-    // ⚠️ Distruggi Sortable precedenti
     if (stageSortable) stageSortable.destroy();
     stepSortables.forEach(s => s.destroy());
     stepSortables = [];
@@ -78,28 +78,25 @@ function renderStages() {
         stageEl.className = 'stage-card';
         stageEl.dataset.idx = sIdx;
 
+        // ⚠️ RIMOSSE CLASSI CSS DA INPUT/TEXTAREA!
         stageEl.innerHTML = `
-            <!-- 👉 HEADER FASE -->
-            <div class="stage-header" style="display:flex; justify-content:space-between; align-items:stretch; padding:0; background:rgba(255,255,255,0.03); border-bottom:1px solid var(--glass-border);">
+            <div class="stage-header" style="display:flex; justify-content:space-between; align-items:center; padding:15px; background:rgba(255,255,255,0.03); border-bottom:1px solid var(--glass-border);">
                 
-                <!-- SX: Drag ISOLATO -->
-                <div class="stage-drag-area" style="display:flex; align-items:center; padding:15px 8px; cursor:grab;">
+                <div style="display:flex; align-items:center; gap:12px; cursor:grab;">
                     <i class="fas fa-grip-vertical drag-handle-stage" 
                        style="color:var(--text-muted); font-size:20px; touch-action:none;"></i>
                 </div>
                 
-                <!-- CENTRO: Nome (cliccabile) -->
-                <div style="flex:1; padding:15px 8px; cursor:pointer;" data-action="toggle-stage" data-sidx="${sIdx}">
+                <div style="flex:1; padding:0 12px; cursor:pointer;" data-action="toggle-stage" data-sidx="${sIdx}">
                     <div style="font-weight:600; font-size:15px; color:white; margin-bottom:3px;">${stage.stage_name || 'Fase Senza Nome'}</div>
                     <div style="font-size:11px; color:var(--text-muted);">${stepCount} ${t.stepsCount} • ${totalTime} ${t.min}</div>
                 </div>
                 
-                <!-- DX: Bottoni -->
-                <div style="display:flex; align-items:center; gap:6px; padding:15px 12px;">
-                    <button class="btn-icon-sm" data-action="toggle-stage-btn" data-sidx="${sIdx}" title="Espandi/Comprimi" style="flex-shrink:0;">
+                <div style="display:flex; align-items:center; gap:6px;">
+                    <button class="btn-icon-sm" data-action="toggle-stage-btn" data-sidx="${sIdx}" title="Espandi/Comprimi">
                         <i class="fas fa-chevron-${isOpen ? 'up' : 'down'}"></i>
                     </button>
-                    <button class="btn-icon-sm text-error" data-action="delete-stage" data-sidx="${sIdx}" title="Elimina Fase" style="flex-shrink:0;">
+                    <button class="btn-icon-sm text-error" data-action="delete-stage" data-sidx="${sIdx}" title="Elimina Fase">
                         <i class="fas fa-trash"></i>
                     </button>
                 </div>
@@ -107,11 +104,12 @@ function renderStages() {
             
             <div class="stage-body" style="display:${isOpen ? 'block' : 'none'}; padding:15px;">
                 <div style="margin-bottom:15px;">
-                    <input type="text" class="edit-input" 
-                           style="display:block; width:100%; max-width:100%; box-sizing:border-box; font-size:15px; font-weight:600; margin:0 0 8px 0; padding:10px;" 
+                    <!-- ⚠️ NO CLASS, SOLO INLINE -->
+                    <input type="text" 
+                           style="width:100%; display:block; box-sizing:border-box; background:var(--input-bg); border:1px solid var(--glass-border); border-radius:8px; padding:12px; color:white; font-size:15px; font-weight:600; margin:0 0 10px 0;" 
                            value="${stage.stage_name || ''}" placeholder="${t.phStageName}" data-type="stage-name" data-sidx="${sIdx}">
-                    <textarea class="edit-textarea" rows="2" placeholder="${t.phStageDesc}" data-type="stage-desc" data-sidx="${sIdx}" 
-                              style="display:block; width:100%; max-width:100%; box-sizing:border-box; font-size:12px; margin:0; padding:10px;">${stage.description || ''}</textarea>
+                    <textarea rows="2" placeholder="${t.phStageDesc}" data-type="stage-desc" data-sidx="${sIdx}" 
+                              style="width:100%; display:block; box-sizing:border-box; background:var(--input-bg); border:1px solid var(--glass-border); border-radius:8px; padding:12px; color:var(--text-muted); font-size:13px; margin:0; resize:vertical;">${stage.description || ''}</textarea>
                 </div>
                 
                 <div class="step-list-container" data-sidx="${sIdx}">
@@ -127,7 +125,6 @@ function renderStages() {
         `;
         dom.stagesContainer.appendChild(stageEl);
 
-        // ⚠️ Sortable STEP - salva istanza
         const stepContainer = stageEl.querySelector('.step-list-container');
         const stepSort = new Sortable(stepContainer, {
             group: 'steps',
@@ -141,7 +138,6 @@ function renderStages() {
         stepSortables.push(stepSort);
     });
 
-    // ⚠️ Sortable STAGE - salva istanza
     stageSortable = new Sortable(dom.stagesContainer, {
         handle: '.drag-handle-stage',
         animation: 150,
@@ -167,17 +163,16 @@ function renderSteps(steps, sIdx) {
         <div class="step-item" data-sidx="${sIdx}" data-stidx="${stIdx}" 
              style="background:rgba(0,0,0,0.2); border:1px solid var(--glass-border); border-radius:10px; padding:12px; margin-bottom:10px;">
             
-            <!-- 👉 HEADER STEP -->
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
                 <div style="display:flex; align-items:center; gap:10px;">
                     <i class="fas fa-grip-vertical drag-handle-step" 
-                       style="color:var(--text-muted); cursor:grab; font-size:20px; touch-action:none; padding:5px;"></i>
+                       style="color:var(--text-muted); cursor:grab; font-size:20px; touch-action:none;"></i>
                     <div style="display:flex; gap:6px;">
                         ${wipBadge} ${finBadge}
                     </div>
                 </div>
                 
-                <div style="display:flex; gap:6px; flex-shrink:0;">
+                <div style="display:flex; gap:6px;">
                     <button class="btn-icon-sm ${activeClass}" data-action="toggle-step" data-sidx="${sIdx}" data-stidx="${stIdx}" title="Espandi/Comprimi">
                         <i class="fas fa-chevron-${isOpen ? 'up' : 'down'}"></i>
                     </button>
@@ -187,14 +182,13 @@ function renderSteps(steps, sIdx) {
                 </div>
             </div>
 
-            <!-- 👉 NOME STEP: FULL WIDTH FORZATO -->
-            <input type="text" class="edit-input" 
-                   style="display:block; width:100%; max-width:100%; box-sizing:border-box; font-size:14px; font-weight:500; margin:0 0 10px 0; padding:10px;"
+            <!-- ⚠️ NO CLASS, SOLO INLINE -->
+            <input type="text" 
+                   style="width:100%; display:block; box-sizing:border-box; background:var(--input-bg); border:1px solid var(--glass-border); border-radius:8px; padding:12px; color:white; font-size:14px; font-weight:500; margin:0 0 10px 0;"
                    value="${step.step_name || ''}" placeholder="${t.phStepName}" 
                    data-type="step-name" data-sidx="${sIdx}" data-stidx="${stIdx}">
 
-            <!-- 👉 TEMPO: FULL WIDTH FORZATO -->
-            <div style="display:flex; width:100%; max-width:100%; box-sizing:border-box; align-items:center; gap:10px; padding:10px 12px; background:rgba(255,255,255,0.05); border-radius:6px; margin:0 0 10px 0;">
+            <div style="width:100%; display:flex; box-sizing:border-box; align-items:center; gap:10px; padding:10px 12px; background:rgba(255,255,255,0.05); border-radius:8px; margin:0 0 10px 0;">
                 <i class="far fa-clock" style="color:var(--primary); flex-shrink:0; font-size:16px;"></i>
                 <input type="number" min="0" value="${mins}" 
                        style="flex:0 0 70px; background:transparent; border:none; color:white; font-size:14px; font-weight:500; text-align:center;"
@@ -202,27 +196,26 @@ function renderSteps(steps, sIdx) {
                 <span style="font-size:13px; color:var(--text-muted);">${t.min}</span>
             </div>
 
-            <!-- 👉 DETTAGLI: FULL WIDTH FORZATO -->
             <div style="display:${isOpen ? 'block' : 'none'}; margin-top:5px;">
                 
                 <div style="margin-bottom:12px;">
                     <label style="font-size:10px; color:var(--text-muted); font-weight:700; display:block; margin-bottom:5px;">${t.lblInstr}</label>
                     <textarea rows="3" placeholder="${t.phStepInstr}" 
-                              style="display:block; width:100%; max-width:100%; box-sizing:border-box; background:var(--input-bg); border:1px solid var(--glass-border); padding:10px; border-radius:6px; color:white; font-size:12px; resize:vertical; margin:0;"
+                              style="width:100%; display:block; box-sizing:border-box; background:var(--input-bg); border:1px solid var(--glass-border); padding:12px; border-radius:8px; color:white; font-size:12px; resize:vertical; margin:0;"
                               data-type="step-instr" data-sidx="${sIdx}" data-stidx="${stIdx}">${step.instructions||''}</textarea>
                 </div>
 
                 <div style="margin-bottom:12px;">
                     <label style="font-size:10px; color:#30d158; font-weight:700; display:block; margin-bottom:5px;">${t.lblQC}</label>
                     <textarea rows="2" placeholder="${t.phQC}" 
-                              style="display:block; width:100%; max-width:100%; box-sizing:border-box; background:var(--input-bg); border:1px solid var(--glass-border); padding:10px; border-radius:6px; color:white; font-size:12px; resize:vertical; margin:0;"
+                              style="width:100%; display:block; box-sizing:border-box; background:var(--input-bg); border:1px solid var(--glass-border); padding:12px; border-radius:8px; color:white; font-size:12px; resize:vertical; margin:0;"
                               data-type="step-qc" data-sidx="${sIdx}" data-stidx="${stIdx}">${step.quality_check?.check_description||''}</textarea>
                 </div>
 
                 <div style="margin-bottom:12px;">
                     <label style="font-size:10px; color:var(--text-muted); font-weight:700; display:block; margin-bottom:5px;">${t.lblSkills}</label>
                     <input type="text" 
-                           style="display:block; width:100%; max-width:100%; box-sizing:border-box; background:var(--input-bg); border:1px solid var(--glass-border); padding:10px; border-radius:6px; color:white; font-size:12px; margin:0;"
+                           style="width:100%; display:block; box-sizing:border-box; background:var(--input-bg); border:1px solid var(--glass-border); padding:12px; border-radius:8px; color:white; font-size:12px; margin:0;"
                            value="${(step.resources_needed?.labor?.required_skill_tags||[]).join(', ')}" 
                            placeholder="${t.phSkills}" 
                            data-type="step-skills" data-sidx="${sIdx}" data-stidx="${stIdx}">
@@ -341,7 +334,6 @@ function updateIndexes() {
     });
 }
 
-// ⚠️ NUOVO: Sort handler SENZA re-render immediato
 function handleSortEndNoRerender(evt) {
     const item = evt.item;
     if (item.classList.contains('stage-card')) {
@@ -354,8 +346,6 @@ function handleSortEndNoRerender(evt) {
         currentData.stages[toStageIdx].steps.splice(evt.newIndex, 0, movedStep);
     }
     updateIndexes();
-    // ⚠️ NON chiamo renderStages() qui per preservare Sortable
-    // Gli indici vengono aggiornati solo nei dataset
     document.querySelectorAll('.stage-card').forEach((el, idx) => el.dataset.idx = idx);
 }
 
