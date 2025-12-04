@@ -65,9 +65,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    action: 'generate_blog_post',
+                    action: 'generate_draft', // ✅ CAMBIATO DA generate_blog_post
                     fragment_id: fragmentId,
-                    ...apiCredentials
+                    vat_number: apiCredentials.vat,
+                    token: apiCredentials.token,
+                    chat_id: apiCredentials.owner,
+                    ragione_sociale: apiCredentials.ragione_sociale
                 })
             });
 
