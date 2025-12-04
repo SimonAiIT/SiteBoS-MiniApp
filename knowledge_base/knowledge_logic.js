@@ -20,6 +20,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const kbContainer = document.getElementById('kb-container');
     const companyNameEl = document.getElementById('companyName');
     const saveBtn = document.getElementById('saveBtn');
+    const backToManagerBtn = document.getElementById('backToManagerBtn');
 
     const params = new URLSearchParams(window.location.search);
     const apiCredentials = {
@@ -30,6 +31,22 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     let knowledgeData = [];
+
+    // ⬅️ GESTIONE BOTTONE TORNA INDIETRO
+    if (backToManagerBtn) {
+        backToManagerBtn.addEventListener('click', () => {
+            if (tg?.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
+            
+            // Costruisci URL Manager Desk mantenendo i parametri
+            const managerUrl = new URL('../manager_desk.html', window.location.href);
+            const currentParams = new URLSearchParams(window.location.search);
+            currentParams.forEach((value, key) => {
+                managerUrl.searchParams.set(key, value);
+            });
+            
+            window.location.href = managerUrl.toString();
+        });
+    }
 
     // --- 2. INIZIALIZZAZIONE ---
     async function init() {
