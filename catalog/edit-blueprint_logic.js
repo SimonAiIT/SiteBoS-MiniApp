@@ -1,8 +1,8 @@
 /**
- * BLUEPRINT EDITOR LOGIC (vFINAL - UI FIXED)
- * - Grid Layout per Steps
- * - FABs a destra in riga
- * - FIX: Caricamento minuti corretto
+ * BLUEPRINT EDITOR LOGIC (v2.0 - COLLAPSIBLE STAGES)
+ * - Stage collassabili con summary view
+ * - Step details espandibili
+ * - Fix UI completo
  */
 'use strict';
 
@@ -22,12 +22,8 @@ let currentData = null;
 
 // 2. I18N
 const i18n = {
-    it: { title: "Blueprint Operativo", subtitle: "Definisci il processo produttivo", btnAddStage: "Nuova Fase", btnSave: "Salva", loading: "Caricamento...", saved: "✅ Salvato!", error: "❌ Errore", phDesc: "Scopo del processo...", phStageName: "Nome Fase (es. Analisi)", phStepName: "Nome Step", phStageDesc: "Descrizione fase...", phStepInstr: "Istruzioni operative...", phQC: "Check Qualità...", phSkills: "Skill (es. Dev, Legal)", lblDesc: "DESCRIZIONE", min: "min", confirmDel: "Eliminare?", step: "Step", lblInstr: "ISTRUZIONI", lblQC: "QUALITY CHECK", lblSkills: "SKILLS", lblWip: "WIP", lblFin: "FINISHED" },
-    en: { title: "Operational Blueprint", subtitle: "Define production process", btnAddStage: "New Stage", btnSave: "Save", loading: "Loading...", saved: "✅ Saved!", error: "❌ Error", phDesc: "Process purpose...", phStageName: "Stage Name", phStepName: "Step Name", phStageDesc: "Stage description...", phStepInstr: "Instructions...", phQC: "Quality Check...", phSkills: "Skills (e.g. Dev)", lblDesc: "DESCRIPTION", min: "min", confirmDel: "Delete?", step: "Step", lblInstr: "INSTRUCTIONS", lblQC: "QUALITY CHECK", lblSkills: "SKILLS", lblWip: "WIP", lblFin: "FINISHED" },
-    fr: { title: "Blueprint Opérationnel", subtitle: "Définir processus", btnAddStage: "Nouvelle Phase", btnSave: "Enregistrer", loading: "Chargement...", saved: "✅ Enregistré !", error: "❌ Erreur", phDesc: "But du processus...", phStageName: "Nom Phase", phStepName: "Nom Étape", phStageDesc: "Description phase...", phStepInstr: "Instructions...", phQC: "Contrôle Qualité...", phSkills: "Compétences", lblDesc: "DESCRIPTION", min: "min", confirmDel: "Supprimer ?", step: "Étape", lblInstr: "INSTRUCTIONS", lblQC: "QUALITÉ", lblSkills: "COMPÉTENCES", lblWip: "EN COURS", lblFin: "TERMINÉ" },
-    de: { title: "Operativer Blueprint", subtitle: "Prozess definieren", btnAddStage: "Neue Phase", btnSave: "Speichern", loading: "Laden...", saved: "✅ Gespeichert!", error: "❌ Fehler", phDesc: "Prozesszweck...", phStageName: "Phasenname", phStepName: "Schrittname", phStageDesc: "Phasenbeschreibung...", phStepInstr: "Anweisungen...", phQC: "Qualitätsprüfung...", phSkills: "Fähigkeiten", lblDesc: "BESCHREIBUNG", min: "Min", confirmDel: "Löschen?", step: "Schritt", lblInstr: "ANWEISUNGEN", lblQC: "QUALITÄT", lblSkills: "FÄHIGKEITEN", lblWip: "WIP", lblFin: "FERTIG" },
-    es: { title: "Blueprint Operativo", subtitle: "Definir proceso", btnAddStage: "Nueva Fase", btnSave: "Guardar", loading: "Cargando...", saved: "✅ ¡Guardado!", error: "❌ Error", phDesc: "Propósito...", phStageName: "Nombre Fase", phStepName: "Nombre Paso", phStageDesc: "Descripción fase...", phStepInstr: "Instrucciones...", phQC: "Control Calidad...", phSkills: "Habilidades", lblDesc: "DESCRIPCIÓN", min: "min", confirmDel: "¿Eliminar?", step: "Paso", lblInstr: "INSTRUCCIONES", lblQC: "CALIDAD", lblSkills: "HABILIDADES", lblWip: "WIP", lblFin: "TERMINADO" },
-    pt: { title: "Blueprint Operacional", subtitle: "Definir processo", btnAddStage: "Nova Fase", btnSave: "Salvar", loading: "Carregando...", saved: "✅ Salvo!", error: "❌ Erro", phDesc: "Propósito...", phStageName: "Nome da Fase", phStepName: "Nome da Etapa", phStageDesc: "Descrição da fase...", phStepInstr: "Instruções...", phQC: "Controle Qualidade...", phSkills: "Habilidades", lblDesc: "DESCRIÇÃO", min: "min", confirmDel: "Excluir?", step: "Etapa", lblInstr: "INSTRUÇÕES", lblQC: "QUALIDADE", lblSkills: "HABILIDADES", lblWip: "WIP", lblFin: "CONCLUÍDO" }
+    it: { title: "Blueprint Operativo", subtitle: "Definisci il processo produttivo", btnAddStage: "Nuova Fase", btnSave: "Salva", loading: "Caricamento...", saved: "✅ Salvato!", error: "❌ Errore", phDesc: "Scopo del processo...", phStageName: "Nome Fase (es. Analisi)", phStepName: "Nome Step", phStageDesc: "Descrizione fase...", phStepInstr: "Istruzioni operative...", phQC: "Check Qualità...", phSkills: "Skill (es. Dev, Legal)", lblDesc: "DESCRIZIONE", min: "min", confirmDel: "Eliminare?", step: "Step", lblInstr: "ISTRUZIONI", lblQC: "QUALITY CHECK", lblSkills: "SKILLS", lblWip: "WIP", lblFin: "FINISHED", stepsCount: "passi" },
+    en: { title: "Operational Blueprint", subtitle: "Define production process", btnAddStage: "New Stage", btnSave: "Save", loading: "Loading...", saved: "✅ Saved!", error: "❌ Error", phDesc: "Process purpose...", phStageName: "Stage Name", phStepName: "Step Name", phStageDesc: "Stage description...", phStepInstr: "Instructions...", phQC: "Quality Check...", phSkills: "Skills (e.g. Dev)", lblDesc: "DESCRIPTION", min: "min", confirmDel: "Delete?", step: "Step", lblInstr: "INSTRUCTIONS", lblQC: "QUALITY CHECK", lblSkills: "SKILLS", lblWip: "WIP", lblFin: "FINISHED", stepsCount: "steps" }
 };
 const t = i18n[langParam.slice(0,2)] || i18n.it;
 
@@ -66,34 +62,54 @@ function applyTranslations() {
     dom.loaderText.textContent = t.loading;
 }
 
-// 5. RENDERER
+// 5. RENDERER CON COLLAPSIBLE STAGES
 function renderStages() {
     dom.stagesContainer.innerHTML = '';
     if (!currentData.stages) currentData.stages = [];
 
     currentData.stages.forEach((stage, sIdx) => {
+        const isOpen = stage._ui_open !== false; // Default aperto
+        const stepCount = stage.steps?.length || 0;
+        const totalTime = (stage.steps || []).reduce((sum, st) => sum + (parseInt(st.estimated_time_minutes) || 0), 0);
+        
         const stageEl = document.createElement('div');
         stageEl.className = 'stage-card';
         stageEl.dataset.idx = sIdx;
 
         stageEl.innerHTML = `
-            <div class="stage-header">
-                <i class="fas fa-grip-vertical drag-handle" style="color:var(--text-muted); margin-top:5px; cursor:grab;"></i>
-                <div style="flex:1;">
-                    <input type="text" class="edit-input" style="font-size:16px;" value="${stage.stage_name || ''}" placeholder="${t.phStageName}" data-type="stage-name" data-sidx="${sIdx}">
-                    <textarea class="edit-textarea" rows="1" placeholder="${t.phStageDesc}" data-type="stage-desc" data-sidx="${sIdx}">${stage.description || ''}</textarea>
+            <!-- 👉 HEADER COLLASSABILE -->
+            <div class="stage-header-collapsible" data-action="toggle-stage" data-sidx="${sIdx}" style="cursor:pointer; display:flex; justify-content:space-between; align-items:center; padding:15px; background:rgba(255,255,255,0.03); border-bottom:1px solid var(--glass-border);">
+                <div style="display:flex; align-items:center; gap:12px; flex:1;">
+                    <i class="fas fa-grip-vertical drag-handle" style="color:var(--text-muted); cursor:grab; font-size:16px;" onclick="event.stopPropagation();"></i>
+                    <div style="flex:1;">
+                        <div style="font-weight:600; font-size:15px; color:white; margin-bottom:3px;">${stage.stage_name || 'Fase Senza Nome'}</div>
+                        <div style="font-size:11px; color:var(--text-muted);">${stepCount} ${t.stepsCount} • ${totalTime} ${t.min}</div>
+                    </div>
                 </div>
-                <button class="btn-icon-sm delete" data-action="delete-stage" data-sidx="${sIdx}"><i class="fas fa-trash"></i></button>
+                <div style="display:flex; align-items:center; gap:8px;">
+                    <button class="btn-icon-sm text-error" data-action="delete-stage" data-sidx="${sIdx}" onclick="event.stopPropagation();" title="Elimina Fase">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                    <i class="fas fa-chevron-${isOpen ? 'up' : 'down'}" style="color:var(--text-muted); font-size:14px; transition:transform 0.3s;"></i>
+                </div>
             </div>
             
-            <div class="step-list-container" data-sidx="${sIdx}">
-                ${renderSteps(stage.steps, sIdx)}
-            </div>
-            
-            <div style="padding: 10px; text-align: center;">
-                <button class="btn btn-sm btn-secondary" data-action="add-step" data-sidx="${sIdx}" style="width:100%; border-style:dashed;">
-                    <i class="fas fa-plus"></i> ${t.step}
-                </button>
+            <!-- 👉 BODY (COLLASSABILE) -->
+            <div class="stage-body" style="display:${isOpen ? 'block' : 'none'}; padding:15px;">
+                <div style="margin-bottom:15px;">
+                    <input type="text" class="edit-input" style="font-size:15px; font-weight:600; margin-bottom:8px;" value="${stage.stage_name || ''}" placeholder="${t.phStageName}" data-type="stage-name" data-sidx="${sIdx}">
+                    <textarea class="edit-textarea" rows="2" placeholder="${t.phStageDesc}" data-type="stage-desc" data-sidx="${sIdx}" style="font-size:12px;">${stage.description || ''}</textarea>
+                </div>
+                
+                <div class="step-list-container" data-sidx="${sIdx}">
+                    ${renderSteps(stage.steps, sIdx)}
+                </div>
+                
+                <div style="margin-top:10px; text-align:center;">
+                    <button class="btn btn-sm btn-secondary" data-action="add-step" data-sidx="${sIdx}" style="width:100%; border-style:dashed;">
+                        <i class="fas fa-plus"></i> ${t.step}
+                    </button>
+                </div>
             </div>
         `;
         dom.stagesContainer.appendChild(stageEl);
@@ -105,13 +121,14 @@ function renderStages() {
     });
 
     new Sortable(dom.stagesContainer, {
-        handle: '.stage-header .drag-handle', animation: 150,
+        handle: '.stage-header-collapsible .drag-handle', animation: 150,
         onEnd: handleSortEnd
     });
 }
 
 function renderSteps(steps, sIdx) {
-    if (!steps || steps.length === 0) return '';
+    if (!steps || steps.length === 0) return '<div style="text-align:center; padding:20px; color:var(--text-muted); font-size:12px;">Nessuno step. Aggiungi il primo!</div>';
+    
     return steps.map((step, stIdx) => {
         const isOpen = step._ui_open ? 'open' : '';
         const activeClass = step._ui_open ? 'active' : '';
@@ -121,72 +138,68 @@ function renderSteps(steps, sIdx) {
         const mins = parseInt(step.estimated_time_minutes) || 0;
         
         return `
-        <div class="step-item" data-sidx="${sIdx}" data-stidx="${stIdx}">
+        <div class="step-item" data-sidx="${sIdx}" data-stidx="${stIdx}" style="background:rgba(0,0,0,0.2); border:1px solid var(--glass-border); border-radius:10px; padding:12px; margin-bottom:10px;">
             
-            <!-- RIGA 1: Drag (=) | Badge | Bottoni (Tornati colorati al click) -->
-            <div class="riga-1">
-                <div class="riga-1-left">
-                    <i class="fas fa-grip-lines drag-handle" style="color:var(--text-muted); cursor:grab; font-size: 18px;"></i>
+            <!-- RIGA 1: Drag | Badges | Bottoni -->
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                <div style="display:flex; align-items:center; gap:8px;">
+                    <i class="fas fa-grip-lines drag-handle" style="color:var(--text-muted); cursor:grab; font-size:16px;"></i>
                     ${wipBadge} ${finBadge}
                 </div>
                 
-                <div class="btn-group">
-                    <button class="btn-icon ${activeClass}" data-action="toggle-step" data-sidx="${sIdx}" data-stidx="${stIdx}">
+                <div style="display:flex; gap:6px;">
+                    <button class="btn-icon-sm ${activeClass}" data-action="toggle-step" data-sidx="${sIdx}" data-stidx="${stIdx}" title="Espandi/Comprimi">
                         <i class="fas fa-chevron-${isOpen ? 'up' : 'down'}"></i>
                     </button>
-                    <button class="btn-icon del" data-action="delete-step" data-sidx="${sIdx}" data-stidx="${stIdx}">
+                    <button class="btn-icon-sm text-error" data-action="delete-step" data-sidx="${sIdx}" data-stidx="${stIdx}" title="Elimina Step">
                         <i class="fas fa-times"></i>
                     </button>
                 </div>
             </div>
 
             <!-- RIGA 2: Nome Step -->
-            <div class="riga-2">
-                <input type="text" class="edit-input" 
-                       value="${step.step_name || ''}" placeholder="${t.phStepName}" 
-                       data-type="step-name" data-sidx="${sIdx}" data-stidx="${stIdx}">
+            <input type="text" class="edit-input" style="font-size:14px; font-weight:500; margin-bottom:8px;"
+                   value="${step.step_name || ''}" placeholder="${t.phStepName}" 
+                   data-type="step-name" data-sidx="${sIdx}" data-stidx="${stIdx}">
+
+            <!-- RIGA 3: Tempo -->
+            <div style="display:flex; align-items:center; gap:8px; padding:6px 10px; background:rgba(255,255,255,0.05); border-radius:6px; width:fit-content;">
+                <i class="far fa-clock" style="color:var(--primary);"></i>
+                <input type="number" min="0" value="${mins}" style="width:50px; background:transparent; border:none; color:white; font-size:13px; text-align:center;"
+                       data-type="step-time" data-sidx="${sIdx}" data-stidx="${stIdx}">
+                <span style="font-size:12px; color:var(--text-muted);">${t.min}</span>
             </div>
 
-            <!-- RIGA 3: Tempo (Lungo a sinistra) -->
-            <div class="riga-3">
-                <div class="time-box-fixed">
-                    <i class="far fa-clock"></i>
-                    <input type="number" min="0" value="${mins}" 
-                           data-type="step-time" data-sidx="${sIdx}" data-stidx="${stIdx}">
-                    <span>${t.min}</span>
-                </div>
-            </div>
-
-            <!-- DETTAGLI -->
-            <div class="step-details ${isOpen}">
+            <!-- DETTAGLI ESPANDIBILI -->
+            <div style="display:${isOpen ? 'block' : 'none'}; margin-top:12px; padding-top:12px; border-top:1px dashed var(--glass-border);">
                 
-                <div class="input-block">
-                    <label>${t.lblInstr}</label>
-                    <textarea class="full-area" rows="3" placeholder="${t.phStepInstr}" 
+                <div style="margin-bottom:10px;">
+                    <label style="font-size:10px; color:var(--text-muted); font-weight:700; display:block; margin-bottom:5px;">${t.lblInstr}</label>
+                    <textarea rows="3" placeholder="${t.phStepInstr}" style="width:100%; background:var(--input-bg); border:1px solid var(--glass-border); padding:8px; border-radius:6px; color:white; font-size:12px;"
                               data-type="step-instr" data-sidx="${sIdx}" data-stidx="${stIdx}">${step.instructions||''}</textarea>
                 </div>
 
-                <div class="input-block">
-                    <label style="color:#30d158;">${t.lblQC}</label>
-                    <textarea class="full-area" rows="2" placeholder="${t.phQC}" 
+                <div style="margin-bottom:10px;">
+                    <label style="font-size:10px; color:#30d158; font-weight:700; display:block; margin-bottom:5px;">${t.lblQC}</label>
+                    <textarea rows="2" placeholder="${t.phQC}" style="width:100%; background:var(--input-bg); border:1px solid var(--glass-border); padding:8px; border-radius:6px; color:white; font-size:12px;"
                               data-type="step-qc" data-sidx="${sIdx}" data-stidx="${stIdx}">${step.quality_check?.check_description||''}</textarea>
                 </div>
 
-                <div class="input-block">
-                    <label>${t.lblSkills}</label>
-                    <input type="text" class="full-area" 
+                <div style="margin-bottom:10px;">
+                    <label style="font-size:10px; color:var(--text-muted); font-weight:700; display:block; margin-bottom:5px;">${t.lblSkills}</label>
+                    <input type="text" style="width:100%; background:var(--input-bg); border:1px solid var(--glass-border); padding:8px; border-radius:6px; color:white; font-size:12px;"
                            value="${(step.resources_needed?.labor?.required_skill_tags||[]).join(', ')}" 
                            placeholder="${t.phSkills}" 
                            data-type="step-skills" data-sidx="${sIdx}" data-stidx="${stIdx}">
                 </div>
 
-                <div style="display:flex; gap:20px; margin-top:10px; border-top:1px dashed var(--glass-border); padding-top:10px;">
-                    <label style="display:flex; align-items:center; gap:8px; font-size:12px; color:white;">
+                <div style="display:flex; gap:15px; padding-top:10px;">
+                    <label style="display:flex; align-items:center; gap:6px; font-size:11px; color:white; cursor:pointer;">
                         <input type="checkbox" ${step.logistics_flags?.requires_wip?'checked':''} 
                                data-type="flag-wip" data-sidx="${sIdx}" data-stidx="${stIdx}"> 
                         ${t.lblWip}
                     </label>
-                    <label style="display:flex; align-items:center; gap:8px; font-size:12px; color:white;">
+                    <label style="display:flex; align-items:center; gap:6px; font-size:11px; color:white; cursor:pointer;">
                         <input type="checkbox" ${step.logistics_flags?.requires_finished?'checked':''} 
                                data-type="flag-fin" data-sidx="${sIdx}" data-stidx="${stIdx}"> 
                         ${t.lblFin}
@@ -202,12 +215,25 @@ function renderSteps(steps, sIdx) {
 // 6. EVENT HANDLERS
 function handleContainerClick(e) {
     const btn = e.target.closest('button');
+    const header = e.target.closest('.stage-header-collapsible');
+    
+    // Toggle stage collapse
+    if (header && !btn) {
+        const sIdx = parseInt(header.dataset.sidx);
+        currentData.stages[sIdx]._ui_open = !currentData.stages[sIdx]._ui_open;
+        renderStages();
+        return;
+    }
+    
     if (!btn) return;
     const action = btn.dataset.action;
     const sIdx = parseInt(btn.dataset.sidx);
     const stIdx = parseInt(btn.dataset.stidx);
 
-    if (action === 'delete-stage') {
+    if (action === 'toggle-stage') {
+        currentData.stages[sIdx]._ui_open = !currentData.stages[sIdx]._ui_open;
+        renderStages();
+    } else if (action === 'delete-stage') {
         if(confirm(t.confirmDel)) { currentData.stages.splice(sIdx, 1); updateIndexes(); renderStages(); }
     } else if (action === 'add-step') {
         addStep(sIdx);
@@ -253,7 +279,7 @@ function handleInput(e) {
 // 7. DATA HELPERS
 function addStage() {
     if (!currentData.stages) currentData.stages = [];
-    currentData.stages.push({ stage_name: "Nuova Fase", description: "", steps: [] });
+    currentData.stages.push({ stage_name: "Nuova Fase", description: "", steps: [], _ui_open: true });
     updateIndexes(); renderStages();
     setTimeout(() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }), 100);
 }
@@ -305,12 +331,7 @@ async function loadBlueprint() {
             body: JSON.stringify({ action: 'GET', type: 'BLUEPRINT', productId, token, vat })
         });
         const data = await res.json();
-        
-        console.log('Raw data received:', data);
-        
         const bp = Array.isArray(data) ? data[0] : data;
-        
-        console.log('Blueprint parsed:', bp);
         
         currentData = bp || { stages: [] };
         dom.desc.value = currentData.blueprint_description || '';
@@ -331,7 +352,10 @@ async function handleSave(e) {
     
     currentData.blueprint_description = dom.desc.value;
     const payload = JSON.parse(JSON.stringify(currentData));
-    payload.stages.forEach(s => s.steps.forEach(st => delete st._ui_open));
+    payload.stages.forEach(s => {
+        delete s._ui_open;
+        s.steps.forEach(st => delete st._ui_open);
+    });
 
     try {
         await fetch(WEBHOOK_URL, {

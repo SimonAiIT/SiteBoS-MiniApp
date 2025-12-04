@@ -8,7 +8,6 @@
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <!-- Se hai il file styles.css nel progetto, questo lo caricherà, ma ho incluso lo stile qui sotto per sicurezza -->
   <link rel="stylesheet" href="../styles.css"> 
 
 </head>
@@ -31,17 +30,19 @@
           </div>
       </div>
   
-      <div class="cat-card">
+      <!-- ✅ FIX: Rimosso bordo rosso, usa card standard -->
+      <div class="card" style="margin-bottom: 15px;">
           <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
               <label style="font-size:10px; color:var(--text-muted); font-weight:700;">DESCRIZIONE BLUEPRINT</label>
               <span id="serviceSku" style="font-family:monospace; font-size:10px; color:var(--primary);">SKU: ...</span>
           </div>
-          <textarea id="blueprintDesc" rows="2" class="edit-textarea" style="color: white; font-style: normal; border: 1px solid var(--glass-border); padding: 8px; border-radius: 8px;"></textarea>
+          <textarea id="blueprintDesc" rows="2" placeholder="Descrivi il processo operativo..." 
+                    style="width:100%; background:var(--input-bg); color:white; border:1px solid var(--glass-border); padding:8px; border-radius:8px; font-size:13px; resize:vertical;"></textarea>
       </div>
   
       <div id="stagesContainer"></div>
   
-      <button class="btn-block" id="btnAddStageBtn">
+      <button class="btn btn-secondary btn-block" id="btnAddStageBtn" style="margin-top:15px;">
           <i class="fas fa-plus"></i> <span data-i18n="btnAddStage">Nuova Fase</span>
       </button>
       
@@ -49,14 +50,14 @@
   
     </div>
   
-    <!-- FAB CONTAINER (FISSO A DESTRA, STILE .back-fab) -->
+    <!-- FAB CONTAINER -->
     <div class="fab-container">
-        <button class="fab-btn" id="saveBtn">
-          <i class="fas fa-save"></i>
+        <button class="fab-btn fab-secondary" onclick="history.back()" title="Torna Indietro">
+          <i class="fas fa-arrow-left"></i>
         </button>
         
-        <button class="fab-btn fab-secondary" onclick="history.back()">
-          <i class="fas fa-arrow-left"></i>
+        <button class="fab-btn" id="saveBtn" title="Salva Blueprint">
+          <i class="fas fa-save"></i>
         </button>
     </div>
   
