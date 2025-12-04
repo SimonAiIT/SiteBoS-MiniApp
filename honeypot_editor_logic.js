@@ -541,24 +541,55 @@ const App = {
         finally { if(!STATE.data.config?.bot_linked) UI.setLoading(false, DOM.btnLinkBot); }
     },
 
-    uploadAsset: async (type, file) => {
-        if (!file) return;
-        const previewEl = document.getElementById(`${type}-preview`);
-        previewEl.innerHTML = `<div class="spinner" style="width:20px;height:20px;border-width:2px;"></div>`;
-        try {
-            const reader = new FileReader(); reader.readAsDataURL(file);
-            reader.onload = async () => {
-                const base64 = reader.result.split(',')[1]; const mime = reader.result.match(/:(.*?);/)[1];
-                const res = await Api.analyzeAsset(type, base64, mime);
-                if (res) {
-                    const desc = res.response_data?.description || res.description || "Analisi completata";
-                    if (!STATE.data.assets) STATE.data.assets = {};
-                    STATE.data.assets[type] = { description: desc, mime: mime, url: res.url || null, base64: res.url ? null : base64 };
-                    UI.renderAssets(); UI.toggleDirty();
-                } else { previewEl.innerHTML = ''; }
-            };
-        } catch (e) { previewEl.innerHTML = ''; }
-    },
+uploadAsset: async (type, file) => {
+    if (!file) return;
+    
+    const previewEl = document.getElementById(`${type}-preview`);
+    
+    // 🔧 FIX: Spinner animato con Font Awesome + testo
+    previewEl.innerHTML = `
+        <div style="text-align:center; padding:20px;">
+            <i class="fas fa-circle-notch fa-spin" style="font-size:32px; color:var(--primary);"></i>
+            <p style="margin-top:10px; color:#ccc; font-size:13px;">
+                ${I18n.get('generating')}
+            </p>
+        </div>
+    `;
+    
+    try {
+        const reader = new FileReader(); 
+        reader.readAsDataURL(file);
+        
+        reader.onload = async () => {
+            const base64 = reader.result.split(',')[1]; 
+            const mime = reader.result.match(/:(.*?);/)[1];
+            
+            const res = await Api.analyzeAsset(type, base64, mime);
+            
+            if (res) {
+                const desc = res.response_data?.description || res.description || "Analisi completata";
+                
+                if (!STATE.data.assets) STATE.data.assets = {};
+                STATE.data.assets[type] = { 
+                    description: desc, 
+                    mime: mime, 
+                    url: res.url || null, 
+                    base64: res.url ? null : base64 
+                };
+                
+                UI.renderAssets(); 
+                UI.toggleDirty();
+            } else { 
+                previewEl.innerHTML = '<p style="color:#ff6b6b;">Errore analisi</p>'; 
+            }
+        };
+        
+    } catch (e) { 
+        console.error("Upload error:", e);
+        previewEl.innerHTML = '<p style="color:#ff6b6b;">Errore caricamento</p>'; 
+    }
+}
+
 
     copyOffer: () => {
         const html = DOM.offerStorage.value; if (!html) return;
