@@ -38,12 +38,20 @@ document.addEventListener('DOMContentLoaded', () => {
     if (tg) tg.ready();
 
     startBtn.addEventListener('click', async () => {
+        // ✨ CONFERMA CON DETTAGLIO COSTO
+        const confirmed = await showConfirmation();
+        if (!confirmed) {
+            log("> ❌ Operazione annullata dall'utente.");
+            return;
+        }
+
         startBtn.disabled = true;
         startBtn.textContent = "Generazione in corso...";
         loader.style.display = 'block';
         logArea.style.display = 'block';
         
         log(`> Avvio richiesta per ID: ${fragmentId}...`);
+        log("> 💰 Scalamento 1000 punti in corso...");
         if(tg && tg.HapticFeedback) tg.HapticFeedback.impactOccurred('medium');
 
         try {
@@ -70,7 +78,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 startBtn.textContent = "Apri Articolo";
                 startBtn.disabled = false;
-                startBtn.style.background = "#0984e3";
+                startBtn.style.background = "var(--primary)"; // Allineato al design system
                 
                 // Cambia comportamento pulsante: ora apre il link
                 const blogUrl = data.url;
@@ -96,8 +104,26 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    /**
+     * Mostra una conferma nativa Telegram con dettaglio costo
+     * @returns {Promise<boolean>}
+     */
+    async function showConfirmation() {
+        if (tg && tg.showConfirm) {
+            return new Promise((resolve) => {
+                tg.showConfirm(
+                    "💰 Questa operazione scalerà 1000 punti dal tuo saldo.\n\n🤖 Generare l'articolo blog con l'IA?",
+                    (confirmed) => resolve(confirmed)
+                );
+            });
+        } else {
+            // Fallback browser standard
+            return confirm("💰 ATTENZIONE\n\nQuesta operazione scalerà 1000 punti dal tuo saldo.\n\nVuoi continuare?");
+        }
+    }
+
     function log(msg) {
-        logArea.innerHTML += `<div>${msg}</div>`;
+        logArea.innerHTML += `<div class="terminal-line">${msg}</div>`;
         logArea.scrollTop = logArea.scrollHeight;
     }
 });
