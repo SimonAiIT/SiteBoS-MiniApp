@@ -6,6 +6,7 @@
   <title>Configurazione in corso...</title>
   
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <!-- Carichiamo il motore Sponsor -->
   <script src="sponsor.js"></script> 
 
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Orbitron:wght@700&display=swap" rel="stylesheet">
@@ -17,6 +18,7 @@
     }
     body { margin: 0; background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; text-align: center; overflow: hidden; }
 
+    /* LOADER UI */
     .loader-container { background: var(--card-bg); padding: 30px; border-radius: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.3); width: 100%; max-width: 400px; border: 1px solid rgba(255,255,255,0.05); position: relative; z-index: 10; display: flex; flex-direction: column; gap: 15px; }
     .spinner-ring { width: 50px; height: 50px; margin: 0 auto; border: 4px solid rgba(255,255,255,0.1); border-top-color: var(--primary); border-radius: 50%; animation: spin 1s linear infinite; }
     @keyframes spin { to { transform: rotate(360deg); } }
@@ -26,10 +28,21 @@
     .btn-game { background: rgba(91, 111, 237, 0.1); border: 1px solid var(--primary); color: #8ba1ff; padding: 12px 20px; border-radius: 12px; font-size: 13px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; transition: all 0.2s; }
     .btn-game:hover { background: var(--primary); color: white; }
 
-    .ad-banner { background: var(--ad-bg); border: 1px dashed #444; border-radius: 8px; padding: 0; cursor: pointer; transition: all 0.2s; position: relative; overflow: hidden; }
+    /* STILI AD BANNER (Base per sponsor.js) */
+    .ad-banner {
+        background: var(--ad-bg);
+        border: 1px dashed #444;
+        border-radius: 8px;
+        padding: 0;
+        cursor: pointer;
+        transition: all 0.2s;
+        position: relative;
+        overflow: hidden;
+    }
     .ad-banner:hover { border-color: var(--primary); box-shadow: 0 0 15px rgba(91, 111, 237, 0.2); }
     .ad-badge { position: absolute; top: 3px; right: 3px; font-size: 8px; padding: 2px 5px; border-radius: 3px; text-transform: uppercase; letter-spacing: 0.5px; z-index: 5; }
 
+    /* GAME OVERLAY */
     #game-layer { position: fixed; inset: 0; background: #1a1a2e; z-index: 100; display: flex; flex-direction: column; }
     #game-container { flex: 1; position: relative; overflow: hidden; }
     canvas { display: block; width: 100%; height: 100%; }
@@ -47,12 +60,14 @@
     .legend-bad { border-color: #ff6b6b; color: #ff6b6b; }
     .legend-good { border-color: #4cd964; color: #4cd964; }
 
+    /* IN-GAME AD CONTAINER */
     .game-ad-footer {
         position: absolute; bottom: 0; left: 0; width: 100%; height: 80px;
         background: #0f172a; border-top: 2px solid var(--primary); z-index: 150;
         display: flex; align-items: center; justify-content: center;
         box-shadow: 0 -5px 20px rgba(0,0,0,0.6);
     }
+    /* Questo serve per far sì che il banner iniettato occupi lo spazio giusto */
     .game-ad-footer .ad-banner { width: 96%; height: 90%; margin: 0; border: none; background: transparent; }
 
     #error-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 200; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 30px; }
@@ -61,18 +76,21 @@
 </head>
 <body>
 
+  <!-- LOADER -->
   <div class="loader-container">
     <div class="spinner-ring"></div>
     <h1>Processing in Progress</h1>
     <p>The AI is processing your request.<br>This may take <b>several minutes</b>.</p>
     <div class="status-log">> <span id="log-text">Initializing...</span><span class="blink">_</span></div>
     
+    <!-- SLOT PUBBLICITARIO 1 (DINAMICO) -->
     <div id="loader-ad-slot" style="width:100%; min-height:70px;"></div>
     
     <button class="btn-game" onclick="openGame()"><i class="fas fa-gamepad"></i> Pass the time (Mini-Game)</button>
-    <p style="font-size:10px; opacity:0.5;">Play to add points to your credits.</p>
+    <p style="font-size:10px; opacity:0.5;">Play add point to your credits.</p>
   </div>
 
+  <!-- GAME UI -->
   <div id="game-layer" class="hidden">
     <div class="game-header">
       <div class="score-box">
@@ -91,6 +109,7 @@
       <canvas id="gameCanvas"></canvas>
     </div>
     
+    <!-- SLOT PUBBLICITARIO 2 (DINAMICO IN-GAME) -->
     <div class="game-ad-footer" id="game-ad-slot"></div>
     
     <div style="position:absolute; bottom:85px; width:100%; text-align:center; color:#666; font-size:10px; font-family:'Inter'; pointer-events:none; z-index:140; font-weight:600;">
@@ -98,17 +117,18 @@
     </div>
   </div>
 
+  <!-- ERROR UI -->
   <div id="error-overlay" class="hidden">
     <div style="font-size:40px; color:#ff6b6b; margin-bottom:20px;"><i class="fas fa-exclamation-triangle"></i></div>
     <p id="error-text" style="color:#fff; font-size:14px; margin-bottom:20px;">Errore sconosciuto.</p>
     <button class="btn-game" onclick="window.location.reload()">Riprova</button>
   </div>
 
+  <!-- SCRIPT DEL GIOCO (GAME ENGINE) -->
   <script>
     const SiteBoSGame = {
         canvas: null, ctx: null, loopId: null, active: false,
-        width: 0, height: 0, frames: 0, score: 0, bestScore: 0, 
-        baseSpeed: 6, speed: 6, speedBurst: false, burstCooldown: 0,
+        width: 0, height: 0, frames: 0, score: 0, bestScore: 0, speed: 6,
         player: { x: 80, y: 0, w: 40, h: 40, dy: 0, gravity: 0.6, jumpPower: -13, grounded: false },
         floorY: 0, obstacles: [], bonuses: [], particles: [],
         sprites: { player: "🤖", bad: ["💼", "📄", "📧", "📊", "📞"], good: ["❤️", "🏠", "☀️", "🍺", "🏖️"] },
@@ -123,11 +143,12 @@
             
             const jump = (e) => {
                 if(!this.active) return;
+                // FIX: Ignora click sui banner
                 if(e.target.closest('.ad-banner')) return;
+                
                 if(e.type !== 'keydown') e.preventDefault();
                 if(this.player.grounded) {
-                    this.player.dy = this.player.jumpPower; 
-                    this.player.grounded = false;
+                    this.player.dy = this.player.jumpPower; this.player.grounded = false;
                     this.createExplosion(this.player.x + 20, this.player.y+40, 5, '#fff');
                     if(window.Telegram?.WebApp?.HapticFeedback) window.Telegram.WebApp.HapticFeedback.impactOccurred('light');
                 }
@@ -136,298 +157,74 @@
             this.canvas.addEventListener('mousedown', jump);
             window.addEventListener('keydown', (e) => { if(e.code==='Space') jump(e); });
         },
-        
         start: function() {
-            if(this.active) return; 
-            this.active = true; 
-            this.score = 0; 
-            this.speed = this.baseSpeed;
-            this.speedBurst = false;
-            this.burstCooldown = 0;
+            if(this.active) return; this.active = true; this.score = 0; 
             document.getElementById('score').innerText = '0';
-            this.obstacles = []; 
-            this.bonuses = [];
-            this.player.y = this.floorY - 40; 
-            this.player.dy = 0; 
-            this.loop();
+            this.obstacles = []; this.bonuses = [];
+            this.player.y = this.floorY - 40; this.player.dy = 0; this.loop();
         },
-        
-        stop: function() { 
-            this.active = false; 
-            cancelAnimationFrame(this.loopId); 
-            sessionStorage.setItem('last_game_score', this.score); 
-        },
-        
+        stop: function() { this.active = false; cancelAnimationFrame(this.loopId); sessionStorage.setItem('last_game_score', this.score); },
         resize: function() {
             this.width = this.canvas.width = window.innerWidth;
             this.height = this.canvas.height = window.innerHeight;
             this.floorY = this.height * 0.65;
         },
-        
-        createExplosion: function(x, y, count, color) { 
-            for(let i=0; iunt; i++) 
-                this.particles.push({
-                    x, y, 
-                    vx:(Math.random()-0.5)*5, 
-                    vy:(Math.random()-0.5)*5, 
-                    life:1, 
-                    color
-                }); 
-        },
-        
+        createExplosion: function(x, y, count, color) { for(let i=0; i<count; i++) this.particles.push({x, y, vx:(Math.random()-0.5)*5, vy:(Math.random()-0.5)*5, life:1, color}); },
         updateScore: function() {
             document.getElementById('score').innerText = this.score;
-            if (this.score > this.bestScore) { 
-                this.bestScore = this.score; 
-                document.getElementById('best-score').innerText = this.bestScore; 
-                localStorage.setItem('sitebos_highscore', this.bestScore); 
-            }
+            if (this.score > this.bestScore) { this.bestScore = this.score; document.getElementById('best-score').innerText = this.bestScore; localStorage.setItem('sitebos_highscore', this.bestScore); }
         },
-        
         update: function() {
-            this.frames++;
-            
-            // ===== NUOVO: VELOCITÀ VARIABILE CON BURST CASUALI =====
-            this.burstCooldown--;
-            if(this.burstCooldown <= 0 && Math.random() < 0.05) { // 5% chance ogni frame
-                this.speedBurst = true;
-                this.speed = this.baseSpeed * (2 + Math.random()); // 2x-3x burst
-                this.burstCooldown = 60; // 1 secondo cooldown (60 frames a 60fps)
-                
-                setTimeout(() => {
-                    if(this.active) {
-                        this.speedBurst = false;
-                        this.speed = this.baseSpeed;
-                    }
-                }, 800); // Burst dura 0.8 secondi
-            }
-            
-            // Piccole variazioni casuali continue
-            if(Math.random() < 0.02) {
-                this.speed += (Math.random() - 0.5) * 0.5;
-                this.speed = Math.max(4, Math.min(10, this.speed)); // Clamp 4-10
-            }
-            
-            // Player physics
-            this.player.dy += this.player.gravity; 
-            this.player.y += this.player.dy;
-            if(this.player.y + 40 > this.floorY) { 
-                this.player.y = this.floorY - 40; 
-                this.player.dy = 0; 
-                this.player.grounded = true; 
-            }
-            
-            // Spawn ostacoli/bonus
+            this.frames++; this.player.dy += this.player.gravity; this.player.y += this.player.dy;
+            if(this.player.y + 40 > this.floorY) { this.player.y = this.floorY - 40; this.player.dy = 0; this.player.grounded = true; }
             if(this.frames % 100 === 0) {
-                if(Math.random() > 0.3) {
-                    this.obstacles.push({ 
-                        x: this.width, 
-                        y: this.floorY - 40, 
-                        w: 30, 
-                        h: 30, 
-                        icon: this.sprites.bad[Math.floor(Math.random() * this.sprites.bad.length)],
-                        // ===== NUOVO: SCALA CASUALE PULSANTE =====
-                        baseScale: 0.7 + Math.random() * 0.6, // 0.7-1.3
-                        scale: 1,
-                        scaleDir: 1,
-                        scaleSpeed: 0.01 + Math.random() * 0.02,
-                        // ===== NUOVO: BOUNCE VERTICALE =====
-                        bounceOffset: 0,
-                        bounceSpeed: 0.05 + Math.random() * 0.1,
-                        bounceAmplitude: 5 + Math.random() * 10
-                    });
-                } else {
-                    this.bonuses.push({ 
-                        x: this.width, 
-                        y: this.floorY - (Math.random()>0.5?100:40), 
-                        w: 30, 
-                        h: 30, 
-                        icon: this.sprites.good[Math.floor(Math.random() * this.sprites.good.length)],
-                        baseScale: 0.7 + Math.random() * 0.6,
-                        scale: 1,
-                        scaleDir: 1,
-                        scaleSpeed: 0.01 + Math.random() * 0.02,
-                        bounceOffset: 0,
-                        bounceSpeed: 0.05 + Math.random() * 0.1,
-                        bounceAmplitude: 5 + Math.random() * 10
-                    });
-                }
+                if(Math.random() > 0.3) this.obstacles.push({ x: this.width, y: this.floorY - 40, w: 30, h: 30, icon: this.sprites.bad[Math.floor(Math.random() * this.sprites.bad.length)] });
+                else this.bonuses.push({ x: this.width, y: this.floorY - (Math.random()>0.5?100:40), w: 30, h: 30, icon: this.sprites.good[Math.floor(Math.random() * this.sprites.good.length)] });
             }
-            
-            // Update obstacles
             for(let i=this.obstacles.length-1; i>=0; i--) {
-                let o = this.obstacles[i]; 
-                o.x -= this.speed;
-                
-                // ===== NUOVO: PULSAZIONE SCALA =====
-                o.scale += o.scaleSpeed * o.scaleDir;
-                if(o.scale >= 1.3 || o.scale <= 0.7) o.scaleDir *= -1;
-                
-                // ===== NUOVO: BOUNCE VERTICALE =====
-                o.bounceOffset += o.bounceSpeed;
-                
-                if (this.checkCollision(this.player, o)) { 
-                    this.createExplosion(this.player.x, this.player.y, 15, '#ff0000'); 
-                    if(window.Telegram?.WebApp?.HapticFeedback) window.Telegram.WebApp.HapticFeedback.notificationOccurred('error'); 
-                    this.obstacles.splice(i, 1); 
-                    this.score = Math.max(0, this.score - 50); 
-                    this.updateScore(); 
-                }
+                let o = this.obstacles[i]; o.x -= this.speed;
+                if (this.checkCollision(this.player, o)) { this.createExplosion(this.player.x, this.player.y, 15, '#ff0000'); if(window.Telegram?.WebApp?.HapticFeedback) window.Telegram.WebApp.HapticFeedback.notificationOccurred('error'); this.obstacles.splice(i, 1); this.score = Math.max(0, this.score - 50); this.updateScore(); }
                 if(o.x + o.w < 0) this.obstacles.splice(i, 1);
             }
-            
-            // Update bonuses
             for(let i=this.bonuses.length-1; i>=0; i--) {
-                let b = this.bonuses[i]; 
-                b.x -= this.speed;
-                
-                b.scale += b.scaleSpeed * b.scaleDir;
-                if(b.scale >= 1.3 || b.scale <= 0.7) b.scaleDir *= -1;
-                
-                b.bounceOffset += b.bounceSpeed;
-                
-                if (this.checkCollision(this.player, b)) { 
-                    this.createExplosion(this.player.x, this.player.y, 15, '#00ff00'); 
-                    if(window.Telegram?.WebApp?.HapticFeedback) window.Telegram.WebApp.HapticFeedback.notificationOccurred('success'); 
-                    this.bonuses.splice(i, 1); 
-                    this.score += 100; 
-                    this.updateScore(); 
-                }
+                let b = this.bonuses[i]; b.x -= this.speed;
+                if (this.checkCollision(this.player, b)) { this.createExplosion(this.player.x, this.player.y, 15, '#00ff00'); if(window.Telegram?.WebApp?.HapticFeedback) window.Telegram.WebApp.HapticFeedback.notificationOccurred('success'); this.bonuses.splice(i, 1); this.score += 100; this.updateScore(); }
                 if(b.x + b.w < 0) this.bonuses.splice(i, 1);
             }
-            
-            // Update particles
-            for(let i=this.particles.length-1; i>=0; i--) { 
-                let p = this.particles[i]; 
-                p.x += p.vx; 
-                p.y += p.vy; 
-                p.life -= 0.05; 
-                if(p.life <= 0) this.particles.splice(i, 1); 
-            }
+            for(let i=this.particles.length-1; i>=0; i--) { let p = this.particles[i]; p.x += p.vx; p.y += p.vy; p.life -= 0.05; if(p.life <= 0) this.particles.splice(i, 1); }
         },
-        
-        checkCollision: function(p, o) { 
-            return p.x < o.x + o.w * o.scale && 
-                   p.x + p.w > o.x && 
-                   p.y < o.y + o.h * o.scale && 
-                   p.y + p.h > o.y; 
-        },
-        
+        checkCollision: function(p, o) { return p.x < o.x + o.w && p.x + p.w > o.x && p.y < o.y + o.h && p.y + p.h > o.y; },
         draw: function() {
-            // Background
-            this.ctx.fillStyle = this.speedBurst ? '#2a1a3e' : '#0f172a'; // Burst = viola
-            this.ctx.fillRect(0,0,this.width,this.height);
-            
-            // Floor
-            this.ctx.beginPath(); 
-            this.ctx.moveTo(0, this.floorY); 
-            this.ctx.lineTo(this.width, this.floorY); 
-            this.ctx.strokeStyle = this.speedBurst ? '#ff6b6b' : '#5B6FED'; 
-            this.ctx.lineWidth = 4; 
-            this.ctx.stroke();
-            
-            // Player
-            this.ctx.font = "40px Arial"; 
-            this.ctx.textAlign = "center"; 
-            this.ctx.textBaseline = "bottom";
+            this.ctx.fillStyle = '#0f172a'; this.ctx.fillRect(0,0,this.width,this.height);
+            this.ctx.beginPath(); this.ctx.moveTo(0, this.floorY); this.ctx.lineTo(this.width, this.floorY); this.ctx.strokeStyle = '#5B6FED'; this.ctx.lineWidth = 4; this.ctx.stroke();
+            this.ctx.font = "40px Arial"; this.ctx.textAlign = "center"; this.ctx.textBaseline = "bottom";
             this.ctx.fillText(this.sprites.player, this.player.x + 20, this.player.y + 45);
-            
-            // Obstacles con scala e bounce
-            this.obstacles.forEach(o => { 
-                this.ctx.save();
-                const bounceY = Math.sin(o.bounceOffset) * o.bounceAmplitude;
-                const finalScale = o.baseScale * o.scale;
-                this.ctx.font = `${40 * finalScale}px Arial`;
-                this.ctx.fillText(o.icon, o.x + 15, o.y + 40 + bounceY);
-                this.ctx.restore();
-            });
-            
-            // Bonuses con scala e bounce
-            this.bonuses.forEach(b => { 
-                this.ctx.save();
-                const bounceY = Math.sin(b.bounceOffset) * b.bounceAmplitude;
-                const finalScale = b.baseScale * b.scale;
-                this.ctx.font = `${40 * finalScale}px Arial`;
-                this.ctx.fillText(b.icon, b.x + 15, b.y + 40 + bounceY);
-                this.ctx.restore();
-            });
-            
-            // Particles
-            this.particles.forEach(p => { 
-                this.ctx.fillStyle = p.color; 
-                this.ctx.globalAlpha = p.life; 
-                this.ctx.fillRect(p.x, p.y, 4, 4); 
-            }); 
-            this.ctx.globalAlpha = 1;
+            this.obstacles.forEach(o => { this.ctx.fillText(o.icon, o.x + 15, o.y + 40); });
+            this.bonuses.forEach(b => { this.ctx.fillText(b.icon, b.x + 15, b.y + 40); });
+            this.particles.forEach(p => { this.ctx.fillStyle = p.color; this.ctx.globalAlpha = p.life; this.ctx.fillRect(p.x, p.y, 4, 4); }); this.ctx.globalAlpha = 1;
         },
-        
-        loop: function() { 
-            if(!this.active) return; 
-            this.update(); 
-            this.draw(); 
-            this.loopId = requestAnimationFrame(() => this.loop()); 
-        }
+        loop: function() { if(!this.active) return; this.update(); this.draw(); this.loopId = requestAnimationFrame(() => this.loop()); }
     };
-    
-function openGame() { 
-    const gameLayer = document.getElementById('game-layer');
-    const canvas = document.getElementById('gameCanvas');
-    
-    // FIX: Verifica che gli elementi esistano
-    if(!gameLayer || !canvas) {
-        console.error('Game elements not found in DOM!');
-        return;
-    }
-    
-    gameLayer.classList.remove('hidden'); 
-    
-    if(!SiteBoSGame.ctx) {
-        SiteBoSGame.init(); 
-    }
-    
-    SiteBoSGame.start(); 
-    
-    // Resize dopo render completo
-    setTimeout(() => {
-        SiteBoSGame.resize();
-    }, 100); 
-}
-
-    
-    function closeGame() { 
-        document.getElementById('game-layer').classList.add('hidden'); 
-        SiteBoSGame.stop(); 
-    }
-    
+    function openGame() { document.getElementById('game-layer').classList.remove('hidden'); if(!SiteBoSGame.ctx) SiteBoSGame.init(); SiteBoSGame.start(); setTimeout(() => SiteBoSGame.resize(), 100); }
+    function closeGame() { document.getElementById('game-layer').classList.add('hidden'); SiteBoSGame.stop(); }
     const logs = ["Analisi requisiti...", "Creazione database...", "Generazione chiavi...", "Setup AI...", "Ottimizzazione...", "Quasi pronto..."];
-    let lIdx = 0; 
-    setInterval(() => { 
-        if(lIdx < logs.length) { 
-            document.getElementById('log-text').innerText = logs[lIdx]; 
-            lIdx++; 
-        } 
-    }, 15000);
+    let lIdx = 0; setInterval(() => { if(lIdx < logs.length) { document.getElementById('log-text').innerText = logs[lIdx]; lIdx++; } }, 15000);
   </script>
 
+  <!-- LOGICA BUSINESS + INIZIO ADS -->
   <script src="processor_logic.js"></script>
   
+  <!-- INIZIALIZZAZIONE ADVERTISING (Cruciale) -->
   <script>
-// Sostituisci la sezione finale degli script con:
-document.addEventListener('DOMContentLoaded', () => {
-    // Inizializza sponsor ads
-    if(window.SponsorManager) {
-        console.log("Inietta Pubblicità...");
-        SponsorManager.inject('#loader-ad-slot', 'loader');
-        SponsorManager.inject('#game-ad-slot', 'game');
-    }
-    
-    // Pre-inizializza il canvas quando la pagina è pronta
-    const canvas = document.getElementById('gameCanvas');
-    if(canvas && !SiteBoSGame.ctx) {
-        SiteBoSGame.init();
-    }
-});
-
+    document.addEventListener('DOMContentLoaded', () => {
+        if(window.SponsorManager) {
+            console.log("Inietta Pubblicità...");
+            // Inietta nel Loader
+            SponsorManager.inject('#loader-ad-slot', 'loader');
+            // Inietta nel Gioco
+            SponsorManager.inject('#game-ad-slot', 'game');
+        }
+    });
   </script>
 </body>
 </html>
