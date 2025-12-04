@@ -1,12 +1,11 @@
 /**
- * BLUEPRINT EDITOR LOGIC (v2.2 - ALIGNED LAYOUT)
- * - Stage header: Drag a SX, Chevron+Trash a DX (come step)
- * - Tutti i campi full-width
- * - Layout perfettamente allineato
+ * BLUEPRINT EDITOR LOGIC (v2.3 - FORCE FULL WIDTH)
+ * - Stili inline forzati per tutti i campi
+ * - box-sizing: border-box esplicito
+ * - display: block dove necessario
  */
 'use strict';
 
-// 1. CONFIG & STATE
 const WEBHOOK_URL = "https://trinai.api.workflow.dcmake.it/webhook/e742c7c8-107e-4328-882e-c13459413424";
 
 const tg = window.Telegram.WebApp;
@@ -20,14 +19,12 @@ const langParam = urlParams.get('lang') || 'it';
 
 let currentData = null;
 
-// 2. I18N
 const i18n = {
     it: { title: "Blueprint Operativo", subtitle: "Definisci il processo produttivo", btnAddStage: "Nuova Fase", btnSave: "Salva", loading: "Caricamento...", saved: "✅ Salvato!", error: "❌ Errore", phDesc: "Scopo del processo...", phStageName: "Nome Fase (es. Analisi)", phStepName: "Nome Step", phStageDesc: "Descrizione fase...", phStepInstr: "Istruzioni operative...", phQC: "Check Qualità...", phSkills: "Skill (es. Dev, Legal)", lblDesc: "DESCRIZIONE", min: "min", confirmDel: "Eliminare?", step: "Step", lblInstr: "ISTRUZIONI", lblQC: "QUALITY CHECK", lblSkills: "SKILLS", lblWip: "WIP", lblFin: "FINISHED", stepsCount: "passi" },
     en: { title: "Operational Blueprint", subtitle: "Define production process", btnAddStage: "New Stage", btnSave: "Save", loading: "Loading...", saved: "✅ Saved!", error: "❌ Error", phDesc: "Process purpose...", phStageName: "Stage Name", phStepName: "Step Name", phStageDesc: "Stage description...", phStepInstr: "Instructions...", phQC: "Quality Check...", phSkills: "Skills (e.g. Dev)", lblDesc: "DESCRIPTION", min: "min", confirmDel: "Delete?", step: "Step", lblInstr: "INSTRUCTIONS", lblQC: "QUALITY CHECK", lblSkills: "SKILLS", lblWip: "WIP", lblFin: "FINISHED", stepsCount: "steps" }
 };
 const t = i18n[langParam.slice(0,2)] || i18n.it;
 
-// 3. DOM
 const dom = {
     loader: document.getElementById('loadingOverlay'),
     loaderText: document.getElementById('loaderText'),
@@ -38,7 +35,6 @@ const dom = {
     saveBtn: document.getElementById('saveBtn')
 };
 
-// 4. INIT
 function init() {
     applyTranslations();
     if (!productId || !token || !vat) {
@@ -62,7 +58,6 @@ function applyTranslations() {
     dom.loaderText.textContent = t.loading;
 }
 
-// 5. RENDERER - STAGE HEADER ALLINEATO COME STEP
 function renderStages() {
     dom.stagesContainer.innerHTML = '';
     if (!currentData.stages) currentData.stages = [];
@@ -77,11 +72,9 @@ function renderStages() {
         stageEl.dataset.idx = sIdx;
 
         stageEl.innerHTML = `
-            <!-- 👉 HEADER FASE: DRAG SX | NOME | CHEVRON+TRASH DX (come step) -->
             <div class="stage-header-collapsible" data-sidx="${sIdx}" 
                  style="display:flex; justify-content:space-between; align-items:center; padding:15px; background:rgba(255,255,255,0.03); border-bottom:1px solid var(--glass-border); cursor:pointer;">
                 
-                <!-- SINISTRA: Drag + Nome -->
                 <div style="display:flex; align-items:center; gap:12px; flex:1;" data-action="toggle-stage">
                     <i class="fas fa-grip-vertical drag-handle" style="color:var(--text-muted); cursor:grab; font-size:16px;" onclick="event.stopPropagation();"></i>
                     <div style="flex:1;">
@@ -90,7 +83,6 @@ function renderStages() {
                     </div>
                 </div>
                 
-                <!-- DESTRA: Chevron + Trash (COME STEP) -->
                 <div style="display:flex; align-items:center; gap:6px;">
                     <button class="btn-icon-sm" data-action="toggle-stage-btn" data-sidx="${sIdx}" title="Espandi/Comprimi">
                         <i class="fas fa-chevron-${isOpen ? 'up' : 'down'}"></i>
@@ -101,18 +93,20 @@ function renderStages() {
                 </div>
             </div>
             
-            <!-- BODY (COLLASSABILE) -->
             <div class="stage-body" style="display:${isOpen ? 'block' : 'none'}; padding:15px;">
                 <div style="margin-bottom:15px;">
-                    <input type="text" class="edit-input" style="font-size:15px; font-weight:600; margin-bottom:8px; width:100%;" value="${stage.stage_name || ''}" placeholder="${t.phStageName}" data-type="stage-name" data-sidx="${sIdx}">
-                    <textarea class="edit-textarea" rows="2" placeholder="${t.phStageDesc}" data-type="stage-desc" data-sidx="${sIdx}" style="font-size:12px; width:100%;">${stage.description || ''}</textarea>
+                    <input type="text" class="edit-input" 
+                           style="display:block !important; width:100% !important; box-sizing:border-box !important; font-size:15px; font-weight:600; margin-bottom:8px;" 
+                           value="${stage.stage_name || ''}" placeholder="${t.phStageName}" data-type="stage-name" data-sidx="${sIdx}">
+                    <textarea class="edit-textarea" rows="2" placeholder="${t.phStageDesc}" data-type="stage-desc" data-sidx="${sIdx}" 
+                              style="display:block !important; width:100% !important; box-sizing:border-box !important; font-size:12px;">${stage.description || ''}</textarea>
                 </div>
                 
                 <div class="step-list-container" data-sidx="${sIdx}">
                     ${renderSteps(stage.steps, sIdx)}
                 </div>
                 
-                <div style="margin-top:10px; text-align:center;">
+                <div style="margin-top:10px;">
                     <button class="btn btn-sm btn-secondary" data-action="add-step" data-sidx="${sIdx}" style="width:100%; border-style:dashed;">
                         <i class="fas fa-plus"></i> ${t.step}
                     </button>
@@ -148,7 +142,7 @@ function renderSteps(steps, sIdx) {
         <div class="step-item" data-sidx="${sIdx}" data-stidx="${stIdx}" 
              style="background:rgba(0,0,0,0.2); border:1px solid var(--glass-border); border-radius:10px; padding:12px; margin-bottom:10px;">
             
-            <!-- HEADER STEP: DRAG SX | BADGES | CHEVRON+TRASH DX -->
+            <!-- 👉 HEADER: DRAG SX | CHEVRON+TRASH DX -->
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
                 <div style="display:flex; align-items:center; gap:10px;">
                     <i class="fas fa-grip-vertical drag-handle" style="color:var(--text-muted); cursor:grab; font-size:16px;"></i>
@@ -167,42 +161,42 @@ function renderSteps(steps, sIdx) {
                 </div>
             </div>
 
-            <!-- NOME STEP FULL WIDTH -->
+            <!-- 👉 NOME STEP: FORZATO FULL WIDTH -->
             <input type="text" class="edit-input" 
-                   style="font-size:14px; font-weight:500; margin-bottom:10px; width:100%;"
+                   style="display:block !important; width:100% !important; box-sizing:border-box !important; font-size:14px; font-weight:500; margin-bottom:10px;"
                    value="${step.step_name || ''}" placeholder="${t.phStepName}" 
                    data-type="step-name" data-sidx="${sIdx}" data-stidx="${stIdx}">
 
-            <!-- TEMPO FULL WIDTH -->
-            <div style="display:flex; align-items:center; gap:8px; padding:8px 12px; background:rgba(255,255,255,0.05); border-radius:6px; width:100%;">
-                <i class="far fa-clock" style="color:var(--primary); flex-shrink:0;"></i>
+            <!-- 👉 TEMPO: FORZATO FULL WIDTH CON FLEX -->
+            <div style="display:flex !important; width:100% !important; box-sizing:border-box !important; align-items:center; gap:10px; padding:10px 12px; background:rgba(255,255,255,0.05); border-radius:6px; margin-bottom:10px;">
+                <i class="far fa-clock" style="color:var(--primary); flex-shrink:0; font-size:16px;"></i>
                 <input type="number" min="0" value="${mins}" 
-                       style="width:60px; background:transparent; border:none; color:white; font-size:13px; text-align:center;"
+                       style="flex:0 0 70px; background:transparent; border:none; color:white; font-size:14px; font-weight:500; text-align:center;"
                        data-type="step-time" data-sidx="${sIdx}" data-stidx="${stIdx}">
-                <span style="font-size:12px; color:var(--text-muted);">${t.min}</span>
+                <span style="font-size:13px; color:var(--text-muted);">${t.min}</span>
             </div>
 
-            <!-- DETTAGLI ESPANDIBILI -->
-            <div style="display:${isOpen ? 'block' : 'none'}; margin-top:15px; padding-top:15px; border-top:1px dashed var(--glass-border);">
+            <!-- 👉 DETTAGLI: TUTTI FORZATI FULL WIDTH -->
+            <div style="display:${isOpen ? 'block' : 'none'}; margin-top:5px;">
                 
                 <div style="margin-bottom:12px;">
                     <label style="font-size:10px; color:var(--text-muted); font-weight:700; display:block; margin-bottom:5px;">${t.lblInstr}</label>
                     <textarea rows="3" placeholder="${t.phStepInstr}" 
-                              style="width:100%; background:var(--input-bg); border:1px solid var(--glass-border); padding:8px; border-radius:6px; color:white; font-size:12px; resize:vertical;"
+                              style="display:block !important; width:100% !important; box-sizing:border-box !important; background:var(--input-bg); border:1px solid var(--glass-border); padding:8px; border-radius:6px; color:white; font-size:12px; resize:vertical;"
                               data-type="step-instr" data-sidx="${sIdx}" data-stidx="${stIdx}">${step.instructions||''}</textarea>
                 </div>
 
                 <div style="margin-bottom:12px;">
                     <label style="font-size:10px; color:#30d158; font-weight:700; display:block; margin-bottom:5px;">${t.lblQC}</label>
                     <textarea rows="2" placeholder="${t.phQC}" 
-                              style="width:100%; background:var(--input-bg); border:1px solid var(--glass-border); padding:8px; border-radius:6px; color:white; font-size:12px; resize:vertical;"
+                              style="display:block !important; width:100% !important; box-sizing:border-box !important; background:var(--input-bg); border:1px solid var(--glass-border); padding:8px; border-radius:6px; color:white; font-size:12px; resize:vertical;"
                               data-type="step-qc" data-sidx="${sIdx}" data-stidx="${stIdx}">${step.quality_check?.check_description||''}</textarea>
                 </div>
 
                 <div style="margin-bottom:12px;">
                     <label style="font-size:10px; color:var(--text-muted); font-weight:700; display:block; margin-bottom:5px;">${t.lblSkills}</label>
                     <input type="text" 
-                           style="width:100%; background:var(--input-bg); border:1px solid var(--glass-border); padding:8px; border-radius:6px; color:white; font-size:12px;"
+                           style="display:block !important; width:100% !important; box-sizing:border-box !important; background:var(--input-bg); border:1px solid var(--glass-border); padding:8px; border-radius:6px; color:white; font-size:12px;"
                            value="${(step.resources_needed?.labor?.required_skill_tags||[]).join(', ')}" 
                            placeholder="${t.phSkills}" 
                            data-type="step-skills" data-sidx="${sIdx}" data-stidx="${stIdx}">
@@ -227,12 +221,10 @@ function renderSteps(steps, sIdx) {
     }).join('');
 }
 
-// 6. EVENT HANDLERS
 function handleContainerClick(e) {
     const btn = e.target.closest('button');
     const toggleArea = e.target.closest('[data-action="toggle-stage"]');
     
-    // Toggle stage da area nome (non dai bottoni)
     if (toggleArea && !btn) {
         const sIdx = parseInt(toggleArea.closest('[data-sidx]').dataset.sidx);
         currentData.stages[sIdx]._ui_open = !currentData.stages[sIdx]._ui_open;
@@ -291,7 +283,6 @@ function handleInput(e) {
     }
 }
 
-// 7. DATA HELPERS
 function addStage() {
     if (!currentData.stages) currentData.stages = [];
     currentData.stages.push({ stage_name: "Nuova Fase", description: "", steps: [], _ui_open: true });
@@ -337,7 +328,6 @@ function handleSortEnd(evt) {
     renderStages();
 }
 
-// 8. NETWORK
 async function loadBlueprint() {
     showLoader(t.loading);
     try {
@@ -383,7 +373,6 @@ async function handleSave(e) {
     } catch(err) { showError(err.message); }
 }
 
-// 9. UTILS
 function showLoader(msg) { 
     dom.loaderText.innerText = msg; 
     dom.loader.classList.remove('hidden'); 
@@ -397,5 +386,4 @@ function hideLoader() {
 
 function showError(msg) { alert(msg); hideLoader(); }
 
-// START
 document.addEventListener('DOMContentLoaded', init);
