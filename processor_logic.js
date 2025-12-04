@@ -163,6 +163,22 @@ async function runProcessor() {
     }
 }
 
+function handleLogicError(errorObj, payload) {
+    if (errorObj && errorObj.code === 'SETUP_FAILED_RETRYABLE') {
+        const overlay = document.getElementById('error-overlay');
+        overlay.innerHTML = `
+            <div style="font-size:40px; color:#ff6b6b; margin-bottom:20px;"><i class="fas fa-tools"></i></div>
+            <p class="error-msg">${errorObj.message}</p>
+            <button class="btn-game" onclick="location.href='reset.html?vat=${payload.owner_data.vat_number}'">
+                RESET CONFIG
+            </button>
+        `;
+        overlay.classList.remove('hidden');
+    } else {
+        showError(`${errorObj?.title || 'Error'}\n${errorObj?.message || 'Unknown error'}`);
+    }
+}
+
 function showError(msg) {
     const el = document.getElementById('error-text');
     if(el) el.innerText = msg;
