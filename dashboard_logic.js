@@ -15,7 +15,7 @@ const ROUTES = {
     'catalog': 'catalog/catalog.html',
     'agenda': 'agenda/agenda.html',
     'team': 'human_resources/team.html',
-    'knowledge': 'knowledge_base/knowledge.html',
+    'marketing': 'knowledge_base/knowledge.html', // ✅ CAMBIATO DA 'knowledge'
     'company': 'edit_owner.html', 
     'widget': 'SiteBos.html',
     'blog': 'blog/blog.html'
@@ -31,7 +31,7 @@ const i18n = {
         card_agenda: "Agenda", sub_agenda: "Appuntamenti", 
         card_team: "Collaboratori", sub_team: "Team & Ruoli", 
         card_company: "Dati Aziendali", sub_company: "Configurazione", 
-        card_knowledge: "Conoscenza", sub_knowledge: "Documenti & Asset", 
+        card_marketing: "Marketing", sub_marketing: "Campagne & Asset", // ✅ NUOVO
         err_title: "⛔ Errore Parametri", err_msg: "Apri dal Bot Telegram.", 
         popup_site_title: "Site Builder", popup_site_msg: "Il modulo Sito Web Statico è in fase di sviluppo.",
         game_title: "🎮 GAME OVER!", game_msg: "Hai guadagnato {points} Crediti AI!",
@@ -46,7 +46,7 @@ const i18n = {
         card_agenda: "Agenda", sub_agenda: "Appointments", 
         card_team: "Team", sub_team: "Staff & Roles", 
         card_company: "Company Data", sub_company: "Configuration", 
-        card_knowledge: "Knowledge", sub_knowledge: "Docs & Assets", 
+        card_marketing: "Marketing", sub_marketing: "Campaigns & Assets", // ✅ NUOVO
         err_title: "⛔ Param Error", err_msg: "Open from Telegram Bot.", 
         popup_site_title: "Site Builder", popup_site_msg: "Static Website module under development.",
         game_title: "🎮 GAME OVER!", game_msg: "You earned {points} AI Credits!",
@@ -61,7 +61,7 @@ const i18n = {
         card_agenda: "Agenda", sub_agenda: "Rendez-vous", 
         card_team: "Équipe", sub_team: "Personnel & Rôles", 
         card_company: "Données Entreprise", sub_company: "Configuration", 
-        card_knowledge: "Connaissances", sub_knowledge: "Docs & Actifs", 
+        card_marketing: "Marketing", sub_marketing: "Campagnes & Actifs",
         err_title: "⛔ Erreur Param", err_msg: "Ouvrir via Bot Telegram.", 
         popup_site_title: "Site Builder", popup_site_msg: "Module Site Web en développement.",
         game_title: "🎮 GAME OVER !", game_msg: "Vous avez gagné {points} Crédits IA !",
@@ -76,7 +76,7 @@ const i18n = {
         card_agenda: "Agenda", sub_agenda: "Termine", 
         card_team: "Mitarbeiter", sub_team: "Team & Rollen", 
         card_company: "Firmendaten", sub_company: "Konfiguration", 
-        card_knowledge: "Wissen", sub_knowledge: "Dokumente & Assets", 
+        card_marketing: "Marketing", sub_marketing: "Kampagnen & Assets",
         err_title: "⛔ Parameterfehler", err_msg: "Über Telegram Bot öffnen.", 
         popup_site_title: "Site Builder", popup_site_msg: "Webseiten-Modul in Entwicklung.",
         game_title: "🎮 GAME OVER!", game_msg: "Du hast {points} KI-Credits verdient!",
@@ -91,7 +91,7 @@ const i18n = {
         card_agenda: "Agenda", sub_agenda: "Citas", 
         card_team: "Colaboradores", sub_team: "Equipo y Roles", 
         card_company: "Datos Empresa", sub_company: "Configuración", 
-        card_knowledge: "Conocimiento", sub_knowledge: "Docs y Activos", 
+        card_marketing: "Marketing", sub_marketing: "Campañas y Activos",
         err_title: "⛔ Error Param", err_msg: "Abrir desde Bot Telegram.", 
         popup_site_title: "Site Builder", popup_site_msg: "Módulo Sitio Web en desarrollo.",
         game_title: "🎮 ¡JUEGO TERMINADO!", game_msg: "¡Has ganado {points} Créditos IA!",
@@ -106,7 +106,7 @@ const i18n = {
         card_agenda: "Agenda", sub_agenda: "Compromissos", 
         card_team: "Colaboradores", sub_team: "Equipa e Funções", 
         card_company: "Dados da Empresa", sub_company: "Configuração", 
-        card_knowledge: "Conhecimento", sub_knowledge: "Docs e Ativos", 
+        card_marketing: "Marketing", sub_marketing: "Campanhas e Ativos",
         err_title: "⛔ Erro Param", err_msg: "Abrir via Bot Telegram.", 
         popup_site_title: "Site Builder", popup_site_msg: "Módulo Website em desenvolvimento.",
         game_title: "🎮 FIM DE JOGO!", game_msg: "Ganhou {points} Créditos de IA!",
@@ -244,7 +244,7 @@ function renderDashboard(data, vat) {
         hpSub.classList.add('text-warning');
         hpCard.style.border = '1px solid var(--warning)';
         
-        ['card-catalog', 'card-agenda', 'card-team', 'card-knowledge'].forEach(id => {
+        ['card-catalog', 'card-agenda', 'card-team', 'card-marketing'].forEach(id => {
             const el = document.getElementById(id);
             if(el) el.classList.add('locked-item');
         });
@@ -261,8 +261,8 @@ function renderDashboard(data, vat) {
         // Agenda (Blueprints > 0)
         setLock('card-agenda', (status.blueprints_count === 0), 'sub-agenda', t('status_req'), t('status_active'));
 
-        // Knowledge (Docs > 0)
-        setLock('card-knowledge', (status.knowledge_docs === 0), 'sub-knowledge', t('status_req'), `${status.knowledge_docs} Docs`);
+        // Marketing (Docs > 0)
+        setLock('card-marketing', (status.knowledge_docs === 0), 'sub-marketing', t('status_req'), `${status.knowledge_docs} Docs`);
 
         // Team (Operatori > 0)
         setLock('card-team', (status.operators_count === 0), 'sub-team', t('status_no_op'), `${status.operators_count} ${t('status_active')}`);
