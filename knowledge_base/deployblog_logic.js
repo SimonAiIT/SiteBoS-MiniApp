@@ -9,6 +9,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const previewInfo = document.getElementById('previewInfo');
     const backBtn = document.getElementById('backBtn');
 
+    // ✅ FORZA NASCONDI LOADER ALL'AVVIO (protezione contro cache)
+    loader.style.display = 'none';
+    logArea.style.display = 'none';
+
     // Recupera parametri dall'URL
     const params = new URLSearchParams(window.location.search);
     const fragmentId = params.get('fragment_id');
@@ -27,6 +31,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (!fragmentId) {
         log("Errore: ID frammento mancante.");
+        logArea.style.display = 'block'; // Mostra solo se c'è errore
         startBtn.disabled = true;
         return;
     }
@@ -41,13 +46,14 @@ document.addEventListener('DOMContentLoaded', () => {
         // ✨ CONFERMA CON DETTAGLIO COSTO
         const confirmed = await showConfirmation();
         if (!confirmed) {
+            logArea.style.display = 'block';
             log("> ❌ Operazione annullata dall'utente.");
             return;
         }
 
         startBtn.disabled = true;
         startBtn.textContent = "Generazione in corso...";
-        loader.style.display = 'block';
+        loader.style.display = 'block'; // ✅ Mostra SOLO dopo conferma
         logArea.style.display = 'block';
         
         log(`> Avvio richiesta per ID: ${fragmentId}...`);
@@ -69,7 +75,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const data = await response.json();
             
-            loader.style.display = 'none';
+            loader.style.display = 'none'; // ✅ Nascondi dopo risposta
             log("> Risposta ricevuta dal server.");
             
             if (data.status === 'success' || data.url) {
@@ -78,7 +84,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 startBtn.textContent = "Apri Articolo";
                 startBtn.disabled = false;
-                startBtn.style.background = "var(--primary)"; // Allineato al design system
+                startBtn.style.background = "var(--primary)";
                 
                 // Cambia comportamento pulsante: ora apre il link
                 const blogUrl = data.url;
@@ -97,7 +103,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         } catch (error) {
             console.error(error);
-            loader.style.display = 'none';
+            loader.style.display = 'none'; // ✅ Nascondi in caso di errore
             log(`> ❌ Errore: ${error.message}`);
             startBtn.disabled = false;
             startBtn.textContent = "Riprova";
