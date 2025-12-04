@@ -135,36 +135,49 @@ function renderFragmentDetails(fragment, cardElement) {
     const body = cardElement.querySelector('.kb-body');
     const id = fragment.fragment_id || fragment._id;
     
-    // Stili inline per la barra delle azioni per renderla pulita e visibile in alto
+    // 🎨 STILI ALLINEATI AL DESIGN SYSTEM (usa variabili CSS)
     const actionsBarStyle = `
         display: flex; 
         justify-content: flex-end; 
         margin-bottom: 15px; 
         padding-bottom: 10px; 
-        border-bottom: 1px solid #eee;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.15);
     `;
 
+    // ✅ USA IL COLORE PRIMARIO DEL DESIGN SYSTEM (#5B6FED)
     const btnStyle = `
-        background: #0984e3; 
+        background: #5B6FED;
         color: white; 
         border: none; 
-        padding: 8px 15px; 
-        border-radius: 6px; 
+        padding: 10px 18px; 
+        border-radius: 12px; 
         cursor: pointer; 
-        font-size: 0.85rem; 
+        font-size: 0.9rem; 
         font-weight: 600; 
         display: flex; 
         align-items: center; 
-        gap: 6px; 
-        box-shadow: 0 2px 5px rgba(9, 132, 227, 0.25);
-        transition: transform 0.1s ease, background 0.2s;
+        gap: 8px; 
+        box-shadow: 0 4px 12px rgba(91, 111, 237, 0.3);
+        transition: transform 0.2s ease, background 0.2s, box-shadow 0.2s;
     `;
 
+    const btnHoverStyle = `
+        background: #4a5ecf;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(91, 111, 237, 0.4);
+    `;
 
     body.innerHTML = `
         <!-- BARRA AZIONI IN ALTO -->
         <div class="actions-bar" style="${actionsBarStyle}">
-            <button class="btn-blog-deploy" data-id="${id}" style="${btnStyle}" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">
+            <button 
+                class="btn-blog-deploy" 
+                data-id="${id}" 
+                style="${btnStyle}" 
+                onmouseover="this.style.cssText='${btnStyle}${btnHoverStyle}'" 
+                onmouseout="this.style.cssText='${btnStyle}'" 
+                onmousedown="this.style.transform='scale(0.96)'" 
+                onmouseup="this.style.transform='scale(1)'">
                 <i class="fas fa-magic"></i> Genera Blog Post
             </button>
         </div>
