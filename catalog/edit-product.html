@@ -131,18 +131,19 @@
         </div>
       </div>
 
-      <!-- ACTIONS -->
-      <div class="button-container">
-        <button type="submit" id="saveBtn" class="btn btn-primary btn-block" data-i18n="btnSave">Salva Modifiche</button>
-      </div>
-      <p class="cancel-hint" data-i18n="hintCancel">Chiudi per annullare</p>
+      <!-- ⚠️ Rimossi bottoni inline e hint, ora usa FAB -->
+      <div style="height: 80px;"></div>
     </form>
   </div>
 
-  <!-- 👉 FAB STANDARD -->
+  <!-- 👉 FAB CONTAINER: Entrambi i bottoni sempre visibili (il form è sempre presente) -->
   <div class="fab-container">
     <button class="fab-btn fab-secondary" onclick="goBackToCatalog()" title="Torna al Catalogo">
       <i class="fas fa-arrow-left"></i>
+    </button>
+    
+    <button class="fab-btn" id="saveBtn" title="Salva Modifiche">
+      <i class="fas fa-save"></i>
     </button>
   </div>
 

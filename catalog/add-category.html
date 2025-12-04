@@ -109,22 +109,21 @@
                 </div>
             </div>
 
-            <div class="btn-container">
-                <button class="btn btn-secondary" onclick="resetForm()">
-                    <i class="fas fa-arrow-left"></i>
-                </button>
-                <button id="saveBtn" class="btn btn-success flex-1">
-                    <i class="fas fa-save"></i> <span data-i18n="btnSave">Conferma e Salva</span>
-                </button>
-            </div>
+            <!-- ⚠️ Rimosso bottone inline, ora usa FAB -->
+            <div style="height: 80px;"></div>
         </div>
 
     </div>
 
-    <!-- 👉 FAB STANDARD -->
+    <!-- 👉 FAB CONTAINER: Bottone Indietro sempre visibile, Salva solo in fase 2 -->
     <div class="fab-container">
         <button class="fab-btn fab-secondary" onclick="history.back()" title="Torna Indietro">
             <i class="fas fa-arrow-left"></i>
+        </button>
+        
+        <!-- Bottone Salva: nascosto di default, mostrato dal JS nella fase 2 -->
+        <button class="fab-btn hidden" id="saveBtn" title="Salva Categoria">
+            <i class="fas fa-save"></i>
         </button>
     </div>
 
