@@ -1,8 +1,8 @@
 /**
- * BLUEPRINT EDITOR LOGIC (v2.3 - FORCE FULL WIDTH)
- * - Stili inline forzati per tutti i campi
- * - box-sizing: border-box esplicito
- * - display: block dove necessario
+ * BLUEPRINT EDITOR LOGIC (v2.4 - MOBILE DRAG FIX)
+ * - Drag handle fase separato dall'area toggle
+ * - Touch events ottimizzati per mobile
+ * - Full-width forzato
  */
 'use strict';
 
@@ -72,17 +72,23 @@ function renderStages() {
         stageEl.dataset.idx = sIdx;
 
         stageEl.innerHTML = `
-            <div class="stage-header-collapsible" data-sidx="${sIdx}" 
-                 style="display:flex; justify-content:space-between; align-items:center; padding:15px; background:rgba(255,255,255,0.03); border-bottom:1px solid var(--glass-border); cursor:pointer;">
+            <!-- 👉 HEADER FASE: Drag SEPARATO dall'area click -->
+            <div style="display:flex; justify-content:space-between; align-items:center; padding:15px; background:rgba(255,255,255,0.03); border-bottom:1px solid var(--glass-border);">
                 
-                <div style="display:flex; align-items:center; gap:12px; flex:1;" data-action="toggle-stage">
-                    <i class="fas fa-grip-vertical drag-handle" style="color:var(--text-muted); cursor:grab; font-size:16px;" onclick="event.stopPropagation();"></i>
-                    <div style="flex:1;">
+                <!-- SINISTRA: Drag (ISOLATO) + Nome (CLICCABILE) -->
+                <div style="display:flex; align-items:center; gap:12px; flex:1;">
+                    <!-- 👉 DRAG: touch-action per mobile -->
+                    <i class="fas fa-grip-vertical drag-handle" 
+                       style="color:var(--text-muted); cursor:grab; font-size:18px; padding:5px; touch-action:none;"></i>
+                    
+                    <!-- 👉 NOME: Area cliccabile per toggle -->
+                    <div style="flex:1; cursor:pointer;" data-action="toggle-stage" data-sidx="${sIdx}">
                         <div style="font-weight:600; font-size:15px; color:white; margin-bottom:3px;">${stage.stage_name || 'Fase Senza Nome'}</div>
                         <div style="font-size:11px; color:var(--text-muted);">${stepCount} ${t.stepsCount} • ${totalTime} ${t.min}</div>
                     </div>
                 </div>
                 
+                <!-- DESTRA: Chevron + Trash -->
                 <div style="display:flex; align-items:center; gap:6px;">
                     <button class="btn-icon-sm" data-action="toggle-stage-btn" data-sidx="${sIdx}" title="Espandi/Comprimi">
                         <i class="fas fa-chevron-${isOpen ? 'up' : 'down'}"></i>
@@ -115,14 +121,23 @@ function renderStages() {
         `;
         dom.stagesContainer.appendChild(stageEl);
 
+        // 👉 Sortable SOLO sul drag handle
         new Sortable(stageEl.querySelector('.step-list-container'), {
-            group: 'steps', handle: '.drag-handle', animation: 150,
+            group: 'steps', 
+            handle: '.drag-handle', 
+            animation: 150,
+            touchStartThreshold: 5,
             onEnd: handleSortEnd
         });
     });
 
+    // 👉 Sortable stage con touch ottimizzato
     new Sortable(dom.stagesContainer, {
-        handle: '.stage-header-collapsible .drag-handle', animation: 150,
+        handle: '.drag-handle',
+        animation: 150,
+        touchStartThreshold: 5,
+        forceFallback: true,
+        fallbackTolerance: 3,
         onEnd: handleSortEnd
     });
 }
@@ -142,10 +157,11 @@ function renderSteps(steps, sIdx) {
         <div class="step-item" data-sidx="${sIdx}" data-stidx="${stIdx}" 
              style="background:rgba(0,0,0,0.2); border:1px solid var(--glass-border); border-radius:10px; padding:12px; margin-bottom:10px;">
             
-            <!-- 👉 HEADER: DRAG SX | CHEVRON+TRASH DX -->
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
                 <div style="display:flex; align-items:center; gap:10px;">
-                    <i class="fas fa-grip-vertical drag-handle" style="color:var(--text-muted); cursor:grab; font-size:16px;"></i>
+                    <!-- 👉 DRAG STEP: touch-action per mobile -->
+                    <i class="fas fa-grip-vertical drag-handle" 
+                       style="color:var(--text-muted); cursor:grab; font-size:18px; padding:5px; touch-action:none;"></i>
                     <div style="display:flex; gap:6px;">
                         ${wipBadge} ${finBadge}
                     </div>
@@ -161,13 +177,11 @@ function renderSteps(steps, sIdx) {
                 </div>
             </div>
 
-            <!-- 👉 NOME STEP: FORZATO FULL WIDTH -->
             <input type="text" class="edit-input" 
                    style="display:block !important; width:100% !important; box-sizing:border-box !important; font-size:14px; font-weight:500; margin-bottom:10px;"
                    value="${step.step_name || ''}" placeholder="${t.phStepName}" 
                    data-type="step-name" data-sidx="${sIdx}" data-stidx="${stIdx}">
 
-            <!-- 👉 TEMPO: FORZATO FULL WIDTH CON FLEX -->
             <div style="display:flex !important; width:100% !important; box-sizing:border-box !important; align-items:center; gap:10px; padding:10px 12px; background:rgba(255,255,255,0.05); border-radius:6px; margin-bottom:10px;">
                 <i class="far fa-clock" style="color:var(--primary); flex-shrink:0; font-size:16px;"></i>
                 <input type="number" min="0" value="${mins}" 
@@ -176,7 +190,6 @@ function renderSteps(steps, sIdx) {
                 <span style="font-size:13px; color:var(--text-muted);">${t.min}</span>
             </div>
 
-            <!-- 👉 DETTAGLI: TUTTI FORZATI FULL WIDTH -->
             <div style="display:${isOpen ? 'block' : 'none'}; margin-top:5px;">
                 
                 <div style="margin-bottom:12px;">
@@ -225,8 +238,9 @@ function handleContainerClick(e) {
     const btn = e.target.closest('button');
     const toggleArea = e.target.closest('[data-action="toggle-stage"]');
     
+    // Toggle stage cliccando sul nome
     if (toggleArea && !btn) {
-        const sIdx = parseInt(toggleArea.closest('[data-sidx]').dataset.sidx);
+        const sIdx = parseInt(toggleArea.dataset.sidx);
         currentData.stages[sIdx]._ui_open = !currentData.stages[sIdx]._ui_open;
         renderStages();
         return;
