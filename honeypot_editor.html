@@ -119,19 +119,21 @@
     <!-- SEZIONE 5: HoneyPot (Contenitore Dinamico) -->
     <div id="honeypot-container"></div>
     
+    <!-- ⚠️ Spazio per FAB (evita che contenuto venga coperto) -->
+    <div style="height: 80px;"></div>
+    
   </div>
 
-  <!-- FLOATING SAVE BUTTON -->
-  <div id="save-bar" class="save-bar">
-    <button id="saveBtn" class="btn btn-primary btn-lg" disabled>
-        <i class="fas fa-save"></i> <span data-i18n="btn_save"></span>
+  <!-- 👉 FAB CONTAINER STANDARD (Sostituisce save-bar) -->
+  <div class="fab-container">
+    <button class="fab-btn fab-secondary" id="btn-back-dashboard" title="Torna a Dashboard">
+      <i class="fas fa-arrow-left"></i>
+    </button>
+    
+    <button class="fab-btn" id="saveBtn" disabled title="Salva Modifiche">
+      <i class="fas fa-save"></i>
     </button>
   </div>
-
-  <!-- NUOVO BOTTONE FLOTTANTE PER TORNARE INDIETRO -->
-  <button id="btn-back-dashboard" class="back-fab">
-    <i class="fas fa-arrow-left"></i>
-  </button>
 
   <script src="honeypot_editor_logic.js"></script>
 

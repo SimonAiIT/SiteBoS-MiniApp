@@ -156,20 +156,22 @@
           </div>
       </div>
 
-      <!-- Pulsante Salva Principale -->
-      <div class="button-container">
-          <button type="button" id="saveBtn" class="btn btn-primary btn-block" onclick="saveData()" disabled>
-            <i class="fas fa-save"></i> <span data-i18n="btn_save">Salva Modifiche</span>
-          </button>
-      </div>
+      <!-- ⚠️ RIMOSSO bottone inline, ora usa FAB -->
+      <div style="height: 80px;"></div>
      
     </form>
   </div>
   
-  <!-- PULSANTE FLOTTANTE DASHBOARD (Usa la tua classe .back-fab) -->
-  <button class="back-fab" onclick="goBack()">
-    <i class="fas fa-arrow-left"></i>
-  </button>
+  <!-- 👉 FAB CONTAINER STANDARD -->
+  <div class="fab-container">
+    <button class="fab-btn fab-secondary" onclick="goBack()" title="Torna a Dashboard">
+      <i class="fas fa-arrow-left"></i>
+    </button>
+    
+    <button class="fab-btn" id="saveBtn" disabled title="Salva Modifiche">
+      <i class="fas fa-save"></i>
+    </button>
+  </div>
 
   <!-- MODAL OPERATORE -->
   <div id="operator-modal" class="modal-overlay hidden">
