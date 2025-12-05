@@ -70,11 +70,26 @@ document.addEventListener('DOMContentLoaded', () => {
         if (tg && tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
     });
 
+    // ✅ CLICK SU PROCEDI -> AVVIA MINIGAME SUBITO
     confirmProceed.addEventListener('click', async () => {
+        console.log('✅ Utente ha confermato!');
+        
+        // 1. Nascondi popup conferma
         confirmOverlay.style.display = 'none';
+        
+        // 2. Haptic feedback
         if (tg && tg.HapticFeedback) tg.HapticFeedback.impactOccurred('medium');
+        
+        // 3. 🎮 AVVIA MINIGAME IMMEDIATAMENTE (prima della chiamata API)
+        console.log('🎮 Avvio minigame ADESSO...');
         openGame();
-
+        
+        // 4. Attendi 500ms per far partire il gioco
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        // 5. POI avvia la chiamata API in background
+        console.log('🚀 Avvio chiamata API in background...');
+        
         try {
             const response = await fetch(WEBHOOK_BLOG_URL, {
                 method: 'POST',
@@ -97,6 +112,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (data.status === 'success' || data.blog_id) {
                 console.log('✅ Blog generato con successo!');
                 
+                // Calcola crediti bonus dal minigame
                 let bonusCredits = 0;
                 if (window.MiniGame && MiniGame.active) {
                     bonusCredits = Math.min(MiniGame.score || 0, 500);
@@ -104,9 +120,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     console.log(`🎮 Crediti bonus guadagnati: ${bonusCredits}`);
                 }
                 
+                // Chiudi gioco
                 closeGame();
+                
+                // Attendi 1 secondo
                 await new Promise(resolve => setTimeout(resolve, 1000));
                 
+                // Redirect a edit_blog.html
                 const editUrl = new URL('edit_blog.html', window.location.href);
                 editUrl.searchParams.set('blog_id', data.blog_id || fragmentId);
                 editUrl.searchParams.set('vat', apiCredentials.vat);
@@ -123,7 +143,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
         } catch (error) {
-            console.error(error);
+            console.error('❌ Errore:', error);
             closeGame();
             alert(`Errore: ${error.message}`);
         }
