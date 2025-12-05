@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Editor Blog Post</title>
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!-- Stile principale -->
+    <link rel="stylesheet" href="styles.css">
+    
+    <style>
+        body {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .header-section {
+            text-align: center;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .header-section h1 {
+            font-size: 24px;
+            margin-bottom: 10px;
+            color: var(--text-primary);
+        }
+
+        .header-section .subtitle {
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+
+        .editor-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .section-card {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-lg);
+            padding: 20px;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .article-viewer {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-md);
+            padding: 20px;
+            max-height: 400px;
+            overflow-y: auto;
+            font-family: Georgia, serif;
+            line-height: 1.8;
+            color: var(--text-primary);
+        }
+
+        .article-viewer h1, .article-viewer h2, .article-viewer h3 {
+            color: var(--primary);
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+
+        .article-viewer p {
+            margin-bottom: 15px;
+        }
+
+        .article-viewer img {
+            max-width: 100%;
+            height: auto;
+            border-radius: var(--radius-sm);
+            margin: 15px 0;
+        }
+
+        .social-text-box {
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-sm);
+            padding: 15px;
+            margin-bottom: 15px;
+            position: relative;
+        }
+
+        .social-text-box .platform {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+
+        .social-text-box .text-content {
+            color: var(--text-muted);
+            font-size: 13px;
+            line-height: 1.6;
+            white-space: pre-wrap;
+        }
+
+        .copy-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: var(--primary);
+            border: none;
+            border-radius: var(--radius-sm);
+            padding: 6px 12px;
+            color: white;
+            cursor: pointer;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.3s;
+        }
+
+        .copy-btn:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+
+        .copy-btn.copied {
+            background: var(--success);
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .loader-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 60px 20px;
+            gap: 20px;
+        }
+
+        .loader-icon {
+            font-size: 3rem;
+            color: var(--primary);
+            animation: spin 2s linear infinite;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .error-message {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--danger);
+        }
+
+        /* Responsive */
+        @media (min-width: 768px) {
+            .editor-container {
+                flex-direction: row;
+                gap: 30px;
+            }
+
+            .section-card {
+                flex: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header-section">
+        <h1 id="pageTitle"><i class="fas fa-edit"></i> Editor Blog Post</h1>
+        <p class="subtitle" id="pageSubtitle">Rivedi il tuo articolo generato e i testi per i social media</p>
+    </div>
+
+    <div id="mainContent" class="editor-container">
+        <!-- Loading state -->
+        <div id="loadingState" class="section-card" style="width: 100%;">
+            <div class="loader-container">
+                <div class="loader-icon"><i class="fas fa-spinner"></i></div>
+                <p id="loadingText" style="color: var(--text-muted);">Caricamento articolo...</p>
+            </div>
+        </div>
+
+        <!-- Error state -->
+        <div id="errorState" class="section-card" style="width: 100%; display: none;">
+            <div class="error-message">
+                <i class="fas fa-exclamation-triangle" style="font-size: 3rem; margin-bottom: 20px;"></i>
+                <h3 id="errorTitle">Errore di Caricamento</h3>
+                <p id="errorMessage">Impossibile caricare l'articolo. Riprova più tardi.</p>
+                <button onclick="window.history.back()" class="btn-secondary" style="margin-top: 20px;">
+                    <i class="fas fa-arrow-left"></i> <span id="btnBack">Torna Indietro</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Article Viewer -->
+        <div id="articleSection" class="section-card" style="display: none;">
+            <div class="section-title">
+                <i class="fas fa-newspaper"></i>
+                <span id="articleTitle">Articolo Generato</span>
+            </div>
+            <div id="articleViewer" class="article-viewer">
+                <!-- Article HTML will be loaded here -->
+            </div>
+            <div class="action-buttons">
+                <button id="btnPublish" class="btn">
+                    <i class="fas fa-rocket"></i> <span id="btnPublishText">Pubblica</span>
+                </button>
+                <button id="btnEdit" class="btn-secondary">
+                    <i class="fas fa-pen"></i> <span id="btnEditText">Modifica</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Social Media Texts -->
+        <div id="socialSection" class="section-card" style="display: none;">
+            <div class="section-title">
+                <i class="fas fa-share-alt"></i>
+                <span id="socialTitle">Testi per i Social</span>
+            </div>
+            
+            <!-- Facebook -->
+            <div class="social-text-box" id="facebookBox" style="display: none;">
+                <button class="copy-btn" onclick="copyToClipboard('facebookText', this)">
+                    <i class="fas fa-copy"></i> <span id="btnCopyFb">Copia</span>
+                </button>
+                <div class="platform">
+                    <i class="fab fa-facebook" style="color: #1877f2;"></i>
+                    <span>Facebook</span>
+                </div>
+                <div id="facebookText" class="text-content"></div>
+            </div>
+
+            <!-- Instagram -->
+            <div class="social-text-box" id="instagramBox" style="display: none;">
+                <button class="copy-btn" onclick="copyToClipboard('instagramText', this)">
+                    <i class="fas fa-copy"></i> <span id="btnCopyIg">Copia</span>
+                </button>
+                <div class="platform">
+                    <i class="fab fa-instagram" style="color: #e4405f;"></i>
+                    <span>Instagram</span>
+                </div>
+                <div id="instagramText" class="text-content"></div>
+            </div>
+
+            <!-- Twitter/X -->
+            <div class="social-text-box" id="twitterBox" style="display: none;">
+                <button class="copy-btn" onclick="copyToClipboard('twitterText', this)">
+                    <i class="fas fa-copy"></i> <span id="btnCopyTw">Copia</span>
+                </button>
+                <div class="platform">
+                    <i class="fab fa-x-twitter"></i>
+                    <span>X (Twitter)</span>
+                </div>
+                <div id="twitterText" class="text-content"></div>
+            </div>
+
+            <!-- LinkedIn -->
+            <div class="social-text-box" id="linkedinBox" style="display: none;">
+                <button class="copy-btn" onclick="copyToClipboard('linkedinText', this)">
+                    <i class="fas fa-copy"></i> <span id="btnCopyLi">Copia</span>
+                </button>
+                <div class="platform">
+                    <i class="fab fa-linkedin" style="color: #0a66c2;"></i>
+                    <span>LinkedIn</span>
+                </div>
+                <div id="linkedinText" class="text-content"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="edit_blog_logic.js"></script>
+
+</body>
+</html>
