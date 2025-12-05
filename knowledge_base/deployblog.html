@@ -53,9 +53,117 @@
             display: inline-block;
         }
 
+        /* Overlay di conferma punti */
+        .confirm-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            backdrop-filter: blur(10px);
+            z-index: 9999;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .confirm-box {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-lg);
+            padding: 40px 30px;
+            max-width: 400px;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+        }
+
+        .confirm-box .icon {
+            font-size: 4rem;
+            color: #f59e0b;
+            margin-bottom: 20px;
+        }
+
+        .confirm-box h2 {
+            margin-bottom: 15px;
+            color: var(--text-primary);
+        }
+
+        .confirm-box p {
+            color: var(--text-muted);
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+
+        .confirm-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        /* Overlay generazione stile processor */
+        .processing-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            z-index: 10000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            padding: 20px;
+        }
+
+        .processing-content {
+            text-align: center;
+            max-width: 500px;
+        }
+
+        .processing-icon {
+            font-size: 5rem;
+            color: var(--primary);
+            margin-bottom: 30px;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.1); opacity: 0.8; }
+        }
+
+        .processing-title {
+            font-size: 28px;
+            font-family: 'Orbitron', sans-serif;
+            margin-bottom: 15px;
+            color: var(--text-primary);
+        }
+
+        .processing-subtitle {
+            color: var(--text-muted);
+            margin-bottom: 40px;
+            font-size: 14px;
+        }
+
+        /* Game Canvas Container */
+        #game-container {
+            margin: 30px 0;
+            display: flex;
+            justify-content: center;
+        }
+
+        /* Sponsor Container */
+        #sponsor-container {
+            margin-top: 30px;
+            min-height: 100px;
+        }
+
         /* Log Area stile terminale */
         .terminal-log {
-            background: #0f172a; /* Molto scuro */
+            background: #0f172a;
             border: 1px solid var(--glass-border);
             border-radius: var(--radius-md);
             padding: 15px;
@@ -67,7 +175,7 @@
             max-height: 200px;
             overflow-y: auto;
             margin-top: 25px;
-            display: none; /* Nascosto all'inizio */
+            display: none;
             box-shadow: inset 0 2px 10px rgba(0,0,0,0.5);
         }
         
@@ -77,12 +185,6 @@
             padding-bottom: 2px; 
         }
         .terminal-line:last-child { border-bottom: none; }
-
-        /* Loader specifico centrato */
-        .loader-wrapper {
-            display: none;
-            margin: 20px auto;
-        }
 
         /* Animazione successo */
         .success-animation {
@@ -98,42 +200,77 @@
 </head>
 <body>
 
+    <!-- Overlay di conferma spesa punti -->
+    <div id="confirmOverlay" class="confirm-overlay">
+        <div class="confirm-box">
+            <div class="icon"><i class="fas fa-coins"></i></div>
+            <h2 id="confirmTitle">Conferma Operazione</h2>
+            <p id="confirmMessage">Stai per spendere <strong>1000 punti</strong> per generare questo articolo blog con l'IA.<br><br>Vuoi procedere?</p>
+            <div class="confirm-buttons">
+                <button id="confirmCancel" class="btn-secondary" style="padding: 12px 24px;">
+                    <i class="fas fa-times"></i> <span id="btnCancel">Annulla</span>
+                </button>
+                <button id="confirmProceed" class="btn" style="padding: 12px 24px;">
+                    <i class="fas fa-check"></i> <span id="btnProceed">Procedi</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Overlay generazione (stile processor) -->
+    <div id="processingOverlay" class="processing-overlay">
+        <div class="processing-content">
+            <div class="processing-icon">
+                <i class="fas fa-robot"></i>
+            </div>
+            <h2 class="processing-title" id="processingTitle">Generazione in Corso</h2>
+            <p class="processing-subtitle" id="processingSubtitle">L'intelligenza artificiale sta creando il tuo contenuto...</p>
+            
+            <!-- Game Container -->
+            <div id="game-container">
+                <canvas id="gameCanvas" width="300" height="400"></canvas>
+            </div>
+            
+            <!-- Sponsor Container -->
+            <div id="sponsor-container"></div>
+            
+            <!-- Log Terminal -->
+            <div id="processingLog" class="terminal-log"></div>
+        </div>
+    </div>
+
     <!-- Uso la classe 'card' dal tuo CSS per avere lo stesso sfondo glassmorphism e bordi -->
     <div class="card deploy-container">
         
         <div id="heroIcon" class="icon-hero"><i class="fas fa-robot"></i></div>
         <div id="successIcon" class="success-animation"><i class="fas fa-check-circle"></i></div>
 
-        <h1 style="margin-bottom: 10px;">Generatore Blog IA</h1>
-        <p class="subtitle" style="margin-bottom: 0;">Trasforma questo frammento di conoscenza in un articolo SEO completo.</p>
+        <h1 id="pageTitle" style="margin-bottom: 10px;">Generatore Blog IA</h1>
+        <p id="pageSubtitle" class="subtitle" style="margin-bottom: 0;">Trasforma questo frammento di conoscenza in un articolo SEO completo.</p>
         
         <!-- ID Frammento -->
         <div id="previewInfo" class="fragment-id-box">
-            <i class="fas fa-fingerprint"></i> Caricamento ID...
+            <i class="fas fa-fingerprint"></i> <span id="loadingText">Caricamento ID...</span>
         </div>
 
         <!-- Pulsante Azione -->
         <button id="startBtn" class="btn btn-block" style="font-size: 16px; padding: 15px;">
-            <i class="fas fa-bolt"></i> Avvia Generazione
+            <i class="fas fa-bolt"></i> <span id="btnStart">Avvia Generazione</span>
         </button>
 
-        <!-- Loader -->
-        <div id="loader" class="loader-wrapper">
-            <div class="spinner-ring"></div>
-            <div style="font-size: 12px; color: var(--text-muted); margin-top: 10px;">L'IA sta scrivendo...</div>
-        </div>
-        
         <!-- Log Area -->
         <div id="logArea" class="terminal-log"></div>
 
-        <!-- ⬅️ BOTTONE TORNA INDIETRO ALLINEATO -->
+        <!-- BOTTONE TORNA INDIETRO ALLINEATO -->
         <button id="backBtn" class="btn-secondary" style="margin-top: 30px; font-size: 14px; padding: 10px 16px; display: inline-flex; align-items: center; gap: 8px;">
-            <i class="fas fa-arrow-left"></i> Torna alla Knowledge Base
+            <i class="fas fa-arrow-left"></i> <span id="btnBack">Torna alla Knowledge Base</span>
         </button>
 
     </div>
 
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="../sponsor.js"></script>
+    <script src="../minigame.js"></script>
     <script src="deployblog_logic.js"></script>
 
 </body>
