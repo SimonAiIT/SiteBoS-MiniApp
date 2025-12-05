@@ -6,9 +6,6 @@ let currentSections = [];
 let currentLang = 'it';
 let apiCredentials = {};
 let tg = null;
-let isRecording = false;
-let longPressTimer = null;
-const LONG_PRESS_DURATION = 500; // 500ms
 
 document.addEventListener('DOMContentLoaded', async () => {
     const WEBHOOK_BLOG_URL = "https://trinai.api.workflow.dcmake.it/webhook/914bd78e-8a41-46d7-8935-7eb73cbbae66";
@@ -55,7 +52,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
 
         const data = await response.json();
-        
         const responseData = Array.isArray(data) ? data[0] : data;
         
         if (responseData.status === 'error') {
@@ -69,7 +65,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         populateEditor(currentBlogData);
         setupFABs(blogId);
-        setupTextEditor(blogId); // 🔥 New
+        setupTextEditor(blogId);
 
     } catch (error) {
         console.error('Error loading blog:', error);
@@ -346,9 +342,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                 });
 
                 if (response.proposed_change) {
-                    showVoiceEditPreview(response.proposed_change);
-                    textCommandInput.value = ''; // Clear
-                    textEditorPanel.classList.remove('open'); // Close panel
+                    showCommandPreview(response.proposed_change);
+                    textCommandInput.value = '';
+                    textEditorPanel.classList.remove('open');
                 }
 
             } catch (error) {
@@ -381,109 +377,14 @@ document.addEventListener('DOMContentLoaded', async () => {
             window.location.href = knowledgeUrl.toString();
         });
 
-        // 🎤 VOICE/TEXT EDIT FAB - LONG PRESS DETECTION
-        const fabVoiceEdit = document.getElementById('fabVoiceEdit');
+        // 🔥 TEXT COMMAND FAB - Click to open
+        const fabTextCommand = document.getElementById('fabTextCommand');
         const textEditorPanel = document.getElementById('textEditorPanel');
 
-        // Touch events for long press
-        fabVoiceEdit.addEventListener('touchstart', (e) => {
-            e.preventDefault();
-            longPressTimer = setTimeout(() => {
-                // LONG PRESS → Open Text Editor
-                if (tg && tg.HapticFeedback) tg.HapticFeedback.impactOccurred('heavy');
-                textEditorPanel.classList.add('open');
-                document.getElementById('textCommandInput').focus();
-            }, LONG_PRESS_DURATION);
-        });
-
-        fabVoiceEdit.addEventListener('touchend', (e) => {
-            e.preventDefault();
-            if (longPressTimer) {
-                clearTimeout(longPressTimer);
-                longPressTimer = null;
-            }
-        });
-
-        // Click event for voice (short press)
-        fabVoiceEdit.addEventListener('click', async () => {
-            // If long press timer is still active, ignore click
-            if (longPressTimer) return;
-            
-            if (isRecording) return;
-            
+        fabTextCommand.addEventListener('click', () => {
             if (tg && tg.HapticFeedback) tg.HapticFeedback.impactOccurred('medium');
-            
-            try {
-                const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-                if (!SpeechRecognition) {
-                    alert('Il tuo browser non supporta il riconoscimento vocale. Usa Chrome o Safari.');
-                    return;
-                }
-                
-                const recognition = new SpeechRecognition();
-                recognition.lang = currentLang === 'it' ? 'it-IT' : currentLang === 'en' ? 'en-US' : `${currentLang}-${currentLang.toUpperCase()}`;
-                recognition.continuous = false;
-                recognition.interimResults = false;
-                
-                isRecording = true;
-                fabVoiceEdit.classList.add('recording');
-                fabVoiceEdit.innerHTML = '<i class="fas fa-stop"></i>';
-                
-                recognition.start();
-                
-                recognition.onresult = async (event) => {
-                    const transcript = event.results[0][0].transcript;
-                    console.log('Voice command:', transcript);
-                    
-                    isRecording = false;
-                    fabVoiceEdit.classList.remove('recording');
-                    fabVoiceEdit.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-                    
-                    try {
-                        const response = await callWebhook('voice_edit_interpret', blogId, {
-                            voice_command: transcript,
-                            current_sections: currentSections,
-                            current_title: document.getElementById('editableTitle').value,
-                            current_meta: document.getElementById('editableMeta').value
-                        });
-                        
-                        if (response.proposed_change) {
-                            showVoiceEditPreview(response.proposed_change);
-                        }
-                        
-                    } catch (error) {
-                        alert('Errore interpretazione comando: ' + error.message);
-                    } finally {
-                        fabVoiceEdit.innerHTML = '<i class="fas fa-microphone"></i>';
-                    }
-                };
-                
-                recognition.onerror = (event) => {
-                    console.error('Speech recognition error:', event.error);
-                    isRecording = false;
-                    fabVoiceEdit.classList.remove('recording');
-                    fabVoiceEdit.innerHTML = '<i class="fas fa-microphone"></i>';
-                    
-                    if (event.error === 'not-allowed') {
-                        alert('Permesso microfono negato. Abilita il microfono nelle impostazioni del browser.');
-                    } else {
-                        alert(`Errore riconoscimento vocale: ${event.error}`);
-                    }
-                };
-                
-                recognition.onend = () => {
-                    if (isRecording) {
-                        isRecording = false;
-                        fabVoiceEdit.classList.remove('recording');
-                        fabVoiceEdit.innerHTML = '<i class="fas fa-microphone"></i>';
-                    }
-                };
-                
-            } catch (error) {
-                isRecording = false;
-                fabVoiceEdit.innerHTML = '<i class="fas fa-microphone"></i>';
-                alert('Errore registrazione vocale: ' + error.message);
-            }
+            textEditorPanel.classList.add('open');
+            document.getElementById('textCommandInput').focus();
         });
 
         document.getElementById('fabDelete').addEventListener('click', async () => {
@@ -543,7 +444,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    function showVoiceEditPreview(change) {
+    function showCommandPreview(change) {
         const actionText = change.action_description || 'modificare il contenuto';
         const message = `Vuoi ${actionText}?\n\n"${change.new_text || change.description}"`;
         
