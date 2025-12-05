@@ -6,6 +6,7 @@ let currentSections = [];
 let currentLang = 'it';
 let apiCredentials = {};
 let tg = null;
+let isRecording = false;
 
 document.addEventListener('DOMContentLoaded', async () => {
     const WEBHOOK_BLOG_URL = "https://trinai.api.workflow.dcmake.it/webhook/914bd78e-8a41-46d7-8935-7eb73cbbae66";
@@ -303,7 +304,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         platforms.forEach(platform => {
             if (socialData && socialData[platform.key] && socialData[platform.key].text) {
-                const card = createSocialCard(platform, socialData[platform.key].text, liveUrl); // ✅ Usa liveUrl
+                const card = createSocialCard(platform, socialData[platform.key].text, liveUrl);
                 socialGrid.appendChild(card);
             }
         });
@@ -343,6 +344,92 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
             
             window.location.href = knowledgeUrl.toString();
+        });
+
+        // 🎤 VOICE EDIT FAB
+        document.getElementById('fabVoiceEdit').addEventListener('click', async () => {
+            if (isRecording) return;
+            
+            if (tg && tg.HapticFeedback) tg.HapticFeedback.impactOccurred('medium');
+            
+            const btn = document.getElementById('fabVoiceEdit');
+            
+            try {
+                // Check browser support
+                const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                if (!SpeechRecognition) {
+                    alert('Il tuo browser non supporta il riconoscimento vocale. Usa Chrome o Safari.');
+                    return;
+                }
+                
+                const recognition = new SpeechRecognition();
+                recognition.lang = currentLang === 'it' ? 'it-IT' : currentLang === 'en' ? 'en-US' : `${currentLang}-${currentLang.toUpperCase()}`;
+                recognition.continuous = false;
+                recognition.interimResults = false;
+                
+                // Start recording
+                isRecording = true;
+                btn.classList.add('recording');
+                btn.innerHTML = '<i class="fas fa-stop"></i>';
+                
+                recognition.start();
+                
+                recognition.onresult = async (event) => {
+                    const transcript = event.results[0][0].transcript;
+                    console.log('Voice command:', transcript);
+                    
+                    // Stop recording UI
+                    isRecording = false;
+                    btn.classList.remove('recording');
+                    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+                    
+                    try {
+                        // Send to AI Assistant for interpretation
+                        const response = await callWebhook('voice_edit_interpret', blogId, {
+                            voice_command: transcript,
+                            current_sections: currentSections,
+                            current_title: document.getElementById('editableTitle').value,
+                            current_meta: document.getElementById('editableMeta').value
+                        });
+                        
+                        // Show preview and ask for confirmation
+                        if (response.proposed_change) {
+                            showVoiceEditPreview(response.proposed_change);
+                        }
+                        
+                    } catch (error) {
+                        alert('Errore interpretazione comando: ' + error.message);
+                    } finally {
+                        btn.innerHTML = '<i class="fas fa-microphone"></i>';
+                    }
+                };
+                
+                recognition.onerror = (event) => {
+                    console.error('Speech recognition error:', event.error);
+                    isRecording = false;
+                    btn.classList.remove('recording');
+                    btn.innerHTML = '<i class="fas fa-microphone"></i>';
+                    
+                    if (event.error === 'not-allowed') {
+                        alert('Permesso microfono negato. Abilita il microfono nelle impostazioni del browser.');
+                    } else {
+                        alert(`Errore riconoscimento vocale: ${event.error}`);
+                    }
+                };
+                
+                recognition.onend = () => {
+                    if (isRecording) {
+                        isRecording = false;
+                        btn.classList.remove('recording');
+                        btn.innerHTML = '<i class="fas fa-microphone"></i>';
+                    }
+                };
+                
+            } catch (error) {
+                isRecording = false;
+                btn.innerHTML = '<i class="fas fa-microphone"></i>';
+                alert('Errore registrazione vocale: ' + error.message);
+            }
         });
 
         document.getElementById('fabDelete').addEventListener('click', async () => {
@@ -400,6 +487,25 @@ document.addEventListener('DOMContentLoaded', async () => {
                 alert(`Errore durante la pubblicazione: ${error.message}`);
             }
         });
+    }
+
+    // 🎤 Show Voice Edit Preview
+    function showVoiceEditPreview(change) {
+        const actionText = change.action_description || 'modificare il contenuto';
+        const message = `Vuoi ${actionText}?\n\n"${change.new_text || change.description}"`;        
+        if (confirm(message)) {
+            // Apply change based on action type
+            if (change.action === 'edit_section' && change.section_index !== undefined) {
+                currentSections[change.section_index].text = change.new_text;
+                renderEditableSections(currentSections);
+            } else if (change.action === 'edit_title') {
+                document.getElementById('editableTitle').value = change.new_text;
+            } else if (change.action === 'edit_meta') {
+                document.getElementById('editableMeta').value = change.new_text;
+            }
+            
+            if (tg && tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
+        }
     }
 
     function collectEditorData() {
