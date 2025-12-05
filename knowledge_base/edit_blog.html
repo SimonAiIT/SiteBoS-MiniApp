@@ -374,6 +374,70 @@
             0%, 100% { transform: scale(1); opacity: 1; }
             50% { transform: scale(1.1); opacity: 0.8; }
         }
+
+        /* 💬 TEXT COMMAND EDITOR PANEL */
+        .text-editor-panel {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            border-top: 2px solid var(--primary);
+            box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.5);
+            z-index: 9998;
+            padding: 20px;
+            max-height: 50vh;
+            overflow-y: auto;
+            transform: translateY(100%);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .text-editor-panel.open {
+            transform: translateY(0);
+        }
+
+        .text-editor-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+            color: var(--primary);
+            font-weight: 700;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .text-editor-textarea {
+            width: 100%;
+            min-height: 100px;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-md);
+            color: var(--text-main);
+            font-family: inherit;
+            font-size: 14px;
+            line-height: 1.6;
+            resize: vertical;
+            margin-bottom: 15px;
+        }
+
+        .text-editor-textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: rgba(91, 111, 237, 0.1);
+        }
+
+        .text-editor-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .text-editor-actions button {
+            flex: 1;
+        }
     </style>
 </head>
 <body>
@@ -485,27 +549,44 @@
         </div>
     </div>
 
-    <!-- FABs Container -->
+    <!-- 💬 TEXT COMMAND EDITOR PANEL -->
+    <div id="textEditorPanel" class="text-editor-panel">
+        <div class="text-editor-header">
+            <i class="fas fa-keyboard"></i>
+            <span>Comando Testuale</span>
+        </div>
+        <textarea 
+            id="textCommandInput" 
+            class="text-editor-textarea" 
+            placeholder="Scrivi il tuo comando...\nEsempio: 'Cambia il titolo del paragrafo 2 in: Nuova soluzione'">
+        </textarea>
+        <div class="text-editor-actions">
+            <button id="btnSendTextCommand" class="btn">
+                <i class="fas fa-paper-plane"></i> Invia Comando
+            </button>
+            <button id="btnCloseTextEditor" class="btn-secondary">
+                <i class="fas fa-times"></i> Chiudi
+            </button>
+        </div>
+    </div>
+
+    <!-- FABs Container - Voice ULTIMO in basso -->
     <div class="fab-container">
-        <!-- Torna Indietro -->
         <button id="fabBack" class="fab-btn fab-secondary" title="Torna Indietro">
             <i class="fas fa-arrow-left"></i>
         </button>
-        <!-- 🎙️ NUOVO: Voice Edit -->
-        <button id="fabVoiceEdit" class="fab-btn" title="Modifica Vocale">
-            <i class="fas fa-microphone"></i>
-        </button>
-        <!-- Elimina -->
         <button id="fabDelete" class="fab-btn" title="Elimina Bozza">
             <i class="fas fa-trash"></i>
         </button>
-        <!-- Salva Draft -->
         <button id="fabSave" class="fab-btn" title="Salva Bozza">
             <i class="fas fa-save"></i>
         </button>
-        <!-- Pubblica -->
         <button id="fabPublish" class="fab-btn" title="Pubblica">
             <i class="fas fa-rocket"></i>
+        </button>
+        <!-- 🎤 Voice/Text FAB - ULTIMO -->
+        <button id="fabVoiceEdit" class="fab-btn" title="Comando Vocale/Testuale (tieni premuto per testo)">
+            <i class="fas fa-microphone"></i>
         </button>
     </div>
 
