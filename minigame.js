@@ -174,6 +174,7 @@ const MiniGame = {
         this.pathQueue = [];
         this.targetPos = null;
         this.updateScoreUI();
+        this.hideGameOver();
         this.active = true;
         this.loop();
     },
@@ -342,9 +343,116 @@ const MiniGame = {
             window.Telegram.WebApp.HapticFeedback.notificationOccurred(win ? 'success' : 'error');
         }
         
-        setTimeout(() => {
-            if(typeof closeGame === 'function') closeGame();
-        }, 1500);
+        // ✅ Mostra overlay game over con bottone riprova
+        this.showGameOver(win);
+    },
+    
+    showGameOver: function(win) {
+        let overlay = document.getElementById('game-over-overlay');
+        
+        if(!overlay) {
+            overlay = document.createElement('div');
+            overlay.id = 'game-over-overlay';
+            overlay.style.cssText = `
+                position: fixed;
+                inset: 0;
+                background: rgba(0,0,0,0.85);
+                backdrop-filter: blur(10px);
+                z-index: 200;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                gap: 20px;
+            `;
+            
+            const icon = document.createElement('div');
+            icon.id = 'game-over-icon';
+            icon.style.cssText = 'font-size: 80px;';
+            
+            const message = document.createElement('div');
+            message.id = 'game-over-message';
+            message.style.cssText = `
+                font-family: 'Inter', sans-serif;
+                font-size: 28px;
+                font-weight: 700;
+                color: #fff;
+                text-align: center;
+            `;
+            
+            const scoreDiv = document.createElement('div');
+            scoreDiv.id = 'game-over-score';
+            scoreDiv.style.cssText = `
+                font-family: 'Orbitron', sans-serif;
+                font-size: 48px;
+                color: #5B6FED;
+                font-weight: 700;
+            `;
+            
+            const retryBtn = document.createElement('button');
+            retryBtn.id = 'retry-button';
+            retryBtn.innerHTML = '<i class="fas fa-redo"></i> Riprova';
+            retryBtn.style.cssText = `
+                background: #5B6FED;
+                color: white;
+                border: none;
+                padding: 15px 40px;
+                border-radius: 12px;
+                font-size: 18px;
+                font-weight: 600;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                transition: all 0.2s;
+                margin-top: 20px;
+            `;
+            retryBtn.addEventListener('mouseenter', () => {
+                retryBtn.style.background = '#4a5ecf';
+                retryBtn.style.transform = 'scale(1.05)';
+            });
+            retryBtn.addEventListener('mouseleave', () => {
+                retryBtn.style.background = '#5B6FED';
+                retryBtn.style.transform = 'scale(1)';
+            });
+            retryBtn.addEventListener('click', () => {
+                if(window.Telegram?.WebApp?.HapticFeedback) {
+                    window.Telegram.WebApp.HapticFeedback.impactOccurred('medium');
+                }
+                this.restart();
+            });
+            
+            overlay.appendChild(icon);
+            overlay.appendChild(message);
+            overlay.appendChild(scoreDiv);
+            overlay.appendChild(retryBtn);
+            
+            document.body.appendChild(overlay);
+        }
+        
+        // Aggiorna contenuto
+        const icon = document.getElementById('game-over-icon');
+        const message = document.getElementById('game-over-message');
+        const scoreDiv = document.getElementById('game-over-score');
+        
+        if(win) {
+            icon.textContent = '🎉';
+            message.textContent = 'Perfetto!';
+        } else {
+            icon.textContent = '💀';
+            message.textContent = 'Game Over';
+        }
+        
+        scoreDiv.textContent = `${this.score} crediti`;
+        
+        overlay.style.display = 'flex';
+    },
+    
+    hideGameOver: function() {
+        const overlay = document.getElementById('game-over-overlay');
+        if(overlay) {
+            overlay.style.display = 'none';
+        }
     },
     
     setupInputs: function() {
