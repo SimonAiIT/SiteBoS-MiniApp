@@ -4,24 +4,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Generazione Blog Post</title>
-    <!-- Font Awesome -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <!-- IL TUO STILE PRINCIPALE -->
     <link rel="stylesheet" href="../styles.css">
     
     <style>
-        /* Override minimi specifici per questa pagina, usando le tue variabili */
         body {
-            /* Il body già eredita lo sfondo dal tuo styles.css, qui centro il contenuto verticalmente */
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            padding-top: 40px; /* Spazio dall'alto */
+            padding-top: 40px;
         }
 
         .deploy-container {
-            /* Estendo la tua classe .card per questa specifica view */
             max-width: 500px;
             width: 100%;
             text-align: center;
@@ -53,7 +48,7 @@
             display: inline-block;
         }
 
-        /* Overlay di conferma punti */
+        /* Overlay di conferma crediti */
         .confirm-overlay {
             position: fixed;
             top: 0;
@@ -102,64 +97,112 @@
             justify-content: center;
         }
 
-        /* Overlay generazione stile processor */
-        .processing-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-            z-index: 10000;
+        /* GAME OVERLAY (copiato da processor.html) */
+        #game-layer { 
+            position: fixed; 
+            inset: 0; 
+            background: #0b1120; 
+            z-index: 100; 
             display: none;
-            align-items: center;
-            justify-content: center;
-            flex-direction: column;
-            padding: 20px;
+            flex-direction: column; 
+        }
+        #game-container { 
+            flex: 1; 
+            position: relative; 
+            overflow: hidden; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            background: #0b1120;
+        }
+        canvas { 
+            box-shadow: 0 0 50px rgba(0,0,0,0.8); 
+            border-radius: 8px; 
+            image-rendering: pixelated; 
+            touch-action: none; 
+        }
+        
+        .game-header { 
+            position: absolute; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            padding: 15px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: flex-start; 
+            z-index: 110; 
+            pointer-events: none; 
+        }
+        .score-box { 
+            background: rgba(0,0,0,0.5); 
+            padding: 8px 15px; 
+            border-radius: 12px; 
+            border: 1px solid rgba(255,255,255,0.2); 
+            text-align: left; 
+            pointer-events: none; 
+        }
+        .score { 
+            font-family: 'Orbitron', sans-serif; 
+            font-size: 18px; 
+            color: #fff; 
+        }
+        .best-score { 
+            font-size: 10px; 
+            color: rgba(255,255,255,0.5); 
+            margin-top: 2px; 
+        }
+        .close-game { 
+            background: rgba(255,255,255,0.1); 
+            border: none; 
+            color: #fff; 
+            width: 36px; 
+            height: 36px; 
+            border-radius: 50%; 
+            font-size: 16px; 
+            cursor: pointer; 
+            pointer-events: auto; 
         }
 
-        .processing-content {
+        /* IN-GAME AD FOOTER */
+        .game-ad-footer {
+            position: absolute; 
+            bottom: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 80px;
+            background: #0f172a; 
+            border-top: 2px solid var(--primary); 
+            z-index: 150;
+            display: flex; 
+            align-items: center; 
+            justify-content: center;
+            box-shadow: 0 -5px 20px rgba(0,0,0,0.6);
+        }
+        .game-ad-footer .ad-banner { 
+            width: 96%; 
+            height: 90%; 
+            margin: 0; 
+            border: none; 
+            background: transparent; 
+        }
+        
+        .game-instructions {
+            position: absolute; 
+            bottom: 90px; 
+            width: 100%; 
             text-align: center;
-            max-width: 500px;
+            color: #64748b; 
+            font-size: 11px; 
+            font-family: 'Inter'; 
+            pointer-events: none; 
+            z-index: 140; 
+            font-weight: 600;
+            text-transform: uppercase; 
+            letter-spacing: 0.5px;
         }
 
-        .processing-icon {
-            font-size: 5rem;
-            color: var(--primary);
-            margin-bottom: 30px;
-            animation: pulse 2s ease-in-out infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); opacity: 1; }
-            50% { transform: scale(1.1); opacity: 0.8; }
-        }
-
-        .processing-title {
-            font-size: 28px;
-            font-family: 'Orbitron', sans-serif;
-            margin-bottom: 15px;
-            color: var(--text-primary);
-        }
-
-        .processing-subtitle {
-            color: var(--text-muted);
-            margin-bottom: 40px;
-            font-size: 14px;
-        }
-
-        /* Game Canvas Container */
-        #game-container {
-            margin: 30px 0;
-            display: flex;
-            justify-content: center;
-        }
-
-        /* Sponsor Container */
-        #sponsor-container {
-            margin-top: 30px;
-            min-height: 100px;
-        }
+        .hidden { display: none !important; }
 
         /* Log Area stile terminale */
         .terminal-log {
@@ -200,46 +243,46 @@
 </head>
 <body>
 
-    <!-- Overlay di conferma spesa punti -->
+    <!-- Overlay di conferma spesa crediti -->
     <div id="confirmOverlay" class="confirm-overlay">
         <div class="confirm-box">
             <div class="icon"><i class="fas fa-coins"></i></div>
-            <h2 id="confirmTitle">Conferma Operazione</h2>
-            <p id="confirmMessage">Stai per spendere <strong>1000 punti</strong> per generare questo articolo blog con l'IA.<br><br>Vuoi procedere?</p>
+            <h2>Conferma Operazione</h2>
+            <p>Stai per spendere <strong>100 crediti</strong> per generare questo articolo blog con l'IA.<br><br>Vuoi procedere?</p>
             <div class="confirm-buttons">
                 <button id="confirmCancel" class="btn-secondary" style="padding: 12px 24px;">
-                    <i class="fas fa-times"></i> <span id="btnCancel">Annulla</span>
+                    <i class="fas fa-times"></i> Annulla
                 </button>
                 <button id="confirmProceed" class="btn" style="padding: 12px 24px;">
-                    <i class="fas fa-check"></i> <span id="btnProceed">Procedi</span>
+                    <i class="fas fa-check"></i> Procedi
                 </button>
             </div>
         </div>
     </div>
 
-    <!-- Overlay generazione (stile processor) -->
-    <div id="processingOverlay" class="processing-overlay">
-        <div class="processing-content">
-            <div class="processing-icon">
-                <i class="fas fa-robot"></i>
+    <!-- GAME UI (copiato da processor.html) -->
+    <div id="game-layer" class="hidden">
+        <div class="game-header">
+            <div class="score-box">
+                <div>SCORE: <span class="score" id="score">0</span></div>
+                <div class="best-score">BEST: <span id="best-score">0</span></div>
             </div>
-            <h2 class="processing-title" id="processingTitle">Generazione in Corso</h2>
-            <p class="processing-subtitle" id="processingSubtitle">L'intelligenza artificiale sta creando il tuo contenuto...</p>
-            
-            <!-- Game Container -->
-            <div id="game-container">
-                <canvas id="gameCanvas" width="300" height="400"></canvas>
-            </div>
-            
-            <!-- Sponsor Container -->
-            <div id="sponsor-container"></div>
-            
-            <!-- Log Terminal -->
-            <div id="processingLog" class="terminal-log"></div>
+            <button class="close-game" onclick="closeGame()"><i class="fas fa-times"></i></button>
+        </div>
+
+        <div id="game-container">
+            <canvas id="gameCanvas"></canvas>
+        </div>
+        
+        <!-- SLOT PUBBLICITARIO IN-GAME -->
+        <div class="game-ad-footer" id="game-ad-slot"></div>
+        
+        <div class="game-instructions">
+            🎯 Tap to Move • 👾 Evita Lavoro (📧💼) • ❤️ Raccogli Vita (❤️🏠💃✈️💰💎⭐🎁)
         </div>
     </div>
 
-    <!-- Uso la classe 'card' dal tuo CSS per avere lo stesso sfondo glassmorphism e bordi -->
+    <!-- UI Principale -->
     <div class="card deploy-container">
         
         <div id="heroIcon" class="icon-hero"><i class="fas fa-robot"></i></div>
@@ -255,15 +298,15 @@
 
         <!-- Pulsante Azione -->
         <button id="startBtn" class="btn btn-block" style="font-size: 16px; padding: 15px;">
-            <i class="fas fa-bolt"></i> <span id="btnStart">Avvia Generazione</span>
+            <i class="fas fa-bolt"></i> Genera Blog Post
         </button>
 
         <!-- Log Area -->
         <div id="logArea" class="terminal-log"></div>
 
-        <!-- BOTTONE TORNA INDIETRO ALLINEATO -->
+        <!-- BOTTONE TORNA INDIETRO -->
         <button id="backBtn" class="btn-secondary" style="margin-top: 30px; font-size: 14px; padding: 10px 16px; display: inline-flex; align-items: center; gap: 8px;">
-            <i class="fas fa-arrow-left"></i> <span id="btnBack">Torna alla Knowledge Base</span>
+            <i class="fas fa-arrow-left"></i> Torna alla Knowledge Base
         </button>
 
     </div>
@@ -271,7 +314,79 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="../sponsor.js"></script>
     <script src="../minigame.js"></script>
+    
+    <!-- CONTROLLO GIOCO (copiato da processor.html) -->
+    <script>
+        function openGame() {
+            console.log('🎮 Apertura gioco...');
+            
+            // Verifica che MiniGame sia caricato
+            if(typeof MiniGame === 'undefined') {
+                console.error('❌ MiniGame non caricato!');
+                alert('Errore: Game engine non disponibile. Ricarica la pagina.');
+                return;
+            }
+            
+            // Mostra overlay gioco
+            document.getElementById('game-layer').classList.remove('hidden');
+            document.getElementById('game-layer').style.display = 'flex';
+            
+            try {
+                // Inizializza se necessario
+                if(!MiniGame.canvas || !MiniGame.ctx) {
+                    console.log('🔧 Inizializzazione MiniGame...');
+                    MiniGame.init('gameCanvas');
+                }
+                
+                // Avvia il gioco
+                console.log('▶️ Avvio gioco...');
+                MiniGame.start();
+                
+                // Fix per ridimensionamento iniziale
+                setTimeout(() => {
+                    MiniGame.resize();
+                    console.log('✅ Gioco avviato!');
+                }, 100);
+                
+            } catch(error) {
+                console.error('❌ Errore avvio gioco:', error);
+                document.getElementById('game-layer').classList.add('hidden');
+                document.getElementById('game-layer').style.display = 'none';
+                alert('Errore nell\'avvio del gioco: ' + error.message);
+            }
+        }
+        
+        function closeGame() { 
+            console.log('⏹️ Chiusura gioco...');
+            document.getElementById('game-layer').classList.add('hidden');
+            document.getElementById('game-layer').style.display = 'none';
+            if(typeof MiniGame !== 'undefined') {
+                MiniGame.stop();
+            }
+        }
+    </script>
+    
     <script src="deployblog_logic.js"></script>
+    
+    <!-- INIZIALIZZAZIONE ADVERTISING -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('📦 DOM caricato');
+            
+            // Verifica caricamento MiniGame
+            if(typeof MiniGame !== 'undefined') {
+                console.log('✅ MiniGame caricato correttamente');
+            } else {
+                console.error('❌ MiniGame NON caricato!');
+            }
+            
+            // Inizializza pubblicità
+            if(window.SponsorManager) {
+                console.log("⚡ Inietta Pubblicità...");
+                SponsorManager.inject('#game-ad-slot', 'game');
+            }
+        });
+    </script>
 
 </body>
 </html>
