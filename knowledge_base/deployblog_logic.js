@@ -1,28 +1,8 @@
 'use strict';
 
-const i18n = {
-    it: {
-        pageTitle: "Generatore Blog IA",
-        pageSubtitle: "Trasforma questo frammento di conoscenza in un articolo SEO completo.",
-        loadingText: "Caricamento ID...",
-        btnStart: "Genera Blog Post",
-        btnBack: "Torna alla Knowledge Base",
-        confirmTitle: "Conferma Operazione",
-        confirmMessage: "Stai per spendere <strong>1000 crediti</strong> per generare questo articolo blog con l'IA.<br><br>Vuoi procedere?",
-        btnCancel: "Annulla",
-        btnProceed: "Procedi",
-        fragmentId: "Frammento ID:",
-        logCancelled: "> ❌ Operazione annullata dall'utente.",
-        errorMissingId: "Errore: ID frammento mancante."
-    }
-};
-
 document.addEventListener('DOMContentLoaded', () => {
     const WEBHOOK_BLOG_URL = "https://trinai.api.workflow.dcmake.it/webhook/914bd78e-8a41-46d7-8935-7eb73cbbae66";
     
-    const startBtn = document.getElementById('startBtn');
-    const logArea = document.getElementById('logArea');
-    const backBtn = document.getElementById('backBtn');
     const confirmOverlay = document.getElementById('confirmOverlay');
     const confirmCancel = document.getElementById('confirmCancel');
     const confirmProceed = document.getElementById('confirmProceed');
@@ -37,7 +17,6 @@ document.addEventListener('DOMContentLoaded', () => {
         ragione_sociale: params.get('ragione_sociale')
     };
 
-    const t = i18n[lang] || i18n['it'];
     const tg = window.Telegram.WebApp;
     if (tg) {
         tg.ready();
@@ -45,32 +24,21 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     if (!fragmentId) {
-        log(t.errorMissingId, logArea);
-        logArea.style.display = 'block';
-        startBtn.disabled = true;
+        alert('Errore: ID frammento mancante.');
+        window.history.back();
         return;
     }
 
-    document.getElementById('loadingText').textContent = `${t.fragmentId} ${fragmentId}`;
+    // ✅ MOSTRA POPUP CONFERMA SUBITO AL CARICAMENTO
+    confirmOverlay.style.display = 'flex';
 
-    backBtn.addEventListener('click', (e) => {
-        e.preventDefault();
+    // Click su "Annulla" -> Torna indietro
+    confirmCancel.addEventListener('click', () => {
+        if (tg && tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
         window.history.back();
     });
 
-    startBtn.addEventListener('click', () => {
-        confirmOverlay.style.display = 'flex';
-        if (tg && tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
-    });
-
-    confirmCancel.addEventListener('click', () => {
-        confirmOverlay.style.display = 'none';
-        log(t.logCancelled, logArea);
-        logArea.style.display = 'block';
-        if (tg && tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
-    });
-
-    // ✅ CLICK SU PROCEDI -> AVVIA MINIGAME SUBITO
+    // Click su "Procedi" -> Avvia minigame + API call
     confirmProceed.addEventListener('click', async () => {
         console.log('✅ Utente ha confermato!');
         
@@ -80,15 +48,15 @@ document.addEventListener('DOMContentLoaded', () => {
         // 2. Haptic feedback
         if (tg && tg.HapticFeedback) tg.HapticFeedback.impactOccurred('medium');
         
-        // 3. 🎮 AVVIA MINIGAME IMMEDIATAMENTE (prima della chiamata API)
-        console.log('🎮 Avvio minigame ADESSO...');
+        // 3. 🎮 AVVIA MINIGAME IMMEDIATAMENTE
+        console.log('🎮 Avvio minigame...');
         openGame();
         
-        // 4. Attendi 500ms per far partire il gioco
+        // 4. Attendi 500ms
         await new Promise(resolve => setTimeout(resolve, 500));
         
-        // 5. POI avvia la chiamata API in background
-        console.log('🚀 Avvio chiamata API in background...');
+        // 5. Avvia API call in background
+        console.log('🚀 Avvio chiamata API...');
         
         try {
             const response = await fetch(WEBHOOK_BLOG_URL, {
@@ -112,21 +80,16 @@ document.addEventListener('DOMContentLoaded', () => {
             if (data.status === 'success' || data.blog_id) {
                 console.log('✅ Blog generato con successo!');
                 
-                // Calcola crediti bonus dal minigame
                 let bonusCredits = 0;
                 if (window.MiniGame && MiniGame.active) {
                     bonusCredits = Math.min(MiniGame.score || 0, 500);
                     MiniGame.stop();
-                    console.log(`🎮 Crediti bonus guadagnati: ${bonusCredits}`);
+                    console.log(`🎮 Crediti bonus: ${bonusCredits}`);
                 }
                 
-                // Chiudi gioco
                 closeGame();
-                
-                // Attendi 1 secondo
                 await new Promise(resolve => setTimeout(resolve, 1000));
                 
-                // Redirect a edit_blog.html
                 const editUrl = new URL('edit_blog.html', window.location.href);
                 editUrl.searchParams.set('blog_id', data.blog_id || fragmentId);
                 editUrl.searchParams.set('vat', apiCredentials.vat);
@@ -146,12 +109,7 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error('❌ Errore:', error);
             closeGame();
             alert(`Errore: ${error.message}`);
+            window.history.back();
         }
     });
-
-    function log(msg, target) {
-        target = target || logArea;
-        target.innerHTML += `<div class="terminal-line">${msg}</div>`;
-        target.scrollTop = target.scrollHeight;
-    }
 });
