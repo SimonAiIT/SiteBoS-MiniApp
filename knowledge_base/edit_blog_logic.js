@@ -328,7 +328,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                 <i class="fas fa-copy"></i> Copia
             </button>
         `;
-        card.dataset.text = text + '\n\n' + (articleUrl || '');
+        
+        // ✅ Salva testo + URL nel dataset per la copia
+        card.dataset.socialText = text;
+        card.dataset.articleUrl = articleUrl || '';
+        
         return card;
     }
 
@@ -559,16 +563,28 @@ function closePreview() {
     document.getElementById('previewOverlay').style.display = 'none';
 }
 
+// ✅ FIX: Sostituisce [LINK] con URL reale, o lo aggiunge in coda se non presente
 function copySocialText(button, platform) {
     const card = button.closest('.social-card');
-    const text = card.dataset.text;
+    const socialText = card.dataset.socialText || '';
+    const articleUrl = card.dataset.articleUrl || '';
+    
+    let finalText;
+    
+    // Se il testo contiene [LINK], sostituiscilo con l'URL
+    if (socialText.includes('[LINK]')) {
+        finalText = socialText.replace('[LINK]', articleUrl);
+    } else {
+        // Altrimenti aggiungi l'URL in coda
+        finalText = socialText + '\n\n' + articleUrl;
+    }
     
     if (navigator.clipboard) {
-        navigator.clipboard.writeText(text).then(() => {
+        navigator.clipboard.writeText(finalText).then(() => {
             showCopyFeedback(button);
         });
     } else {
-        fallbackCopy(text, button);
+        fallbackCopy(finalText, button);
     }
 }
 
