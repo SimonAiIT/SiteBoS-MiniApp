@@ -151,6 +151,9 @@ function renderFragmentDetails(fragment, cardElement) {
     const body = cardElement.querySelector('.kb-body');
     const id = fragment.fragment_id || fragment._id;
     
+    // ✅ CHECK: Se blog post già generato
+    const hasGeneratedBlog = fragment.content_generated === true;
+    
     const actionsBarStyle = `
         display: flex; 
         justify-content: flex-end; 
@@ -159,8 +162,8 @@ function renderFragmentDetails(fragment, cardElement) {
         border-bottom: 1px solid rgba(255, 255, 255, 0.15);
     `;
 
-    const btnStyle = `
-        background: #5B6FED;
+    const btnStyle = (isEdit) => `
+        background: ${isEdit ? '#4cd964' : '#5B6FED'};
         color: white; 
         border: none; 
         padding: 10px 18px; 
@@ -171,28 +174,42 @@ function renderFragmentDetails(fragment, cardElement) {
         display: flex; 
         align-items: center; 
         gap: 8px; 
-        box-shadow: 0 4px 12px rgba(91, 111, 237, 0.3);
+        box-shadow: 0 4px 12px ${isEdit ? 'rgba(76, 217, 100, 0.3)' : 'rgba(91, 111, 237, 0.3)'};
         transition: transform 0.2s ease, background 0.2s, box-shadow 0.2s;
     `;
 
-    const btnHoverStyle = `
-        background: #4a5ecf;
+    const btnHoverStyle = (isEdit) => `
+        background: ${isEdit ? '#3cb54a' : '#4a5ecf'};
         transform: translateY(-2px);
-        box-shadow: 0 6px 16px rgba(91, 111, 237, 0.4);
+        box-shadow: 0 6px 16px ${isEdit ? 'rgba(76, 217, 100, 0.4)' : 'rgba(91, 111, 237, 0.4)'};
     `;
 
-    body.innerHTML = `
-        <div class="actions-bar" style="${actionsBarStyle}">
-            <button 
+    // ✅ Bottone condizionale
+    const buttonHTML = hasGeneratedBlog 
+        ? `<button 
+                class="btn-blog-edit" 
+                data-id="${id}" 
+                style="${btnStyle(true)}" 
+                onmouseover="this.style.cssText='${btnStyle(true)}${btnHoverStyle(true)}'" 
+                onmouseout="this.style.cssText='${btnStyle(true)}'" 
+                onmousedown="this.style.transform='scale(0.96)'" 
+                onmouseup="this.style.transform='scale(1)'">
+                <i class="fas fa-edit"></i> Modifica Blog Post
+            </button>`
+        : `<button 
                 class="btn-blog-deploy" 
                 data-id="${id}" 
-                style="${btnStyle}" 
-                onmouseover="this.style.cssText='${btnStyle}${btnHoverStyle}'" 
-                onmouseout="this.style.cssText='${btnStyle}'" 
+                style="${btnStyle(false)}" 
+                onmouseover="this.style.cssText='${btnStyle(false)}${btnHoverStyle(false)}'" 
+                onmouseout="this.style.cssText='${btnStyle(false)}'" 
                 onmousedown="this.style.transform='scale(0.96)'" 
                 onmouseup="this.style.transform='scale(1)'">
                 <i class="fas fa-magic"></i> Genera Blog Post
-            </button>
+            </button>`;
+
+    body.innerHTML = `
+        <div class="actions-bar" style="${actionsBarStyle}">
+            ${buttonHTML}
         </div>
 
         <h3>Titolo</h3>
@@ -215,9 +232,10 @@ function renderFragmentDetails(fragment, cardElement) {
         </div>
     `;
 
-    const blogBtn = body.querySelector('.btn-blog-deploy');
-    if (blogBtn) {
-        blogBtn.addEventListener('click', (e) => {
+    // ✅ Event listener per bottone GENERA
+    const blogDeployBtn = body.querySelector('.btn-blog-deploy');
+    if (blogDeployBtn) {
+        blogDeployBtn.addEventListener('click', (e) => {
             e.preventDefault();
             e.stopPropagation();
             
@@ -226,6 +244,21 @@ function renderFragmentDetails(fragment, cardElement) {
             }
             
             goToDeployBlog(id);
+        });
+    }
+
+    // ✅ Event listener per bottone MODIFICA
+    const blogEditBtn = body.querySelector('.btn-blog-edit');
+    if (blogEditBtn) {
+        blogEditBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            if (window.Telegram?.WebApp?.HapticFeedback) {
+                window.Telegram.WebApp.HapticFeedback.impactOccurred('light');
+            }
+            
+            goToEditBlog(id);
         });
     }
 }
@@ -237,6 +270,16 @@ function goToDeployBlog(fragmentId) {
         targetUrl.searchParams.set(key, value);
     });
     targetUrl.searchParams.set('fragment_id', fragmentId);
+    window.location.href = targetUrl.toString();
+}
+
+function goToEditBlog(fragmentId) {
+    const targetUrl = new URL('edit_blog.html', window.location.href);
+    const currentParams = new URLSearchParams(window.location.search);
+    currentParams.forEach((value, key) => {
+        targetUrl.searchParams.set(key, value);
+    });
+    targetUrl.searchParams.set('blog_id', fragmentId);
     window.location.href = targetUrl.toString();
 }
 
