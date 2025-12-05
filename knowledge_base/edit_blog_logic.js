@@ -129,7 +129,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         });
 
-        // ✅ 2. Upload Manuale
+        // ✅ 2. Upload Manuale → Chiama upload_image webhook
         document.getElementById('btnUploadImage').addEventListener('click', () => {
             document.getElementById('imageFileInput').click();
         });
@@ -140,16 +140,41 @@ document.addEventListener('DOMContentLoaded', async () => {
             
             if (tg && tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
             
+            // Preview temporaneo
             const tempUrl = URL.createObjectURL(file);
             const img = document.getElementById('featuredImage');
             const placeholder = document.getElementById('imagePlaceholder');
             img.src = tempUrl;
             img.style.display = 'block';
             placeholder.style.display = 'none';
-            document.getElementById('btnDownloadImage').style.display = 'block';
             
-            // TODO: Upload su GitHub/CDN
-            // currentBlogData.featured_image.url = uploadedUrl;
+            const btn = document.getElementById('btnUploadImage');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Caricando...';
+            
+            try {
+                // Converti file in base64
+                const base64 = await fileToBase64(file);
+                
+                // ✅ Chiama webhook upload_image
+                const response = await callWebhook('upload_image', blog.id, {
+                    image_base64: base64,
+                    filename: `${blog.id}.jpg`
+                });
+                
+                if (response.image_url) {
+                    img.src = response.image_url;
+                    currentBlogData.featured_image.url = response.image_url;
+                    document.getElementById('btnDownloadImage').style.display = 'block';
+                }
+                
+                btn.innerHTML = '<i class="fas fa-upload"></i> Carica Immagine';
+                btn.disabled = false;
+            } catch (error) {
+                alert('Errore upload immagine: ' + error.message);
+                btn.innerHTML = '<i class="fas fa-upload"></i> Carica Immagine';
+                btn.disabled = false;
+            }
         });
 
         // ✅ 3. Scarica Immagine
@@ -182,6 +207,16 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         // 3. Social Media Section
         renderSocialCards(blog.social_media, blog.article_url);
+    }
+
+    // ✅ Helper: Converti file in base64
+    function fileToBase64(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result.split(',')[1]); // Rimuove "data:image/jpeg;base64,"
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+        });
     }
 
     // ✅ Parser HTML → Sezioni Editabili
@@ -256,6 +291,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         const socialGrid = document.getElementById('socialGrid');
         socialGrid.innerHTML = '';
 
+        // ✅ Forza sempre GitHub Pages URL
+        const liveUrl = `https://trinaibusinessoperatingsystem.github.io/SiteBoS-MiniApp/posts/${currentBlogData.id}.html`;
+
         const platforms = [
             { key: 'facebook', name: 'Facebook', icon: 'fab fa-facebook', color: '#1877f2' },
             { key: 'instagram', name: 'Instagram', icon: 'fab fa-instagram', color: '#e4405f' },
@@ -265,7 +303,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         platforms.forEach(platform => {
             if (socialData && socialData[platform.key] && socialData[platform.key].text) {
-                const card = createSocialCard(platform, socialData[platform.key].text, articleUrl);
+                const card = createSocialCard(platform, socialData[platform.key].text, liveUrl); // ✅ Usa liveUrl
                 socialGrid.appendChild(card);
             }
         });
