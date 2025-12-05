@@ -1,210 +1,19 @@
 'use strict';
 
-/**
- * STRUTTURA DATI ATTESA DAL BACKEND (action: 'get_blog'):
- * ========================================================
- * {
- *   "status": "success",
- *   "blog_data": {
- *     "id": "blog_12345",
- *     "title": "Titolo dell'Articolo",
- *     "slug": "titolo-articolo",
- *     "meta_description": "Descrizione breve per SEO",
- *     "featured_image": {
- *       "url": "https://example.com/image.jpg",
- *       "alt": "Alt text",
- *       "generated_by_ai": true
- *     },
- *     "content": {
- *       "html": "<h2>Titolo</h2><p>Testo...</p>",
- *       "plain_text": "Testo senza HTML",
- *       "word_count": 1250
- *     },
- *     "social_media": {
- *       "facebook": {
- *         "text": "Testo per Facebook..."
- *       },
- *       "instagram": {
- *         "text": "Testo per Instagram..."
- *       },
- *       "twitter": {
- *         "text": "Testo per Twitter/X..."
- *       },
- *       "linkedin": {
- *         "text": "Testo per LinkedIn..."
- *       }
- *     },
- *     "article_url": "https://sitebos.com/blog/articolo",
- *     "status": "draft",  // "draft" | "published"
- *     "language": "it"
- *   }
- * }
- */
-
-// DIZIONARIO TRADUZIONI (6 lingue)
-const i18n = {
-    it: {
-        pageTitle: "Editor Blog Post",
-        statusDraft: "Bozza",
-        statusPublished: "Pubblicato",
-        loadingText: "Caricamento articolo...",
-        errorTitle: "Errore di Caricamento",
-        errorMessage: "Impossibile caricare l'articolo. Riprova più tardi.",
-        imageTitle: "Immagine Featured",
-        noImageText: "Nessuna immagine",
-        btnSetImageText: "Imposta Immagine",
-        btnDownloadText: "Scarica Immagine",
-        contentTitle: "Contenuto Articolo",
-        btnPreviewText: "Anteprima Completa",
-        socialTitle: "Testi per i Social",
-        btnCopy: "Copia",
-        btnCopied: "Copiato!",
-        publishSuccess: "Articolo pubblicato con successo!",
-        publishError: "Errore durante la pubblicazione",
-        saveSuccess: "Bozza salvata!",
-        saveError: "Errore durante il salvataggio",
-        deleteConfirm: "Sei sicuro di voler eliminare questa bozza?",
-        deleteSuccess: "Bozza eliminata",
-        deleteError: "Errore durante l'eliminazione"
-    },
-    en: {
-        pageTitle: "Blog Post Editor",
-        statusDraft: "Draft",
-        statusPublished: "Published",
-        loadingText: "Loading article...",
-        errorTitle: "Loading Error",
-        errorMessage: "Unable to load the article. Please try again later.",
-        imageTitle: "Featured Image",
-        noImageText: "No image",
-        btnSetImageText: "Set Image",
-        btnDownloadText: "Download Image",
-        contentTitle: "Article Content",
-        btnPreviewText: "Full Preview",
-        socialTitle: "Social Media Texts",
-        btnCopy: "Copy",
-        btnCopied: "Copied!",
-        publishSuccess: "Article published successfully!",
-        publishError: "Error during publication",
-        saveSuccess: "Draft saved!",
-        saveError: "Error saving draft",
-        deleteConfirm: "Are you sure you want to delete this draft?",
-        deleteSuccess: "Draft deleted",
-        deleteError: "Error deleting draft"
-    },
-    fr: {
-        pageTitle: "Éditeur d'Article",
-        statusDraft: "Brouillon",
-        statusPublished: "Publié",
-        loadingText: "Chargement de l'article...",
-        errorTitle: "Erreur de Chargement",
-        errorMessage: "Impossible de charger l'article. Veuillez réessayer.",
-        imageTitle: "Image en Vedette",
-        noImageText: "Aucune image",
-        btnSetImageText: "Définir l'Image",
-        btnDownloadText: "Télécharger l'Image",
-        contentTitle: "Contenu de l'Article",
-        btnPreviewText: "Aperçu Complet",
-        socialTitle: "Textes Réseaux Sociaux",
-        btnCopy: "Copier",
-        btnCopied: "Copié!",
-        publishSuccess: "Article publié avec succès!",
-        publishError: "Erreur lors de la publication",
-        saveSuccess: "Brouillon enregistré!",
-        saveError: "Erreur lors de l'enregistrement",
-        deleteConfirm: "Êtes-vous sûr de vouloir supprimer ce brouillon?",
-        deleteSuccess: "Brouillon supprimé",
-        deleteError: "Erreur lors de la suppression"
-    },
-    de: {
-        pageTitle: "Blog-Beitrag-Editor",
-        statusDraft: "Entwurf",
-        statusPublished: "Veröffentlicht",
-        loadingText: "Artikel wird geladen...",
-        errorTitle: "Ladefehler",
-        errorMessage: "Der Artikel konnte nicht geladen werden. Bitte versuchen Sie es erneut.",
-        imageTitle: "Hauptbild",
-        noImageText: "Kein Bild",
-        btnSetImageText: "Bild Festlegen",
-        btnDownloadText: "Bild Herunterladen",
-        contentTitle: "Artikelinhalt",
-        btnPreviewText: "Vollständige Vorschau",
-        socialTitle: "Social-Media-Texte",
-        btnCopy: "Kopieren",
-        btnCopied: "Kopiert!",
-        publishSuccess: "Artikel erfolgreich veröffentlicht!",
-        publishError: "Fehler bei der Veröffentlichung",
-        saveSuccess: "Entwurf gespeichert!",
-        saveError: "Fehler beim Speichern",
-        deleteConfirm: "Möchten Sie diesen Entwurf wirklich löschen?",
-        deleteSuccess: "Entwurf gelöscht",
-        deleteError: "Fehler beim Löschen"
-    },
-    es: {
-        pageTitle: "Editor de Artículo",
-        statusDraft: "Borrador",
-        statusPublished: "Publicado",
-        loadingText: "Cargando artículo...",
-        errorTitle: "Error de Carga",
-        errorMessage: "No se pudo cargar el artículo. Inténtalo de nuevo.",
-        imageTitle: "Imagen Destacada",
-        noImageText: "Sin imagen",
-        btnSetImageText: "Establecer Imagen",
-        btnDownloadText: "Descargar Imagen",
-        contentTitle: "Contenido del Artículo",
-        btnPreviewText: "Vista Previa Completa",
-        socialTitle: "Textos para Redes Sociales",
-        btnCopy: "Copiar",
-        btnCopied: "¡Copiado!",
-        publishSuccess: "¡Artículo publicado con éxito!",
-        publishError: "Error durante la publicación",
-        saveSuccess: "¡Borrador guardado!",
-        saveError: "Error al guardar",
-        deleteConfirm: "¿Estás seguro de que quieres eliminar este borrador?",
-        deleteSuccess: "Borrador eliminado",
-        deleteError: "Error al eliminar"
-    },
-    pt: {
-        pageTitle: "Editor de Artigo",
-        statusDraft: "Rascunho",
-        statusPublished: "Publicado",
-        loadingText: "Carregando artigo...",
-        errorTitle: "Erro de Carregamento",
-        errorMessage: "Não foi possível carregar o artigo. Tente novamente.",
-        imageTitle: "Imagem Destacada",
-        noImageText: "Sem imagem",
-        btnSetImageText: "Definir Imagem",
-        btnDownloadText: "Baixar Imagem",
-        contentTitle: "Conteúdo do Artigo",
-        btnPreviewText: "Visualização Completa",
-        socialTitle: "Textos para Redes Sociais",
-        btnCopy: "Copiar",
-        btnCopied: "Copiado!",
-        publishSuccess: "Artigo publicado com sucesso!",
-        publishError: "Erro durante a publicação",
-        saveSuccess: "Rascunho salvo!",
-        saveError: "Erro ao salvar",
-        deleteConfirm: "Tem certeza de que deseja excluir este rascunho?",
-        deleteSuccess: "Rascunho excluído",
-        deleteError: "Erro ao excluir"
-    }
-};
-
 // Global vars
 let currentBlogData = null;
+let currentSections = [];
 let currentLang = 'it';
 let apiCredentials = {};
 let tg = null;
-let t = null;
 
 document.addEventListener('DOMContentLoaded', async () => {
     const WEBHOOK_BLOG_URL = "https://trinai.api.workflow.dcmake.it/webhook/914bd78e-8a41-46d7-8935-7eb73cbbae66";
     
-    // Elementi DOM
     const loadingState = document.getElementById('loadingState');
     const errorState = document.getElementById('errorState');
     const editorGrid = document.getElementById('editorGrid');
     
-    // Recupera parametri dall'URL
     const params = new URLSearchParams(window.location.search);
     const blogId = params.get('blog_id');
     currentLang = params.get('lang') || 'it';
@@ -214,37 +23,19 @@ document.addEventListener('DOMContentLoaded', async () => {
         owner: params.get('owner'),
         ragione_sociale: params.get('ragione_sociale')
     };
-    const bonusCredits = params.get('bonus_credits');
 
-    // Carica traduzioni
-    t = i18n[currentLang] || i18n['it'];
-    applyTranslations(t);
-
-    // Telegram WebApp init
     tg = window.Telegram?.WebApp;
     if (tg) {
         tg.ready();
         tg.expand();
     }
 
-    // Mostra bonus credits se disponibili
-    if (bonusCredits && parseInt(bonusCredits) > 0) {
-        if (tg && tg.showPopup) {
-            tg.showPopup({
-                title: "🎮 Bonus!",
-                message: `Hai guadagnato ${bonusCredits} punti bonus!`
-            });
-        }
-    }
-
-    // Verifica blog_id
     if (!blogId) {
-        showError(t.errorTitle, t.errorMessage);
+        showError("Errore", "ID blog mancante");
         return;
     }
 
     try {
-        // Carica dati del blog
         const response = await fetch(WEBHOOK_BLOG_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -262,49 +53,33 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         const data = await response.json();
         
-        if (data.status === 'error') {
-            throw new Error(data.message || 'Unknown error');
+        // ✅ Gestisce array wrapper da n8n
+        const responseData = Array.isArray(data) ? data[0] : data;
+        
+        if (responseData.status === 'error') {
+            throw new Error(responseData.message || 'Unknown error');
         }
 
-        // Salva dati globalmente
-        currentBlogData = data.blog_data;
+        currentBlogData = responseData.blog_data;
 
-        // Nasconde loading e mostra contenuto
         loadingState.style.display = 'none';
         editorGrid.style.display = 'grid';
 
-        // Popola i settori
         populateEditor(currentBlogData);
         setupFABs(blogId);
 
     } catch (error) {
         console.error('Error loading blog:', error);
-        showError(t.errorTitle, `${t.errorMessage}\n${error.message}`);
-    }
-
-    function applyTranslations(translations) {
-        document.getElementById('pageTitle').innerHTML = `<i class="fas fa-edit"></i> ${translations.pageTitle}`;
-        document.getElementById('statusText').textContent = translations.statusDraft;
-        document.getElementById('loadingText').textContent = translations.loadingText;
-        document.getElementById('errorTitle').textContent = translations.errorTitle;
-        document.getElementById('errorMessage').textContent = translations.errorMessage;
-        document.getElementById('imageTitle').textContent = translations.imageTitle;
-        document.getElementById('noImageText').textContent = translations.noImageText;
-        document.getElementById('btnSetImageText').textContent = translations.btnSetImageText;
-        document.getElementById('btnDownloadText').textContent = translations.btnDownloadText;
-        document.getElementById('contentTitle').textContent = translations.contentTitle;
-        document.getElementById('btnPreviewText').textContent = translations.btnPreviewText;
-        document.getElementById('socialTitle').textContent = translations.socialTitle;
+        showError("Errore di Caricamento", error.message);
     }
 
     function populateEditor(blog) {
-        // Status Badge
         const statusBadge = document.getElementById('statusBadge');
         const statusText = document.getElementById('statusText');
         if (blog.status === 'published') {
             statusBadge.classList.remove('draft');
             statusBadge.classList.add('published');
-            statusText.textContent = t.statusPublished;
+            statusText.textContent = 'Pubblicato';
         }
 
         // 1. Hero Image Section
@@ -316,50 +91,165 @@ document.addEventListener('DOMContentLoaded', async () => {
             img.style.display = 'block';
             placeholder.style.display = 'none';
             document.getElementById('btnDownloadImage').style.display = 'block';
-            document.getElementById('imageUrlInput').value = blog.featured_image.url;
         }
 
-        // Click to preview image
         document.getElementById('imageContainer').addEventListener('click', () => {
             if (blog.featured_image && blog.featured_image.url) {
                 showImagePreview(blog.featured_image.url);
             }
         });
 
-        // Set image button
-        document.getElementById('btnSetImage').addEventListener('click', () => {
-            const url = document.getElementById('imageUrlInput').value.trim();
-            if (url) {
-                const img = document.getElementById('featuredImage');
-                const placeholder = document.getElementById('imagePlaceholder');
-                img.src = url;
-                img.style.display = 'block';
-                placeholder.style.display = 'none';
-                document.getElementById('btnDownloadImage').style.display = 'block';
-                if (!currentBlogData.featured_image) currentBlogData.featured_image = {};
-                currentBlogData.featured_image.url = url;
+        // ✅ 1. Rigenera con AI
+        document.getElementById('btnRegenerateImage').addEventListener('click', async () => {
+            if (tg && tg.HapticFeedback) tg.HapticFeedback.impactOccurred('medium');
+            
+            const btn = document.getElementById('btnRegenerateImage');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generando...';
+            
+            try {
+                const response = await callWebhook('regenerate_image', blog.id);
+                
+                if (response.image_url) {
+                    const img = document.getElementById('featuredImage');
+                    const placeholder = document.getElementById('imagePlaceholder');
+                    img.src = response.image_url;
+                    img.style.display = 'block';
+                    placeholder.style.display = 'none';
+                    document.getElementById('btnDownloadImage').style.display = 'block';
+                    currentBlogData.featured_image.url = response.image_url;
+                }
+                
+                btn.innerHTML = '<i class="fas fa-magic"></i> Rigenera con AI';
+                btn.disabled = false;
+            } catch (error) {
+                alert('Errore generazione immagine: ' + error.message);
+                btn.innerHTML = '<i class="fas fa-magic"></i> Rigenera con AI';
+                btn.disabled = false;
             }
         });
 
-        // Download image button
+        // ✅ 2. Upload Manuale
+        document.getElementById('btnUploadImage').addEventListener('click', () => {
+            document.getElementById('imageFileInput').click();
+        });
+
+        document.getElementById('imageFileInput').addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            if (tg && tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
+            
+            const tempUrl = URL.createObjectURL(file);
+            const img = document.getElementById('featuredImage');
+            const placeholder = document.getElementById('imagePlaceholder');
+            img.src = tempUrl;
+            img.style.display = 'block';
+            placeholder.style.display = 'none';
+            document.getElementById('btnDownloadImage').style.display = 'block';
+            
+            // TODO: Upload su GitHub/CDN
+            // currentBlogData.featured_image.url = uploadedUrl;
+        });
+
+        // ✅ 3. Scarica Immagine
         document.getElementById('btnDownloadImage').addEventListener('click', () => {
-            if (blog.featured_image && blog.featured_image.url) {
-                window.open(blog.featured_image.url, '_blank');
-            }
+            if (tg && tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
+            
+            const imageUrl = currentBlogData.featured_image.url;
+            const link = document.createElement('a');
+            link.href = imageUrl;
+            link.download = `${currentBlogData.id}.jpg`;
+            link.target = '_blank';
+            link.click();
         });
 
         // 2. Content Section
         document.getElementById('editableTitle').value = blog.title || '';
         document.getElementById('editableMeta').value = blog.meta_description || '';
-        document.getElementById('articlePreview').innerHTML = blog.content?.html || '<p style="color: var(--text-muted);">Contenuto non disponibile</p>';
+        
+        // ✅ Parse HTML to Editable Sections
+        currentSections = parseHTMLtoSections(blog.content?.html || '');
+        renderEditableSections(currentSections);
 
-        // Full preview button
+        // ✅ Anteprima Live - Apre pagina GitHub Pages
         document.getElementById('btnPreviewFull').addEventListener('click', () => {
-            showFullPreview(blog);
+            if (tg && tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
+            
+            const liveUrl = `https://trinaibusinessoperatingsystem.github.io/SiteBoS-MiniApp/posts/${currentBlogData.id}.html`;
+            window.open(liveUrl, '_blank');
         });
 
         // 3. Social Media Section
         renderSocialCards(blog.social_media, blog.article_url);
+    }
+
+    // ✅ Parser HTML → Sezioni Editabili
+    function parseHTMLtoSections(html) {
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, 'text/html');
+        const articleContent = doc.querySelector('.article-content');
+        
+        if (!articleContent) return [];
+        
+        const sections = [];
+        const elements = articleContent.children;
+        
+        for (let el of elements) {
+            if (el.tagName === 'DIV' && el.classList.contains('cta-block')) continue;
+            if (el.tagName === 'HR') continue;
+            
+            sections.push({
+                type: el.tagName.toLowerCase(),
+                content: el.innerHTML,
+                text: el.textContent.trim()
+            });
+        }
+        
+        return sections;
+    }
+
+    // ✅ Render Sezioni Editabili
+    function renderEditableSections(sections) {
+        const container = document.getElementById('articlePreview');
+        container.innerHTML = '';
+        
+        sections.forEach((section, index) => {
+            const block = document.createElement('div');
+            block.className = 'editable-section-block';
+            block.dataset.index = index;
+            block.dataset.type = section.type;
+            
+            if (section.type === 'h1' || section.type === 'h2' || section.type === 'h3') {
+                const fontSize = section.type === 'h1' ? '2.2rem' : section.type === 'h2' ? '1.8rem' : '1.4rem';
+                block.innerHTML = `
+                    <input type="text" class="editable-heading" value="${section.text.replace(/"/g, '&quot;')}" 
+                           style="font-size: ${fontSize}; font-weight: 600; border: none; 
+                                  border-bottom: 2px dashed var(--glass-border); background: transparent; 
+                                  color: var(--primary); width: 100%; padding: 10px 0;">
+                `;
+            } else if (section.type === 'p' || section.type === 'blockquote') {
+                block.innerHTML = `
+                    <textarea class="editable-paragraph" rows="3" 
+                              style="width: 100%; border: 1px solid var(--glass-border); 
+                                     border-radius: 8px; padding: 10px; background: rgba(0,0,0,0.1); 
+                                     color: var(--text-main); resize: vertical; font-family: inherit; line-height: 1.6;">${section.text}</textarea>
+                `;
+            } else {
+                block.innerHTML = `<div style="opacity: 0.7; padding: 10px; background: rgba(0,0,0,0.05); border-radius: 8px;">${section.content}</div>`;
+            }
+            
+            container.appendChild(block);
+        });
+        
+        // Attach listeners per salvare modifiche
+        container.querySelectorAll('.editable-heading, .editable-paragraph').forEach(input => {
+            input.addEventListener('input', (e) => {
+                const block = e.target.closest('.editable-section-block');
+                const index = parseInt(block.dataset.index);
+                currentSections[index].text = e.target.value;
+            });
+        });
     }
 
     function renderSocialCards(socialData, articleUrl) {
@@ -395,7 +285,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 <span>${articleUrl || 'Link non disponibile'}</span>
             </div>
             <button class="btn-sm btn-block copy-btn-inline" onclick="copySocialText(this, '${platform.key}')">
-                <i class="fas fa-copy"></i> ${t.btnCopy}
+                <i class="fas fa-copy"></i> Copia
             </button>
         `;
         card.dataset.text = text + '\n\n' + (articleUrl || '');
@@ -403,7 +293,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     function setupFABs(blogId) {
-        // FAB: Torna Indietro → knowledge.html
         document.getElementById('fabBack').addEventListener('click', () => {
             if (tg && tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
             
@@ -418,17 +307,15 @@ document.addEventListener('DOMContentLoaded', async () => {
             window.location.href = knowledgeUrl.toString();
         });
 
-        // FAB: Elimina
         document.getElementById('fabDelete').addEventListener('click', async () => {
-            if (!confirm(t.deleteConfirm)) return;
+            if (!confirm("Sei sicuro di voler eliminare questa bozza?")) return;
             
             if (tg && tg.HapticFeedback) tg.HapticFeedback.impactOccurred('heavy');
             
             try {
                 await callWebhook('delete_blog', blogId);
-                alert(t.deleteSuccess);
+                alert("Bozza eliminata");
                 
-                // Redirect a knowledge.html
                 const knowledgeUrl = new URL('knowledge.html', window.location.href);
                 const currentParams = new URLSearchParams(window.location.search);
                 currentParams.forEach((value, key) => {
@@ -438,33 +325,30 @@ document.addEventListener('DOMContentLoaded', async () => {
                 });
                 window.location.href = knowledgeUrl.toString();
             } catch (error) {
-                alert(`${t.deleteError}: ${error.message}`);
+                alert(`Errore durante l'eliminazione: ${error.message}`);
             }
         });
 
-        // FAB: Salva Draft
         document.getElementById('fabSave').addEventListener('click', async () => {
             if (tg && tg.HapticFeedback) tg.HapticFeedback.impactOccurred('medium');
             
             try {
                 const updatedData = collectEditorData();
                 await callWebhook('save_blog', blogId, updatedData);
-                alert(t.saveSuccess);
+                alert("Bozza salvata!");
             } catch (error) {
-                alert(`${t.saveError}: ${error.message}`);
+                alert(`Errore durante il salvataggio: ${error.message}`);
             }
         });
 
-        // FAB: Pubblica
         document.getElementById('fabPublish').addEventListener('click', async () => {
             if (tg && tg.HapticFeedback) tg.HapticFeedback.impactOccurred('heavy');
             
             try {
                 const updatedData = collectEditorData();
                 await callWebhook('publish_blog', blogId, updatedData);
-                alert(t.publishSuccess);
+                alert("Articolo pubblicato con successo!");
                 setTimeout(() => {
-                    // Redirect a knowledge.html
                     const knowledgeUrl = new URL('knowledge.html', window.location.href);
                     const currentParams = new URLSearchParams(window.location.search);
                     currentParams.forEach((value, key) => {
@@ -475,7 +359,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     window.location.href = knowledgeUrl.toString();
                 }, 2000);
             } catch (error) {
-                alert(`${t.publishError}: ${error.message}`);
+                alert(`Errore durante la pubblicazione: ${error.message}`);
             }
         });
     }
@@ -484,7 +368,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         return {
             title: document.getElementById('editableTitle').value,
             meta_description: document.getElementById('editableMeta').value,
-            featured_image: currentBlogData.featured_image
+            featured_image: currentBlogData.featured_image,
+            content_sections: currentSections
         };
     }
 
@@ -504,8 +389,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
 
         const result = await response.json();
-        if (result.status === 'error') throw new Error(result.message);
-        return result;
+        const responseData = Array.isArray(result) ? result[0] : result;
+        if (responseData.status === 'error') throw new Error(responseData.message);
+        return responseData;
     }
 
     function showError(title, message) {
@@ -519,17 +405,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         const overlay = document.getElementById('previewOverlay');
         const content = document.getElementById('fullPreviewContent');
         content.innerHTML = `<img src="${url}" style="max-width: 100%; height: auto; border-radius: 12px;">`;
-        overlay.style.display = 'flex';
-    }
-
-    function showFullPreview(blog) {
-        const overlay = document.getElementById('previewOverlay');
-        const content = document.getElementById('fullPreviewContent');
-        content.innerHTML = `
-            <h1 style="margin-bottom: 10px;">${blog.title}</h1>
-            <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 30px;">${blog.meta_description}</p>
-            ${blog.content?.html || ''}
-        `;
         overlay.style.display = 'flex';
     }
 });
