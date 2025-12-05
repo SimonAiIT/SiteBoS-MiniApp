@@ -5,10 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Generazione Blog Post</title>
     
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <script src="../sponsor.js"></script>
-    <script src="../minigame.js"></script>
-    
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Orbitron:wght@700&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     
@@ -30,7 +26,6 @@
             overflow: hidden; 
         }
 
-        /* CONFIRM OVERLAY */
         .confirm-overlay {
             position: fixed;
             top: 0;
@@ -109,7 +104,6 @@
             background: #4a5ecf;
         }
 
-        /* GAME OVERLAY - COPIATO DA PROCESSOR.HTML */
         #game-layer { 
             position: fixed; 
             inset: 0; 
@@ -218,7 +212,6 @@
 </head>
 <body>
 
-    <!-- CONFIRM OVERLAY (mostrato al caricamento) -->
     <div id="confirmOverlay" class="confirm-overlay">
         <div class="confirm-box">
             <div class="icon"><i class="fas fa-coins"></i></div>
@@ -235,7 +228,6 @@
         </div>
     </div>
 
-    <!-- GAME UI - IDENTICO A PROCESSOR.HTML -->
     <div id="game-layer" class="hidden">
         <div class="game-header">
             <div class="score-box">
@@ -256,32 +248,30 @@
         </div>
     </div>
 
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="../sponsor.js"></script>
+    <script src="../minigame.js"></script>
+    
     <script>
         function openGame() {
             console.log('🎮 Apertura gioco...');
-            
             if(typeof MiniGame === 'undefined') {
                 console.error('❌ MiniGame non caricato!');
                 alert('Errore: Game engine non disponibile. Ricarica la pagina.');
                 return;
             }
-            
             document.getElementById('game-layer').classList.remove('hidden');
-            
             try {
                 if(!MiniGame.canvas || !MiniGame.ctx) {
                     console.log('🔧 Inizializzazione MiniGame...');
                     MiniGame.init('gameCanvas');
                 }
-                
                 console.log('▶️ Avvio gioco...');
                 MiniGame.start();
-                
                 setTimeout(() => {
                     MiniGame.resize();
                     console.log('✅ Gioco avviato!');
                 }, 100);
-                
             } catch(error) {
                 console.error('❌ Errore avvio gioco:', error);
                 document.getElementById('game-layer').classList.add('hidden');
@@ -292,9 +282,7 @@
         function closeGame() { 
             console.log('⏹️ Chiusura gioco...');
             document.getElementById('game-layer').classList.add('hidden');
-            if(typeof MiniGame !== 'undefined') {
-                MiniGame.stop();
-            }
+            if(typeof MiniGame !== 'undefined') MiniGame.stop();
         }
     </script>
     
@@ -302,14 +290,12 @@
     
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            console.log('📦 DOM caricato');
-            
+            console.log('📦 DOM caricato (main)');
             if(typeof MiniGame !== 'undefined') {
                 console.log('✅ MiniGame caricato correttamente');
             } else {
                 console.error('❌ MiniGame NON caricato!');
             }
-            
             if(window.SponsorManager) {
                 console.log("⚡ Inietta Pubblicità...");
                 SponsorManager.inject('#game-ad-slot', 'game');
