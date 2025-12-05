@@ -10,56 +10,193 @@
     <link rel="stylesheet" href="styles.css">
     
     <style>
-        body {
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
+        /* Layout 4 settori responsive */
+        .editor-wrapper {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding-bottom: 100px; /* Space for FABs */
         }
 
-        .header-section {
-            text-align: center;
-            padding-bottom: 20px;
+        .editor-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
             border-bottom: 1px solid var(--glass-border);
         }
 
-        .header-section h1 {
-            font-size: 24px;
-            margin-bottom: 10px;
-            color: var(--text-primary);
+        .editor-title-group h1 {
+            font-size: 20px;
+            margin: 0 0 5px 0;
         }
 
-        .header-section .subtitle {
-            color: var(--text-muted);
-            font-size: 14px;
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            border: 1px solid;
         }
 
-        .editor-container {
-            display: flex;
-            flex-direction: column;
+        .status-badge.draft {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--warning);
+            border-color: var(--warning);
+        }
+
+        .status-badge.published {
+            background: rgba(76, 217, 100, 0.1);
+            color: var(--success);
+            border-color: var(--success);
+        }
+
+        /* Grid Layout */
+        .editor-grid {
+            display: grid;
+            grid-template-columns: 1fr;
             gap: 20px;
         }
 
-        .section-card {
-            background: var(--glass-bg);
+        @media (min-width: 768px) {
+            .editor-grid {
+                grid-template-columns: 300px 1fr;
+                grid-template-rows: auto auto;
+            }
+
+            .hero-section {
+                grid-column: 1;
+                grid-row: 1 / 3;
+            }
+
+            .content-section {
+                grid-column: 2;
+                grid-row: 1;
+            }
+
+            .social-section {
+                grid-column: 2;
+                grid-row: 2;
+            }
+        }
+
+        /* Sector Cards */
+        .sector-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
             border: 1px solid var(--glass-border);
             border-radius: var(--radius-lg);
             padding: 20px;
-            box-shadow: var(--shadow-lg);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
         }
 
-        .section-title {
-            font-size: 18px;
-            font-weight: 600;
+        .sector-title {
+            font-size: 14px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
             color: var(--primary);
             margin-bottom: 15px;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
         }
 
-        .article-viewer {
+        /* Hero Image Section */
+        .image-container {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 16/9;
+            border-radius: var(--radius-md);
+            overflow: hidden;
             background: rgba(0, 0, 0, 0.3);
+            margin-bottom: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .image-container:hover {
+            transform: scale(1.02);
+            box-shadow: 0 8px 30px rgba(91, 111, 237, 0.3);
+        }
+
+        .image-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .image-placeholder {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 10px;
+            color: var(--text-muted);
+        }
+
+        .image-placeholder i {
+            font-size: 48px;
+            opacity: 0.3;
+        }
+
+        .image-controls {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+
+        .image-url-input {
+            flex: 1;
+        }
+
+        /* Content Section */
+        .editable-title {
+            width: 100%;
+            background: transparent;
+            border: none;
+            border-bottom: 2px dashed var(--glass-border);
+            color: var(--text-main);
+            font-size: 24px;
+            font-weight: 700;
+            padding: 10px 0;
+            margin-bottom: 15px;
+            font-family: inherit;
+        }
+
+        .editable-title:focus {
+            outline: none;
+            border-bottom-color: var(--primary);
+        }
+
+        .editable-meta {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-sm);
+            color: var(--text-muted);
+            font-size: 13px;
+            padding: 10px;
+            margin-bottom: 20px;
+            min-height: 60px;
+            font-family: inherit;
+            resize: vertical;
+        }
+
+        .editable-meta:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: rgba(91, 111, 237, 0.05);
+        }
+
+        .article-preview {
+            background: rgba(0, 0, 0, 0.2);
             border: 1px solid var(--glass-border);
             border-radius: var(--radius-md);
             padding: 20px;
@@ -67,84 +204,140 @@
             overflow-y: auto;
             font-family: Georgia, serif;
             line-height: 1.8;
-            color: var(--text-primary);
+            color: var(--text-muted);
+            font-size: 14px;
         }
 
-        .article-viewer h1, .article-viewer h2, .article-viewer h3 {
+        .article-preview h1,
+        .article-preview h2,
+        .article-preview h3 {
             color: var(--primary);
             margin-top: 20px;
             margin-bottom: 10px;
         }
 
-        .article-viewer p {
+        .article-preview p {
             margin-bottom: 15px;
         }
 
-        .article-viewer img {
+        .article-preview img {
             max-width: 100%;
             height: auto;
             border-radius: var(--radius-sm);
             margin: 15px 0;
         }
 
-        .social-text-box {
+        .preview-full-btn {
+            margin-top: 15px;
+        }
+
+        /* Social Media Section */
+        .social-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+        }
+
+        @media (min-width: 600px) {
+            .social-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        .social-card {
             background: rgba(0, 0, 0, 0.2);
             border: 1px solid var(--glass-border);
-            border-radius: var(--radius-sm);
+            border-radius: var(--radius-md);
             padding: 15px;
-            margin-bottom: 15px;
             position: relative;
         }
 
-        .social-text-box .platform {
+        .social-platform {
             display: flex;
             align-items: center;
             gap: 8px;
             font-weight: 600;
-            color: var(--primary);
-            margin-bottom: 10px;
-            font-size: 14px;
-        }
-
-        .social-text-box .text-content {
-            color: var(--text-muted);
             font-size: 13px;
-            line-height: 1.6;
-            white-space: pre-wrap;
+            margin-bottom: 10px;
         }
 
-        .copy-btn {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background: var(--primary);
-            border: none;
-            border-radius: var(--radius-sm);
-            padding: 6px 12px;
-            color: white;
-            cursor: pointer;
+        .social-text {
             font-size: 12px;
+            line-height: 1.6;
+            color: var(--text-muted);
+            white-space: pre-wrap;
+            margin-bottom: 10px;
+            max-height: 120px;
+            overflow-y: auto;
+        }
+
+        .social-link {
             display: flex;
             align-items: center;
-            gap: 5px;
-            transition: all 0.3s;
+            gap: 6px;
+            font-size: 10px;
+            color: var(--primary);
+            padding: 6px 10px;
+            background: rgba(91, 111, 237, 0.1);
+            border-radius: var(--radius-sm);
+            margin-bottom: 10px;
+            word-break: break-all;
         }
 
-        .copy-btn:hover {
-            background: var(--primary-dark);
-            transform: translateY(-2px);
+        .copy-btn-inline {
+            width: 100%;
         }
 
-        .copy-btn.copied {
-            background: var(--success);
+        /* Overlay Preview */
+        .preview-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            backdrop-filter: blur(10px);
+            z-index: 9999;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
         }
 
-        .action-buttons {
+        .preview-content {
+            background: var(--card-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-lg);
+            max-width: 900px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            padding: 30px;
+            position: relative;
+        }
+
+        .close-preview {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: white;
+            cursor: pointer;
             display: flex;
-            gap: 15px;
-            margin-top: 20px;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
         }
 
+        .close-preview:hover {
+            background: var(--error);
+        }
+
+        /* Loading States */
         .loader-container {
             display: flex;
             flex-direction: column;
@@ -160,132 +353,143 @@
             animation: spin 2s linear infinite;
         }
 
-        @keyframes spin {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
-
-        .error-message {
+        .error-container {
             text-align: center;
-            padding: 40px 20px;
-            color: var(--danger);
+            padding: 60px 20px;
         }
 
-        /* Responsive */
-        @media (min-width: 768px) {
-            .editor-container {
-                flex-direction: row;
-                gap: 30px;
-            }
-
-            .section-card {
-                flex: 1;
-            }
+        .error-icon {
+            font-size: 4rem;
+            color: var(--error);
+            margin-bottom: 20px;
         }
     </style>
 </head>
 <body>
 
-    <div class="header-section">
-        <h1 id="pageTitle"><i class="fas fa-edit"></i> Editor Blog Post</h1>
-        <p class="subtitle" id="pageSubtitle">Rivedi il tuo articolo generato e i testi per i social media</p>
-    </div>
+    <div class="editor-wrapper">
+        <!-- Header -->
+        <div class="editor-header">
+            <div class="editor-title-group">
+                <h1 id="pageTitle"><i class="fas fa-edit"></i> Editor Blog Post</h1>
+                <span id="statusBadge" class="status-badge draft">
+                    <i class="fas fa-circle"></i>
+                    <span id="statusText">Bozza</span>
+                </span>
+            </div>
+        </div>
 
-    <div id="mainContent" class="editor-container">
-        <!-- Loading state -->
-        <div id="loadingState" class="section-card" style="width: 100%;">
+        <!-- Loading State -->
+        <div id="loadingState" class="sector-card">
             <div class="loader-container">
                 <div class="loader-icon"><i class="fas fa-spinner"></i></div>
                 <p id="loadingText" style="color: var(--text-muted);">Caricamento articolo...</p>
             </div>
         </div>
 
-        <!-- Error state -->
-        <div id="errorState" class="section-card" style="width: 100%; display: none;">
-            <div class="error-message">
-                <i class="fas fa-exclamation-triangle" style="font-size: 3rem; margin-bottom: 20px;"></i>
+        <!-- Error State -->
+        <div id="errorState" class="sector-card" style="display: none;">
+            <div class="error-container">
+                <div class="error-icon"><i class="fas fa-exclamation-triangle"></i></div>
                 <h3 id="errorTitle">Errore di Caricamento</h3>
-                <p id="errorMessage">Impossibile caricare l'articolo. Riprova più tardi.</p>
-                <button onclick="window.history.back()" class="btn-secondary" style="margin-top: 20px;">
-                    <i class="fas fa-arrow-left"></i> <span id="btnBack">Torna Indietro</span>
-                </button>
+                <p id="errorMessage" style="color: var(--text-muted); margin: 20px 0;">Impossibile caricare l'articolo.</p>
             </div>
         </div>
 
-        <!-- Article Viewer -->
-        <div id="articleSection" class="section-card" style="display: none;">
-            <div class="section-title">
-                <i class="fas fa-newspaper"></i>
-                <span id="articleTitle">Articolo Generato</span>
-            </div>
-            <div id="articleViewer" class="article-viewer">
-                <!-- Article HTML will be loaded here -->
-            </div>
-            <div class="action-buttons">
-                <button id="btnPublish" class="btn">
-                    <i class="fas fa-rocket"></i> <span id="btnPublishText">Pubblica</span>
-                </button>
-                <button id="btnEdit" class="btn-secondary">
-                    <i class="fas fa-pen"></i> <span id="btnEditText">Modifica</span>
-                </button>
-            </div>
-        </div>
-
-        <!-- Social Media Texts -->
-        <div id="socialSection" class="section-card" style="display: none;">
-            <div class="section-title">
-                <i class="fas fa-share-alt"></i>
-                <span id="socialTitle">Testi per i Social</span>
-            </div>
+        <!-- Main Editor Grid -->
+        <div id="editorGrid" class="editor-grid" style="display: none;">
             
-            <!-- Facebook -->
-            <div class="social-text-box" id="facebookBox" style="display: none;">
-                <button class="copy-btn" onclick="copyToClipboard('facebookText', this)">
-                    <i class="fas fa-copy"></i> <span id="btnCopyFb">Copia</span>
-                </button>
-                <div class="platform">
-                    <i class="fab fa-facebook" style="color: #1877f2;"></i>
-                    <span>Facebook</span>
+            <!-- 1. HERO IMAGE SECTION -->
+            <div class="hero-section sector-card">
+                <div class="sector-title">
+                    <i class="fas fa-image"></i>
+                    <span id="imageTitle">Immagine Featured</span>
                 </div>
-                <div id="facebookText" class="text-content"></div>
+                
+                <div class="image-container" id="imageContainer">
+                    <img id="featuredImage" src="" alt="" style="display: none;">
+                    <div id="imagePlaceholder" class="image-placeholder">
+                        <i class="fas fa-image"></i>
+                        <span id="noImageText">Nessuna immagine</span>
+                    </div>
+                </div>
+
+                <div class="image-controls">
+                    <input type="url" id="imageUrlInput" class="image-url-input" placeholder="URL immagine...">
+                </div>
+
+                <div class="btn-container" style="flex-direction: column; gap: 8px;">
+                    <button id="btnSetImage" class="btn btn-sm btn-block">
+                        <i class="fas fa-check"></i> <span id="btnSetImageText">Imposta Immagine</span>
+                    </button>
+                    <button id="btnDownloadImage" class="btn-secondary btn-sm btn-block" style="display: none;">
+                        <i class="fas fa-download"></i> <span id="btnDownloadText">Scarica Immagine</span>
+                    </button>
+                </div>
             </div>
 
-            <!-- Instagram -->
-            <div class="social-text-box" id="instagramBox" style="display: none;">
-                <button class="copy-btn" onclick="copyToClipboard('instagramText', this)">
-                    <i class="fas fa-copy"></i> <span id="btnCopyIg">Copia</span>
-                </button>
-                <div class="platform">
-                    <i class="fab fa-instagram" style="color: #e4405f;"></i>
-                    <span>Instagram</span>
+            <!-- 2. CONTENT SECTION -->
+            <div class="content-section sector-card">
+                <div class="sector-title">
+                    <i class="fas fa-file-alt"></i>
+                    <span id="contentTitle">Contenuto Articolo</span>
                 </div>
-                <div id="instagramText" class="text-content"></div>
+
+                <input type="text" id="editableTitle" class="editable-title" placeholder="Titolo articolo...">
+                <textarea id="editableMeta" class="editable-meta" placeholder="Meta description (160 caratteri consigliati)..."></textarea>
+
+                <div id="articlePreview" class="article-preview">
+                    <!-- HTML content loaded here -->
+                </div>
+
+                <button id="btnPreviewFull" class="btn-secondary btn-block preview-full-btn">
+                    <i class="fas fa-expand"></i> <span id="btnPreviewText">Anteprima Completa</span>
+                </button>
             </div>
 
-            <!-- Twitter/X -->
-            <div class="social-text-box" id="twitterBox" style="display: none;">
-                <button class="copy-btn" onclick="copyToClipboard('twitterText', this)">
-                    <i class="fas fa-copy"></i> <span id="btnCopyTw">Copia</span>
-                </button>
-                <div class="platform">
-                    <i class="fab fa-x-twitter"></i>
-                    <span>X (Twitter)</span>
+            <!-- 3. SOCIAL MEDIA SECTION -->
+            <div class="social-section sector-card">
+                <div class="sector-title">
+                    <i class="fas fa-share-alt"></i>
+                    <span id="socialTitle">Testi per i Social</span>
                 </div>
-                <div id="twitterText" class="text-content"></div>
+
+                <div class="social-grid" id="socialGrid">
+                    <!-- Social cards dynamically generated -->
+                </div>
             </div>
 
-            <!-- LinkedIn -->
-            <div class="social-text-box" id="linkedinBox" style="display: none;">
-                <button class="copy-btn" onclick="copyToClipboard('linkedinText', this)">
-                    <i class="fas fa-copy"></i> <span id="btnCopyLi">Copia</span>
-                </button>
-                <div class="platform">
-                    <i class="fab fa-linkedin" style="color: #0a66c2;"></i>
-                    <span>LinkedIn</span>
-                </div>
-                <div id="linkedinText" class="text-content"></div>
-            </div>
         </div>
+    </div>
+
+    <!-- Full Preview Overlay -->
+    <div id="previewOverlay" class="preview-overlay">
+        <div class="preview-content">
+            <button class="close-preview" onclick="closePreview()">
+                <i class="fas fa-times"></i>
+            </button>
+            <div id="fullPreviewContent"></div>
+        </div>
+    </div>
+
+    <!-- FABs Container -->
+    <div class="fab-container">
+        <!-- Torna Indietro -->
+        <button id="fabBack" class="fab-btn fab-secondary" title="Torna Indietro">
+            <i class="fas fa-arrow-left"></i>
+        </button>
+        <!-- Elimina -->
+        <button id="fabDelete" class="fab-btn" style="background: var(--error);" title="Elimina Bozza">
+            <i class="fas fa-trash"></i>
+        </button>
+        <!-- Salva Draft -->
+        <button id="fabSave" class="fab-btn" style="background: var(--warning);" title="Salva Bozza">
+            <i class="fas fa-save"></i>
+        </button>
+        <!-- Pubblica -->
+        <button id="fabPublish" class="fab-btn" style="background: var(--success);" title="Pubblica">
+            <i class="fas fa-rocket"></i>
+        </button>
     </div>
 
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
