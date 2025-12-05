@@ -403,10 +403,19 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     function setupFABs(blogId) {
-        // FAB: Torna Indietro
+        // FAB: Torna Indietro → knowledge.html
         document.getElementById('fabBack').addEventListener('click', () => {
             if (tg && tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
-            window.history.back();
+            
+            const knowledgeUrl = new URL('knowledge.html', window.location.href);
+            const currentParams = new URLSearchParams(window.location.search);
+            currentParams.forEach((value, key) => {
+                if (key !== 'blog_id' && key !== 'bonus_credits') {
+                    knowledgeUrl.searchParams.set(key, value);
+                }
+            });
+            
+            window.location.href = knowledgeUrl.toString();
         });
 
         // FAB: Elimina
@@ -418,7 +427,16 @@ document.addEventListener('DOMContentLoaded', async () => {
             try {
                 await callWebhook('delete_blog', blogId);
                 alert(t.deleteSuccess);
-                window.location.href = `../dashboard.html?vat=${apiCredentials.vat}&owner=${apiCredentials.owner}&ragione_sociale=${apiCredentials.ragione_sociale}&token=${apiCredentials.token}`;
+                
+                // Redirect a knowledge.html
+                const knowledgeUrl = new URL('knowledge.html', window.location.href);
+                const currentParams = new URLSearchParams(window.location.search);
+                currentParams.forEach((value, key) => {
+                    if (key !== 'blog_id' && key !== 'bonus_credits') {
+                        knowledgeUrl.searchParams.set(key, value);
+                    }
+                });
+                window.location.href = knowledgeUrl.toString();
             } catch (error) {
                 alert(`${t.deleteError}: ${error.message}`);
             }
@@ -446,7 +464,15 @@ document.addEventListener('DOMContentLoaded', async () => {
                 await callWebhook('publish_blog', blogId, updatedData);
                 alert(t.publishSuccess);
                 setTimeout(() => {
-                    window.location.href = `../dashboard.html?vat=${apiCredentials.vat}&owner=${apiCredentials.owner}&ragione_sociale=${apiCredentials.ragione_sociale}&token=${apiCredentials.token}`;
+                    // Redirect a knowledge.html
+                    const knowledgeUrl = new URL('knowledge.html', window.location.href);
+                    const currentParams = new URLSearchParams(window.location.search);
+                    currentParams.forEach((value, key) => {
+                        if (key !== 'blog_id' && key !== 'bonus_credits') {
+                            knowledgeUrl.searchParams.set(key, value);
+                        }
+                    });
+                    window.location.href = knowledgeUrl.toString();
                 }, 2000);
             } catch (error) {
                 alert(`${t.publishError}: ${error.message}`);
