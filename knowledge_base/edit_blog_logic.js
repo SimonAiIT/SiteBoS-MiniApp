@@ -245,7 +245,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         return sections;
     }
 
-    // ✅ Render Sezioni Editabili
+    // ✅ Render Sezioni Editabili (FONT SIZE RIDOTTI)
     function renderEditableSections(sections) {
         const container = document.getElementById('articlePreview');
         container.innerHTML = '';
@@ -257,7 +257,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             block.dataset.type = section.type;
             
             if (section.type === 'h1' || section.type === 'h2' || section.type === 'h3') {
-                const fontSize = section.type === 'h1' ? '2.2rem' : section.type === 'h2' ? '1.8rem' : '1.4rem';
+                // ✅ RIDOTTO: 1.6rem, 1.3rem, 1.1rem (da 2.2rem, 1.8rem, 1.4rem)
+                const fontSize = section.type === 'h1' ? '1.6rem' : section.type === 'h2' ? '1.3rem' : '1.1rem';
                 block.innerHTML = `
                     <input type="text" class="editable-heading" value="${section.text.replace(/"/g, '&quot;')}" 
                            style="font-size: ${fontSize}; font-weight: 600; border: none; 
@@ -492,7 +493,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     // 🎤 Show Voice Edit Preview
     function showVoiceEditPreview(change) {
         const actionText = change.action_description || 'modificare il contenuto';
-        const message = `Vuoi ${actionText}?\n\n"${change.new_text || change.description}"`;        
+        const message = `Vuoi ${actionText}?\n\n"${change.new_text || change.description}"`;
+        
         if (confirm(message)) {
             // Apply change based on action type
             if (change.action === 'edit_section' && change.section_index !== undefined) {
