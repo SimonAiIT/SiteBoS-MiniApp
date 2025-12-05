@@ -146,16 +146,6 @@
             opacity: 0.3;
         }
 
-        .image-controls {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 15px;
-        }
-
-        .image-url-input {
-            flex: 1;
-        }
-
         /* Content Section */
         .editable-title {
             width: 100%;
@@ -195,36 +185,46 @@
             background: rgba(91, 111, 237, 0.05);
         }
 
-        .article-preview {
-            background: rgba(0, 0, 0, 0.2);
-            border: 1px solid var(--glass-border);
-            border-radius: var(--radius-md);
-            padding: 20px;
-            max-height: 400px;
-            overflow-y: auto;
-            font-family: Georgia, serif;
-            line-height: 1.8;
-            color: var(--text-muted);
-            font-size: 14px;
+        /* Editable Sections */
+        .editable-section-block {
+            margin-bottom: 20px;
+            padding: 15px;
+            border-left: 3px solid var(--primary);
+            background: rgba(0,0,0,0.1);
+            border-radius: 8px;
         }
 
-        .article-preview h1,
-        .article-preview h2,
-        .article-preview h3 {
+        .editable-heading {
+            font-weight: 600;
+            border: none;
+            border-bottom: 2px dashed var(--glass-border);
+            background: transparent;
             color: var(--primary);
-            margin-top: 20px;
-            margin-bottom: 10px;
+            width: 100%;
+            padding: 10px 0;
+            font-family: inherit;
         }
 
-        .article-preview p {
-            margin-bottom: 15px;
+        .editable-heading:focus {
+            outline: none;
+            border-bottom-color: var(--primary);
         }
 
-        .article-preview img {
-            max-width: 100%;
-            height: auto;
-            border-radius: var(--radius-sm);
-            margin: 15px 0;
+        .editable-paragraph {
+            width: 100%;
+            border: 1px solid var(--glass-border);
+            border-radius: 8px;
+            padding: 10px;
+            background: rgba(0,0,0,0.1);
+            color: var(--text-main);
+            resize: vertical;
+            font-family: inherit;
+            line-height: 1.6;
+        }
+
+        .editable-paragraph:focus {
+            outline: none;
+            border-color: var(--primary);
         }
 
         .preview-full-btn {
@@ -414,14 +414,19 @@
                     </div>
                 </div>
 
-                <div class="image-controls">
-                    <input type="url" id="imageUrlInput" class="image-url-input" placeholder="URL immagine...">
-                </div>
-
                 <div class="btn-container" style="flex-direction: column; gap: 8px;">
-                    <button id="btnSetImage" class="btn btn-sm btn-block">
-                        <i class="fas fa-check"></i> <span id="btnSetImageText">Imposta Immagine</span>
+                    <!-- ✅ 1. Rigenera con AI -->
+                    <button id="btnRegenerateImage" class="btn btn-sm btn-block">
+                        <i class="fas fa-magic"></i> <span id="btnRegenerateText">Rigenera con AI</span>
                     </button>
+                    
+                    <!-- ✅ 2. Upload Manuale -->
+                    <button id="btnUploadImage" class="btn-secondary btn-sm btn-block">
+                        <i class="fas fa-upload"></i> <span id="btnUploadText">Carica Immagine</span>
+                    </button>
+                    <input type="file" id="imageFileInput" accept="image/*" style="display: none;">
+                    
+                    <!-- ✅ 3. Scarica Immagine -->
                     <button id="btnDownloadImage" class="btn-secondary btn-sm btn-block" style="display: none;">
                         <i class="fas fa-download"></i> <span id="btnDownloadText">Scarica Immagine</span>
                     </button>
@@ -439,11 +444,11 @@
                 <textarea id="editableMeta" class="editable-meta" placeholder="Meta description (160 caratteri consigliati)..."></textarea>
 
                 <div id="articlePreview" class="article-preview">
-                    <!-- HTML content loaded here -->
+                    <!-- Editable sections loaded here -->
                 </div>
 
                 <button id="btnPreviewFull" class="btn-secondary btn-block preview-full-btn">
-                    <i class="fas fa-expand"></i> <span id="btnPreviewText">Anteprima Completa</span>
+                    <i class="fas fa-expand"></i> <span id="btnPreviewText">Anteprima Live</span>
                 </button>
             </div>
 
