@@ -48,7 +48,6 @@
             display: inline-block;
         }
 
-        /* Overlay di conferma crediti */
         .confirm-overlay {
             position: fixed;
             top: 0;
@@ -97,7 +96,6 @@
             justify-content: center;
         }
 
-        /* GAME OVERLAY (copiato da processor.html) */
         #game-layer { 
             position: fixed; 
             inset: 0; 
@@ -164,7 +162,6 @@
             pointer-events: auto; 
         }
 
-        /* IN-GAME AD FOOTER */
         .game-ad-footer {
             position: absolute; 
             bottom: 0; 
@@ -204,7 +201,6 @@
 
         .hidden { display: none !important; }
 
-        /* Log Area stile terminale */
         .terminal-log {
             background: #0f172a;
             border: 1px solid var(--glass-border);
@@ -229,7 +225,6 @@
         }
         .terminal-line:last-child { border-bottom: none; }
 
-        /* Animazione successo */
         .success-animation {
             color: var(--success);
             font-size: 3rem;
@@ -243,12 +238,11 @@
 </head>
 <body>
 
-    <!-- Overlay di conferma spesa crediti -->
     <div id="confirmOverlay" class="confirm-overlay">
         <div class="confirm-box">
             <div class="icon"><i class="fas fa-coins"></i></div>
             <h2>Conferma Operazione</h2>
-            <p>Stai per spendere <strong>100 crediti</strong> per generare questo articolo blog con l'IA.<br><br>Vuoi procedere?</p>
+            <p>Stai per spendere <strong>1000 crediti</strong> per generare questo articolo blog con l'IA.<br><br>Vuoi procedere?</p>
             <div class="confirm-buttons">
                 <button id="confirmCancel" class="btn-secondary" style="padding: 12px 24px;">
                     <i class="fas fa-times"></i> Annulla
@@ -260,7 +254,6 @@
         </div>
     </div>
 
-    <!-- GAME UI (copiato da processor.html) -->
     <div id="game-layer" class="hidden">
         <div class="game-header">
             <div class="score-box">
@@ -274,7 +267,6 @@
             <canvas id="gameCanvas"></canvas>
         </div>
         
-        <!-- SLOT PUBBLICITARIO IN-GAME -->
         <div class="game-ad-footer" id="game-ad-slot"></div>
         
         <div class="game-instructions">
@@ -282,7 +274,6 @@
         </div>
     </div>
 
-    <!-- UI Principale -->
     <div class="card deploy-container">
         
         <div id="heroIcon" class="icon-hero"><i class="fas fa-robot"></i></div>
@@ -291,20 +282,16 @@
         <h1 id="pageTitle" style="margin-bottom: 10px;">Generatore Blog IA</h1>
         <p id="pageSubtitle" class="subtitle" style="margin-bottom: 0;">Trasforma questo frammento di conoscenza in un articolo SEO completo.</p>
         
-        <!-- ID Frammento -->
         <div id="previewInfo" class="fragment-id-box">
             <i class="fas fa-fingerprint"></i> <span id="loadingText">Caricamento ID...</span>
         </div>
 
-        <!-- Pulsante Azione -->
         <button id="startBtn" class="btn btn-block" style="font-size: 16px; padding: 15px;">
             <i class="fas fa-bolt"></i> Genera Blog Post
         </button>
 
-        <!-- Log Area -->
         <div id="logArea" class="terminal-log"></div>
 
-        <!-- BOTTONE TORNA INDIETRO -->
         <button id="backBtn" class="btn-secondary" style="margin-top: 30px; font-size: 14px; padding: 10px 16px; display: inline-flex; align-items: center; gap: 8px;">
             <i class="fas fa-arrow-left"></i> Torna alla Knowledge Base
         </button>
@@ -315,39 +302,27 @@
     <script src="../sponsor.js"></script>
     <script src="../minigame.js"></script>
     
-    <!-- CONTROLLO GIOCO (copiato da processor.html) -->
     <script>
         function openGame() {
             console.log('🎮 Apertura gioco...');
-            
-            // Verifica che MiniGame sia caricato
             if(typeof MiniGame === 'undefined') {
                 console.error('❌ MiniGame non caricato!');
                 alert('Errore: Game engine non disponibile. Ricarica la pagina.');
                 return;
             }
-            
-            // Mostra overlay gioco
             document.getElementById('game-layer').classList.remove('hidden');
             document.getElementById('game-layer').style.display = 'flex';
-            
             try {
-                // Inizializza se necessario
                 if(!MiniGame.canvas || !MiniGame.ctx) {
                     console.log('🔧 Inizializzazione MiniGame...');
                     MiniGame.init('gameCanvas');
                 }
-                
-                // Avvia il gioco
                 console.log('▶️ Avvio gioco...');
                 MiniGame.start();
-                
-                // Fix per ridimensionamento iniziale
                 setTimeout(() => {
                     MiniGame.resize();
                     console.log('✅ Gioco avviato!');
                 }, 100);
-                
             } catch(error) {
                 console.error('❌ Errore avvio gioco:', error);
                 document.getElementById('game-layer').classList.add('hidden');
@@ -360,27 +335,20 @@
             console.log('⏹️ Chiusura gioco...');
             document.getElementById('game-layer').classList.add('hidden');
             document.getElementById('game-layer').style.display = 'none';
-            if(typeof MiniGame !== 'undefined') {
-                MiniGame.stop();
-            }
+            if(typeof MiniGame !== 'undefined') MiniGame.stop();
         }
     </script>
     
     <script src="deployblog_logic.js"></script>
     
-    <!-- INIZIALIZZAZIONE ADVERTISING -->
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             console.log('📦 DOM caricato');
-            
-            // Verifica caricamento MiniGame
             if(typeof MiniGame !== 'undefined') {
                 console.log('✅ MiniGame caricato correttamente');
             } else {
                 console.error('❌ MiniGame NON caricato!');
             }
-            
-            // Inizializza pubblicità
             if(window.SponsorManager) {
                 console.log("⚡ Inietta Pubblicità...");
                 SponsorManager.inject('#game-ad-slot', 'game');
