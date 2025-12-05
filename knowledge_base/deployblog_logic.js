@@ -203,14 +203,25 @@ document.addEventListener('DOMContentLoaded', () => {
         // Mostra overlay di processing
         processingOverlay.style.display = 'flex';
         
-        // Avvia minigame
-        if (window.SiteBoSGame) {
-            window.SiteBoSGame.init('gameCanvas');
+        // ✅ INIZIALIZZA MINIGAME (API corretta: MiniGame)
+        if (window.MiniGame) {
+            console.log('🎮 Inizializzazione MiniGame...');
+            MiniGame.init('gameCanvas');
+            MiniGame.start();
+            // Fix ridimensionamento
+            setTimeout(() => {
+                if (MiniGame.resize) MiniGame.resize();
+            }, 100);
+        } else {
+            console.warn('⚠️ MiniGame non disponibile');
         }
         
-        // Avvia sponsor carousel
-        if (window.initSponsorCarousel) {
-            window.initSponsorCarousel('sponsor-container');
+        // ✅ INIZIALIZZA SPONSOR (API corretta: SponsorManager.inject)
+        if (window.SponsorManager) {
+            console.log('📺 Inizializzazione Sponsor...');
+            SponsorManager.inject('#sponsor-container', 'processing');
+        } else {
+            console.warn('⚠️ SponsorManager non disponibile');
         }
         
         if (tg && tg.HapticFeedback) tg.HapticFeedback.impactOccurred('medium');
@@ -245,9 +256,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 // Stop minigame e ottieni punteggio
                 let bonusPoints = 0;
-                if (window.SiteBoSGame) {
-                    bonusPoints = window.SiteBoSGame.score || 0;
-                    window.SiteBoSGame.stop();
+                if (window.MiniGame) {
+                    bonusPoints = MiniGame.score || 0;
+                    MiniGame.stop();
+                    console.log(`🎮 Punteggio finale: ${bonusPoints}`);
                 }
                 
                 // Attendi 2 secondi per mostrare il successo
@@ -271,7 +283,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         } catch (error) {
             console.error(error);
-            if (window.SiteBoSGame) window.SiteBoSGame.stop();
+            if (window.MiniGame) MiniGame.stop();
             log(`${t.logError} ${error.message}`, processingLog);
             
             // Mostra errore e permetti retry
