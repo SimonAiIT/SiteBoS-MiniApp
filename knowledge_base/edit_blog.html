@@ -363,6 +363,17 @@
             color: var(--error);
             margin-bottom: 20px;
         }
+
+        /* Voice Edit Recording */
+        .fab-btn.recording {
+            background: var(--error) !important;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.1); opacity: 0.8; }
+        }
     </style>
 </head>
 <body>
@@ -415,18 +426,15 @@
                 </div>
 
                 <div class="btn-container" style="flex-direction: column; gap: 8px;">
-                    <!-- ✅ 1. Rigenera con AI -->
                     <button id="btnRegenerateImage" class="btn btn-sm btn-block">
                         <i class="fas fa-magic"></i> <span id="btnRegenerateText">Rigenera con AI</span>
                     </button>
                     
-                    <!-- ✅ 2. Upload Manuale -->
                     <button id="btnUploadImage" class="btn-secondary btn-sm btn-block">
                         <i class="fas fa-upload"></i> <span id="btnUploadText">Carica Immagine</span>
                     </button>
                     <input type="file" id="imageFileInput" accept="image/*" style="display: none;">
                     
-                    <!-- ✅ 3. Scarica Immagine -->
                     <button id="btnDownloadImage" class="btn-secondary btn-sm btn-block" style="display: none;">
                         <i class="fas fa-download"></i> <span id="btnDownloadText">Scarica Immagine</span>
                     </button>
@@ -477,11 +485,15 @@
         </div>
     </div>
 
-    <!-- FABs Container - TUTTI BLU CON fab-secondary per torna indietro -->
+    <!-- FABs Container -->
     <div class="fab-container">
-        <!-- Torna Indietro - ✅ FAB SECONDARIO (sfondo trasparente) -->
+        <!-- Torna Indietro -->
         <button id="fabBack" class="fab-btn fab-secondary" title="Torna Indietro">
             <i class="fas fa-arrow-left"></i>
+        </button>
+        <!-- 🎙️ NUOVO: Voice Edit -->
+        <button id="fabVoiceEdit" class="fab-btn" title="Modifica Vocale">
+            <i class="fas fa-microphone"></i>
         </button>
         <!-- Elimina -->
         <button id="fabDelete" class="fab-btn" title="Elimina Bozza">
