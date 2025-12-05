@@ -46,7 +46,7 @@
 
     /* GAME OVERLAY */
     #game-layer { position: fixed; inset: 0; background: #0b1120; z-index: 100; display: flex; flex-direction: column; }
-    #game-container { flex: 1; position: relative; overflow: hidden; display: flex; justify-content: center; align-items: center; }
+    #game-container { flex: 1; position: relative; overflow: hidden; display: flex; justify-content: center; align-items: center; background: #0b1120; }
     canvas { box-shadow: 0 0 50px rgba(0,0,0,0.8); border-radius: 8px; image-rendering: pixelated; touch-action: none; }
     
     .game-header { position: absolute; top: 0; left: 0; width: 100%; padding: 15px; display: flex; justify-content: space-between; align-items: flex-start; z-index: 110; pointer-events: none; }
@@ -109,7 +109,7 @@
     <div class="game-ad-footer" id="game-ad-slot"></div>
     
     <div class="game-instructions">
-      🎯 Tap to Move • 👾 Evita Lavoro (📧💼📞) • ❤️ Raccogli Vita (❤️🏠💃✈️)
+      🎯 Tap to Move • 👾 Evita Lavoro (📧💼) • ❤️ Raccogli Vita (❤️🏠💃✈️💰💎⭐🎁)
     </div>
   </div>
 
@@ -122,24 +122,49 @@
 
   <!-- CONTROLLO GIOCO (Interfaccia con minigame.js) -->
   <script>
-    function openGame() { 
-        document.getElementById('game-layer').classList.remove('hidden');
+    function openGame() {
+        console.log('🎮 Apertura gioco...');
         
-        // Inizializza se necessario
-        if(!MiniGame.ctx) {
-            MiniGame.init('gameCanvas');
+        // Verifica che MiniGame sia caricato
+        if(typeof MiniGame === 'undefined') {
+            console.error('❌ MiniGame non caricato!');
+            alert('Errore: Game engine non disponibile. Ricarica la pagina.');
+            return;
         }
         
-        // Avvia il gioco
-        MiniGame.start();
+        // Mostra overlay gioco
+        document.getElementById('game-layer').classList.remove('hidden');
         
-        // Fix per ridimensionamento iniziale
-        setTimeout(() => MiniGame.resize(), 100);
+        try {
+            // Inizializza se necessario
+            if(!MiniGame.canvas || !MiniGame.ctx) {
+                console.log('🔧 Inizializzazione MiniGame...');
+                MiniGame.init('gameCanvas');
+            }
+            
+            // Avvia il gioco
+            console.log('▶️ Avvio gioco...');
+            MiniGame.start();
+            
+            // Fix per ridimensionamento iniziale
+            setTimeout(() => {
+                MiniGame.resize();
+                console.log('✅ Gioco avviato!');
+            }, 100);
+            
+        } catch(error) {
+            console.error('❌ Errore avvio gioco:', error);
+            document.getElementById('game-layer').classList.add('hidden');
+            alert('Errore nell\'avvio del gioco: ' + error.message);
+        }
     }
     
     function closeGame() { 
+        console.log('⏹️ Chiusura gioco...');
         document.getElementById('game-layer').classList.add('hidden');
-        MiniGame.stop();
+        if(typeof MiniGame !== 'undefined') {
+            MiniGame.stop();
+        }
     }
     
     // Log simulato per UI loader
@@ -166,11 +191,19 @@
   <!-- INIZIALIZZAZIONE ADVERTISING (Cruciale) -->
   <script>
     document.addEventListener('DOMContentLoaded', () => {
+        console.log('📦 DOM caricato');
+        
+        // Verifica caricamento MiniGame
+        if(typeof MiniGame !== 'undefined') {
+            console.log('✅ MiniGame caricato correttamente');
+        } else {
+            console.error('❌ MiniGame NON caricato!');
+        }
+        
+        // Inizializza pubblicità
         if(window.SponsorManager) {
             console.log("⚡ Inietta Pubblicità...");
-            // Inietta nel Loader
             SponsorManager.inject('#loader-ad-slot', 'loader');
-            // Inietta nel Gioco
             SponsorManager.inject('#game-ad-slot', 'game');
         }
     });
