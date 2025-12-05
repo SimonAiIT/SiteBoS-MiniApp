@@ -377,11 +377,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             window.location.href = knowledgeUrl.toString();
         });
 
-        // 🔥 TEXT COMMAND FAB - Click to open
-        const fabTextCommand = document.getElementById('fabTextCommand');
+        // 🔥 TEXT COMMAND FAB - Click to open (FIXED ID)
+        const fabVoiceEdit = document.getElementById('fabVoiceEdit');
         const textEditorPanel = document.getElementById('textEditorPanel');
 
-        fabTextCommand.addEventListener('click', () => {
+        fabVoiceEdit.addEventListener('click', () => {
             if (tg && tg.HapticFeedback) tg.HapticFeedback.impactOccurred('medium');
             textEditorPanel.classList.add('open');
             document.getElementById('textCommandInput').focus();
