@@ -28,18 +28,22 @@ const MiniGame = {
     // Speed Config (RALLENTATI)
     baseSpeed: 0.20,
     boostSpeed: 0.45,
-    enemySpeed: 0.07,  // Velocità unica per entrambi i nemici (rallentata)
+    enemySpeed: 0.07,
     boostTimer: null,
     
     // Sprites
     sprites: {
         player: '🤖',
-        enemies: ['📧', '💼'], // Solo 2 nemici smart
+        enemies: ['📧', '💼'],
         items: [
             { id: 'heart', icon: '❤️' },
             { id: 'house', icon: '🏠' },
             { id: 'dance', icon: '💃' },
-            { id: 'travel', icon: '✈️' }
+            { id: 'travel', icon: '✈️' },
+            { id: 'money', icon: '💰' },
+            { id: 'gem', icon: '💎' },
+            { id: 'star', icon: '⭐' },
+            { id: 'gift', icon: '🎁' }
         ]
     },
     
@@ -98,7 +102,7 @@ const MiniGame = {
         }
     },
     
-    // ===== MAP GENERATOR (Recursive Backtracker) =====
+    // ===== MAP GENERATOR =====
     MapGenerator: {
         create: function(rows, cols) {
             let map = Array(rows).fill().map(() => Array(cols).fill(1));
@@ -133,7 +137,6 @@ const MiniGame = {
                 }
             }
             
-            // Loop removal (meno vicoli ciechi)
             for(let y=1; y<rows-1; y++) {
                 for(let x=1; x<cols-1; x++) {
                     if(map[y][x] === 1 && Math.random() < 0.20) {
@@ -153,31 +156,23 @@ const MiniGame = {
         }
     },
     
-    // ===== API PUBBLICA =====
     init: function(canvasId) {
         this.canvas = document.getElementById(canvasId);
         this.ctx = this.canvas.getContext('2d');
-        
         this.resize();
         window.addEventListener('resize', () => this.resize());
-        
         this.setupInputs();
         this.loadBestScore();
     },
     
     start: function() {
         if(this.active) return;
-        
-        // Reset UI
         if(this.boostTimer) clearTimeout(this.boostTimer);
-        
-        // Reset Game State
         this.map = this.MapGenerator.create(this.rows, this.cols);
         this.spawnEntities();
         this.score = 0;
         this.pathQueue = [];
         this.targetPos = null;
-        
         this.updateScoreUI();
         this.active = true;
         this.loop();
@@ -187,14 +182,13 @@ const MiniGame = {
         this.active = false;
         if(this.boostTimer) clearTimeout(this.boostTimer);
         this.saveBestScore();
-        sessionStorage.setItem('last_game_score', Math.min(this.score, 500)); // CAP a 500
+        sessionStorage.setItem('last_game_score', Math.min(this.score, 500));
     },
     
     restart: function() {
         this.start();
     },
     
-    // ===== GAME LOGIC =====
     spawnEntities: function() {
         let freeSpots = [];
         for(let y=0; y<this.rows; y++) {
@@ -204,8 +198,7 @@ const MiniGame = {
         }
         freeSpots.sort(() => Math.random() - 0.5);
         
-        // Player
-        let pSpot = freeSpots.find(s => s.x < 5 && s.y < 5) || freeSpots[0];
+        let pSpot = freeSpots.shift();
         this.player = {
             x: pSpot.x, y: pSpot.y,
             dir: {x:0, y:0},
@@ -213,36 +206,48 @@ const MiniGame = {
             progress: 0
         };
         
-        freeSpots = freeSpots.filter(s => s !== pSpot);
-        freeSpots.sort((a,b) => {
-            const distA = Math.abs(a.x - pSpot.x) + Math.abs(a.y - pSpot.y);
-            const distB = Math.abs(b.x - pSpot.x) + Math.abs(b.y - pSpot.y);
-            return distB - distA;
-        });
+        this.items = [];
+        for(let i = 0; i < 8; i++) {
+            const spot = freeSpots.shift();
+            const itemData = this.sprites.items[i];
+            this.items.push({
+                ...itemData,
+                x: spot.x,
+                y: spot.y,
+                collected: false
+            });
+        }
         
-        // Items (4 oggetti)
-        this.items = this.sprites.items.map((item, i) => ({
-            ...item,
-            x: freeSpots[i].x,
-            y: freeSpots[i].y,
-            collected: false
-        }));
+        const enemy1Spot = freeSpots.shift();
+        const enemy2Spot = freeSpots.shift();
         
-        // Enemies - ENTRAMBI SMART (pathfinding AI)
         this.enemies = [
-            { type: 'smart', icon: this.sprites.enemies[0], x: freeSpots[4].x, y: freeSpots[4].y, dir: {x:0,y:0}, progress:0, speed: this.enemySpeed },
-            { type: 'smart', icon: this.sprites.enemies[1], x: freeSpots[5].x, y: freeSpots[5].y, dir: {x:0,y:0}, progress:0, speed: this.enemySpeed }
+            { 
+                type: 'smart', 
+                icon: this.sprites.enemies[0], 
+                x: enemy1Spot.x, 
+                y: enemy1Spot.y, 
+                dir: {x:0,y:0}, 
+                progress:0, 
+                speed: this.enemySpeed 
+            },
+            { 
+                type: 'smart', 
+                icon: this.sprites.enemies[1], 
+                x: enemy2Spot.x, 
+                y: enemy2Spot.y, 
+                dir: {x:0,y:0}, 
+                progress:0, 
+                speed: this.enemySpeed 
+            }
         ];
     },
     
     update: function() {
-        // Movement
         this.moveActor(this.player, true);
         
-        // Entrambi i nemici usano pathfinding
         this.enemies.forEach(enemy => {
             if(enemy.progress === 0) {
-                // Calcola percorso verso player
                 const path = this.Pathfinder.findPath(this.map, enemy, this.player);
                 if(path.length > 0) {
                     enemy.dir = path[0];
@@ -251,7 +256,6 @@ const MiniGame = {
             this.moveActor(enemy, false);
         });
         
-        // Collisions
         this.checkCollisions();
     },
     
@@ -280,20 +284,17 @@ const MiniGame = {
         const px = this.player.x + (this.player.dir.x * this.player.progress);
         const py = this.player.y + (this.player.dir.y * this.player.progress);
         
-        // Items
         this.items.forEach(item => {
             if(!item.collected) {
                 if(Math.abs(px - item.x) < 0.5 && Math.abs(py - item.y) < 0.5) {
                     item.collected = true;
-                    this.score += 100;
+                    this.score += 50;
                     
-                    // CAP a 500 punti
                     if(this.score > 500) this.score = 500;
                     
                     this.updateScoreUI();
                     this.triggerBoost();
                     
-                    // Win condition
                     if(this.items.every(i => i.collected)) {
                         this.endGame(true);
                     }
@@ -301,7 +302,6 @@ const MiniGame = {
             }
         });
         
-        // Enemies
         this.enemies.forEach(enemy => {
             const ex = enemy.x + (enemy.dir.x * enemy.progress);
             const ey = enemy.y + (enemy.dir.y * enemy.progress);
@@ -328,12 +328,11 @@ const MiniGame = {
     endGame: function(win) {
         this.active = false;
         
-        // CAP finale a 500
         if(this.score > 500) this.score = 500;
         
         if(win) {
-            this.score += 100; // Bonus completamento
-            if(this.score > 500) this.score = 500; // Re-check dopo bonus
+            this.score += 100;
+            if(this.score > 500) this.score = 500;
         }
         
         this.saveBestScore();
@@ -343,17 +342,15 @@ const MiniGame = {
             window.Telegram.WebApp.HapticFeedback.notificationOccurred(win ? 'success' : 'error');
         }
         
-        // Chiudi automaticamente il game layer dopo 1.5s
         setTimeout(() => {
             if(typeof closeGame === 'function') closeGame();
         }, 1500);
     },
     
-    // ===== INPUT HANDLING =====
     setupInputs: function() {
         const handleInput = (e) => {
             if(!this.active) return;
-            if(e.target.closest('.ad-banner')) return; // Ignora click su ads
+            if(e.target.closest('.ad-banner')) return;
             if(e.cancelable) e.preventDefault();
             
             const rect = this.canvas.getBoundingClientRect();
@@ -389,7 +386,6 @@ const MiniGame = {
     handleGridClick: function(tx, ty) {
         if(tx < 0 || tx >= this.cols || ty < 0 || ty >= this.rows) return;
         
-        // Correzione muro
         if(this.map[ty][tx] === 1) {
             const neighbors = [
                 {x:0,y:1}, {x:0,y:-1}, {x:1,y:0}, {x:-1,y:0}
@@ -427,14 +423,12 @@ const MiniGame = {
         return x>=0 && x<this.cols && y>=0 && y<this.rows;
     },
     
-    // ===== RENDERING =====
     draw: function() {
         this.ctx.fillStyle = '#0b1120';
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
         
         const gs = this.gridSize;
         
-        // Mappa
         for(let y=0; y<this.rows; y++) {
             for(let x=0; x<this.cols; x++) {
                 if(this.map[y][x] === 1) {
@@ -450,7 +444,6 @@ const MiniGame = {
             }
         }
         
-        // Target marker
         if(this.targetPos) {
             const tx = this.targetPos.x * gs + gs/2;
             const ty = this.targetPos.y * gs + gs/2;
@@ -464,7 +457,6 @@ const MiniGame = {
             this.ctx.stroke();
         }
         
-        // Items
         this.ctx.font = `${gs * 0.6}px Arial`;
         this.ctx.textAlign = 'center';
         this.ctx.textBaseline = 'middle';
@@ -475,7 +467,6 @@ const MiniGame = {
             }
         });
         
-        // Player
         const px = (this.player.x + this.player.dir.x * this.player.progress) * gs + gs/2;
         const py = (this.player.y + this.player.dir.y * this.player.progress) * gs + gs/2;
         
@@ -488,7 +479,6 @@ const MiniGame = {
         this.ctx.fillText(this.sprites.player, px, py + 2);
         this.ctx.shadowBlur = 0;
         
-        // Enemies
         this.enemies.forEach(e => {
             const ex = (e.x + e.dir.x * e.progress) * gs + gs/2;
             const ey = (e.y + e.dir.y * e.progress) * gs + gs/2;
@@ -503,25 +493,17 @@ const MiniGame = {
         requestAnimationFrame(() => this.loop());
     },
     
-    // ===== UTILITIES =====
     resize: function() {
         const wrapper = this.canvas.parentElement;
-        
-        // Calcola spazio disponibile
         const w = wrapper.clientWidth - 10;
-        
-        // IMPORTANTE: Sottrai spazio per banner pubblicitario in basso
-        // Banner height: 80px + instruction text: ~25px + margini: ~10px = ~115px totale
         const adFooterHeight = 115;
         const h = wrapper.clientHeight - adFooterHeight - 10;
         
         const cellW = Math.floor(w / this.cols);
         const cellH = Math.floor(h / this.rows);
         
-        // Usa la dimensione più piccola per mantenere proporzioni
         this.gridSize = Math.min(cellW, cellH);
         
-        // Imposta dimensioni canvas
         this.canvas.width = this.gridSize * this.cols;
         this.canvas.height = this.gridSize * this.rows;
     },
@@ -540,7 +522,7 @@ const MiniGame = {
     loadBestScore: function() {
         const saved = localStorage.getItem('sitebos_highscore');
         if(saved) {
-            this.bestScore = Math.min(parseInt(saved), 500); // CAP anche best score
+            this.bestScore = Math.min(parseInt(saved), 500);
             const bestEl = document.getElementById('best-score');
             if(bestEl) bestEl.innerText = this.bestScore;
         }
