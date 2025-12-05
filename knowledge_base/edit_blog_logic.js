@@ -7,6 +7,8 @@ let currentLang = 'it';
 let apiCredentials = {};
 let tg = null;
 let isRecording = false;
+let longPressTimer = null;
+const LONG_PRESS_DURATION = 500; // 500ms
 
 document.addEventListener('DOMContentLoaded', async () => {
     const WEBHOOK_BLOG_URL = "https://trinai.api.workflow.dcmake.it/webhook/914bd78e-8a41-46d7-8935-7eb73cbbae66";
@@ -54,7 +56,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         const data = await response.json();
         
-        // ✅ Gestisce array wrapper da n8n
         const responseData = Array.isArray(data) ? data[0] : data;
         
         if (responseData.status === 'error') {
@@ -68,6 +69,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         populateEditor(currentBlogData);
         setupFABs(blogId);
+        setupTextEditor(blogId); // 🔥 New
 
     } catch (error) {
         console.error('Error loading blog:', error);
@@ -83,7 +85,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             statusText.textContent = 'Pubblicato';
         }
 
-        // 1. Hero Image Section
         if (blog.featured_image && blog.featured_image.url) {
             const img = document.getElementById('featuredImage');
             const placeholder = document.getElementById('imagePlaceholder');
@@ -100,7 +101,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         });
 
-        // ✅ 1. Rigenera con AI
         document.getElementById('btnRegenerateImage').addEventListener('click', async () => {
             if (tg && tg.HapticFeedback) tg.HapticFeedback.impactOccurred('medium');
             
@@ -130,7 +130,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         });
 
-        // ✅ 2. Upload Manuale → Chiama upload_image webhook
         document.getElementById('btnUploadImage').addEventListener('click', () => {
             document.getElementById('imageFileInput').click();
         });
@@ -141,7 +140,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             
             if (tg && tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
             
-            // Preview temporaneo
             const tempUrl = URL.createObjectURL(file);
             const img = document.getElementById('featuredImage');
             const placeholder = document.getElementById('imagePlaceholder');
@@ -154,10 +152,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Caricando...';
             
             try {
-                // Converti file in base64
                 const base64 = await fileToBase64(file);
                 
-                // ✅ Chiama webhook upload_image
                 const response = await callWebhook('upload_image', blog.id, {
                     image_base64: base64,
                     filename: `${blog.id}.jpg`
@@ -178,7 +174,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         });
 
-        // ✅ 3. Scarica Immagine
         document.getElementById('btnDownloadImage').addEventListener('click', () => {
             if (tg && tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
             
@@ -190,15 +185,12 @@ document.addEventListener('DOMContentLoaded', async () => {
             link.click();
         });
 
-        // 2. Content Section
         document.getElementById('editableTitle').value = blog.title || '';
         document.getElementById('editableMeta').value = blog.meta_description || '';
         
-        // ✅ Parse HTML to Editable Sections
         currentSections = parseHTMLtoSections(blog.content?.html || '');
         renderEditableSections(currentSections);
 
-        // ✅ Anteprima Live - Apre pagina GitHub Pages
         document.getElementById('btnPreviewFull').addEventListener('click', () => {
             if (tg && tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
             
@@ -206,21 +198,18 @@ document.addEventListener('DOMContentLoaded', async () => {
             window.open(liveUrl, '_blank');
         });
 
-        // 3. Social Media Section
         renderSocialCards(blog.social_media, blog.article_url);
     }
 
-    // ✅ Helper: Converti file in base64
     function fileToBase64(file) {
         return new Promise((resolve, reject) => {
             const reader = new FileReader();
-            reader.onload = () => resolve(reader.result.split(',')[1]); // Rimuove "data:image/jpeg;base64,"
+            reader.onload = () => resolve(reader.result.split(',')[1]);
             reader.onerror = reject;
             reader.readAsDataURL(file);
         });
     }
 
-    // ✅ Parser HTML → Sezioni Editabili
     function parseHTMLtoSections(html) {
         const parser = new DOMParser();
         const doc = parser.parseFromString(html, 'text/html');
@@ -245,7 +234,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         return sections;
     }
 
-    // ✅ Render Sezioni Editabili (FONT SIZE PIU PICCOLI)
     function renderEditableSections(sections) {
         const container = document.getElementById('articlePreview');
         container.innerHTML = '';
@@ -257,7 +245,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             block.dataset.type = section.type;
             
             if (section.type === 'h1' || section.type === 'h2' || section.type === 'h3') {
-                // ✅ OTTIMIZZATO: H1=1.3rem, H2=1.2rem, H3=1.1rem
                 const fontSize = section.type === 'h1' ? '1.3rem' : section.type === 'h2' ? '1.2rem' : '1.1rem';
                 block.innerHTML = `
                     <input type="text" class="editable-heading" value="${section.text.replace(/"/g, '&quot;')}" 
@@ -279,7 +266,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             container.appendChild(block);
         });
         
-        // Attach listeners per salvare modifiche
         container.querySelectorAll('.editable-heading, .editable-paragraph').forEach(input => {
             input.addEventListener('input', (e) => {
                 const block = e.target.closest('.editable-section-block');
@@ -293,7 +279,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         const socialGrid = document.getElementById('socialGrid');
         socialGrid.innerHTML = '';
 
-        // ✅ Forza sempre GitHub Pages URL
         const liveUrl = `https://trinaibusinessoperatingsystem.github.io/SiteBoS-MiniApp/posts/${currentBlogData.id}.html`;
 
         const platforms = [
@@ -329,11 +314,56 @@ document.addEventListener('DOMContentLoaded', async () => {
             </button>
         `;
         
-        // ✅ Salva testo + URL nel dataset per la copia
         card.dataset.socialText = text;
         card.dataset.articleUrl = articleUrl || '';
         
         return card;
+    }
+
+    // 🔥 TEXT EDITOR PANEL SETUP
+    function setupTextEditor(blogId) {
+        const textEditorPanel = document.getElementById('textEditorPanel');
+        const textCommandInput = document.getElementById('textCommandInput');
+        const btnSendTextCommand = document.getElementById('btnSendTextCommand');
+        const btnCloseTextEditor = document.getElementById('btnCloseTextEditor');
+
+        // Send text command
+        btnSendTextCommand.addEventListener('click', async () => {
+            const command = textCommandInput.value.trim();
+            if (!command) return;
+
+            if (tg && tg.HapticFeedback) tg.HapticFeedback.impactOccurred('medium');
+
+            btnSendTextCommand.disabled = true;
+            btnSendTextCommand.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Elaborando...';
+
+            try {
+                const response = await callWebhook('voice_edit_interpret', blogId, {
+                    voice_command: command,
+                    current_sections: currentSections,
+                    current_title: document.getElementById('editableTitle').value,
+                    current_meta: document.getElementById('editableMeta').value
+                });
+
+                if (response.proposed_change) {
+                    showVoiceEditPreview(response.proposed_change);
+                    textCommandInput.value = ''; // Clear
+                    textEditorPanel.classList.remove('open'); // Close panel
+                }
+
+            } catch (error) {
+                alert('Errore interpretazione comando: ' + error.message);
+            } finally {
+                btnSendTextCommand.disabled = false;
+                btnSendTextCommand.innerHTML = '<i class="fas fa-paper-plane"></i> Invia Comando';
+            }
+        });
+
+        // Close text editor
+        btnCloseTextEditor.addEventListener('click', () => {
+            if (tg && tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
+            textEditorPanel.classList.remove('open');
+        });
     }
 
     function setupFABs(blogId) {
@@ -351,16 +381,39 @@ document.addEventListener('DOMContentLoaded', async () => {
             window.location.href = knowledgeUrl.toString();
         });
 
-        // 🎤 VOICE EDIT FAB
-        document.getElementById('fabVoiceEdit').addEventListener('click', async () => {
+        // 🎤 VOICE/TEXT EDIT FAB - LONG PRESS DETECTION
+        const fabVoiceEdit = document.getElementById('fabVoiceEdit');
+        const textEditorPanel = document.getElementById('textEditorPanel');
+
+        // Touch events for long press
+        fabVoiceEdit.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            longPressTimer = setTimeout(() => {
+                // LONG PRESS → Open Text Editor
+                if (tg && tg.HapticFeedback) tg.HapticFeedback.impactOccurred('heavy');
+                textEditorPanel.classList.add('open');
+                document.getElementById('textCommandInput').focus();
+            }, LONG_PRESS_DURATION);
+        });
+
+        fabVoiceEdit.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            if (longPressTimer) {
+                clearTimeout(longPressTimer);
+                longPressTimer = null;
+            }
+        });
+
+        // Click event for voice (short press)
+        fabVoiceEdit.addEventListener('click', async () => {
+            // If long press timer is still active, ignore click
+            if (longPressTimer) return;
+            
             if (isRecording) return;
             
             if (tg && tg.HapticFeedback) tg.HapticFeedback.impactOccurred('medium');
             
-            const btn = document.getElementById('fabVoiceEdit');
-            
             try {
-                // Check browser support
                 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
                 if (!SpeechRecognition) {
                     alert('Il tuo browser non supporta il riconoscimento vocale. Usa Chrome o Safari.');
@@ -372,10 +425,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                 recognition.continuous = false;
                 recognition.interimResults = false;
                 
-                // Start recording
                 isRecording = true;
-                btn.classList.add('recording');
-                btn.innerHTML = '<i class="fas fa-stop"></i>';
+                fabVoiceEdit.classList.add('recording');
+                fabVoiceEdit.innerHTML = '<i class="fas fa-stop"></i>';
                 
                 recognition.start();
                 
@@ -383,13 +435,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                     const transcript = event.results[0][0].transcript;
                     console.log('Voice command:', transcript);
                     
-                    // Stop recording UI
                     isRecording = false;
-                    btn.classList.remove('recording');
-                    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+                    fabVoiceEdit.classList.remove('recording');
+                    fabVoiceEdit.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
                     
                     try {
-                        // Send to AI Assistant for interpretation
                         const response = await callWebhook('voice_edit_interpret', blogId, {
                             voice_command: transcript,
                             current_sections: currentSections,
@@ -397,7 +447,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                             current_meta: document.getElementById('editableMeta').value
                         });
                         
-                        // Show preview and ask for confirmation
                         if (response.proposed_change) {
                             showVoiceEditPreview(response.proposed_change);
                         }
@@ -405,15 +454,15 @@ document.addEventListener('DOMContentLoaded', async () => {
                     } catch (error) {
                         alert('Errore interpretazione comando: ' + error.message);
                     } finally {
-                        btn.innerHTML = '<i class="fas fa-microphone"></i>';
+                        fabVoiceEdit.innerHTML = '<i class="fas fa-microphone"></i>';
                     }
                 };
                 
                 recognition.onerror = (event) => {
                     console.error('Speech recognition error:', event.error);
                     isRecording = false;
-                    btn.classList.remove('recording');
-                    btn.innerHTML = '<i class="fas fa-microphone"></i>';
+                    fabVoiceEdit.classList.remove('recording');
+                    fabVoiceEdit.innerHTML = '<i class="fas fa-microphone"></i>';
                     
                     if (event.error === 'not-allowed') {
                         alert('Permesso microfono negato. Abilita il microfono nelle impostazioni del browser.');
@@ -425,14 +474,14 @@ document.addEventListener('DOMContentLoaded', async () => {
                 recognition.onend = () => {
                     if (isRecording) {
                         isRecording = false;
-                        btn.classList.remove('recording');
-                        btn.innerHTML = '<i class="fas fa-microphone"></i>';
+                        fabVoiceEdit.classList.remove('recording');
+                        fabVoiceEdit.innerHTML = '<i class="fas fa-microphone"></i>';
                     }
                 };
                 
             } catch (error) {
                 isRecording = false;
-                btn.innerHTML = '<i class="fas fa-microphone"></i>';
+                fabVoiceEdit.innerHTML = '<i class="fas fa-microphone"></i>';
                 alert('Errore registrazione vocale: ' + error.message);
             }
         });
@@ -494,13 +543,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    // 🎤 Show Voice Edit Preview
     function showVoiceEditPreview(change) {
         const actionText = change.action_description || 'modificare il contenuto';
         const message = `Vuoi ${actionText}?\n\n"${change.new_text || change.description}"`;
         
         if (confirm(message)) {
-            // Apply change based on action type
             if (change.action === 'edit_section' && change.section_index !== undefined) {
                 currentSections[change.section_index].text = change.new_text;
                 renderEditableSections(currentSections);
@@ -563,7 +610,6 @@ function closePreview() {
     document.getElementById('previewOverlay').style.display = 'none';
 }
 
-// ✅ FIX: Sostituisce [LINK] con URL reale, o lo aggiunge in coda se non presente
 function copySocialText(button, platform) {
     const card = button.closest('.social-card');
     const socialText = card.dataset.socialText || '';
@@ -571,11 +617,9 @@ function copySocialText(button, platform) {
     
     let finalText;
     
-    // Se il testo contiene [LINK], sostituiscilo con l'URL
     if (socialText.includes('[LINK]')) {
         finalText = socialText.replace('[LINK]', articleUrl);
     } else {
-        // Altrimenti aggiungi l'URL in coda
         finalText = socialText + '\n\n' + articleUrl;
     }
     
