@@ -2,7 +2,7 @@
 
 // Global vars
 let currentBlogData = null;
-let currentSections = [];
+let currentStructuredContent = null; // Sostituisce currentSections
 let currentLang = 'it';
 let apiCredentials = {};
 let tg = null;
@@ -58,12 +58,22 @@ document.addEventListener('DOMContentLoaded', async () => {
             throw new Error(responseData.message || 'Unknown error');
         }
 
+        // 🆕 Nuovo: estrai blog_content_structure
         currentBlogData = responseData.blog_data;
+        
+        // Se i dati arrivano come array con blog_content_structure
+        if (Array.isArray(currentBlogData) && currentBlogData[0]?.blog_content_structure) {
+            currentStructuredContent = currentBlogData[0].blog_content_structure;
+        } else if (currentBlogData?.blog_content_structure) {
+            currentStructuredContent = currentBlogData.blog_content_structure;
+        } else {
+            throw new Error('Struttura dati blog non valida');
+        }
 
         loadingState.style.display = 'none';
         editorGrid.style.display = 'grid';
 
-        populateEditor(currentBlogData);
+        populateEditor(blogId, currentStructuredContent);
         setupFABs(blogId);
         setupTextEditor(blogId);
 
@@ -72,31 +82,38 @@ document.addEventListener('DOMContentLoaded', async () => {
         showError("Errore di Caricamento", error.message);
     }
 
-    function populateEditor(blog) {
+    // 🆕 Nuova funzione di popolazione
+    function populateEditor(blogId, structuredContent) {
+        // Status Badge (mantieni logica esistente se disponibile)
         const statusBadge = document.getElementById('statusBadge');
         const statusText = document.getElementById('statusText');
-        if (blog.status === 'published') {
+        const blogStatus = currentBlogData?.status || 'draft';
+        
+        if (blogStatus === 'published') {
             statusBadge.classList.remove('draft');
             statusBadge.classList.add('published');
             statusText.textContent = 'Pubblicato';
         }
 
-        if (blog.featured_image && blog.featured_image.url) {
-            const img = document.getElementById('featuredImage');
-            const placeholder = document.getElementById('imagePlaceholder');
-            img.src = blog.featured_image.url;
-            img.alt = blog.featured_image.alt || blog.title;
-            img.style.display = 'block';
-            placeholder.style.display = 'none';
-            document.getElementById('btnDownloadImage').style.display = 'block';
-        }
+        // 🆕 Featured Image - SEMPRE da CDN
+        const imageFilename = `${blogId}.jpg`;
+        const featuredImageUrl = `https://cdn.jsdelivr.net/gh/TrinAiBusinessOperatingSystem/SiteBoS-MiniApp/images/${imageFilename}`;
+        
+        const img = document.getElementById('featuredImage');
+        const placeholder = document.getElementById('imagePlaceholder');
+        
+        img.src = featuredImageUrl;
+        img.alt = structuredContent.seo?.image_alt_text || structuredContent.seo?.meta_title || 'Blog Image';
+        img.style.display = 'block';
+        placeholder.style.display = 'none';
+        document.getElementById('btnDownloadImage').style.display = 'block';
 
+        // Click per preview
         document.getElementById('imageContainer').addEventListener('click', () => {
-            if (blog.featured_image && blog.featured_image.url) {
-                showImagePreview(blog.featured_image.url);
-            }
+            showImagePreview(featuredImageUrl);
         });
 
+        // Rigenera immagine
         document.getElementById('btnRegenerateImage').addEventListener('click', async () => {
             if (tg && tg.HapticFeedback) tg.HapticFeedback.impactOccurred('medium');
             
@@ -105,17 +122,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generando...';
             
             try {
-                const response = await callWebhook('regenerate_image', blog.id);
+                await callWebhook('regenerate_image', blogId);
                 
-                if (response.image_url) {
-                    const img = document.getElementById('featuredImage');
-                    const placeholder = document.getElementById('imagePlaceholder');
-                    img.src = response.image_url;
-                    img.style.display = 'block';
-                    placeholder.style.display = 'none';
-                    document.getElementById('btnDownloadImage').style.display = 'block';
-                    currentBlogData.featured_image.url = response.image_url;
-                }
+                // Forza reload immagine con cache bust
+                img.src = `${featuredImageUrl}?t=${Date.now()}`;
                 
                 btn.innerHTML = '<i class="fas fa-magic"></i> Rigenera con AI';
                 btn.disabled = false;
@@ -126,6 +136,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         });
 
+        // Upload immagine
         document.getElementById('btnUploadImage').addEventListener('click', () => {
             document.getElementById('imageFileInput').click();
         });
@@ -137,11 +148,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (tg && tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
             
             const tempUrl = URL.createObjectURL(file);
-            const img = document.getElementById('featuredImage');
-            const placeholder = document.getElementById('imagePlaceholder');
             img.src = tempUrl;
-            img.style.display = 'block';
-            placeholder.style.display = 'none';
             
             const btn = document.getElementById('btnUploadImage');
             btn.disabled = true;
@@ -150,16 +157,13 @@ document.addEventListener('DOMContentLoaded', async () => {
             try {
                 const base64 = await fileToBase64(file);
                 
-                const response = await callWebhook('upload_image', blog.id, {
+                await callWebhook('upload_image', blogId, {
                     image_base64: base64,
-                    filename: `${blog.id}.jpg`
+                    filename: imageFilename
                 });
                 
-                if (response.image_url) {
-                    img.src = response.image_url;
-                    currentBlogData.featured_image.url = response.image_url;
-                    document.getElementById('btnDownloadImage').style.display = 'block';
-                }
+                // Reload con cache bust
+                img.src = `${featuredImageUrl}?t=${Date.now()}`;
                 
                 btn.innerHTML = '<i class="fas fa-upload"></i> Carica Immagine';
                 btn.disabled = false;
@@ -170,112 +174,214 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         });
 
+        // Download immagine
         document.getElementById('btnDownloadImage').addEventListener('click', () => {
             if (tg && tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
             
-            const imageUrl = currentBlogData.featured_image.url;
             const link = document.createElement('a');
-            link.href = imageUrl;
-            link.download = `${currentBlogData.id}.jpg`;
+            link.href = featuredImageUrl;
+            link.download = imageFilename;
             link.target = '_blank';
             link.click();
         });
 
-        document.getElementById('editableTitle').value = blog.title || '';
-        document.getElementById('editableMeta').value = blog.meta_description || '';
-        
-        currentSections = parseHTMLtoSections(blog.content?.html || '');
-        renderEditableSections(currentSections);
+        // 🆕 Popola Titolo e Meta da SEO
+        document.getElementById('editableTitle').value = structuredContent.seo?.meta_title || '';
+        document.getElementById('editableMeta').value = structuredContent.seo?.meta_description || '';
 
+        // 🆕 Renderizza sezioni strutturate
+        renderStructuredSections(structuredContent);
+
+        // Preview Live
         document.getElementById('btnPreviewFull').addEventListener('click', () => {
             if (tg && tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
             
-            const liveUrl = `https://trinaibusinessoperatingsystem.github.io/SiteBoS-MiniApp/posts/${currentBlogData.id}.html`;
+            const liveUrl = `https://trinaibusinessoperatingsystem.github.io/SiteBoS-MiniApp/posts/${blogId}.html`;
             window.open(liveUrl, '_blank');
         });
 
-        renderSocialCards(blog.social_media, blog.article_url);
+        // 🆕 Renderizza social (se presenti)
+        renderSocialCards(structuredContent, blogId);
     }
 
-    function fileToBase64(file) {
-        return new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onload = () => resolve(reader.result.split(',')[1]);
-            reader.onerror = reject;
-            reader.readAsDataURL(file);
-        });
-    }
-
-    function parseHTMLtoSections(html) {
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(html, 'text/html');
-        const articleContent = doc.querySelector('.article-content');
-        
-        if (!articleContent) return [];
-        
-        const sections = [];
-        const elements = articleContent.children;
-        
-        for (let el of elements) {
-            if (el.tagName === 'DIV' && el.classList.contains('cta-block')) continue;
-            if (el.tagName === 'HR') continue;
-            
-            sections.push({
-                type: el.tagName.toLowerCase(),
-                content: el.innerHTML,
-                text: el.textContent.trim()
-            });
-        }
-        
-        return sections;
-    }
-
-    function renderEditableSections(sections) {
+    // 🆕 Nuova funzione: renderizza sezioni strutturate
+    function renderStructuredSections(structuredContent) {
         const container = document.getElementById('articlePreview');
         container.innerHTML = '';
+
+        const sectionsOrder = ['hero', 'problem', 'solution', 'authority', 'comparison', 'cta_final'];
         
-        sections.forEach((section, index) => {
-            const block = document.createElement('div');
-            block.className = 'editable-section-block';
-            block.dataset.index = index;
-            block.dataset.type = section.type;
-            
-            if (section.type === 'h1' || section.type === 'h2' || section.type === 'h3') {
-                const fontSize = section.type === 'h1' ? '1.3rem' : section.type === 'h2' ? '1.2rem' : '1.1rem';
-                block.innerHTML = `
-                    <input type="text" class="editable-heading" value="${section.text.replace(/"/g, '&quot;')}" 
-                           style="font-size: ${fontSize}; font-weight: 600; border: none; 
-                                  border-bottom: 2px dashed var(--glass-border); background: transparent; 
-                                  color: var(--primary); width: 100%; padding: 10px 0;">
+        sectionsOrder.forEach(sectionKey => {
+            const section = structuredContent[sectionKey];
+            if (!section) return;
+
+            const sectionBlock = document.createElement('div');
+            sectionBlock.className = 'editable-section-block';
+            sectionBlock.dataset.sectionKey = sectionKey;
+
+            // HERO Section
+            if (sectionKey === 'hero') {
+                sectionBlock.innerHTML = `
+                    <h3 style="color: var(--primary); margin-bottom: 10px;">🎯 Hero</h3>
+                    <label style="font-size: 11px; color: var(--text-muted); display: block; margin-bottom: 5px;">Titolo</label>
+                    <textarea class="editable-paragraph" data-field="title" rows="3">${section.title || ''}</textarea>
+                    
+                    <label style="font-size: 11px; color: var(--text-muted); display: block; margin-bottom: 5px; margin-top: 10px;">Sottotitolo</label>
+                    <textarea class="editable-paragraph" data-field="subtitle" rows="2">${section.subtitle || ''}</textarea>
+                    
+                    <label style="font-size: 11px; color: var(--text-muted); display: block; margin-bottom: 5px; margin-top: 10px;">CTA Text</label>
+                    <input type="text" class="editable-heading" data-field="cta_text" value="${section.cta_text || ''}" style="font-size: 14px;">
+                    
+                    <label style="font-size: 11px; color: var(--text-muted); display: block; margin-bottom: 5px; margin-top: 10px;">CTA Link</label>
+                    <input type="text" class="editable-heading" data-field="cta_link" value="${section.cta_link || ''}" style="font-size: 12px;">
+                    
+                    <label style="font-size: 11px; color: var(--text-muted); display: block; margin-bottom: 5px; margin-top: 10px;">Risk Reversal</label>
+                    <textarea class="editable-paragraph" data-field="risk_reversal" rows="2">${section.risk_reversal || ''}</textarea>
                 `;
-            } else if (section.type === 'p' || section.type === 'blockquote') {
-                block.innerHTML = `
-                    <textarea class="editable-paragraph" rows="3" 
-                              style="width: 100%; border: 1px solid var(--glass-border); 
-                                     border-radius: 8px; padding: 10px; background: rgba(0,0,0,0.1); 
-                                     color: var(--text-main); resize: vertical; font-family: inherit; line-height: 1.6;">${section.text}</textarea>
-                `;
-            } else {
-                block.innerHTML = `<div style="opacity: 0.7; padding: 10px; background: rgba(0,0,0,0.05); border-radius: 8px;">${section.content}</div>`;
             }
-            
-            container.appendChild(block);
+            // PROBLEM Section
+            else if (sectionKey === 'problem') {
+                sectionBlock.innerHTML = `
+                    <h3 style="color: var(--primary); margin-bottom: 10px;">⚠️ Problema</h3>
+                    <label style="font-size: 11px; color: var(--text-muted); display: block; margin-bottom: 5px;">Titolo</label>
+                    <input type="text" class="editable-heading" data-field="title" value="${section.title || ''}" style="font-size: 16px;">
+                    
+                    <label style="font-size: 11px; color: var(--text-muted); display: block; margin-bottom: 5px; margin-top: 10px;">Paragrafi</label>
+                    ${(section.paragraphs || []).map((p, i) => `
+                        <textarea class="editable-paragraph" data-field="paragraph_${i}" rows="3" style="margin-bottom: 8px;">${p}</textarea>
+                    `).join('')}
+                    
+                    ${section.quote ? `
+                        <label style="font-size: 11px; color: var(--text-muted); display: block; margin-bottom: 5px; margin-top: 10px;">Citazione</label>
+                        <textarea class="editable-paragraph" data-field="quote" rows="2" style="font-style: italic; border-left: 3px solid var(--warning);">${section.quote}</textarea>
+                    ` : ''}
+                `;
+            }
+            // SOLUTION Section
+            else if (sectionKey === 'solution') {
+                sectionBlock.innerHTML = `
+                    <h3 style="color: var(--primary); margin-bottom: 10px;">✅ Soluzione</h3>
+                    <label style="font-size: 11px; color: var(--text-muted); display: block; margin-bottom: 5px;">Titolo</label>
+                    <input type="text" class="editable-heading" data-field="title" value="${section.title || ''}" style="font-size: 16px;">
+                    
+                    <label style="font-size: 11px; color: var(--text-muted); display: block; margin-bottom: 5px; margin-top: 10px;">Paragrafi</label>
+                    ${(section.paragraphs || []).map((p, i) => `
+                        <textarea class="editable-paragraph" data-field="paragraph_${i}" rows="3" style="margin-bottom: 8px;">${p}</textarea>
+                    `).join('')}
+                    
+                    ${section.subsection ? `
+                        <div style="margin-top: 15px; padding-left: 15px; border-left: 2px solid var(--primary);">
+                            <label style="font-size: 11px; color: var(--text-muted); display: block; margin-bottom: 5px;">Sottosezione - Titolo</label>
+                            <input type="text" class="editable-heading" data-field="subsection_title" value="${section.subsection.title || ''}" style="font-size: 14px;">
+                            
+                            <label style="font-size: 11px; color: var(--text-muted); display: block; margin-bottom: 5px; margin-top: 10px;">Sottosezione - Paragrafi</label>
+                            ${(section.subsection.paragraphs || []).map((p, i) => `
+                                <textarea class="editable-paragraph" data-field="subsection_paragraph_${i}" rows="2" style="margin-bottom: 8px;">${p}</textarea>
+                            `).join('')}
+                        </div>
+                    ` : ''}
+                `;
+            }
+            // AUTHORITY Section
+            else if (sectionKey === 'authority') {
+                sectionBlock.innerHTML = `
+                    <h3 style="color: var(--primary); margin-bottom: 10px;">🏆 Autorità</h3>
+                    <label style="font-size: 11px; color: var(--text-muted); display: block; margin-bottom: 5px;">Titolo</label>
+                    <input type="text" class="editable-heading" data-field="title" value="${section.title || ''}" style="font-size: 16px;">
+                    
+                    <label style="font-size: 11px; color: var(--text-muted); display: block; margin-bottom: 5px; margin-top: 10px;">Paragrafi</label>
+                    ${(section.paragraphs || []).map((p, i) => `
+                        <textarea class="editable-paragraph" data-field="paragraph_${i}" rows="3" style="margin-bottom: 8px;">${p}</textarea>
+                    `).join('')}
+                `;
+            }
+            // COMPARISON Section
+            else if (sectionKey === 'comparison') {
+                sectionBlock.innerHTML = `
+                    <h3 style="color: var(--primary); margin-bottom: 10px;">📊 Confronto</h3>
+                    <label style="font-size: 11px; color: var(--text-muted); display: block; margin-bottom: 5px;">Titolo</label>
+                    <input type="text" class="editable-heading" data-field="title" value="${section.title || ''}" style="font-size: 16px;">
+                    
+                    <label style="font-size: 11px; color: var(--text-muted); display: block; margin-bottom: 5px; margin-top: 10px;">Intro</label>
+                    <textarea class="editable-paragraph" data-field="intro" rows="2">${section.intro || ''}</textarea>
+                    
+                    <label style="font-size: 11px; color: var(--text-muted); display: block; margin-bottom: 5px; margin-top: 10px;">Tabella HTML</label>
+                    <div style="padding: 10px; background: rgba(0,0,0,0.2); border-radius: 8px; font-size: 11px; overflow-x: auto;">
+                        ${section.table_html || '<p style="color: var(--text-muted);">Nessuna tabella</p>'}
+                    </div>
+                    <textarea class="editable-paragraph" data-field="table_html" rows="5" style="margin-top: 8px; font-family: monospace; font-size: 11px;">${section.table_html || ''}</textarea>
+                `;
+            }
+            // CTA FINAL Section
+            else if (sectionKey === 'cta_final') {
+                sectionBlock.innerHTML = `
+                    <h3 style="color: var(--primary); margin-bottom: 10px;">🚀 CTA Finale</h3>
+                    <label style="font-size: 11px; color: var(--text-muted); display: block; margin-bottom: 5px;">Titolo</label>
+                    <input type="text" class="editable-heading" data-field="title" value="${section.title || ''}" style="font-size: 16px;">
+                    
+                    <label style="font-size: 11px; color: var(--text-muted); display: block; margin-bottom: 5px; margin-top: 10px;">Paragrafi</label>
+                    ${(section.paragraphs || []).map((p, i) => `
+                        <textarea class="editable-paragraph" data-field="paragraph_${i}" rows="3" style="margin-bottom: 8px;">${p}</textarea>
+                    `).join('')}
+                    
+                    <label style="font-size: 11px; color: var(--text-muted); display: block; margin-bottom: 5px; margin-top: 10px;">Urgenza</label>
+                    <textarea class="editable-paragraph" data-field="urgency" rows="2">${section.urgency || ''}</textarea>
+                    
+                    <label style="font-size: 11px; color: var(--text-muted); display: block; margin-bottom: 5px; margin-top: 10px;">Testo Bottone</label>
+                    <input type="text" class="editable-heading" data-field="button_text" value="${section.button_text || ''}" style="font-size: 14px;">
+                    
+                    <label style="font-size: 11px; color: var(--text-muted); display: block; margin-bottom: 5px; margin-top: 10px;">Link</label>
+                    <input type="text" class="editable-heading" data-field="link" value="${section.link || ''}" style="font-size: 12px;">
+                    
+                    <label style="font-size: 11px; color: var(--text-muted); display: block; margin-bottom: 5px; margin-top: 10px;">Risk Reversal</label>
+                    <textarea class="editable-paragraph" data-field="risk_reversal" rows="2">${section.risk_reversal || ''}</textarea>
+                `;
+            }
+
+            container.appendChild(sectionBlock);
         });
-        
+
+        // Event listeners per modifiche
         container.querySelectorAll('.editable-heading, .editable-paragraph').forEach(input => {
             input.addEventListener('input', (e) => {
                 const block = e.target.closest('.editable-section-block');
-                const index = parseInt(block.dataset.index);
-                currentSections[index].text = e.target.value;
+                const sectionKey = block.dataset.sectionKey;
+                const field = e.target.dataset.field;
+                
+                // Aggiorna struttura dati
+                if (field.startsWith('paragraph_')) {
+                    const index = parseInt(field.split('_')[1]);
+                    if (!currentStructuredContent[sectionKey].paragraphs) {
+                        currentStructuredContent[sectionKey].paragraphs = [];
+                    }
+                    currentStructuredContent[sectionKey].paragraphs[index] = e.target.value;
+                } else if (field.startsWith('subsection_paragraph_')) {
+                    const index = parseInt(field.split('_')[2]);
+                    if (!currentStructuredContent[sectionKey].subsection.paragraphs) {
+                        currentStructuredContent[sectionKey].subsection.paragraphs = [];
+                    }
+                    currentStructuredContent[sectionKey].subsection.paragraphs[index] = e.target.value;
+                } else if (field.startsWith('subsection_')) {
+                    const subField = field.replace('subsection_', '');
+                    currentStructuredContent[sectionKey].subsection[subField] = e.target.value;
+                } else {
+                    currentStructuredContent[sectionKey][field] = e.target.value;
+                }
             });
         });
     }
 
-    function renderSocialCards(socialData, articleUrl) {
+    function renderSocialCards(structuredContent, blogId) {
         const socialGrid = document.getElementById('socialGrid');
         socialGrid.innerHTML = '';
 
-        const liveUrl = `https://trinaibusinessoperatingsystem.github.io/SiteBoS-MiniApp/posts/${currentBlogData.id}.html`;
+        const liveUrl = `https://trinaibusinessoperatingsystem.github.io/SiteBoS-MiniApp/posts/${blogId}.html`;
+
+        // Se non ci sono dati social, mostra placeholder
+        if (!currentBlogData?.social_media) {
+            socialGrid.innerHTML = '<p style="color: var(--text-muted); text-align: center; padding: 20px;">Nessun contenuto social disponibile</p>';
+            return;
+        }
 
         const platforms = [
             { key: 'facebook', name: 'Facebook', icon: 'fab fa-facebook', color: '#1877f2' },
@@ -285,8 +391,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         ];
 
         platforms.forEach(platform => {
-            if (socialData && socialData[platform.key] && socialData[platform.key].text) {
-                const card = createSocialCard(platform, socialData[platform.key].text, liveUrl);
+            if (currentBlogData.social_media[platform.key]?.text) {
+                const card = createSocialCard(platform, currentBlogData.social_media[platform.key].text, liveUrl);
                 socialGrid.appendChild(card);
             }
         });
@@ -316,6 +422,15 @@ document.addEventListener('DOMContentLoaded', async () => {
         return card;
     }
 
+    function fileToBase64(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result.split(',')[1]);
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+        });
+    }
+
     // 🔥 TEXT EDITOR PANEL SETUP
     function setupTextEditor(blogId) {
         const textEditorPanel = document.getElementById('textEditorPanel');
@@ -323,7 +438,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         const btnSendTextCommand = document.getElementById('btnSendTextCommand');
         const btnCloseTextEditor = document.getElementById('btnCloseTextEditor');
 
-        // Send text command
         btnSendTextCommand.addEventListener('click', async () => {
             const command = textCommandInput.value.trim();
             if (!command) return;
@@ -336,7 +450,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             try {
                 const response = await callWebhook('voice_edit_interpret', blogId, {
                     voice_command: command,
-                    current_sections: currentSections,
+                    current_content: currentStructuredContent,
                     current_title: document.getElementById('editableTitle').value,
                     current_meta: document.getElementById('editableMeta').value
                 });
@@ -355,7 +469,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         });
 
-        // Close text editor
         btnCloseTextEditor.addEventListener('click', () => {
             if (tg && tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
             textEditorPanel.classList.remove('open');
@@ -377,7 +490,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             window.location.href = knowledgeUrl.toString();
         });
 
-        // 🔥 TEXT COMMAND FAB - Click to open (FIXED ID)
         const fabVoiceEdit = document.getElementById('fabVoiceEdit');
         const textEditorPanel = document.getElementById('textEditorPanel');
 
@@ -449,25 +561,34 @@ document.addEventListener('DOMContentLoaded', async () => {
         const message = `Vuoi ${actionText}?\n\n"${change.new_text || change.description}"`;
         
         if (confirm(message)) {
-            if (change.action === 'edit_section' && change.section_index !== undefined) {
-                currentSections[change.section_index].text = change.new_text;
-                renderEditableSections(currentSections);
+            // Logica di applicazione modifiche AI
+            if (change.section_key && change.field) {
+                currentStructuredContent[change.section_key][change.field] = change.new_text;
+                renderStructuredSections(currentStructuredContent);
             } else if (change.action === 'edit_title') {
                 document.getElementById('editableTitle').value = change.new_text;
+                currentStructuredContent.seo.meta_title = change.new_text;
             } else if (change.action === 'edit_meta') {
                 document.getElementById('editableMeta').value = change.new_text;
+                currentStructuredContent.seo.meta_description = change.new_text;
             }
             
             if (tg && tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
         }
     }
 
+    // 🆕 Nuova funzione: raccolta dati strutturati
     function collectEditorData() {
         return {
-            title: document.getElementById('editableTitle').value,
-            meta_description: document.getElementById('editableMeta').value,
-            featured_image: currentBlogData.featured_image,
-            content_sections: currentSections
+            blog_content_structure: {
+                seo: {
+                    meta_title: document.getElementById('editableTitle').value,
+                    meta_description: document.getElementById('editableMeta').value,
+                    keywords: currentStructuredContent.seo?.keywords || '',
+                    image_alt_text: currentStructuredContent.seo?.image_alt_text || ''
+                },
+                ...currentStructuredContent
+            }
         };
     }
 
