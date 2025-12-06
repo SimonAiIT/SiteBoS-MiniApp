@@ -11,7 +11,7 @@
     <link rel="stylesheet" href="../styles.css">
     
     <style>
-        /* STILI CATEGORIE (da catalog.html) */
+        /* CATEGORIE */
         .cat-card { 
             background: var(--card-bg); 
             border-radius: 12px; 
@@ -66,24 +66,41 @@
             font-size: 12px; 
         }
 
-        /* BLOG ITEM */
+        /* BLOG ITEM - LAYOUT FISSO */
         .blog-item {
-            padding: 15px; 
+            padding: 0;
             border-bottom: 1px solid var(--glass-border);
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center;
-            background: rgba(0,0,0,0.1); 
-            gap: 10px;
+            background: rgba(0,0,0,0.1);
+            transition: background 0.2s;
         }
         .blog-item:last-child { border-bottom: none; }
-
-        .blog-info { 
-            flex: 1; 
-            padding-right: 5px; 
-            min-width: 0; 
+        
+        .blog-item-header {
+            display: flex;
+            align-items: stretch;
+            gap: 0;
+        }
+        
+        /* PARTE SINISTRA (cliccabile per espandere) */
+        .blog-item-left {
+            flex: 1;
+            padding: 15px;
+            cursor: pointer;
+            min-width: 0;
+        }
+        .blog-item-left:active {
+            background: rgba(255,255,255,0.05);
+        }
+        
+        /* PARTE DESTRA (bottone) */
+        .blog-item-actions {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            border-left: 1px solid var(--glass-border);
         }
 
+        /* CONTENUTO */
         .blog-title { 
             font-size: 14px; 
             font-weight: 600; 
@@ -106,76 +123,66 @@
             overflow: hidden; 
         }
 
-        /* STATI BLOG */
+        /* STATI */
         .status-draft { 
             border-left: 3px solid var(--warning); 
-            background: rgba(245, 158, 11, 0.05); 
         }
         
         .status-published { 
             border-left: 3px solid var(--success); 
-            background: rgba(76, 217, 100, 0.05); 
         }
 
-        /* AZIONI BLOG */
-        .blog-actions-group {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            align-items: center;
-            min-width: 70px;
-        }
-
-        .btn-action {
-            padding: 6px 12px; 
-            border-radius: 8px; 
-            font-size: 11px; 
-            font-weight: 600; 
-            border: none; 
+        /* BOTTONI INLINE (stile catalog) */
+        .kb-btn-inline {
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-size: 11px;
+            font-weight: 600;
             cursor: pointer;
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            gap: 2px; 
-            width: 100%;
-            transition: transform 0.1s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+            white-space: nowrap;
         }
-        .btn-action:active { transform: scale(0.95); }
-
-        .btn-edit { 
-            background: rgba(76, 217, 100, 0.15); 
-            color: var(--success); 
-            border: 1px solid rgba(76, 217, 100, 0.3); 
+        .kb-btn-inline:active {
+            transform: scale(0.95);
         }
         
-        .btn-create { 
-            background: var(--primary); 
-            color: white; 
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2); 
+        .kb-btn-generate {
+            background: rgba(91, 111, 237, 0.15);
+            border: 1.5px solid rgba(91, 111, 237, 0.4);
+            color: #5B6FED;
         }
-
-        .btn-blog-delete {
-            background: transparent; 
-            border: 1px solid var(--error); 
-            color: var(--error);
-            padding: 6px; 
-            border-radius: 6px; 
-            font-size: 10px; 
-            width: 100%;
-            cursor: pointer; 
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
-            gap: 4px;
+        .kb-btn-generate:hover {
+            background: rgba(91, 111, 237, 0.25);
+            border-color: #5B6FED;
         }
-        .btn-blog-delete:hover { 
-            background: var(--error); 
-            color: white; 
+        
+        .kb-btn-edit {
+            background: rgba(76, 217, 100, 0.15);
+            border: 1.5px solid rgba(76, 217, 100, 0.4);
+            color: #4cd964;
+        }
+        .kb-btn-edit:hover {
+            background: rgba(76, 217, 100, 0.25);
+            border-color: #4cd964;
         }
 
         @keyframes slideDown { 
             from { opacity: 0; transform: translateY(-10px); } 
             to { opacity: 1; transform: translateY(0); } 
+        }
+        
+        /* FAB SALVA (nascosto di default) */
+        #save-fab {
+            position: fixed;
+            bottom: 80px;
+            right: 20px;
+            z-index: 999;
+        }
+        #save-fab.hidden {
+            display: none;
         }
     </style>
 </head>
@@ -204,7 +211,6 @@
 
         <!-- STATS -->
         <div class="row" style="margin-bottom: 20px;">
-            <!-- Stats Draft -->
             <div class="col dash-card" style="padding: 10px; min-height: auto; flex-direction: row; gap: 10px; border-color: var(--warning);">
                 <i class="fas fa-pencil-alt" style="color: var(--warning);"></i>
                 <div>
@@ -212,7 +218,6 @@
                     <div class="dash-sub" style="color: var(--warning);">Bozze</div>
                 </div>
             </div>
-            <!-- Stats Published -->
             <div class="col dash-card" style="padding: 10px; min-height: auto; flex-direction: row; gap: 10px; border-color: var(--success);">
                 <i class="fas fa-check-circle" style="color: var(--success);"></i>
                 <div>
@@ -222,10 +227,10 @@
             </div>
         </div>
 
-        <!-- BLOG LIST (Categorie) -->
+        <!-- BLOG LIST -->
         <div id="blog-list"></div>
 
-        <!-- Empty State -->
+        <!-- EMPTY STATE -->
         <div id="empty-state" class="hidden" style="text-align:center; padding: 40px; opacity: 0.5;">
             <i class="fas fa-newspaper" style="font-size: 40px; margin-bottom: 15px;"></i>
             <p>Nessun articolo trovato.</p>
@@ -235,6 +240,12 @@
 
     <!-- FAB CONTAINER -->
     <div class="fab-container">
+        <!-- FAB SALVA (nascosto di default) -->
+        <button id="save-fab" class="fab-btn fab-primary hidden" onclick="handleSave()" title="Salva Modifiche">
+            <i class="fas fa-save"></i>
+        </button>
+        
+        <!-- FAB INDIETRO -->
         <button class="fab-btn fab-secondary" onclick="goBack()" title="Torna a Dashboard">
             <i class="fas fa-arrow-left"></i>
         </button>
