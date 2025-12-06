@@ -3,7 +3,7 @@
 document.addEventListener('DOMContentLoaded', () => {
 
     // --- 1. CONFIGURAZIONE ---
-    const WEBHOOK_URL = "https://trinai.api.workflow.dcmake.it/webhook/0ca76af1-8c02-47f4-a3a4-fd19ad495afe";
+    const WEBHOOK_URL = "https://trinai.api.workflow.dcmake.it/webhook/914bd78e-8a41-46d7-8935-7eb73cbbae66"; // Webhook blog
     
     const tg = window.Telegram.WebApp;
     try {
@@ -16,37 +16,21 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     const loader = document.getElementById('loader');
-    const mainContent = document.getElementById('mainContent');
-    const kbContainer = document.getElementById('kb-container');
+    const appContent = document.getElementById('app-content');
+    const blogList = document.getElementById('blog-list');
+    const emptyState = document.getElementById('empty-state');
     const companyNameEl = document.getElementById('companyName');
-    const saveBtn = document.getElementById('saveBtn');
-    const backToManagerBtn = document.getElementById('backToManagerBtn');
 
     const params = new URLSearchParams(window.location.search);
     const apiCredentials = {
         vat: params.get('vat'),
         token: params.get('token'),
         owner: params.get('owner'),
-        ragione_sociale: params.get('ragione_sociale')
+        ragione_sociale: params.get('ragione_sociale'),
+        lang: params.get('lang') || 'it'
     };
 
-    let knowledgeData = [];
-
-    // ⬅️ GESTIONE BOTTONE TORNA INDIETRO (CORRETTO: dashboard.html)
-    if (backToManagerBtn) {
-        backToManagerBtn.addEventListener('click', () => {
-            if (tg?.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
-            
-            // ✅ Costruisci URL DASHBOARD mantenendo i parametri
-            const dashboardUrl = new URL('../dashboard.html', window.location.href);
-            const currentParams = new URLSearchParams(window.location.search);
-            currentParams.forEach((value, key) => {
-                dashboardUrl.searchParams.set(key, value);
-            });
-            
-            window.location.href = dashboardUrl.toString();
-        });
-    }
+    let allBlogs = [];
 
     // --- 2. INIZIALIZZAZIONE ---
     async function init() {
@@ -55,266 +39,258 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
         companyNameEl.textContent += (apiCredentials.ragione_sociale || 'N/D');
-        await fetchKnowledgeList();
+        await loadBlogs();
     }
 
-    // --- 3. CHIAMATE API ---
-    async function fetchKnowledgeList() {
-        const response = await makeApiCall({ action: 'get_kb' });
-        if (response) {
-            renderKnowledgeList(response);
-            loader.classList.add('hidden');
-            mainContent.classList.remove('hidden');
-        }
-    }
-
-    async function fetchFragmentDetails(fragmentId, cardElement) {
-        if (cardElement.dataset.loaded === 'true') {
-            cardElement.classList.toggle('open');
-            return;
+    // --- 3. CARICAMENTO BLOG ---
+    window.loadBlogs = async function(forceReload = false) {
+        if (forceReload && tg?.HapticFeedback) {
+            tg.HapticFeedback.impactOccurred('light');
         }
         
-        cardElement.classList.add('loading');
-        const response = await makeApiCall({ action: 'get_kb_details', fragment_id: fragmentId });
+        loader.classList.remove('hidden');
+        appContent.classList.add('hidden');
         
-        cardElement.classList.remove('loading');
-        if (response) {
-            const fragment = response.Fragment || response; 
-            if (fragment) {
-                tg?.HapticFeedback?.impactOccurred('light');
-                knowledgeData.push(fragment);
-                renderFragmentDetails(fragment, cardElement);
-                cardElement.dataset.loaded = 'true';
-                cardElement.classList.add('open');
-            }
-        }
-    }
-
-    async function handleSave() {
-        tg?.HapticFeedback?.impactOccurred('medium');
-        
-        // Feedback visivo universale (funziona sempre)
-        saveBtn.classList.add('saving');
-        saveBtn.disabled = true;
-
-        const payload = { fragments: knowledgeData };
-        const response = await makeApiCall({ action: 'save_kb', payload });
-
-        // Rimuovi feedback universale
-        saveBtn.classList.remove('saving');
-        saveBtn.disabled = false;
-        
-        if(response) {
-            if (tg && tg.showPopup) {
-                tg.showPopup({ message: "✅ Salvataggio completato!" });
-            } else {
-                alert("Salvataggio completato!");
-            }
-        } else {
-            if (tg && tg.showPopup) {
-                tg.showPopup({ message: "❌ Errore durante il salvataggio." });
-            } else {
-                alert("Errore durante il salvataggio.");
-            }
-        }
-    }
-
-    async function makeApiCall(body) {
         try {
             const response = await fetch(WEBHOOK_URL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ ...body, ...apiCredentials })
+                body: JSON.stringify({
+                    action: 'list_blogs',
+                    vat_number: apiCredentials.vat,
+                    token: apiCredentials.token,
+                    chat_id: apiCredentials.owner,
+                    lang: apiCredentials.lang
+                })
             });
-            if (!response.ok) throw new Error(`Errore HTTP: ${response.status}`);
-            return await response.json();
+
+            if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
+            
+            const data = await response.json();
+            
+            console.log('📦 Blog data received:', data);
+            
+            // Parsing risposta (potrebbe essere array o oggetto con blogs)
+            allBlogs = Array.isArray(data) ? data : (data.blogs || []);
+            
+            renderBlogsByCategory();
+            
+            loader.classList.add('hidden');
+            appContent.classList.remove('hidden');
+            
         } catch (error) {
-            showError(`Errore di rete: ${error.message}`);
-            return null;
+            console.error('❌ Error loading blogs:', error);
+            showError(`Errore caricamento: ${error.message}`);
         }
     }
 
-    // --- 4. RENDERING HTML EDITABILE ---
-    function renderKnowledgeList(fragments) {
-        kbContainer.innerHTML = fragments.map(fragment => `
-            <div class="kb-card" data-fragment-id="${fragment.fragment_id || fragment._id}">
-                <div class="kb-header">
-                    <span class="kb-title">${fragment.title}</span>
-                    <i class="fas fa-chevron-down chevron"></i>
+    // --- 4. RENDERING PER CATEGORIA ---
+    function renderBlogsByCategory() {
+        if (!allBlogs || allBlogs.length === 0) {
+            blogList.innerHTML = '';
+            emptyState.classList.remove('hidden');
+            updateStats(0, 0);
+            return;
+        }
+
+        emptyState.classList.add('hidden');
+
+        // Raggruppa per primary_topic
+        const categoriesMap = {};
+        allBlogs.forEach(blog => {
+            const topic = blog.primary_topic || blog.seo?.primary_topic || 'Altro';
+            if (!categoriesMap[topic]) {
+                categoriesMap[topic] = [];
+            }
+            categoriesMap[topic].push(blog);
+        });
+
+        // Genera HTML categorie
+        const categoriesHTML = Object.keys(categoriesMap).map(categoryName => {
+            const blogs = categoriesMap[categoryName];
+            const count = blogs.length;
+
+            const blogsHTML = blogs.map(blog => renderBlogCard(blog)).join('');
+
+            return `
+                <div class="cat-card">
+                    <div class="cat-header" onclick="toggleCategory(this)">
+                        <div class="cat-title">
+                            ${getCategoryIcon(categoryName)} ${categoryName}
+                            <span class="cat-badge">${count}</span>
+                        </div>
+                        <i class="fas fa-chevron-down chevron"></i>
+                    </div>
+                    <div class="cat-body">
+                        ${blogsHTML}
+                    </div>
                 </div>
-                <div class="kb-body"></div>
+            `;
+        }).join('');
+
+        blogList.innerHTML = categoriesHTML;
+
+        // Update stats
+        const draftCount = allBlogs.filter(b => b.status === 'draft').length;
+        const publishedCount = allBlogs.filter(b => b.status === 'published').length;
+        updateStats(draftCount, publishedCount);
+    }
+
+    // --- 5. RENDER SINGOLO BLOG CARD ---
+    function renderBlogCard(blog) {
+        const blogId = blog.blog_id || blog.id || blog._id;
+        const title = blog.meta_title || blog.seo?.meta_title || blog.title || 'Senza titolo';
+        const desc = blog.meta_description || blog.seo?.meta_description || '';
+        const status = blog.status || 'draft';
+        const date = blog.published_date || blog.created_at || '';
+
+        const statusClass = status === 'published' ? 'status-published' : 'status-draft';
+        const statusIcon = status === 'published' ? '✅' : '📝';
+        const statusText = status === 'published' ? 'Pubblicato' : 'Bozza';
+
+        return `
+            <div class="blog-item ${statusClass}">
+                <div class="blog-info">
+                    <div class="blog-meta">${statusIcon} ${statusText}${date ? ` • ${formatDate(date)}` : ''}</div>
+                    <div class="blog-title">${escapeHtml(title)}</div>
+                    <div class="blog-desc">${escapeHtml(desc)}</div>
+                </div>
+                <div class="blog-actions-group">
+                    <button class="btn-action btn-edit" onclick="goToEditBlog('${blogId}')">
+                        <i class="fas fa-edit"></i>
+                        <span>Modifica</span>
+                    </button>
+                    <button class="btn-blog-delete" onclick="deleteBlog('${blogId}')">
+                        <i class="fas fa-trash"></i> Elimina
+                    </button>
+                </div>
             </div>
-        `).join('');
+        `;
     }
 
-function renderFragmentDetails(fragment, cardElement) {
-    const body = cardElement.querySelector('.kb-body');
-    const id = fragment.fragment_id || fragment._id;
-    
-    // ✅ CHECK: Se blog post già generato
-    const hasGeneratedBlog = fragment.content_generated === true;
-    
-    const actionsBarStyle = `
-        display: flex; 
-        justify-content: flex-end; 
-        margin-bottom: 15px; 
-        padding-bottom: 10px; 
-        border-bottom: 1px solid rgba(255, 255, 255, 0.15);
-    `;
-
-    const btnStyle = (isEdit) => `
-        background: ${isEdit ? '#4cd964' : '#5B6FED'};
-        color: white; 
-        border: none; 
-        padding: 10px 18px; 
-        border-radius: 12px; 
-        cursor: pointer; 
-        font-size: 0.9rem; 
-        font-weight: 600; 
-        display: flex; 
-        align-items: center; 
-        gap: 8px; 
-        box-shadow: 0 4px 12px ${isEdit ? 'rgba(76, 217, 100, 0.3)' : 'rgba(91, 111, 237, 0.3)'};
-        transition: transform 0.2s ease, background 0.2s, box-shadow 0.2s;
-    `;
-
-    const btnHoverStyle = (isEdit) => `
-        background: ${isEdit ? '#3cb54a' : '#4a5ecf'};
-        transform: translateY(-2px);
-        box-shadow: 0 6px 16px ${isEdit ? 'rgba(76, 217, 100, 0.4)' : 'rgba(91, 111, 237, 0.4)'};
-    `;
-
-    // ✅ Bottone condizionale
-    const buttonHTML = hasGeneratedBlog 
-        ? `<button 
-                class="btn-blog-edit" 
-                data-id="${id}" 
-                style="${btnStyle(true)}" 
-                onmouseover="this.style.cssText='${btnStyle(true)}${btnHoverStyle(true)}'" 
-                onmouseout="this.style.cssText='${btnStyle(true)}'" 
-                onmousedown="this.style.transform='scale(0.96)'" 
-                onmouseup="this.style.transform='scale(1)'">
-                <i class="fas fa-edit"></i> Modifica Blog Post
-            </button>`
-        : `<button 
-                class="btn-blog-deploy" 
-                data-id="${id}" 
-                style="${btnStyle(false)}" 
-                onmouseover="this.style.cssText='${btnStyle(false)}${btnHoverStyle(false)}'" 
-                onmouseout="this.style.cssText='${btnStyle(false)}'" 
-                onmousedown="this.style.transform='scale(0.96)'" 
-                onmouseup="this.style.transform='scale(1)'">
-                <i class="fas fa-magic"></i> Genera Blog Post
-            </button>`;
-
-    body.innerHTML = `
-        <div class="actions-bar" style="${actionsBarStyle}">
-            ${buttonHTML}
-        </div>
-
-        <h3>Titolo</h3>
-        <input type="text" class="editable-input" data-id="${id}" data-field="title" value="${fragment.title}">
-        <h3>Riepilogo</h3>
-        <textarea class="editable-textarea" data-id="${id}" data-field="summary" rows="3">${fragment.summary}</textarea>
-        <h3>Risposta Diretta</h3>
-        <textarea class="editable-textarea" data-id="${id}" data-field="answer_fragment" rows="5">${fragment.answer_fragment}</textarea>
-        <h3>Domande Utente (una per riga)</h3>
-        <textarea class="editable-textarea" data-id="${id}" data-field="user_utterances" rows="4">${fragment.user_utterances.join('\n')}</textarea>
-        <h3>Approfondimenti (Q&A)</h3>
-        <div class="qa-container">
-        ${fragment.sections.map((section, index) => `
-            <div class="kb-section">
-                <input type="text" class="editable-input" placeholder="Domanda" data-id="${id}" data-field="sections.${index}.question" value="${section.question}">
-                <textarea class="editable-textarea" placeholder="Risposta" data-id="${id}" data-field="sections.${index}.answer" rows="3">${section.answer}</textarea>
-                <textarea class="editable-textarea analogy" placeholder="Analogia" data-id="${id}" data-field="sections.${index}.analogy" rows="2">${section.analogy}</textarea>
-            </div>
-        `).join('')}
-        </div>
-    `;
-
-    // ✅ Event listener per bottone GENERA
-    const blogDeployBtn = body.querySelector('.btn-blog-deploy');
-    if (blogDeployBtn) {
-        blogDeployBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            
-            if (window.Telegram?.WebApp?.HapticFeedback) {
-                window.Telegram.WebApp.HapticFeedback.impactOccurred('light');
-            }
-            
-            goToDeployBlog(id);
-        });
+    // --- 6. HELPER FUNCTIONS ---
+    function getCategoryIcon(categoryName) {
+        const icons = {
+            'AI Automation': '🤖',
+            'Digital Transformation': '🚀',
+            'ROI Optimization': '📈',
+            'Business': '💼',
+            'Tech': '⚙️',
+            'Marketing': '📢',
+            'Altro': '📁'
+        };
+        return icons[categoryName] || '📄';
     }
 
-    // ✅ Event listener per bottone MODIFICA
-    const blogEditBtn = body.querySelector('.btn-blog-edit');
-    if (blogEditBtn) {
-        blogEditBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            
-            if (window.Telegram?.WebApp?.HapticFeedback) {
-                window.Telegram.WebApp.HapticFeedback.impactOccurred('light');
-            }
-            
-            goToEditBlog(id);
-        });
+    function updateStats(draft, published) {
+        document.getElementById('count-draft').textContent = draft;
+        document.getElementById('count-published').textContent = published;
     }
-}
 
-function goToDeployBlog(fragmentId) {
-    const targetUrl = new URL('deployblog.html', window.location.href);
-    const currentParams = new URLSearchParams(window.location.search);
-    currentParams.forEach((value, key) => {
-        targetUrl.searchParams.set(key, value);
-    });
-    targetUrl.searchParams.set('fragment_id', fragmentId);
-    window.location.href = targetUrl.toString();
-}
-
-function goToEditBlog(fragmentId) {
-    const targetUrl = new URL('edit_blog.html', window.location.href);
-    const currentParams = new URLSearchParams(window.location.search);
-    currentParams.forEach((value, key) => {
-        targetUrl.searchParams.set(key, value);
-    });
-    targetUrl.searchParams.set('blog_id', fragmentId);
-    window.location.href = targetUrl.toString();
-}
-
-    // --- 5. GESTIONE EVENTI ---
-    kbContainer.addEventListener('click', (e) => {
-        const header = e.target.closest('.kb-header');
-        if (header) {
-            const card = header.closest('.kb-card');
-            fetchFragmentDetails(card.dataset.fragmentId, card);
+    function formatDate(dateString) {
+        try {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('it-IT', { day: '2-digit', month: 'short', year: 'numeric' });
+        } catch (e) {
+            return '';
         }
-    });
+    }
 
-    kbContainer.addEventListener('input', (e) => {
-        const target = e.target;
-        const id = target.dataset.id;
-        const fieldPath = target.dataset.field;
-        if (!id || !fieldPath) return;
+    function escapeHtml(text) {
+        if (!text) return '';
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
 
-        const fragment = knowledgeData.find(f => (f.fragment_id || f._id) === id);
-        if (!fragment) return;
-
-        const pathParts = fieldPath.split('.');
-        let current = fragment;
-        for (let i = 0; i < pathParts.length - 1; i++) {
-            current = current[pathParts[i]];
-        }
+    // --- 7. TOGGLE CATEGORIA ---
+    window.toggleCategory = function(headerElement) {
+        if (tg?.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
         
-        if (fieldPath === 'user_utterances') {
-            current[pathParts[pathParts.length - 1]] = target.value.split('\n').filter(Boolean);
-        } else {
-            current[pathParts[pathParts.length - 1]] = target.value;
-        }
-    });
+        const card = headerElement.closest('.cat-card');
+        card.classList.toggle('open');
+    }
 
-    saveBtn.addEventListener('click', handleSave);
+    // --- 8. NAVIGAZIONE ---
+    window.goToNewArticle = function() {
+        if (tg?.HapticFeedback) tg.HapticFeedback.impactOccurred('medium');
+        
+        // TODO: Redirect a pagina creazione nuovo articolo
+        // Per ora redirect a deployblog senza fragment_id
+        const targetUrl = new URL('deployblog.html', window.location.href);
+        const currentParams = new URLSearchParams(window.location.search);
+        currentParams.forEach((value, key) => {
+            targetUrl.searchParams.set(key, value);
+        });
+        window.location.href = targetUrl.toString();
+    }
+
+    window.goToEditBlog = function(blogId) {
+        if (tg?.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
+        
+        const targetUrl = new URL('edit_blog.html', window.location.href);
+        const currentParams = new URLSearchParams(window.location.search);
+        currentParams.forEach((value, key) => {
+            targetUrl.searchParams.set(key, value);
+        });
+        targetUrl.searchParams.set('blog_id', blogId);
+        window.location.href = targetUrl.toString();
+    }
+
+    window.deleteBlog = async function(blogId) {
+        if (!confirm('Sei sicuro di voler eliminare questo articolo?')) return;
+        
+        if (tg?.HapticFeedback) tg.HapticFeedback.impactOccurred('heavy');
+        
+        try {
+            const response = await fetch(WEBHOOK_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    action: 'delete_blog',
+                    blog_id: blogId,
+                    vat_number: apiCredentials.vat,
+                    token: apiCredentials.token,
+                    chat_id: apiCredentials.owner,
+                    lang: apiCredentials.lang
+                })
+            });
+
+            if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
+            
+            const result = await response.json();
+            
+            if (result.status === 'success') {
+                if (tg?.showPopup) {
+                    tg.showPopup({ message: '✅ Articolo eliminato!' });
+                } else {
+                    alert('Articolo eliminato!');
+                }
+                loadBlogs(true); // Ricarica lista
+            } else {
+                throw new Error(result.message || 'Errore eliminazione');
+            }
+            
+        } catch (error) {
+            console.error('❌ Error deleting blog:', error);
+            if (tg?.showPopup) {
+                tg.showPopup({ message: `❌ ${error.message}` });
+            } else {
+                alert(`Errore: ${error.message}`);
+            }
+        }
+    }
+
+    window.goBack = function() {
+        if (tg?.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
+        
+        const dashboardUrl = new URL('../dashboard.html', window.location.href);
+        const currentParams = new URLSearchParams(window.location.search);
+        currentParams.forEach((value, key) => {
+            dashboardUrl.searchParams.set(key, value);
+        });
+        window.location.href = dashboardUrl.toString();
+    }
 
     function showError(message) {
         loader.innerHTML = `<p style="color: #ff6b6b; padding: 20px; text-align: center;">${message}</p>`;
