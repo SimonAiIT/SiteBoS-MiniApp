@@ -35,7 +35,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let allFragments = [];
     let publishedArticles = [];
     let knowledgeData = [];
-    let hasChanges = false; // ✅ Flag per mostrare FAB Salva
+    let hasChanges = false;
 
     // --- 2. INIZIALIZZAZIONE ---
     async function init() {
@@ -234,7 +234,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const displayTitle = publishedArticle?.meta_title || title;
         const serviceName = subcategory ? subcategory.short_name : '';
 
-        // ✅ BOTTONI INLINE STILE CATALOG
         const actionButton = isPublished
             ? `<button class="kb-btn-inline kb-btn-edit" onclick="goToEditBlog('${fragId}'); event.stopPropagation();">
                 <i class="fas fa-edit"></i> Modifica
@@ -245,7 +244,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         return `
             <div class="blog-item ${statusClass}" data-fragment-id="${fragId}" data-loaded="false">
-                <!-- HEADER CON TITOLO E BOTTONE -->
                 <div class="blog-item-header">
                     <div class="blog-item-left" onclick="expandFragment('${fragId}', this)">
                         <div class="blog-meta">${statusIcon} ${statusText}${serviceName ? ` • ${serviceName}` : ''}</div>
@@ -256,7 +254,6 @@ document.addEventListener('DOMContentLoaded', () => {
                         ${actionButton}
                     </div>
                 </div>
-                <!-- DETTAGLI ESPANDIBILI -->
                 <div class="blog-details" style="display: none; padding: 15px; border-top: 1px solid var(--glass-border);"></div>
             </div>
         `;
@@ -365,7 +362,6 @@ document.addEventListener('DOMContentLoaded', () => {
             current[pathParts[pathParts.length - 1]] = target.value;
         }
         
-        // ✅ MOSTRA FAB SALVA
         if (!hasChanges) {
             hasChanges = true;
             saveFab.classList.remove('hidden');
@@ -373,22 +369,70 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // --- 11. SALVATAGGIO ---
+    // --- 11. SALVATAGGIO REALE ---
     window.handleSave = async function() {
         if (tg?.HapticFeedback) tg.HapticFeedback.impactOccurred('medium');
         
-        const payload = { fragments: knowledgeData };
-        console.log('💾 Saving:', payload);
+        // Mostra icona loading
+        const originalIcon = saveFab.innerHTML;
+        saveFab.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+        saveFab.disabled = true;
         
-        // TODO: Implementa chiamata save_kb
-        
-        hasChanges = false;
-        saveFab.classList.add('hidden');
-        
-        if (tg?.showPopup) {
-            tg.showPopup({ message: '✅ Salvataggio completato!' });
-        } else {
-            alert('Salvataggio completato!');
+        try {
+            const payload = {
+                action: 'save_kb',
+                fragments: knowledgeData,
+                ...apiCredentials
+            };
+            
+            console.log('💾 Saving payload:', payload);
+            
+            const response = await fetch(WEBHOOK_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            
+            const result = await response.json();
+            console.log('✅ Save result:', result);
+            
+            // Reset stato
+            hasChanges = false;
+            saveFab.classList.add('hidden');
+            
+            // Feedback positivo
+            if (tg?.showPopup) {
+                tg.showPopup({ 
+                    message: '✅ Salvataggio completato con successo!',
+                    buttons: [{ type: 'ok' }]
+                });
+            } else {
+                alert('✅ Salvataggio completato!');
+            }
+            
+        } catch (error) {
+            console.error('❌ Save error:', error);
+            
+            // Ripristina icona
+            saveFab.innerHTML = originalIcon;
+            saveFab.disabled = false;
+            
+            // Feedback negativo
+            if (tg?.showPopup) {
+                tg.showPopup({ 
+                    message: `❌ Errore durante il salvataggio: ${error.message}`,
+                    buttons: [{ type: 'ok' }]
+                });
+            } else {
+                alert(`Errore: ${error.message}`);
+            }
+        } finally {
+            saveFab.innerHTML = originalIcon;
+            saveFab.disabled = false;
         }
     }
 
