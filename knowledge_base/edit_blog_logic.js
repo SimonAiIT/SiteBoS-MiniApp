@@ -2,7 +2,7 @@
 
 // Global vars
 let currentBlogData = null;
-let currentStructuredContent = null; // Sostituisce currentSections
+let currentStructuredContent = null;
 let currentLang = 'it';
 let apiCredentials = {};
 let tg = null;
@@ -52,23 +52,31 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
 
         const data = await response.json();
-        const responseData = Array.isArray(data) ? data[0] : data;
         
-        if (responseData.status === 'error') {
-            throw new Error(responseData.message || 'Unknown error');
+        console.log('📦 RAW DATA FROM BACKEND:', data);
+        
+        // Verifica status
+        if (data.status !== 'success') {
+            throw new Error(data.message || 'Backend returned non-success status');
         }
 
-        // 🆕 Nuovo: estrai blog_content_structure
-        currentBlogData = responseData.blog_data;
-        
-        // Se i dati arrivano come array con blog_content_structure
-        if (Array.isArray(currentBlogData) && currentBlogData[0]?.blog_content_structure) {
-            currentStructuredContent = currentBlogData[0].blog_content_structure;
-        } else if (currentBlogData?.blog_content_structure) {
-            currentStructuredContent = currentBlogData.blog_content_structure;
-        } else {
-            throw new Error('Struttura dati blog non valida');
+        // 🆕 FIX: Parsing diretto di blog_content_structure
+        if (!data.blog_content_structure) {
+            console.error('❌ blog_content_structure NON TROVATO in:', data);
+            throw new Error('Struttura blog_content_structure non presente nella risposta');
         }
+
+        console.log('✅ blog_content_structure TROVATO:', data.blog_content_structure);
+
+        // Imposta la struttura globale
+        currentStructuredContent = data.blog_content_structure;
+        
+        // Crea oggetto compatibile per logica esistente (opzionale, per compatibilità)
+        currentBlogData = {
+            id: blogId,
+            status: 'draft', // Puoi modificare se N8N passa anche lo status
+            blog_content_structure: currentStructuredContent
+        };
 
         loadingState.style.display = 'none';
         editorGrid.style.display = 'grid';
@@ -78,13 +86,15 @@ document.addEventListener('DOMContentLoaded', async () => {
         setupTextEditor(blogId);
 
     } catch (error) {
-        console.error('Error loading blog:', error);
-        showError("Errore di Caricamento", error.message);
+        console.error('❌ Error loading blog:', error);
+        showError("Errore di Caricamento", `${error.message}\n\nDettagli tecnici: Controlla la console browser (F12)`);
     }
 
-    // 🆕 Nuova funzione di popolazione
+    // Funzione di popolazione editor
     function populateEditor(blogId, structuredContent) {
-        // Status Badge (mantieni logica esistente se disponibile)
+        console.log('🎨 Populating editor with structured content...');
+        
+        // Status Badge
         const statusBadge = document.getElementById('statusBadge');
         const statusText = document.getElementById('statusText');
         const blogStatus = currentBlogData?.status || 'draft';
@@ -95,7 +105,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             statusText.textContent = 'Pubblicato';
         }
 
-        // 🆕 Featured Image - SEMPRE da CDN
+        // Featured Image - SEMPRE da CDN
         const imageFilename = `${blogId}.jpg`;
         const featuredImageUrl = `https://cdn.jsdelivr.net/gh/TrinAiBusinessOperatingSystem/SiteBoS-MiniApp/images/${imageFilename}`;
         
@@ -185,11 +195,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             link.click();
         });
 
-        // 🆕 Popola Titolo e Meta da SEO
+        // Popola Titolo e Meta da SEO
         document.getElementById('editableTitle').value = structuredContent.seo?.meta_title || '';
         document.getElementById('editableMeta').value = structuredContent.seo?.meta_description || '';
 
-        // 🆕 Renderizza sezioni strutturate
+        // Renderizza sezioni strutturate
         renderStructuredSections(structuredContent);
 
         // Preview Live
@@ -200,11 +210,13 @@ document.addEventListener('DOMContentLoaded', async () => {
             window.open(liveUrl, '_blank');
         });
 
-        // 🆕 Renderizza social (se presenti)
+        // Renderizza social (se presenti)
         renderSocialCards(structuredContent, blogId);
+        
+        console.log('✅ Editor popolato con successo');
     }
 
-    // 🆕 Nuova funzione: renderizza sezioni strutturate
+    // Renderizza sezioni strutturate
     function renderStructuredSections(structuredContent) {
         const container = document.getElementById('articlePreview');
         container.innerHTML = '';
@@ -377,12 +389,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         const liveUrl = `https://trinaibusinessoperatingsystem.github.io/SiteBoS-MiniApp/posts/${blogId}.html`;
 
-        // Se non ci sono dati social, mostra placeholder
-        if (!currentBlogData?.social_media) {
-            socialGrid.innerHTML = '<p style="color: var(--text-muted); text-align: center; padding: 20px;">Nessun contenuto social disponibile</p>';
-            return;
-        }
-
+        // Genera social cards da struttura (se non presenti, genera placeholder)
         const platforms = [
             { key: 'facebook', name: 'Facebook', icon: 'fab fa-facebook', color: '#1877f2' },
             { key: 'instagram', name: 'Instagram', icon: 'fab fa-instagram', color: '#e4405f' },
@@ -391,10 +398,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         ];
 
         platforms.forEach(platform => {
-            if (currentBlogData.social_media[platform.key]?.text) {
-                const card = createSocialCard(platform, currentBlogData.social_media[platform.key].text, liveUrl);
-                socialGrid.appendChild(card);
-            }
+            // Genera testo social generico da hero/seo
+            const socialText = `💡 ${structuredContent.hero?.title || structuredContent.seo?.meta_title || 'Titolo mancante'}\n\n${structuredContent.seo?.meta_description || structuredContent.hero?.subtitle || ''}`;
+            
+            const card = createSocialCard(platform, socialText, liveUrl);
+            socialGrid.appendChild(card);
         });
     }
 
@@ -431,7 +439,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    // 🔥 TEXT EDITOR PANEL SETUP
+    // TEXT EDITOR PANEL SETUP
     function setupTextEditor(blogId) {
         const textEditorPanel = document.getElementById('textEditorPanel');
         const textCommandInput = document.getElementById('textCommandInput');
@@ -577,7 +585,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    // 🆕 Nuova funzione: raccolta dati strutturati
+    // Raccolta dati strutturati
     function collectEditorData() {
         return {
             blog_content_structure: {
@@ -608,9 +616,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
 
         const result = await response.json();
-        const responseData = Array.isArray(result) ? result[0] : result;
-        if (responseData.status === 'error') throw new Error(responseData.message);
-        return responseData;
+        if (result.status === 'error') throw new Error(result.message);
+        return result;
     }
 
     function showError(title, message) {
