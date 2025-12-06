@@ -66,28 +66,25 @@ document.addEventListener('DOMContentLoaded', () => {
             
             const data = await response.json();
             
-            console.log('📦 Knowledge Base data received:', data);
+            console.log('📦 Knowledge Base RAW response:', data);
             
-            // Parsing risposta: array di oggetti con Fragment + catalog
+            // ✅ PARSING CORRETTO: risposta è array diretto
+            // [{ catalog: {...}, fragment: [...] }]
             if (Array.isArray(data) && data.length > 0) {
-                // Prendi il primo elemento (dovrebbe esserci un solo owner)
                 const ownerData = data[0];
                 
-                // Estrai Fragment (può essere oggetto o array)
-                if (ownerData.Fragment) {
-                    allFragments = Array.isArray(ownerData.Fragment) 
-                        ? ownerData.Fragment 
-                        : [ownerData.Fragment];
-                }
+                // ✅ fragment (minuscolo!) è già array
+                allFragments = ownerData.fragment || [];
                 
-                // Estrai catalog
+                // ✅ catalog allo stesso livello
                 catalogData = ownerData.catalog || null;
                 
-                console.log('✅ Fragments:', allFragments.length);
-                console.log('✅ Catalog:', catalogData ? 'presente' : 'assente');
+                console.log('✅ Fragments loaded:', allFragments.length);
+                console.log('✅ Catalog:', catalogData ? `${catalogData.categories?.length} categorie` : 'assente');
                 
                 renderKnowledgeByCategory();
             } else {
+                console.warn('⚠️ Response is not an array or empty');
                 allFragments = [];
                 catalogData = null;
                 renderKnowledgeByCategory();
@@ -113,18 +110,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
         emptyState.classList.add('hidden');
 
-        // Se non c'è catalog, raggruppa manualmente (fallback)
+        // Se non c'è catalog, usa fallback view
         if (!catalogData || !catalogData.categories) {
+            console.warn('⚠️ No catalog found, using fallback view');
             renderFallbackView();
             return;
         }
 
-        // Crea mappa fragment_id -> fragment per lookup veloce
-        const fragmentMap = {};
-        allFragments.forEach(frag => {
-            const id = frag.fragment_id || frag._id;
-            fragmentMap[id] = frag;
-        });
+        console.log('🏗️ Building categorized view...');
 
         // Genera HTML per categorie da catalog
         const categoriesHTML = catalogData.categories.map(category => {
@@ -133,11 +126,11 @@ document.addEventListener('DOMContentLoaded', () => {
             
             if (category.subcategories && Array.isArray(category.subcategories)) {
                 category.subcategories.forEach(subcat => {
-                    // Match fragment con callback_data servizio
+                    // ✅ Match fragment con callback_data del servizio
                     const matchingFragment = allFragments.find(frag => {
-                        const fragId = frag.fragment_id || frag._id;
-                        return fragId.includes(subcat.callback_data) || 
-                               fragId.includes(subcat.original_slug);
+                        const fragId = frag.fragment_id || frag._id || '';
+                        // Match: IT06988830821-SVC_3WKUXWIL contiene SVC_3WKUXWIL
+                        return fragId.includes(subcat.callback_data);
                     });
                     
                     if (matchingFragment) {
@@ -149,7 +142,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
             }
 
-            if (categoryFragments.length === 0) return ''; // Salta categorie vuote
+            if (categoryFragments.length === 0) {
+                console.log(`⏭️ Skipping empty category: ${category.short_name}`);
+                return ''; // Salta categorie vuote
+            }
 
             const count = categoryFragments.length;
             const fragmentsHTML = categoryFragments.map(item => 
@@ -172,6 +168,12 @@ document.addEventListener('DOMContentLoaded', () => {
             `;
         }).filter(html => html !== '').join('');
 
+        if (categoriesHTML === '') {
+            console.warn('⚠️ No categories with fragments, using fallback');
+            renderFallbackView();
+            return;
+        }
+
         blogList.innerHTML = categoriesHTML;
 
         // Update stats
@@ -182,8 +184,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- 5. FALLBACK VIEW (senza catalog) ---
     function renderFallbackView() {
-        console.warn('⚠️ No catalog found, using fallback view');
-        
         const fragmentsHTML = allFragments.map(frag => 
             renderFragmentCard(frag, null)
         ).join('');
