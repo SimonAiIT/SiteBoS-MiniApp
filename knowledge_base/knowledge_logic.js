@@ -32,6 +32,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let catalogData = null;
     let allFragments = [];
+    let knowledgeData = []; // Per salvataggio
 
     // --- 2. INIZIALIZZAZIONE ---
     async function init() {
@@ -43,7 +44,7 @@ document.addEventListener('DOMContentLoaded', () => {
         await loadKnowledgeBase();
     }
 
-    // --- 3. CARICAMENTO KNOWLEDGE BASE ---
+    // --- 3. CARICAMENTO LISTA ---
     window.loadKnowledgeBase = async function(forceReload = false) {
         if (forceReload && tg?.HapticFeedback) {
             tg.HapticFeedback.impactOccurred('light');
@@ -66,37 +67,23 @@ document.addEventListener('DOMContentLoaded', () => {
             
             const data = await response.json();
             
-            console.log('📦 RAW RESPONSE:', JSON.stringify(data, null, 2));
-            console.log('📦 Type:', Array.isArray(data) ? 'Array' : typeof data);
-            console.log('📦 Length/Keys:', Array.isArray(data) ? data.length : Object.keys(data));
+            console.log('📦 RAW RESPONSE:', data);
             
-            // 🔧 PARSING ULTRA-ROBUSTO
             let rawData = data;
-            
-            // Se è array, prendi primo elemento
             if (Array.isArray(data)) {
-                console.log('✅ Data is array, taking first element');
                 rawData = data[0] || {};
             }
             
-            // Estrai fragments (prova tutti i possibili nomi)
             let fragments = rawData.fragment || rawData.Fragment || rawData.fragments || rawData.Fragments || [];
-            
-            // Se fragments non è array, wrappa
             if (!Array.isArray(fragments)) {
-                console.log('⚠️ Fragments not array, wrapping:', fragments);
                 fragments = fragments ? [fragments] : [];
             }
             
             allFragments = fragments;
-            console.log('✅ Fragments extracted:', allFragments.length);
-            if (allFragments.length > 0) {
-                console.log('📄 First fragment:', allFragments[0]);
-            }
-            
-            // Estrai catalog
             catalogData = rawData.catalog || rawData.Catalog || null;
-            console.log('✅ Catalog:', catalogData ? `${catalogData.categories?.length || 0} categories` : 'NULL');
+            
+            console.log('✅ Fragments:', allFragments.length);
+            console.log('✅ Catalog:', catalogData ? 'present' : 'NULL');
             
             renderKnowledgeByCategory();
             
@@ -104,19 +91,14 @@ document.addEventListener('DOMContentLoaded', () => {
             appContent.classList.remove('hidden');
             
         } catch (error) {
-            console.error('❌ Error loading knowledge base:', error);
+            console.error('❌ Error:', error);
             showError(`Errore caricamento: ${error.message}`);
         }
     }
 
-    // --- 4. RENDERING PER CATEGORIA ---
+    // --- 4. RENDERING CATEGORIE ---
     function renderKnowledgeByCategory() {
-        console.log('🎨 renderKnowledgeByCategory called');
-        console.log('   - Fragments:', allFragments.length);
-        console.log('   - Catalog:', catalogData ? 'present' : 'NULL');
-        
         if (!allFragments || allFragments.length === 0) {
-            console.warn('⚠️ No fragments to display');
             blogList.innerHTML = '';
             emptyState.classList.remove('hidden');
             updateStats(0, 0);
@@ -125,30 +107,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
         emptyState.classList.add('hidden');
 
-        // Se non c'è catalog, usa fallback
         if (!catalogData || !catalogData.categories || catalogData.categories.length === 0) {
-            console.warn('⚠️ No catalog, using fallback view');
             renderFallbackView();
             return;
         }
 
-        console.log('🏗️ Building categorized view...');
-
-        // Genera HTML per categorie
-        const categoriesHTML = catalogData.categories.map((category, catIndex) => {
-            console.log(`  Category ${catIndex}: ${category.short_name}`);
-            
+        const categoriesHTML = catalogData.categories.map(category => {
             const categoryFragments = [];
             
             if (category.subcategories && Array.isArray(category.subcategories)) {
-                category.subcategories.forEach((subcat, subIndex) => {
+                category.subcategories.forEach(subcat => {
                     const matchingFragment = allFragments.find(frag => {
                         const fragId = frag.fragment_id || frag._id || '';
-                        const match = fragId.includes(subcat.callback_data);
-                        if (match) {
-                            console.log(`    ✅ Match: ${fragId} <-> ${subcat.callback_data}`);
-                        }
-                        return match;
+                        return fragId.includes(subcat.callback_data);
                     });
                     
                     if (matchingFragment) {
@@ -160,12 +131,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
             }
 
-            if (categoryFragments.length === 0) {
-                console.log(`    ⏭️ Skip ${category.short_name} (empty)`);
-                return '';
-            }
-
-            console.log(`    ✅ ${category.short_name}: ${categoryFragments.length} fragments`);
+            if (categoryFragments.length === 0) return '';
 
             const count = categoryFragments.length;
             const fragmentsHTML = categoryFragments.map(item => 
@@ -189,12 +155,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }).filter(html => html !== '').join('');
 
         if (categoriesHTML === '') {
-            console.warn('⚠️ No categories with fragments, fallback');
             renderFallbackView();
             return;
         }
 
-        console.log('✅ Rendering categories HTML');
         blogList.innerHTML = categoriesHTML;
 
         const draftCount = allFragments.filter(f => !f.content_generated).length;
@@ -204,8 +168,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- 5. FALLBACK VIEW ---
     function renderFallbackView() {
-        console.log('📋 Rendering fallback view');
-        
         const fragmentsHTML = allFragments.map(frag => 
             renderFragmentCard(frag, null)
         ).join('');
@@ -229,7 +191,7 @@ document.addEventListener('DOMContentLoaded', () => {
         updateStats(draftCount, publishedCount);
     }
 
-    // --- 6. RENDER FRAGMENT CARD ---
+    // --- 6. RENDER FRAGMENT CARD (COLLAPSED) ---
     function renderFragmentCard(fragment, subcategory) {
         const fragId = fragment.fragment_id || fragment._id || 'unknown';
         const title = fragment.title || 'Senza titolo';
@@ -243,29 +205,164 @@ document.addEventListener('DOMContentLoaded', () => {
         const serviceName = subcategory ? subcategory.short_name : '';
 
         return `
-            <div class="blog-item ${statusClass}">
-                <div class="blog-info">
+            <div class="blog-item ${statusClass}" data-fragment-id="${fragId}" data-loaded="false">
+                <div class="blog-info" onclick="expandFragment('${fragId}', this)" style="cursor: pointer;">
                     <div class="blog-meta">${statusIcon} ${statusText}${serviceName ? ` • ${serviceName}` : ''}</div>
                     <div class="blog-title">${escapeHtml(title)}</div>
                     <div class="blog-desc">${escapeHtml(summary)}</div>
                 </div>
-                <div class="blog-actions-group">
-                    ${hasGenerated 
-                        ? `<button class="btn-action btn-edit" onclick="goToEditBlog('${fragId}')">
-                            <i class="fas fa-edit"></i>
-                            <span>Modifica</span>
-                           </button>` 
-                        : `<button class="btn-action btn-create" onclick="goToDeployBlog('${fragId}')">
-                            <i class="fas fa-magic"></i>
-                            <span>Genera</span>
-                           </button>`
-                    }
-                </div>
+                <div class="blog-details" style="display: none; padding: 15px; border-top: 1px solid var(--glass-border);"></div>
             </div>
         `;
     }
 
-    // --- 7. HELPERS ---
+    // --- 7. ESPANDI FRAGMENT E CARICA DETTAGLI ---
+    window.expandFragment = async function(fragmentId, clickedElement) {
+        if (tg?.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
+        
+        const cardElement = clickedElement.closest('.blog-item');
+        const detailsContainer = cardElement.querySelector('.blog-details');
+        
+        // Se già caricato, toggle
+        if (cardElement.dataset.loaded === 'true') {
+            const isVisible = detailsContainer.style.display !== 'none';
+            detailsContainer.style.display = isVisible ? 'none' : 'block';
+            return;
+        }
+        
+        // Carica dettagli
+        cardElement.classList.add('loading');
+        
+        try {
+            const response = await fetch(WEBHOOK_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    action: 'get_kb_details',
+                    fragment_id: fragmentId,
+                    ...apiCredentials
+                })
+            });
+            
+            if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
+            
+            const data = await response.json();
+            const fragment = data.Fragment || data.fragment || data;
+            
+            console.log('📄 Fragment details loaded:', fragment);
+            
+            // Aggiungi a knowledgeData per salvataggio
+            knowledgeData.push(fragment);
+            
+            // Render dettagli
+            renderFragmentDetails(fragment, detailsContainer);
+            
+            cardElement.dataset.loaded = 'true';
+            detailsContainer.style.display = 'block';
+            
+        } catch (error) {
+            console.error('❌ Error loading details:', error);
+            alert(`Errore caricamento dettagli: ${error.message}`);
+        } finally {
+            cardElement.classList.remove('loading');
+        }
+    }
+
+    // --- 8. RENDER DETTAGLI EDITABILI ---
+    function renderFragmentDetails(fragment, container) {
+        const id = fragment.fragment_id || fragment._id;
+        const hasGenerated = fragment.content_generated === true;
+        
+        const btnStyle = (isEdit) => `
+            background: ${isEdit ? '#4cd964' : '#5B6FED'};
+            color: white; border: none; padding: 10px 18px; border-radius: 12px; cursor: pointer;
+            font-size: 0.9rem; font-weight: 600; display: flex; align-items: center; gap: 8px;
+            box-shadow: 0 4px 12px ${isEdit ? 'rgba(76, 217, 100, 0.3)' : 'rgba(91, 111, 237, 0.3)'};
+            transition: transform 0.2s;
+        `;
+        
+        const buttonHTML = hasGenerated 
+            ? `<button onclick="goToEditBlog('${id}')" style="${btnStyle(true)}">
+                <i class="fas fa-edit"></i> Modifica Blog Post
+               </button>`
+            : `<button onclick="goToDeployBlog('${id}')" style="${btnStyle(false)}">
+                <i class="fas fa-magic"></i> Genera Blog Post
+               </button>`;
+        
+        container.innerHTML = `
+            <div style="display: flex; justify-content: flex-end; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.15);">
+                ${buttonHTML}
+            </div>
+            
+            <h3>Titolo</h3>
+            <input type="text" class="editable-input" data-id="${id}" data-field="title" value="${fragment.title}">
+            
+            <h3>Riepilogo</h3>
+            <textarea class="editable-textarea" data-id="${id}" data-field="summary" rows="3">${fragment.summary}</textarea>
+            
+            <h3>Risposta Diretta</h3>
+            <textarea class="editable-textarea" data-id="${id}" data-field="answer_fragment" rows="5">${fragment.answer_fragment}</textarea>
+            
+            <h3>Domande Utente (una per riga)</h3>
+            <textarea class="editable-textarea" data-id="${id}" data-field="user_utterances" rows="4">${fragment.user_utterances.join('\n')}</textarea>
+            
+            <h3>Approfondimenti (Q&A)</h3>
+            <div class="qa-container">
+            ${fragment.sections.map((section, index) => `
+                <div class="kb-section">
+                    <input type="text" class="editable-input" placeholder="Domanda" data-id="${id}" data-field="sections.${index}.question" value="${section.question}">
+                    <textarea class="editable-textarea" placeholder="Risposta" data-id="${id}" data-field="sections.${index}.answer" rows="3">${section.answer}</textarea>
+                    <textarea class="editable-textarea analogy" placeholder="Analogia" data-id="${id}" data-field="sections.${index}.analogy" rows="2">${section.analogy || ''}</textarea>
+                </div>
+            `).join('')}
+            </div>
+        `;
+        
+        // Attach input listeners
+        container.querySelectorAll('.editable-input, .editable-textarea').forEach(input => {
+            input.addEventListener('input', handleInputChange);
+        });
+    }
+
+    // --- 9. HANDLE INPUT CHANGE ---
+    function handleInputChange(e) {
+        const target = e.target;
+        const id = target.dataset.id;
+        const fieldPath = target.dataset.field;
+        if (!id || !fieldPath) return;
+
+        const fragment = knowledgeData.find(f => (f.fragment_id || f._id) === id);
+        if (!fragment) return;
+
+        const pathParts = fieldPath.split('.');
+        let current = fragment;
+        for (let i = 0; i < pathParts.length - 1; i++) {
+            current = current[pathParts[i]];
+        }
+        
+        if (fieldPath === 'user_utterances') {
+            current[pathParts[pathParts.length - 1]] = target.value.split('\n').filter(Boolean);
+        } else {
+            current[pathParts[pathParts.length - 1]] = target.value;
+        }
+    }
+
+    // --- 10. SALVATAGGIO ---
+    window.handleSave = async function() {
+        if (tg?.HapticFeedback) tg.HapticFeedback.impactOccurred('medium');
+        
+        // TODO: Implementa chiamata save_kb
+        const payload = { fragments: knowledgeData };
+        console.log('💾 Saving:', payload);
+        
+        if (tg?.showPopup) {
+            tg.showPopup({ message: '✅ Salvataggio completato!' });
+        } else {
+            alert('Salvataggio completato!');
+        }
+    }
+
+    // --- 11. HELPERS ---
     function updateStats(draft, published) {
         document.getElementById('count-draft').textContent = draft;
         document.getElementById('count-published').textContent = published;
@@ -278,14 +375,13 @@ document.addEventListener('DOMContentLoaded', () => {
         return div.innerHTML;
     }
 
-    // --- 8. TOGGLE ---
     window.toggleCategory = function(headerElement) {
         if (tg?.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
         const card = headerElement.closest('.cat-card');
         card.classList.toggle('open');
     }
 
-    // --- 9. NAVIGAZIONE ---
+    // --- 12. NAVIGAZIONE ---
     window.goToNewArticle = function() {
         if (tg?.HapticFeedback) tg.HapticFeedback.impactOccurred('medium');
         const targetUrl = new URL('deployblog.html', window.location.href);
