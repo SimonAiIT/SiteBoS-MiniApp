@@ -12,7 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
             tg.expand();
         }
     } catch (e) {
-        console.warn("L'ambiente Telegram WebApp non è presente o ha causato un errore.", e);
+        console.warn("L'ambiente Telegram WebApp non è presente.", e);
     }
     
     const loader = document.getElementById('loader');
@@ -66,29 +66,39 @@ document.addEventListener('DOMContentLoaded', () => {
             
             const data = await response.json();
             
-            console.log('📦 Knowledge Base RAW response:', data);
+            console.log('📦 RAW RESPONSE:', JSON.stringify(data, null, 2));
+            console.log('📦 Type:', Array.isArray(data) ? 'Array' : typeof data);
+            console.log('📦 Length/Keys:', Array.isArray(data) ? data.length : Object.keys(data));
             
-            // ✅ PARSING CORRETTO: risposta è array diretto
-            // [{ catalog: {...}, fragment: [...] }]
-            if (Array.isArray(data) && data.length > 0) {
-                const ownerData = data[0];
-                
-                // ✅ fragment (minuscolo!) è già array
-                allFragments = ownerData.fragment || [];
-                
-                // ✅ catalog allo stesso livello
-                catalogData = ownerData.catalog || null;
-                
-                console.log('✅ Fragments loaded:', allFragments.length);
-                console.log('✅ Catalog:', catalogData ? `${catalogData.categories?.length} categorie` : 'assente');
-                
-                renderKnowledgeByCategory();
-            } else {
-                console.warn('⚠️ Response is not an array or empty');
-                allFragments = [];
-                catalogData = null;
-                renderKnowledgeByCategory();
+            // 🔧 PARSING ULTRA-ROBUSTO
+            let rawData = data;
+            
+            // Se è array, prendi primo elemento
+            if (Array.isArray(data)) {
+                console.log('✅ Data is array, taking first element');
+                rawData = data[0] || {};
             }
+            
+            // Estrai fragments (prova tutti i possibili nomi)
+            let fragments = rawData.fragment || rawData.Fragment || rawData.fragments || rawData.Fragments || [];
+            
+            // Se fragments non è array, wrappa
+            if (!Array.isArray(fragments)) {
+                console.log('⚠️ Fragments not array, wrapping:', fragments);
+                fragments = fragments ? [fragments] : [];
+            }
+            
+            allFragments = fragments;
+            console.log('✅ Fragments extracted:', allFragments.length);
+            if (allFragments.length > 0) {
+                console.log('📄 First fragment:', allFragments[0]);
+            }
+            
+            // Estrai catalog
+            catalogData = rawData.catalog || rawData.Catalog || null;
+            console.log('✅ Catalog:', catalogData ? `${catalogData.categories?.length || 0} categories` : 'NULL');
+            
+            renderKnowledgeByCategory();
             
             loader.classList.add('hidden');
             appContent.classList.remove('hidden');
@@ -99,9 +109,14 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // --- 4. RENDERING PER CATEGORIA (usando catalog) ---
+    // --- 4. RENDERING PER CATEGORIA ---
     function renderKnowledgeByCategory() {
+        console.log('🎨 renderKnowledgeByCategory called');
+        console.log('   - Fragments:', allFragments.length);
+        console.log('   - Catalog:', catalogData ? 'present' : 'NULL');
+        
         if (!allFragments || allFragments.length === 0) {
+            console.warn('⚠️ No fragments to display');
             blogList.innerHTML = '';
             emptyState.classList.remove('hidden');
             updateStats(0, 0);
@@ -110,27 +125,30 @@ document.addEventListener('DOMContentLoaded', () => {
 
         emptyState.classList.add('hidden');
 
-        // Se non c'è catalog, usa fallback view
-        if (!catalogData || !catalogData.categories) {
-            console.warn('⚠️ No catalog found, using fallback view');
+        // Se non c'è catalog, usa fallback
+        if (!catalogData || !catalogData.categories || catalogData.categories.length === 0) {
+            console.warn('⚠️ No catalog, using fallback view');
             renderFallbackView();
             return;
         }
 
         console.log('🏗️ Building categorized view...');
 
-        // Genera HTML per categorie da catalog
-        const categoriesHTML = catalogData.categories.map(category => {
-            // Trova fragments che appartengono alle subcategories di questa categoria
+        // Genera HTML per categorie
+        const categoriesHTML = catalogData.categories.map((category, catIndex) => {
+            console.log(`  Category ${catIndex}: ${category.short_name}`);
+            
             const categoryFragments = [];
             
             if (category.subcategories && Array.isArray(category.subcategories)) {
-                category.subcategories.forEach(subcat => {
-                    // ✅ Match fragment con callback_data del servizio
+                category.subcategories.forEach((subcat, subIndex) => {
                     const matchingFragment = allFragments.find(frag => {
                         const fragId = frag.fragment_id || frag._id || '';
-                        // Match: IT06988830821-SVC_3WKUXWIL contiene SVC_3WKUXWIL
-                        return fragId.includes(subcat.callback_data);
+                        const match = fragId.includes(subcat.callback_data);
+                        if (match) {
+                            console.log(`    ✅ Match: ${fragId} <-> ${subcat.callback_data}`);
+                        }
+                        return match;
                     });
                     
                     if (matchingFragment) {
@@ -143,9 +161,11 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             if (categoryFragments.length === 0) {
-                console.log(`⏭️ Skipping empty category: ${category.short_name}`);
-                return ''; // Salta categorie vuote
+                console.log(`    ⏭️ Skip ${category.short_name} (empty)`);
+                return '';
             }
+
+            console.log(`    ✅ ${category.short_name}: ${categoryFragments.length} fragments`);
 
             const count = categoryFragments.length;
             const fragmentsHTML = categoryFragments.map(item => 
@@ -169,21 +189,23 @@ document.addEventListener('DOMContentLoaded', () => {
         }).filter(html => html !== '').join('');
 
         if (categoriesHTML === '') {
-            console.warn('⚠️ No categories with fragments, using fallback');
+            console.warn('⚠️ No categories with fragments, fallback');
             renderFallbackView();
             return;
         }
 
+        console.log('✅ Rendering categories HTML');
         blogList.innerHTML = categoriesHTML;
 
-        // Update stats
         const draftCount = allFragments.filter(f => !f.content_generated).length;
         const publishedCount = allFragments.filter(f => f.content_generated === true).length;
         updateStats(draftCount, publishedCount);
     }
 
-    // --- 5. FALLBACK VIEW (senza catalog) ---
+    // --- 5. FALLBACK VIEW ---
     function renderFallbackView() {
+        console.log('📋 Rendering fallback view');
+        
         const fragmentsHTML = allFragments.map(frag => 
             renderFragmentCard(frag, null)
         ).join('');
@@ -207,9 +229,9 @@ document.addEventListener('DOMContentLoaded', () => {
         updateStats(draftCount, publishedCount);
     }
 
-    // --- 6. RENDER SINGOLO FRAGMENT CARD ---
+    // --- 6. RENDER FRAGMENT CARD ---
     function renderFragmentCard(fragment, subcategory) {
-        const fragId = fragment.fragment_id || fragment._id;
+        const fragId = fragment.fragment_id || fragment._id || 'unknown';
         const title = fragment.title || 'Senza titolo';
         const summary = fragment.summary || '';
         const hasGenerated = fragment.content_generated === true;
@@ -218,7 +240,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const statusIcon = hasGenerated ? '✅' : '📝';
         const statusText = hasGenerated ? 'Blog Generato' : 'Da Generare';
         
-        // Nome servizio da subcategory se presente
         const serviceName = subcategory ? subcategory.short_name : '';
 
         return `
@@ -244,7 +265,7 @@ document.addEventListener('DOMContentLoaded', () => {
         `;
     }
 
-    // --- 7. HELPER FUNCTIONS ---
+    // --- 7. HELPERS ---
     function updateStats(draft, published) {
         document.getElementById('count-draft').textContent = draft;
         document.getElementById('count-published').textContent = published;
@@ -257,10 +278,9 @@ document.addEventListener('DOMContentLoaded', () => {
         return div.innerHTML;
     }
 
-    // --- 8. TOGGLE CATEGORIA ---
+    // --- 8. TOGGLE ---
     window.toggleCategory = function(headerElement) {
         if (tg?.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
-        
         const card = headerElement.closest('.cat-card');
         card.classList.toggle('open');
     }
@@ -268,52 +288,38 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- 9. NAVIGAZIONE ---
     window.goToNewArticle = function() {
         if (tg?.HapticFeedback) tg.HapticFeedback.impactOccurred('medium');
-        
-        // TODO: Pagina selezione servizio per nuovo articolo
         const targetUrl = new URL('deployblog.html', window.location.href);
         const currentParams = new URLSearchParams(window.location.search);
-        currentParams.forEach((value, key) => {
-            targetUrl.searchParams.set(key, value);
-        });
+        currentParams.forEach((value, key) => targetUrl.searchParams.set(key, value));
         window.location.href = targetUrl.toString();
     }
 
     window.goToDeployBlog = function(fragmentId) {
         if (tg?.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
-        
         const targetUrl = new URL('deployblog.html', window.location.href);
         const currentParams = new URLSearchParams(window.location.search);
-        currentParams.forEach((value, key) => {
-            targetUrl.searchParams.set(key, value);
-        });
+        currentParams.forEach((value, key) => targetUrl.searchParams.set(key, value));
         targetUrl.searchParams.set('fragment_id', fragmentId);
         window.location.href = targetUrl.toString();
     }
 
     window.goToEditBlog = function(fragmentId) {
         if (tg?.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
-        
         const targetUrl = new URL('edit_blog.html', window.location.href);
         const currentParams = new URLSearchParams(window.location.search);
-        currentParams.forEach((value, key) => {
-            targetUrl.searchParams.set(key, value);
-        });
+        currentParams.forEach((value, key) => targetUrl.searchParams.set(key, value));
         targetUrl.searchParams.set('blog_id', fragmentId);
         window.location.href = targetUrl.toString();
     }
 
     window.goBack = function() {
         if (tg?.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
-        
         const dashboardUrl = new URL('../dashboard.html', window.location.href);
         const currentParams = new URLSearchParams(window.location.search);
-        currentParams.forEach((value, key) => {
-            dashboardUrl.searchParams.set(key, value);
-        });
+        currentParams.forEach((value, key) => dashboardUrl.searchParams.set(key, value));
         window.location.href = dashboardUrl.toString();
     }
 
-    // --- 10. RELOAD FUNCTION (esposta globalmente) ---
     window.loadBlogs = window.loadKnowledgeBase;
 
     function showError(message) {
