@@ -32,7 +32,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let catalogData = null;
     let allFragments = [];
-    let knowledgeData = []; // Per salvataggio
+    let publishedArticles = []; // Articoli pubblicati
+    let knowledgeData = [];
 
     // --- 2. INIZIALIZZAZIONE ---
     async function init() {
@@ -74,16 +75,32 @@ document.addEventListener('DOMContentLoaded', () => {
                 rawData = data[0] || {};
             }
             
+            // Estrai fragments
             let fragments = rawData.fragment || rawData.Fragment || rawData.fragments || rawData.Fragments || [];
             if (!Array.isArray(fragments)) {
                 fragments = fragments ? [fragments] : [];
             }
-            
             allFragments = fragments;
+            
+            // Estrai catalog
             catalogData = rawData.catalog || rawData.Catalog || null;
+            
+            // ✅ ESTRAI ARTICOLI PUBBLICATI
+            let articles = rawData.article || rawData.Article || rawData.articles || [];
+            if (Array.isArray(articles)) {
+                publishedArticles = articles;
+            } else if (articles && typeof articles === 'object') {
+                publishedArticles = [articles];
+            } else {
+                publishedArticles = [];
+            }
             
             console.log('✅ Fragments:', allFragments.length);
             console.log('✅ Catalog:', catalogData ? 'present' : 'NULL');
+            console.log('✅ Published articles:', publishedArticles.length);
+            publishedArticles.forEach(art => {
+                console.log(`  📄 ${art.articleId} → ${art.meta_title}`);
+            });
             
             renderKnowledgeByCategory();
             
@@ -96,7 +113,23 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // --- 4. RENDERING CATEGORIE ---
+    // --- 4. HELPER: Trova articolo pubblicato ---
+    function findPublishedArticle(fragmentId) {
+        // Match diretto
+        let article = publishedArticles.find(art => art.articleId === fragmentId);
+        if (article) return article;
+        
+        // Match senza prefisso VAT (IT06988830821-SVC_XXX → SVC_XXX)
+        const shortId = fragmentId.split('-').pop();
+        article = publishedArticles.find(art => {
+            const artShortId = art.articleId.split('-').pop();
+            return artShortId === shortId;
+        });
+        
+        return article || null;
+    }
+
+    // --- 5. RENDERING CATEGORIE ---
     function renderKnowledgeByCategory() {
         if (!allFragments || allFragments.length === 0) {
             blogList.innerHTML = '';
@@ -161,12 +194,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
         blogList.innerHTML = categoriesHTML;
 
-        const draftCount = allFragments.filter(f => !f.content_generated).length;
-        const publishedCount = allFragments.filter(f => f.content_generated === true).length;
+        // Stats basate su articoli pubblicati (non su content_generated)
+        const publishedCount = publishedArticles.length;
+        const draftCount = allFragments.length - publishedCount;
         updateStats(draftCount, publishedCount);
     }
 
-    // --- 5. FALLBACK VIEW ---
+    // --- 6. FALLBACK VIEW ---
     function renderFallbackView() {
         const fragmentsHTML = allFragments.map(frag => 
             renderFragmentCard(frag, null)
@@ -186,21 +220,27 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
         `;
 
-        const draftCount = allFragments.filter(f => !f.content_generated).length;
-        const publishedCount = allFragments.filter(f => f.content_generated === true).length;
+        const publishedCount = publishedArticles.length;
+        const draftCount = allFragments.length - publishedCount;
         updateStats(draftCount, publishedCount);
     }
 
-    // --- 6. RENDER FRAGMENT CARD (COLLAPSED) ---
+    // --- 7. RENDER FRAGMENT CARD (COLLAPSED) ---
     function renderFragmentCard(fragment, subcategory) {
         const fragId = fragment.fragment_id || fragment._id || 'unknown';
         const title = fragment.title || 'Senza titolo';
         const summary = fragment.summary || '';
-        const hasGenerated = fragment.content_generated === true;
-
-        const statusClass = hasGenerated ? 'status-published' : 'status-draft';
-        const statusIcon = hasGenerated ? '✅' : '📝';
-        const statusText = hasGenerated ? 'Blog Generato' : 'Da Generare';
+        
+        // ✅ Verifica se pubblicato
+        const publishedArticle = findPublishedArticle(fragId);
+        const isPublished = !!publishedArticle;
+        
+        const statusClass = isPublished ? 'status-published' : 'status-draft';
+        const statusIcon = isPublished ? '✅' : '📝';
+        const statusText = isPublished ? 'Blog Pubblicato' : 'Da Generare';
+        
+        // Usa meta_title se articolo pubblicato, altrimenti title
+        const displayTitle = publishedArticle?.meta_title || title;
         
         const serviceName = subcategory ? subcategory.short_name : '';
 
@@ -208,7 +248,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <div class="blog-item ${statusClass}" data-fragment-id="${fragId}" data-loaded="false">
                 <div class="blog-info" onclick="expandFragment('${fragId}', this)" style="cursor: pointer;">
                     <div class="blog-meta">${statusIcon} ${statusText}${serviceName ? ` • ${serviceName}` : ''}</div>
-                    <div class="blog-title">${escapeHtml(title)}</div>
+                    <div class="blog-title">${escapeHtml(displayTitle)}</div>
                     <div class="blog-desc">${escapeHtml(summary)}</div>
                 </div>
                 <div class="blog-details" style="display: none; padding: 15px; border-top: 1px solid var(--glass-border);"></div>
@@ -216,14 +256,14 @@ document.addEventListener('DOMContentLoaded', () => {
         `;
     }
 
-    // --- 7. ESPANDI FRAGMENT E CARICA DETTAGLI ---
+    // --- 8. ESPANDI FRAGMENT E CARICA DETTAGLI ---
     window.expandFragment = async function(fragmentId, clickedElement) {
         if (tg?.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
         
         const cardElement = clickedElement.closest('.blog-item');
         const detailsContainer = cardElement.querySelector('.blog-details');
         
-        // Se già caricato, toggle
+        // Toggle se già caricato
         if (cardElement.dataset.loaded === 'true') {
             const isVisible = detailsContainer.style.display !== 'none';
             detailsContainer.style.display = isVisible ? 'none' : 'block';
@@ -251,7 +291,7 @@ document.addEventListener('DOMContentLoaded', () => {
             
             console.log('📄 Fragment details loaded:', fragment);
             
-            // Aggiungi a knowledgeData per salvataggio
+            // Aggiungi a knowledgeData
             knowledgeData.push(fragment);
             
             // Render dettagli
@@ -268,10 +308,13 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // --- 8. RENDER DETTAGLI EDITABILI ---
+    // --- 9. RENDER DETTAGLI EDITABILI ---
     function renderFragmentDetails(fragment, container) {
         const id = fragment.fragment_id || fragment._id;
-        const hasGenerated = fragment.content_generated === true;
+        
+        // ✅ Verifica se pubblicato
+        const publishedArticle = findPublishedArticle(id);
+        const isPublished = !!publishedArticle;
         
         const btnStyle = (isEdit) => `
             background: ${isEdit ? '#4cd964' : '#5B6FED'};
@@ -281,7 +324,7 @@ document.addEventListener('DOMContentLoaded', () => {
             transition: transform 0.2s;
         `;
         
-        const buttonHTML = hasGenerated 
+        const buttonHTML = isPublished
             ? `<button onclick="goToEditBlog('${id}')" style="${btnStyle(true)}">
                 <i class="fas fa-edit"></i> Modifica Blog Post
                </button>`
@@ -295,13 +338,13 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
             
             <h3>Titolo</h3>
-            <input type="text" class="editable-input" data-id="${id}" data-field="title" value="${fragment.title}">
+            <input type="text" class="editable-input" data-id="${id}" data-field="title" value="${escapeHtml(fragment.title)}">
             
             <h3>Riepilogo</h3>
-            <textarea class="editable-textarea" data-id="${id}" data-field="summary" rows="3">${fragment.summary}</textarea>
+            <textarea class="editable-textarea" data-id="${id}" data-field="summary" rows="3">${escapeHtml(fragment.summary)}</textarea>
             
             <h3>Risposta Diretta</h3>
-            <textarea class="editable-textarea" data-id="${id}" data-field="answer_fragment" rows="5">${fragment.answer_fragment}</textarea>
+            <textarea class="editable-textarea" data-id="${id}" data-field="answer_fragment" rows="5">${escapeHtml(fragment.answer_fragment)}</textarea>
             
             <h3>Domande Utente (una per riga)</h3>
             <textarea class="editable-textarea" data-id="${id}" data-field="user_utterances" rows="4">${fragment.user_utterances.join('\n')}</textarea>
@@ -310,21 +353,21 @@ document.addEventListener('DOMContentLoaded', () => {
             <div class="qa-container">
             ${fragment.sections.map((section, index) => `
                 <div class="kb-section">
-                    <input type="text" class="editable-input" placeholder="Domanda" data-id="${id}" data-field="sections.${index}.question" value="${section.question}">
-                    <textarea class="editable-textarea" placeholder="Risposta" data-id="${id}" data-field="sections.${index}.answer" rows="3">${section.answer}</textarea>
-                    <textarea class="editable-textarea analogy" placeholder="Analogia" data-id="${id}" data-field="sections.${index}.analogy" rows="2">${section.analogy || ''}</textarea>
+                    <input type="text" class="editable-input" placeholder="Domanda" data-id="${id}" data-field="sections.${index}.question" value="${escapeHtml(section.question)}">
+                    <textarea class="editable-textarea" placeholder="Risposta" data-id="${id}" data-field="sections.${index}.answer" rows="3">${escapeHtml(section.answer)}</textarea>
+                    <textarea class="editable-textarea analogy" placeholder="Analogia" data-id="${id}" data-field="sections.${index}.analogy" rows="2">${escapeHtml(section.analogy || '')}</textarea>
                 </div>
             `).join('')}
             </div>
         `;
         
-        // Attach input listeners
+        // Attach listeners
         container.querySelectorAll('.editable-input, .editable-textarea').forEach(input => {
             input.addEventListener('input', handleInputChange);
         });
     }
 
-    // --- 9. HANDLE INPUT CHANGE ---
+    // --- 10. HANDLE INPUT CHANGE ---
     function handleInputChange(e) {
         const target = e.target;
         const id = target.dataset.id;
@@ -347,11 +390,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // --- 10. SALVATAGGIO ---
+    // --- 11. SALVATAGGIO ---
     window.handleSave = async function() {
         if (tg?.HapticFeedback) tg.HapticFeedback.impactOccurred('medium');
         
-        // TODO: Implementa chiamata save_kb
         const payload = { fragments: knowledgeData };
         console.log('💾 Saving:', payload);
         
@@ -362,7 +404,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // --- 11. HELPERS ---
+    // --- 12. HELPERS ---
     function updateStats(draft, published) {
         document.getElementById('count-draft').textContent = draft;
         document.getElementById('count-published').textContent = published;
@@ -381,7 +423,7 @@ document.addEventListener('DOMContentLoaded', () => {
         card.classList.toggle('open');
     }
 
-    // --- 12. NAVIGAZIONE ---
+    // --- 13. NAVIGAZIONE ---
     window.goToNewArticle = function() {
         if (tg?.HapticFeedback) tg.HapticFeedback.impactOccurred('medium');
         const targetUrl = new URL('deployblog.html', window.location.href);
