@@ -20,6 +20,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const blogList = document.getElementById('blog-list');
     const emptyState = document.getElementById('empty-state');
     const companyNameEl = document.getElementById('companyName');
+    const saveFab = document.getElementById('save-fab');
 
     const params = new URLSearchParams(window.location.search);
     const apiCredentials = {
@@ -32,8 +33,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let catalogData = null;
     let allFragments = [];
-    let publishedArticles = []; // Articoli pubblicati
+    let publishedArticles = [];
     let knowledgeData = [];
+    let hasChanges = false; // ✅ Flag per mostrare FAB Salva
 
     // --- 2. INIZIALIZZAZIONE ---
     async function init() {
@@ -75,17 +77,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 rawData = data[0] || {};
             }
             
-            // Estrai fragments
             let fragments = rawData.fragment || rawData.Fragment || rawData.fragments || rawData.Fragments || [];
             if (!Array.isArray(fragments)) {
                 fragments = fragments ? [fragments] : [];
             }
             allFragments = fragments;
             
-            // Estrai catalog
             catalogData = rawData.catalog || rawData.Catalog || null;
             
-            // ✅ ESTRAI ARTICOLI PUBBLICATI
             let articles = rawData.article || rawData.Article || rawData.articles || [];
             if (Array.isArray(articles)) {
                 publishedArticles = articles;
@@ -98,9 +97,6 @@ document.addEventListener('DOMContentLoaded', () => {
             console.log('✅ Fragments:', allFragments.length);
             console.log('✅ Catalog:', catalogData ? 'present' : 'NULL');
             console.log('✅ Published articles:', publishedArticles.length);
-            publishedArticles.forEach(art => {
-                console.log(`  📄 ${art.articleId} → ${art.meta_title}`);
-            });
             
             renderKnowledgeByCategory();
             
@@ -115,11 +111,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- 4. HELPER: Trova articolo pubblicato ---
     function findPublishedArticle(fragmentId) {
-        // Match diretto
         let article = publishedArticles.find(art => art.articleId === fragmentId);
         if (article) return article;
         
-        // Match senza prefisso VAT (IT06988830821-SVC_XXX → SVC_XXX)
         const shortId = fragmentId.split('-').pop();
         article = publishedArticles.find(art => {
             const artShortId = art.articleId.split('-').pop();
@@ -194,7 +188,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         blogList.innerHTML = categoriesHTML;
 
-        // Stats basate su articoli pubblicati (non su content_generated)
         const publishedCount = publishedArticles.length;
         const draftCount = allFragments.length - publishedCount;
         updateStats(draftCount, publishedCount);
@@ -231,7 +224,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const title = fragment.title || 'Senza titolo';
         const summary = fragment.summary || '';
         
-        // ✅ Verifica se pubblicato
         const publishedArticle = findPublishedArticle(fragId);
         const isPublished = !!publishedArticle;
         
@@ -239,18 +231,32 @@ document.addEventListener('DOMContentLoaded', () => {
         const statusIcon = isPublished ? '✅' : '📝';
         const statusText = isPublished ? 'Blog Pubblicato' : 'Da Generare';
         
-        // Usa meta_title se articolo pubblicato, altrimenti title
         const displayTitle = publishedArticle?.meta_title || title;
-        
         const serviceName = subcategory ? subcategory.short_name : '';
+
+        // ✅ BOTTONI INLINE STILE CATALOG
+        const actionButton = isPublished
+            ? `<button class="kb-btn-inline kb-btn-edit" onclick="goToEditBlog('${fragId}'); event.stopPropagation();">
+                <i class="fas fa-edit"></i> Modifica
+               </button>`
+            : `<button class="kb-btn-inline kb-btn-generate" onclick="goToDeployBlog('${fragId}'); event.stopPropagation();">
+                <i class="fas fa-magic"></i> Genera
+               </button>`;
 
         return `
             <div class="blog-item ${statusClass}" data-fragment-id="${fragId}" data-loaded="false">
-                <div class="blog-info" onclick="expandFragment('${fragId}', this)" style="cursor: pointer;">
-                    <div class="blog-meta">${statusIcon} ${statusText}${serviceName ? ` • ${serviceName}` : ''}</div>
-                    <div class="blog-title">${escapeHtml(displayTitle)}</div>
-                    <div class="blog-desc">${escapeHtml(summary)}</div>
+                <!-- HEADER CON TITOLO E BOTTONE -->
+                <div class="blog-item-header">
+                    <div class="blog-item-left" onclick="expandFragment('${fragId}', this)">
+                        <div class="blog-meta">${statusIcon} ${statusText}${serviceName ? ` • ${serviceName}` : ''}</div>
+                        <div class="blog-title">${escapeHtml(displayTitle)}</div>
+                        <div class="blog-desc">${escapeHtml(summary)}</div>
+                    </div>
+                    <div class="blog-item-actions">
+                        ${actionButton}
+                    </div>
                 </div>
+                <!-- DETTAGLI ESPANDIBILI -->
                 <div class="blog-details" style="display: none; padding: 15px; border-top: 1px solid var(--glass-border);"></div>
             </div>
         `;
@@ -263,14 +269,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const cardElement = clickedElement.closest('.blog-item');
         const detailsContainer = cardElement.querySelector('.blog-details');
         
-        // Toggle se già caricato
         if (cardElement.dataset.loaded === 'true') {
             const isVisible = detailsContainer.style.display !== 'none';
             detailsContainer.style.display = isVisible ? 'none' : 'block';
             return;
         }
         
-        // Carica dettagli
         cardElement.classList.add('loading');
         
         try {
@@ -291,10 +295,7 @@ document.addEventListener('DOMContentLoaded', () => {
             
             console.log('📄 Fragment details loaded:', fragment);
             
-            // Aggiungi a knowledgeData
             knowledgeData.push(fragment);
-            
-            // Render dettagli
             renderFragmentDetails(fragment, detailsContainer);
             
             cardElement.dataset.loaded = 'true';
@@ -312,31 +313,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function renderFragmentDetails(fragment, container) {
         const id = fragment.fragment_id || fragment._id;
         
-        // ✅ Verifica se pubblicato
-        const publishedArticle = findPublishedArticle(id);
-        const isPublished = !!publishedArticle;
-        
-        const btnStyle = (isEdit) => `
-            background: ${isEdit ? '#4cd964' : '#5B6FED'};
-            color: white; border: none; padding: 10px 18px; border-radius: 12px; cursor: pointer;
-            font-size: 0.9rem; font-weight: 600; display: flex; align-items: center; gap: 8px;
-            box-shadow: 0 4px 12px ${isEdit ? 'rgba(76, 217, 100, 0.3)' : 'rgba(91, 111, 237, 0.3)'};
-            transition: transform 0.2s;
-        `;
-        
-        const buttonHTML = isPublished
-            ? `<button onclick="goToEditBlog('${id}')" style="${btnStyle(true)}">
-                <i class="fas fa-edit"></i> Modifica Blog Post
-               </button>`
-            : `<button onclick="goToDeployBlog('${id}')" style="${btnStyle(false)}">
-                <i class="fas fa-magic"></i> Genera Blog Post
-               </button>`;
-        
         container.innerHTML = `
-            <div style="display: flex; justify-content: flex-end; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.15);">
-                ${buttonHTML}
-            </div>
-            
             <h3>Titolo</h3>
             <input type="text" class="editable-input" data-id="${id}" data-field="title" value="${escapeHtml(fragment.title)}">
             
@@ -361,7 +338,6 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
         `;
         
-        // Attach listeners
         container.querySelectorAll('.editable-input, .editable-textarea').forEach(input => {
             input.addEventListener('input', handleInputChange);
         });
@@ -388,6 +364,13 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             current[pathParts[pathParts.length - 1]] = target.value;
         }
+        
+        // ✅ MOSTRA FAB SALVA
+        if (!hasChanges) {
+            hasChanges = true;
+            saveFab.classList.remove('hidden');
+            saveFab.classList.add('fade-in');
+        }
     }
 
     // --- 11. SALVATAGGIO ---
@@ -396,6 +379,11 @@ document.addEventListener('DOMContentLoaded', () => {
         
         const payload = { fragments: knowledgeData };
         console.log('💾 Saving:', payload);
+        
+        // TODO: Implementa chiamata save_kb
+        
+        hasChanges = false;
+        saveFab.classList.add('hidden');
         
         if (tg?.showPopup) {
             tg.showPopup({ message: '✅ Salvataggio completato!' });
@@ -424,14 +412,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- 13. NAVIGAZIONE ---
-    window.goToNewArticle = function() {
-        if (tg?.HapticFeedback) tg.HapticFeedback.impactOccurred('medium');
-        const targetUrl = new URL('deployblog.html', window.location.href);
-        const currentParams = new URLSearchParams(window.location.search);
-        currentParams.forEach((value, key) => targetUrl.searchParams.set(key, value));
-        window.location.href = targetUrl.toString();
-    }
-
     window.goToDeployBlog = function(fragmentId) {
         if (tg?.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
         const targetUrl = new URL('deployblog.html', window.location.href);
