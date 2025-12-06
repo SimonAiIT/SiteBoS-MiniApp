@@ -3,6 +3,21 @@
 /**
  * STRUTTURA DATI ATTESA DAL BACKEND (action: 'get_blog'):
  * ========================================================
+ * NUOVA STRUTTURA (blog_content_structure):
+ * [{
+ *   "status": "success",
+ *   "blog_content_structure": {
+ *     "seo": { "meta_title": "...", "meta_description": "...", "keywords": "...", "image_alt_text": "..." },
+ *     "hero": { "title": "...", "subtitle": "...", "cta_text": "...", "cta_link": "...", "risk_reversal": "..." },
+ *     "problem": { "title": "...", "paragraphs": ["...", "..."], "quote": "..." },
+ *     "solution": { "title": "...", "paragraphs": ["..."], "subsection": {...} },
+ *     "authority": { "title": "...", "paragraphs": ["..."] },
+ *     "comparison": { "title": "...", "intro": "...", "table_html": "<table>...</table>" },
+ *     "cta_final": { "title": "...", "paragraphs": ["..."], "urgency": "...", "button_text": "...", "link": "...", "risk_reversal": "..." }
+ *   }
+ * }]
+ * 
+ * VECCHIA STRUTTURA (blog_data) - RETROCOMPATIBILITÀ:
  * {
  *   "status": "success",
  *   "blog_data": {
@@ -10,32 +25,11 @@
  *     "title": "Titolo dell'Articolo",
  *     "slug": "titolo-articolo",
  *     "meta_description": "Descrizione breve per SEO",
- *     "featured_image": {
- *       "url": "https://example.com/image.jpg",
- *       "alt": "Alt text",
- *       "generated_by_ai": true
- *     },
- *     "content": {
- *       "html": "<h2>Titolo</h2><p>Testo...</p>",
- *       "plain_text": "Testo senza HTML",
- *       "word_count": 1250
- *     },
- *     "social_media": {
- *       "facebook": {
- *         "text": "Testo per Facebook..."
- *       },
- *       "instagram": {
- *         "text": "Testo per Instagram..."
- *       },
- *       "twitter": {
- *         "text": "Testo per Twitter/X..."
- *       },
- *       "linkedin": {
- *         "text": "Testo per LinkedIn..."
- *       }
- *     },
- *     "article_url": "https://sitebos.com/blog/articolo",
- *     "status": "draft",  // "draft" | "published"
+ *     "featured_image": { "url": "...", "alt": "...", "generated_by_ai": true },
+ *     "content": { "html": "<h2>Titolo</h2><p>Testo...</p>", "plain_text": "...", "word_count": 1250 },
+ *     "social_media": { "facebook": {...}, "instagram": {...}, "twitter": {...}, "linkedin": {...} },
+ *     "article_url": "...",
+ *     "status": "draft",
  *     "language": "it"
  *   }
  * }
@@ -260,14 +254,30 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
 
-        const data = await response.json();
+        let data = await response.json();
+        
+        // GESTIONE ARRAY: Se il backend ritorna un array, prendiamo il primo elemento
+        if (Array.isArray(data) && data.length > 0) {
+            data = data[0];
+        }
         
         if (data.status === 'error') {
             throw new Error(data.message || 'Unknown error');
         }
 
-        // Salva dati globalmente
-        currentBlogData = data.blog_data;
+        // NUOVA LOGICA: Verifica se è presente blog_content_structure (nuova struttura)
+        if (data.blog_content_structure) {
+            console.log('📝 Rilevata struttura blog_content_structure');
+            currentBlogData = transformContentStructure(data.blog_content_structure);
+        } 
+        // Retrocompatibilità con vecchia struttura blog_data
+        else if (data.blog_data) {
+            console.log('📝 Rilevata struttura legacy blog_data');
+            currentBlogData = data.blog_data;
+        } 
+        else {
+            throw new Error('Struttura dati non valida: blog_content_structure o blog_data mancanti');
+        }
 
         // Nasconde loading e mostra contenuto
         loadingState.style.display = 'none';
@@ -280,6 +290,143 @@ document.addEventListener('DOMContentLoaded', async () => {
     } catch (error) {
         console.error('Error loading blog:', error);
         showError(t.errorTitle, `${t.errorMessage}\n${error.message}`);
+    }
+
+    /**
+     * FUNZIONE DI TRASFORMAZIONE: Converte blog_content_structure in formato compatibile
+     */
+    function transformContentStructure(contentStruct) {
+        const seo = contentStruct.seo || {};
+        const hero = contentStruct.hero || {};
+        const problem = contentStruct.problem || {};
+        const solution = contentStruct.solution || {};
+        const authority = contentStruct.authority || {};
+        const comparison = contentStruct.comparison || {};
+        const ctaFinal = contentStruct.cta_final || {};
+
+        // Genera HTML completo dal contenuto strutturato
+        let htmlContent = '';
+
+        // Hero Section
+        if (hero.title) {
+            htmlContent += `
+                <section class="hero-section" style="margin-bottom: 40px;">
+                    <h1 style="font-size: 2.2em; line-height: 1.3; margin-bottom: 20px; color: var(--primary);">${hero.title}</h1>
+                    ${hero.subtitle ? `<p class="subtitle" style="font-size: 1.2em; color: var(--text-muted); margin-bottom: 30px;">${hero.subtitle}</p>` : ''}
+                    ${hero.cta_text ? `
+                        <a href="${hero.cta_link || '#'}" class="cta-button" style="display: inline-block; background: var(--primary); color: white; padding: 15px 30px; border-radius: 8px; text-decoration: none; font-weight: 600; margin-bottom: 15px;">${hero.cta_text}</a>
+                    ` : ''}
+                    ${hero.risk_reversal ? `<p style="font-size: 0.9em; color: var(--text-muted); font-style: italic;">${hero.risk_reversal}</p>` : ''}
+                </section>
+            `;
+        }
+
+        // Problem Section
+        if (problem.title) {
+            htmlContent += `
+                <section class="problem-section" style="margin-bottom: 40px; padding: 30px; background: var(--bg-secondary); border-left: 4px solid var(--warning); border-radius: 8px;">
+                    <h2 style="font-size: 1.8em; margin-bottom: 20px; color: var(--warning);">${problem.title}</h2>
+                    ${problem.paragraphs ? problem.paragraphs.map(p => `<p style="margin-bottom: 15px; line-height: 1.6;">${p}</p>`).join('') : ''}
+                    ${problem.quote ? `<blockquote style="margin: 20px 0; padding: 15px 20px; background: rgba(255,193,7,0.1); border-left: 3px solid var(--warning); font-style: italic;">${problem.quote}</blockquote>` : ''}
+                </section>
+            `;
+        }
+
+        // Solution Section
+        if (solution.title) {
+            htmlContent += `
+                <section class="solution-section" style="margin-bottom: 40px;">
+                    <h2 style="font-size: 1.8em; margin-bottom: 20px; color: var(--success);">${solution.title}</h2>
+                    ${solution.paragraphs ? solution.paragraphs.map(p => `<p style="margin-bottom: 15px; line-height: 1.6;">${p}</p>`).join('') : ''}
+                    ${solution.subsection && solution.subsection.title ? `
+                        <div class="subsection" style="margin-top: 30px; padding: 20px; background: var(--bg-secondary); border-radius: 8px;">
+                            <h3 style="font-size: 1.4em; margin-bottom: 15px;">${solution.subsection.title}</h3>
+                            ${solution.subsection.paragraphs ? solution.subsection.paragraphs.map(p => `<p style="margin-bottom: 15px; line-height: 1.6;">${p}</p>`).join('') : ''}
+                        </div>
+                    ` : ''}
+                </section>
+            `;
+        }
+
+        // Authority Section
+        if (authority.title) {
+            htmlContent += `
+                <section class="authority-section" style="margin-bottom: 40px; padding: 30px; background: linear-gradient(135deg, rgba(99,102,241,0.1), rgba(168,85,247,0.1)); border-radius: 8px;">
+                    <h2 style="font-size: 1.8em; margin-bottom: 20px; color: var(--primary);">${authority.title}</h2>
+                    ${authority.paragraphs ? authority.paragraphs.map(p => `<p style="margin-bottom: 15px; line-height: 1.6;">${p}</p>`).join('') : ''}
+                </section>
+            `;
+        }
+
+        // Comparison Section
+        if (comparison.title) {
+            htmlContent += `
+                <section class="comparison-section" style="margin-bottom: 40px;">
+                    <h2 style="font-size: 1.8em; margin-bottom: 15px;">${comparison.title}</h2>
+                    ${comparison.intro ? `<p style="margin-bottom: 25px; line-height: 1.6; color: var(--text-muted);">${comparison.intro}</p>` : ''}
+                    ${comparison.table_html ? `
+                        <div style="overflow-x: auto; margin-bottom: 20px;">
+                            ${comparison.table_html}
+                        </div>
+                    ` : ''}
+                </section>
+            `;
+        }
+
+        // CTA Final Section
+        if (ctaFinal.title) {
+            htmlContent += `
+                <section class="cta-final-section" style="margin-bottom: 40px; padding: 40px; background: linear-gradient(135deg, var(--primary), var(--accent)); border-radius: 12px; color: white; text-align: center;">
+                    <h2 style="font-size: 2em; margin-bottom: 20px; color: white;">${ctaFinal.title}</h2>
+                    ${ctaFinal.paragraphs ? ctaFinal.paragraphs.map(p => `<p style="margin-bottom: 15px; line-height: 1.6; opacity: 0.95;">${p}</p>`).join('') : ''}
+                    ${ctaFinal.urgency ? `<p style="font-size: 1.1em; font-weight: 600; margin: 25px 0; padding: 15px; background: rgba(255,255,255,0.2); border-radius: 8px;">⏰ ${ctaFinal.urgency}</p>` : ''}
+                    ${ctaFinal.button_text ? `
+                        <a href="${ctaFinal.link || '#'}" style="display: inline-block; background: white; color: var(--primary); padding: 18px 40px; border-radius: 8px; text-decoration: none; font-weight: 700; font-size: 1.1em; margin: 20px 0; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">${ctaFinal.button_text}</a>
+                    ` : ''}
+                    ${ctaFinal.risk_reversal ? `<p style="font-size: 0.9em; margin-top: 20px; opacity: 0.9; font-style: italic;">${ctaFinal.risk_reversal}</p>` : ''}
+                </section>
+            `;
+        }
+
+        // Genera dati social media generici (da estendere in futuro con AI)
+        const socialMedia = {
+            facebook: {
+                text: `${hero.title || seo.meta_title}\n\n${seo.meta_description || ''}`
+            },
+            instagram: {
+                text: `${hero.title || seo.meta_title}\n\n${seo.meta_description || ''}`
+            },
+            twitter: {
+                text: `${hero.title || seo.meta_title}\n\n${seo.meta_description || ''}`
+            },
+            linkedin: {
+                text: `${hero.title || seo.meta_title}\n\n${seo.meta_description || ''}`
+            }
+        };
+
+        // Ritorna struttura compatibile con populateEditor
+        return {
+            id: blogId || 'draft_' + Date.now(),
+            title: seo.meta_title || hero.title || 'Untitled',
+            slug: (seo.meta_title || '').toLowerCase().replace(/\s+/g, '-').replace(/[^\w\-]/g, ''),
+            meta_description: seo.meta_description || hero.subtitle || '',
+            featured_image: {
+                url: '', // Da implementare con upload immagine
+                alt: seo.image_alt_text || seo.meta_title || '',
+                generated_by_ai: false
+            },
+            content: {
+                html: htmlContent,
+                plain_text: htmlContent.replace(/<[^>]*>/g, ''),
+                word_count: htmlContent.replace(/<[^>]*>/g, '').split(/\s+/).length
+            },
+            social_media: socialMedia,
+            article_url: hero.cta_link || ctaFinal.link || '',
+            status: 'draft',
+            language: currentLang,
+            // Preserva struttura originale per salvataggio
+            _original_structure: contentStruct
+        };
     }
 
     function applyTranslations(translations) {
@@ -458,7 +605,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         return {
             title: document.getElementById('editableTitle').value,
             meta_description: document.getElementById('editableMeta').value,
-            featured_image: currentBlogData.featured_image
+            featured_image: currentBlogData.featured_image,
+            // Invia anche la struttura originale se disponibile (per preservare i dati)
+            original_structure: currentBlogData._original_structure
         };
     }
 
