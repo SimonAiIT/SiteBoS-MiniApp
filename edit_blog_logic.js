@@ -1,31 +1,19 @@
 'use strict';
 
 /**
- * STRUTTURA DATI ATTESA DAL BACKEND (action: 'get_blog'):
+ * STRUTTURA DATI BACKEND (N8N Response):
  * ========================================================
- * FORMATO 1 - Array con oggetto (N8N wrapper):
- * [{
- *   "status": "success",
- *   "blog_content_structure": { ... }
- * }]
- * 
- * FORMATO 2 - Oggetto diretto:
  * {
  *   "status": "success",
- *   "blog_content_structure": { ... }
- * }
- * 
- * FORMATO 3 - Nested structure:
- * {
- *   "data": [{
- *     "blog_content_structure": { ... }
- *   }]
- * }
- * 
- * FORMATO 4 - Legacy:
- * {
- *   "status": "success",
- *   "blog_data": { ... }
+ *   "blog_content_structure": {
+ *     "seo": { "meta_title": "...", "meta_description": "...", "keywords": "...", "image_alt_text": "..." },
+ *     "hero": { "title": "...", "subtitle": "...", "cta_text": "...", "cta_link": "...", "risk_reversal": "..." },
+ *     "problem": { "title": "...", "paragraphs": ["..."], "quote": "..." },
+ *     "solution": { "title": "...", "paragraphs": ["..."], "subsection": {...} },
+ *     "authority": { "title": "...", "paragraphs": ["..."] },
+ *     "comparison": { "title": "...", "intro": "...", "table_html": "<table>...</table>" },
+ *     "cta_final": { "title": "...", "paragraphs": ["..."], "urgency": "...", "button_text": "...", "link": "...", "risk_reversal": "..." }
+ *   }
  * }
  */
 
@@ -248,24 +236,25 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
 
-        let rawData = await response.json();
+        const data = await response.json();
         
-        console.log('📦 RAW DATA FROM BACKEND:', JSON.stringify(rawData, null, 2));
+        console.log('📦 RAW DATA:', data);
         
-        // RICERCA FLESSIBILE della struttura dati
-        let contentStructure = findBlogContentStructure(rawData);
-        let legacyBlogData = findLegacyBlogData(rawData);
-        
-        if (contentStructure) {
-            console.log('✅ Trovata blog_content_structure:', contentStructure);
-            currentBlogData = transformContentStructure(contentStructure);
-        } else if (legacyBlogData) {
-            console.log('✅ Trovata blog_data (legacy):', legacyBlogData);
-            currentBlogData = legacyBlogData;
-        } else {
-            console.error('❌ Struttura non riconosciuta. Raw data:', rawData);
-            throw new Error('Struttura dati non valida: né blog_content_structure né blog_data trovati');
+        // Verifica status
+        if (data.status !== 'success') {
+            throw new Error(data.message || 'Backend returned non-success status');
         }
+
+        // Verifica presenza blog_content_structure
+        if (!data.blog_content_structure) {
+            console.error('❌ blog_content_structure not found in:', data);
+            throw new Error('Struttura blog_content_structure non trovata nella risposta');
+        }
+
+        console.log('✅ blog_content_structure trovata:', data.blog_content_structure);
+
+        // Trasforma la struttura in formato editor
+        currentBlogData = transformContentStructure(data.blog_content_structure, blogId);
 
         // Nasconde loading e mostra contenuto
         loadingState.style.display = 'none';
@@ -277,74 +266,13 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     } catch (error) {
         console.error('❌ Error loading blog:', error);
-        showError(t.errorTitle, `${t.errorMessage}\n\n${error.message}`);
+        showError(t.errorTitle, `${t.errorMessage}\n\nDettagli: ${error.message}`);
     }
 
     /**
-     * RICERCA RICORSIVA di blog_content_structure in qualsiasi punto dell'oggetto
+     * FUNZIONE DI TRASFORMAZIONE: Converte blog_content_structure in formato compatibile editor
      */
-    function findBlogContentStructure(obj, depth = 0) {
-        if (depth > 10) return null; // Protezione ricorsione infinita
-        
-        if (!obj || typeof obj !== 'object') return null;
-        
-        // Caso diretto
-        if (obj.blog_content_structure) {
-            return obj.blog_content_structure;
-        }
-        
-        // Ricerca in array
-        if (Array.isArray(obj)) {
-            for (let item of obj) {
-                let found = findBlogContentStructure(item, depth + 1);
-                if (found) return found;
-            }
-        }
-        
-        // Ricerca in oggetto nested
-        for (let key in obj) {
-            if (typeof obj[key] === 'object') {
-                let found = findBlogContentStructure(obj[key], depth + 1);
-                if (found) return found;
-            }
-        }
-        
-        return null;
-    }
-
-    /**
-     * RICERCA RICORSIVA di blog_data (legacy) in qualsiasi punto dell'oggetto
-     */
-    function findLegacyBlogData(obj, depth = 0) {
-        if (depth > 10) return null;
-        
-        if (!obj || typeof obj !== 'object') return null;
-        
-        if (obj.blog_data) {
-            return obj.blog_data;
-        }
-        
-        if (Array.isArray(obj)) {
-            for (let item of obj) {
-                let found = findLegacyBlogData(item, depth + 1);
-                if (found) return found;
-            }
-        }
-        
-        for (let key in obj) {
-            if (typeof obj[key] === 'object') {
-                let found = findLegacyBlogData(obj[key], depth + 1);
-                if (found) return found;
-            }
-        }
-        
-        return null;
-    }
-
-    /**
-     * FUNZIONE DI TRASFORMAZIONE: Converte blog_content_structure in formato compatibile
-     */
-    function transformContentStructure(contentStruct) {
+    function transformContentStructure(contentStruct, blogId) {
         const seo = contentStruct.seo || {};
         const hero = contentStruct.hero || {};
         const problem = contentStruct.problem || {};
@@ -352,6 +280,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         const authority = contentStruct.authority || {};
         const comparison = contentStruct.comparison || {};
         const ctaFinal = contentStruct.cta_final || {};
+
+        console.log('🔧 Trasformazione in corso...');
 
         // Genera HTML completo dal contenuto strutturato
         let htmlContent = '';
@@ -437,21 +367,23 @@ document.addEventListener('DOMContentLoaded', async () => {
             `;
         }
 
-        // Genera dati social media generici
+        // Genera dati social media
         const socialMedia = {
             facebook: {
-                text: `${hero.title || seo.meta_title}\n\n${seo.meta_description || ''}`
+                text: `💡 ${hero.title || seo.meta_title}\n\n${seo.meta_description || hero.subtitle || ''}\n\n👉 Scopri di più:`
             },
             instagram: {
-                text: `${hero.title || seo.meta_title}\n\n${seo.meta_description || ''}`
+                text: `🚀 ${hero.title || seo.meta_title}\n\n${seo.meta_description || hero.subtitle || ''}\n\n🔗 Link in bio`
             },
             twitter: {
-                text: `${hero.title || seo.meta_title}\n\n${seo.meta_description || ''}`
+                text: `${hero.title || seo.meta_title}\n\n${seo.meta_description || hero.subtitle || ''}`
             },
             linkedin: {
-                text: `${hero.title || seo.meta_title}\n\n${seo.meta_description || ''}`
+                text: `${hero.title || seo.meta_title}\n\n${seo.meta_description || hero.subtitle || ''}\n\nApprofondisci:`
             }
         };
+
+        console.log('✅ Trasformazione completata');
 
         // Ritorna struttura compatibile con populateEditor
         return {
@@ -493,6 +425,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     function populateEditor(blog) {
+        console.log('🎨 Populating editor with blog data...');
+        
         // Status Badge
         const statusBadge = document.getElementById('statusBadge');
         const statusText = document.getElementById('statusText');
@@ -555,6 +489,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         // 3. Social Media Section
         renderSocialCards(blog.social_media, blog.article_url);
+        
+        console.log('✅ Editor popolato con successo');
     }
 
     function renderSocialCards(socialData, articleUrl) {
