@@ -3,7 +3,7 @@
 document.addEventListener('DOMContentLoaded', () => {
 
     // --- 1. CONFIGURAZIONE ---
-    const WEBHOOK_URL = "https://trinai.api.workflow.dcmake.it/webhook/914bd78e-8a41-46d7-8935-7eb73cbbae66"; // Webhook blog
+    const WEBHOOK_URL = "https://trinai.api.workflow.dcmake.it/webhook/0ca76af1-8c02-47f4-a3a4-fd19ad495afe";
     
     const tg = window.Telegram.WebApp;
     try {
@@ -30,7 +30,8 @@ document.addEventListener('DOMContentLoaded', () => {
         lang: params.get('lang') || 'it'
     };
 
-    let allBlogs = [];
+    let catalogData = null;
+    let allFragments = [];
 
     // --- 2. INIZIALIZZAZIONE ---
     async function init() {
@@ -39,11 +40,11 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
         companyNameEl.textContent += (apiCredentials.ragione_sociale || 'N/D');
-        await loadBlogs();
+        await loadKnowledgeBase();
     }
 
-    // --- 3. CARICAMENTO BLOG ---
-    window.loadBlogs = async function(forceReload = false) {
+    // --- 3. CARICAMENTO KNOWLEDGE BASE ---
+    window.loadKnowledgeBase = async function(forceReload = false) {
         if (forceReload && tg?.HapticFeedback) {
             tg.HapticFeedback.impactOccurred('light');
         }
@@ -56,11 +57,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    action: 'list_blogs',
-                    vat_number: apiCredentials.vat,
-                    token: apiCredentials.token,
-                    chat_id: apiCredentials.owner,
-                    lang: apiCredentials.lang
+                    action: 'get_kb',
+                    ...apiCredentials
                 })
             });
 
@@ -68,25 +66,45 @@ document.addEventListener('DOMContentLoaded', () => {
             
             const data = await response.json();
             
-            console.log('📦 Blog data received:', data);
+            console.log('📦 Knowledge Base data received:', data);
             
-            // Parsing risposta (potrebbe essere array o oggetto con blogs)
-            allBlogs = Array.isArray(data) ? data : (data.blogs || []);
-            
-            renderBlogsByCategory();
+            // Parsing risposta: array di oggetti con Fragment + catalog
+            if (Array.isArray(data) && data.length > 0) {
+                // Prendi il primo elemento (dovrebbe esserci un solo owner)
+                const ownerData = data[0];
+                
+                // Estrai Fragment (può essere oggetto o array)
+                if (ownerData.Fragment) {
+                    allFragments = Array.isArray(ownerData.Fragment) 
+                        ? ownerData.Fragment 
+                        : [ownerData.Fragment];
+                }
+                
+                // Estrai catalog
+                catalogData = ownerData.catalog || null;
+                
+                console.log('✅ Fragments:', allFragments.length);
+                console.log('✅ Catalog:', catalogData ? 'presente' : 'assente');
+                
+                renderKnowledgeByCategory();
+            } else {
+                allFragments = [];
+                catalogData = null;
+                renderKnowledgeByCategory();
+            }
             
             loader.classList.add('hidden');
             appContent.classList.remove('hidden');
             
         } catch (error) {
-            console.error('❌ Error loading blogs:', error);
+            console.error('❌ Error loading knowledge base:', error);
             showError(`Errore caricamento: ${error.message}`);
         }
     }
 
-    // --- 4. RENDERING PER CATEGORIA ---
-    function renderBlogsByCategory() {
-        if (!allBlogs || allBlogs.length === 0) {
+    // --- 4. RENDERING PER CATEGORIA (usando catalog) ---
+    function renderKnowledgeByCategory() {
+        if (!allFragments || allFragments.length === 0) {
             blogList.innerHTML = '';
             emptyState.classList.remove('hidden');
             updateStats(0, 0);
@@ -95,105 +113,141 @@ document.addEventListener('DOMContentLoaded', () => {
 
         emptyState.classList.add('hidden');
 
-        // Raggruppa per primary_topic
-        const categoriesMap = {};
-        allBlogs.forEach(blog => {
-            const topic = blog.primary_topic || blog.seo?.primary_topic || 'Altro';
-            if (!categoriesMap[topic]) {
-                categoriesMap[topic] = [];
-            }
-            categoriesMap[topic].push(blog);
+        // Se non c'è catalog, raggruppa manualmente (fallback)
+        if (!catalogData || !catalogData.categories) {
+            renderFallbackView();
+            return;
+        }
+
+        // Crea mappa fragment_id -> fragment per lookup veloce
+        const fragmentMap = {};
+        allFragments.forEach(frag => {
+            const id = frag.fragment_id || frag._id;
+            fragmentMap[id] = frag;
         });
 
-        // Genera HTML categorie
-        const categoriesHTML = Object.keys(categoriesMap).map(categoryName => {
-            const blogs = categoriesMap[categoryName];
-            const count = blogs.length;
+        // Genera HTML per categorie da catalog
+        const categoriesHTML = catalogData.categories.map(category => {
+            // Trova fragments che appartengono alle subcategories di questa categoria
+            const categoryFragments = [];
+            
+            if (category.subcategories && Array.isArray(category.subcategories)) {
+                category.subcategories.forEach(subcat => {
+                    // Match fragment con callback_data servizio
+                    const matchingFragment = allFragments.find(frag => {
+                        const fragId = frag.fragment_id || frag._id;
+                        return fragId.includes(subcat.callback_data) || 
+                               fragId.includes(subcat.original_slug);
+                    });
+                    
+                    if (matchingFragment) {
+                        categoryFragments.push({
+                            fragment: matchingFragment,
+                            subcategory: subcat
+                        });
+                    }
+                });
+            }
 
-            const blogsHTML = blogs.map(blog => renderBlogCard(blog)).join('');
+            if (categoryFragments.length === 0) return ''; // Salta categorie vuote
+
+            const count = categoryFragments.length;
+            const fragmentsHTML = categoryFragments.map(item => 
+                renderFragmentCard(item.fragment, item.subcategory)
+            ).join('');
 
             return `
                 <div class="cat-card">
                     <div class="cat-header" onclick="toggleCategory(this)">
                         <div class="cat-title">
-                            ${getCategoryIcon(categoryName)} ${categoryName}
+                            ${category.short_name}
                             <span class="cat-badge">${count}</span>
                         </div>
                         <i class="fas fa-chevron-down chevron"></i>
                     </div>
                     <div class="cat-body">
-                        ${blogsHTML}
+                        ${fragmentsHTML}
                     </div>
                 </div>
             `;
-        }).join('');
+        }).filter(html => html !== '').join('');
 
         blogList.innerHTML = categoriesHTML;
 
         // Update stats
-        const draftCount = allBlogs.filter(b => b.status === 'draft').length;
-        const publishedCount = allBlogs.filter(b => b.status === 'published').length;
+        const draftCount = allFragments.filter(f => !f.content_generated).length;
+        const publishedCount = allFragments.filter(f => f.content_generated === true).length;
         updateStats(draftCount, publishedCount);
     }
 
-    // --- 5. RENDER SINGOLO BLOG CARD ---
-    function renderBlogCard(blog) {
-        const blogId = blog.blog_id || blog.id || blog._id;
-        const title = blog.meta_title || blog.seo?.meta_title || blog.title || 'Senza titolo';
-        const desc = blog.meta_description || blog.seo?.meta_description || '';
-        const status = blog.status || 'draft';
-        const date = blog.published_date || blog.created_at || '';
+    // --- 5. FALLBACK VIEW (senza catalog) ---
+    function renderFallbackView() {
+        console.warn('⚠️ No catalog found, using fallback view');
+        
+        const fragmentsHTML = allFragments.map(frag => 
+            renderFragmentCard(frag, null)
+        ).join('');
 
-        const statusClass = status === 'published' ? 'status-published' : 'status-draft';
-        const statusIcon = status === 'published' ? '✅' : '📝';
-        const statusText = status === 'published' ? 'Pubblicato' : 'Bozza';
+        blogList.innerHTML = `
+            <div class="cat-card open">
+                <div class="cat-header">
+                    <div class="cat-title">
+                        📚 Tutti i Contenuti
+                        <span class="cat-badge">${allFragments.length}</span>
+                    </div>
+                </div>
+                <div class="cat-body">
+                    ${fragmentsHTML}
+                </div>
+            </div>
+        `;
+
+        const draftCount = allFragments.filter(f => !f.content_generated).length;
+        const publishedCount = allFragments.filter(f => f.content_generated === true).length;
+        updateStats(draftCount, publishedCount);
+    }
+
+    // --- 6. RENDER SINGOLO FRAGMENT CARD ---
+    function renderFragmentCard(fragment, subcategory) {
+        const fragId = fragment.fragment_id || fragment._id;
+        const title = fragment.title || 'Senza titolo';
+        const summary = fragment.summary || '';
+        const hasGenerated = fragment.content_generated === true;
+
+        const statusClass = hasGenerated ? 'status-published' : 'status-draft';
+        const statusIcon = hasGenerated ? '✅' : '📝';
+        const statusText = hasGenerated ? 'Blog Generato' : 'Da Generare';
+        
+        // Nome servizio da subcategory se presente
+        const serviceName = subcategory ? subcategory.short_name : '';
 
         return `
             <div class="blog-item ${statusClass}">
                 <div class="blog-info">
-                    <div class="blog-meta">${statusIcon} ${statusText}${date ? ` • ${formatDate(date)}` : ''}</div>
+                    <div class="blog-meta">${statusIcon} ${statusText}${serviceName ? ` • ${serviceName}` : ''}</div>
                     <div class="blog-title">${escapeHtml(title)}</div>
-                    <div class="blog-desc">${escapeHtml(desc)}</div>
+                    <div class="blog-desc">${escapeHtml(summary)}</div>
                 </div>
                 <div class="blog-actions-group">
-                    <button class="btn-action btn-edit" onclick="goToEditBlog('${blogId}')">
-                        <i class="fas fa-edit"></i>
-                        <span>Modifica</span>
-                    </button>
-                    <button class="btn-blog-delete" onclick="deleteBlog('${blogId}')">
-                        <i class="fas fa-trash"></i> Elimina
-                    </button>
+                    ${hasGenerated 
+                        ? `<button class="btn-action btn-edit" onclick="goToEditBlog('${fragId}')">
+                            <i class="fas fa-edit"></i>
+                            <span>Modifica</span>
+                           </button>` 
+                        : `<button class="btn-action btn-create" onclick="goToDeployBlog('${fragId}')">
+                            <i class="fas fa-magic"></i>
+                            <span>Genera</span>
+                           </button>`
+                    }
                 </div>
             </div>
         `;
     }
 
-    // --- 6. HELPER FUNCTIONS ---
-    function getCategoryIcon(categoryName) {
-        const icons = {
-            'AI Automation': '🤖',
-            'Digital Transformation': '🚀',
-            'ROI Optimization': '📈',
-            'Business': '💼',
-            'Tech': '⚙️',
-            'Marketing': '📢',
-            'Altro': '📁'
-        };
-        return icons[categoryName] || '📄';
-    }
-
+    // --- 7. HELPER FUNCTIONS ---
     function updateStats(draft, published) {
         document.getElementById('count-draft').textContent = draft;
         document.getElementById('count-published').textContent = published;
-    }
-
-    function formatDate(dateString) {
-        try {
-            const date = new Date(dateString);
-            return date.toLocaleDateString('it-IT', { day: '2-digit', month: 'short', year: 'numeric' });
-        } catch (e) {
-            return '';
-        }
     }
 
     function escapeHtml(text) {
@@ -203,7 +257,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return div.innerHTML;
     }
 
-    // --- 7. TOGGLE CATEGORIA ---
+    // --- 8. TOGGLE CATEGORIA ---
     window.toggleCategory = function(headerElement) {
         if (tg?.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
         
@@ -211,12 +265,11 @@ document.addEventListener('DOMContentLoaded', () => {
         card.classList.toggle('open');
     }
 
-    // --- 8. NAVIGAZIONE ---
+    // --- 9. NAVIGAZIONE ---
     window.goToNewArticle = function() {
         if (tg?.HapticFeedback) tg.HapticFeedback.impactOccurred('medium');
         
-        // TODO: Redirect a pagina creazione nuovo articolo
-        // Per ora redirect a deployblog senza fragment_id
+        // TODO: Pagina selezione servizio per nuovo articolo
         const targetUrl = new URL('deployblog.html', window.location.href);
         const currentParams = new URLSearchParams(window.location.search);
         currentParams.forEach((value, key) => {
@@ -225,7 +278,19 @@ document.addEventListener('DOMContentLoaded', () => {
         window.location.href = targetUrl.toString();
     }
 
-    window.goToEditBlog = function(blogId) {
+    window.goToDeployBlog = function(fragmentId) {
+        if (tg?.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
+        
+        const targetUrl = new URL('deployblog.html', window.location.href);
+        const currentParams = new URLSearchParams(window.location.search);
+        currentParams.forEach((value, key) => {
+            targetUrl.searchParams.set(key, value);
+        });
+        targetUrl.searchParams.set('fragment_id', fragmentId);
+        window.location.href = targetUrl.toString();
+    }
+
+    window.goToEditBlog = function(fragmentId) {
         if (tg?.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
         
         const targetUrl = new URL('edit_blog.html', window.location.href);
@@ -233,52 +298,8 @@ document.addEventListener('DOMContentLoaded', () => {
         currentParams.forEach((value, key) => {
             targetUrl.searchParams.set(key, value);
         });
-        targetUrl.searchParams.set('blog_id', blogId);
+        targetUrl.searchParams.set('blog_id', fragmentId);
         window.location.href = targetUrl.toString();
-    }
-
-    window.deleteBlog = async function(blogId) {
-        if (!confirm('Sei sicuro di voler eliminare questo articolo?')) return;
-        
-        if (tg?.HapticFeedback) tg.HapticFeedback.impactOccurred('heavy');
-        
-        try {
-            const response = await fetch(WEBHOOK_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    action: 'delete_blog',
-                    blog_id: blogId,
-                    vat_number: apiCredentials.vat,
-                    token: apiCredentials.token,
-                    chat_id: apiCredentials.owner,
-                    lang: apiCredentials.lang
-                })
-            });
-
-            if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
-            
-            const result = await response.json();
-            
-            if (result.status === 'success') {
-                if (tg?.showPopup) {
-                    tg.showPopup({ message: '✅ Articolo eliminato!' });
-                } else {
-                    alert('Articolo eliminato!');
-                }
-                loadBlogs(true); // Ricarica lista
-            } else {
-                throw new Error(result.message || 'Errore eliminazione');
-            }
-            
-        } catch (error) {
-            console.error('❌ Error deleting blog:', error);
-            if (tg?.showPopup) {
-                tg.showPopup({ message: `❌ ${error.message}` });
-            } else {
-                alert(`Errore: ${error.message}`);
-            }
-        }
     }
 
     window.goBack = function() {
@@ -291,6 +312,9 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         window.location.href = dashboardUrl.toString();
     }
+
+    // --- 10. RELOAD FUNCTION (esposta globalmente) ---
+    window.loadBlogs = window.loadKnowledgeBase;
 
     function showError(message) {
         loader.innerHTML = `<p style="color: #ff6b6b; padding: 20px; text-align: center;">${message}</p>`;
