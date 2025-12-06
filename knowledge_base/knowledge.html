@@ -123,13 +123,25 @@
             overflow: hidden; 
         }
 
-        /* STATI */
-        .status-draft { 
-            border-left: 3px solid var(--warning); 
+        /* STATI (solo visual sottile, no border invasivo) */
+        .status-draft .blog-meta::before {
+            content: '';
+            display: inline-block;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--warning);
+            margin-right: 6px;
         }
         
-        .status-published { 
-            border-left: 3px solid var(--success); 
+        .status-published .blog-meta::before {
+            content: '';
+            display: inline-block;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--success);
+            margin-right: 6px;
         }
 
         /* BOTTONI INLINE (stile catalog) */
