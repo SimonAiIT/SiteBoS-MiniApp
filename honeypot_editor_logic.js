@@ -1,11 +1,8 @@
 /**
- * HONEYPOT EDITOR - LOGIC (v5.0 FINAL COMPLETE)
- * - Gestione Multilingua (I18n)
- * - Supporto Ibrido Asset (URL GitHub / Base64)
- * - Gestione Errori AI (501)
- * - Logica Completamento Onboarding (Redirect condizionale a Processing)
- * - Payload SessionStorage per Processor
- * - Integrazione Telegram WebApp
+ * HONEYPOT EDITOR - LOGIC (v5.1 - FAB Condizionale)
+ * - FAB Salva nascosto di default
+ * - Appare solo quando hasChanges = true
+ * - Chiamata corretta save_honeypot_data
  */
 
 'use strict';
@@ -29,7 +26,7 @@ const STATE = {
     currentLang: 'it',
     data: {},          
     initialString: '', 
-    isDirty: false
+    hasChanges: false  // ✅ Flag per FAB Salva
 };
 
 const DOM = {
@@ -37,7 +34,6 @@ const DOM = {
     app: document.getElementById('app-content'),
     container: document.getElementById('honeypot-container'),
     hoursContainer: document.getElementById('hours-container'),
-    saveBar: document.getElementById('save-bar'),
     saveBtn: document.getElementById('saveBtn'),
     botTokenInput: document.getElementById('bot-token-input'),
     btnLinkBot: document.getElementById('btn-link-bot'),
@@ -226,7 +222,10 @@ const Api = {
     },
 
     getData: () => Api.request({ action: 'get_honeypot_data' }),
+    
+    // ✅ FUNZIONE CORRETTA
     saveData: (data) => Api.request({ action: 'save_honeypot_data', honeypot_update: data }),
+    
     linkBot: (token) => Api.request({ action: 'link_telegram_bot', bot_token: token }),
     generateOffer: (prompt) => Api.request({ action: 'generate_offer_html', user_prompt: prompt }),
     analyzeAsset: (type, base64, mime) => Api.request({ action: 'analyze_image_asset', asset_type: type, file_data: base64, mime_type: mime })
@@ -360,11 +359,20 @@ const UI = {
         }
     },
 
+    // ✅ GESTIONE FAB SALVA CONDIZIONALE
     toggleDirty: () => {
         const currentStr = JSON.stringify(STATE.data);
-        STATE.isDirty = currentStr !== STATE.initialString;
-        DOM.saveBar.classList.toggle('visible', STATE.isDirty);
-        DOM.saveBtn.disabled = !STATE.isDirty;
+        const hasChanges = currentStr !== STATE.initialString;
+        
+        // Mostra/Nascondi FAB
+        if (hasChanges && !STATE.hasChanges) {
+            STATE.hasChanges = true;
+            DOM.saveBtn.classList.remove('hidden');
+            DOM.saveBtn.classList.add('fade-in');
+        } else if (!hasChanges && STATE.hasChanges) {
+            STATE.hasChanges = false;
+            DOM.saveBtn.classList.add('hidden');
+        }
     }
 };
 
@@ -389,10 +397,19 @@ const App = {
 
     attachEvents: () => {
         DOM.app.addEventListener('click', (e) => { if (e.target.closest('.card-header')) e.target.closest('.card-header').parentElement.classList.toggle('open'); });
+        
         document.body.addEventListener('input', (e) => {
-            if (e.target.dataset.path) { App.setObjectValue(STATE.data, e.target.dataset.path, e.target.value); UI.toggleDirty(); }
-            else if (e.target.id === 'bot-token-input') { if (!STATE.data.config) STATE.data.config = {}; STATE.data.config.bot_token = e.target.value; UI.toggleDirty(); }
+            if (e.target.dataset.path) { 
+                App.setObjectValue(STATE.data, e.target.dataset.path, e.target.value); 
+                UI.toggleDirty(); // ✅ Aggiornamento FAB
+            }
+            else if (e.target.id === 'bot-token-input') { 
+                if (!STATE.data.config) STATE.data.config = {}; 
+                STATE.data.config.bot_token = e.target.value; 
+                UI.toggleDirty(); // ✅ Aggiornamento FAB
+            }
         });
+        
         DOM.btnBack.addEventListener('click', () => {
             const params = new URLSearchParams();
             if (STATE.vatNumber) params.set('vat', STATE.vatNumber); if (STATE.accessToken) params.set('token', STATE.accessToken);
@@ -416,10 +433,14 @@ const App = {
         current[keys[keys.length - 1]] = value;
     },
 
+    // ✅ SALVATAGGIO CON FAB CONDIZIONALE
     save: async (e) => { 
         if (e) e.preventDefault();
         
-        UI.setLoading(true, DOM.saveBtn, 'saving_progress');
+        // Mostra spinner
+        const originalIcon = DOM.saveBtn.innerHTML;
+        DOM.saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+        DOM.saveBtn.disabled = true;
         
         try {
             const hp = STATE.data || {};
@@ -473,22 +494,20 @@ const App = {
                 }
 
                 tg.HapticFeedback.notificationOccurred('success');
-                STATE.initialString = JSON.stringify(STATE.data);
                 
-                DOM.saveBtn.innerHTML = `<i class="fas fa-check"></i> ${I18n.get('saving_success')}`;
+                // ✅ RESET hasChanges e NASCONDI FAB
+                STATE.initialString = JSON.stringify(STATE.data);
+                STATE.hasChanges = false;
+                DOM.saveBtn.classList.add('hidden');
                 
                 const alertMsg = isComplete ? 'msg_saved_success' : 'msg_saved_incomplete';
                 tg.showAlert(I18n.get(alertMsg));
-
-                setTimeout(() => {
-                    UI.setLoading(false, DOM.saveBtn);
-                    UI.toggleDirty();
-                }, 2000);
             }
 
         } catch (e) {
             console.error("Save Error:", e);
-            UI.setLoading(false, DOM.saveBtn);
+            DOM.saveBtn.innerHTML = originalIcon;
+            DOM.saveBtn.disabled = false;
             tg.showAlert(I18n.get('alert_saving_error'));
         }
     },
@@ -499,7 +518,11 @@ const App = {
         UI.setLoading(true, DOM.btnGenerateOffer, 'generating');
         try {
             const res = await Api.generateOffer(prompt);
-            if (res && res.html_content) { STATE.data.offer_text = res.html_content; UI.renderOffer(); UI.toggleDirty(); }
+            if (res && res.html_content) { 
+                STATE.data.offer_text = res.html_content; 
+                UI.renderOffer(); 
+                UI.toggleDirty(); // ✅ Attiva FAB
+            }
         } catch (e) {} finally { UI.setLoading(false, DOM.btnGenerateOffer); }
     },
 
@@ -514,7 +537,7 @@ const App = {
                 STATE.data.config.bot_token = token; 
                 STATE.data.config.bot_linked = true;
                 UI.renderBotConfig(); 
-                UI.toggleDirty(); 
+                UI.toggleDirty(); // ✅ Attiva FAB
                 tg.HapticFeedback.notificationOccurred('success');
             } else throw new Error(res.description || 'Unknown Error');
         } catch (e) { 
@@ -525,121 +548,111 @@ const App = {
         }
     },
 
-uploadAsset: async (type, file) => {
-    if (!file) return;
-    
-    const previewEl = document.getElementById(`${type}-preview`);
-    
-    previewEl.innerHTML = `
-        <div style="text-align:center; padding:20px;">
-            <i class="fas fa-circle-notch fa-spin" style="font-size:32px; color:var(--primary);"></i>
-            <p style="margin-top:10px; color:#ccc; font-size:13px;">
-                ${I18n.get('generating')}
-            </p>
-        </div>
-    `;
-    
-    try {
-        // ==========================================
-        // 🔧 COMPRESSIONE AGGRESSIVA
-        // ==========================================
-        const MAX_WIDTH = 800;          // ⬇️ Da 1024 a 800
-        const MAX_HEIGHT = 800;         // ⬇️ Da 1024 a 800
-        const JPEG_QUALITY = 0.80;      // ⬇️ Da 0.85 a 0.80
-        const MAX_SIZE_KB = 500;        // ⬇️ Da 800 a 500KB
+    uploadAsset: async (type, file) => {
+        if (!file) return;
         
-        const compressedBlob = await new Promise((resolve, reject) => {
-            const img = new Image();
-            const canvas = document.createElement('canvas');
-            const ctx = canvas.getContext('2d');
+        const previewEl = document.getElementById(`${type}-preview`);
+        
+        previewEl.innerHTML = `
+            <div style="text-align:center; padding:20px;">
+                <i class="fas fa-circle-notch fa-spin" style="font-size:32px; color:var(--primary);"></i>
+                <p style="margin-top:10px; color:#ccc; font-size:13px;">
+                    ${I18n.get('generating')}
+                </p>
+            </div>
+        `;
+        
+        try {
+            const MAX_WIDTH = 800;
+            const MAX_HEIGHT = 800;
+            const JPEG_QUALITY = 0.80;
+            const MAX_SIZE_KB = 500;
             
-            img.onload = () => {
-                // Calcola nuove dimensioni mantenendo aspect ratio
-                let width = img.width;
-                let height = img.height;
+            const compressedBlob = await new Promise((resolve, reject) => {
+                const img = new Image();
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
                 
-                if (width > MAX_WIDTH || height > MAX_HEIGHT) {
-                    const ratio = Math.min(MAX_WIDTH / width, MAX_HEIGHT / height);
-                    width = Math.floor(width * ratio);
-                    height = Math.floor(height * ratio);
-                }
-                
-                canvas.width = width;
-                canvas.height = height;
-                
-                // Disegna immagine ridimensionata
-                ctx.drawImage(img, 0, 0, width, height);
-                
-                // Converti in JPEG compresso
-                canvas.toBlob((blob) => {
-                    if (blob) {
-                        console.log(`📦 Original: ${(file.size / 1024).toFixed(2)} KB`);
-                        console.log(`✅ Compressed: ${(blob.size / 1024).toFixed(2)} KB`);
-                        console.log(`📉 Reduction: ${((1 - blob.size / file.size) * 100).toFixed(1)}%`);
-                        
-                        // Se ancora troppo grande, riduci qualità drasticamente
-                        if (blob.size > MAX_SIZE_KB * 1024) {
-                            console.log(`⚠️ Still too large, aggressive re-compression...`);
-                            canvas.toBlob((blob2) => {
-                                console.log(`🔄 Final: ${(blob2.size / 1024).toFixed(2)} KB`);
-                                resolve(blob2);
-                            }, 'image/jpeg', 0.60); // ⬇️ Da 0.70 a 0.60
-                        } else {
-                            resolve(blob);
-                        }
-                    } else {
-                        reject(new Error('Canvas to Blob failed'));
+                img.onload = () => {
+                    let width = img.width;
+                    let height = img.height;
+                    
+                    if (width > MAX_WIDTH || height > MAX_HEIGHT) {
+                        const ratio = Math.min(MAX_WIDTH / width, MAX_HEIGHT / height);
+                        width = Math.floor(width * ratio);
+                        height = Math.floor(height * ratio);
                     }
-                }, 'image/jpeg', JPEG_QUALITY);
-            };
-            
-            img.onerror = reject;
-            img.src = URL.createObjectURL(file);
-        });
-        
-        // Converti blob in base64
-        const reader = new FileReader();
-        reader.readAsDataURL(compressedBlob);
-        
-        reader.onload = async () => {
-            const base64 = reader.result.split(',')[1];
-            const mime = 'image/jpeg';
-            
-            // 🛡️ SAFETY CHECK FINALE
-            const estimatedSizeKB = (base64.length * 0.75) / 1024;
-            if (estimatedSizeKB > 600) { // Hard limit 600KB
-                throw new Error(`File troppo grande dopo compressione: ${estimatedSizeKB.toFixed(0)}KB`);
-            }
-            
-            const res = await Api.analyzeAsset(type, base64, mime);
-            
-            if (res) {
-                const desc = res.response_data?.description || res.description || "Analisi completata";
-                
-                if (!STATE.data.assets) STATE.data.assets = {};
-                STATE.data.assets[type] = { 
-                    description: desc, 
-                    mime: mime, 
-                    url: res.url || null, 
-                    base64: res.url ? null : base64 
+                    
+                    canvas.width = width;
+                    canvas.height = height;
+                    ctx.drawImage(img, 0, 0, width, height);
+                    
+                    canvas.toBlob((blob) => {
+                        if (blob) {
+                            console.log(`📦 Original: ${(file.size / 1024).toFixed(2)} KB`);
+                            console.log(`✅ Compressed: ${(blob.size / 1024).toFixed(2)} KB`);
+                            console.log(`📉 Reduction: ${((1 - blob.size / file.size) * 100).toFixed(1)}%`);
+                            
+                            if (blob.size > MAX_SIZE_KB * 1024) {
+                                console.log(`⚠️ Still too large, aggressive re-compression...`);
+                                canvas.toBlob((blob2) => {
+                                    console.log(`🔄 Final: ${(blob2.size / 1024).toFixed(2)} KB`);
+                                    resolve(blob2);
+                                }, 'image/jpeg', 0.60);
+                            } else {
+                                resolve(blob);
+                            }
+                        } else {
+                            reject(new Error('Canvas to Blob failed'));
+                        }
+                    }, 'image/jpeg', JPEG_QUALITY);
                 };
                 
-                UI.renderAssets(); 
-                UI.toggleDirty();
-            } else { 
-                previewEl.innerHTML = '<p style="color:#ff6b6b;">Errore analisi</p>'; 
-            }
-        };
-        
-        reader.onerror = () => {
-            throw new Error('File reader error');
-        };
-        
-    } catch (e) { 
-        console.error("Upload error:", e);
-        previewEl.innerHTML = `<p style="color:#ff6b6b;">${e.message || 'Errore caricamento'}</p>`; 
-    }
-},
+                img.onerror = reject;
+                img.src = URL.createObjectURL(file);
+            });
+            
+            const reader = new FileReader();
+            reader.readAsDataURL(compressedBlob);
+            
+            reader.onload = async () => {
+                const base64 = reader.result.split(',')[1];
+                const mime = 'image/jpeg';
+                
+                const estimatedSizeKB = (base64.length * 0.75) / 1024;
+                if (estimatedSizeKB > 600) {
+                    throw new Error(`File troppo grande dopo compressione: ${estimatedSizeKB.toFixed(0)}KB`);
+                }
+                
+                const res = await Api.analyzeAsset(type, base64, mime);
+                
+                if (res) {
+                    const desc = res.response_data?.description || res.description || "Analisi completata";
+                    
+                    if (!STATE.data.assets) STATE.data.assets = {};
+                    STATE.data.assets[type] = { 
+                        description: desc, 
+                        mime: mime, 
+                        url: res.url || null, 
+                        base64: res.url ? null : base64 
+                    };
+                    
+                    UI.renderAssets(); 
+                    UI.toggleDirty(); // ✅ Attiva FAB
+                } else { 
+                    previewEl.innerHTML = '<p style="color:#ff6b6b;">Errore analisi</p>'; 
+                }
+            };
+            
+            reader.onerror = () => {
+                throw new Error('File reader error');
+            };
+            
+        } catch (e) { 
+            console.error("Upload error:", e);
+            previewEl.innerHTML = `<p style="color:#ff6b6b;">${e.message || 'Errore caricamento'}</p>`; 
+        }
+    },
 
     copyOffer: () => {
         const html = DOM.offerStorage.value; 
@@ -659,13 +672,13 @@ uploadAsset: async (type, file) => {
         }
         STATE.data.knowledge_fragments[fIndex].sections.push({ question: '', answer: '' });
         UI.renderDeepDivesList(fIndex);
-        UI.toggleDirty();
+        UI.toggleDirty(); // ✅ Attiva FAB
     },
 
     removeDeepDive: (fIndex, sIndex) => {
         STATE.data.knowledge_fragments[fIndex].sections.splice(sIndex, 1);
         UI.renderDeepDivesList(fIndex);
-        UI.toggleDirty();
+        UI.toggleDirty(); // ✅ Attiva FAB
     }
 };
 
