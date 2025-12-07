@@ -13,6 +13,13 @@
   <!-- UNIFIED STYLE -->
   <link rel="stylesheet" href="styles.css">
   
+  <style>
+    /* FAB SALVA NASCOSTO DI DEFAULT */
+    #saveBtn.hidden {
+      display: none;
+    }
+  </style>
+  
 </head>
 <body>
 
@@ -124,14 +131,16 @@
     
   </div>
 
-  <!-- 👉 FAB CONTAINER STANDARD (Sostituisce save-bar) -->
+  <!-- 👉 FAB CONTAINER STANDARD -->
   <div class="fab-container">
-    <button class="fab-btn fab-secondary" id="btn-back-dashboard" title="Torna a Dashboard">
-      <i class="fas fa-arrow-left"></i>
+    <!-- FAB SALVA (nascosto di default) -->
+    <button class="fab-btn fab-primary hidden" id="saveBtn" title="Salva Modifiche">
+      <i class="fas fa-save"></i>
     </button>
     
-    <button class="fab-btn" id="saveBtn" disabled title="Salva Modifiche">
-      <i class="fas fa-save"></i>
+    <!-- FAB INDIETRO -->
+    <button class="fab-btn fab-secondary" id="btn-back-dashboard" title="Torna a Dashboard">
+      <i class="fas fa-arrow-left"></i>
     </button>
   </div>
 
