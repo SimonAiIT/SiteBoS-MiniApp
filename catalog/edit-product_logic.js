@@ -1,5 +1,5 @@
 /**
- * EDIT PRODUCT LOGIC (vFINAL - FULL)
+ * EDIT PRODUCT LOGIC (vFINAL - FULL + PROVIDERS)
  */
 'use strict';
 
@@ -42,7 +42,9 @@ const dom = {
     skillContainer: document.getElementById('skillTagsContainer'),
     keywordInput: document.getElementById('keywordInput'),
     keywordContainer: document.getElementById('keywordsContainer'),
-    saveBtn: document.getElementById('saveBtn')
+    saveBtn: document.getElementById('saveBtn'),
+    skillsDisplay: document.getElementById('skills-display'),
+    providersDisplay: document.getElementById('providers-display')
 };
 
 // 4. MAIN
@@ -164,6 +166,9 @@ function populateForm(inputData) {
         const titleEl = document.getElementById('pageTitle');
         if(titleEl) titleEl.textContent = `✏️ ${identity.item_name || 'Prodotto'}`;
 
+        // 🆕 RENDER PROVIDERS
+        renderProviders(provider);
+
         hideLoader();
 
     } catch (e) {
@@ -171,6 +176,77 @@ function populateForm(inputData) {
         alert("Errore UI: " + e.message);
         hideLoader();
     }
+}
+
+// 🆕 RENDER PROVIDER SECTION
+function renderProviders(providerInfo) {
+    // 1️⃣ Render Skills Display
+    const skills = providerInfo.required_skill_tags || [];
+    
+    if (dom.skillsDisplay) {
+        if (skills.length === 0) {
+            dom.skillsDisplay.innerHTML = '<p style="color: #999; font-size: 13px;">Nessuna competenza specificata</p>';
+        } else {
+            dom.skillsDisplay.innerHTML = skills.map(skill => 
+                `<span class="skill-badge">${skill}</span>`
+            ).join('');
+        }
+    }
+    
+    // 2️⃣ Render Providers Cards
+    const providers = providerInfo.specific_provider_ids || [];
+    
+    if (!dom.providersDisplay) return;
+    
+    if (providers.length === 0) {
+        dom.providersDisplay.innerHTML = `
+            <div class="provider-card empty">
+                <div class="provider-avatar">🏢</div>
+                <div class="provider-info">
+                    <div class="provider-name">Nessun provider specifico</div>
+                    <div class="provider-meta">Qualsiasi provider con le skill richieste</div>
+                </div>
+            </div>
+        `;
+        return;
+    }
+    
+    // Supporta sia oggetti che stringhe
+    dom.providersDisplay.innerHTML = providers.map(provider => {
+        // Se è stringa semplice (ID only)
+        if (typeof provider === 'string') {
+            return `
+                <div class="provider-card">
+                    <div class="provider-avatar">👤</div>
+                    <div class="provider-info">
+                        <div class="provider-name">${provider}</div>
+                        <div class="provider-meta">
+                            <span class="provider-badge">ID: ${provider}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        // Se è oggetto completo
+        const typeClass = (provider.provider_type || '').toLowerCase();
+        const icon = provider.provider_type === 'INTERNAL' ? '🏢' : 
+                     provider.provider_type === 'EXTERNAL' ? '🤝' : '👤';
+        
+        return `
+            <div class="provider-card ${typeClass}">
+                <div class="provider-avatar">${icon}</div>
+                <div class="provider-info">
+                    <div class="provider-name">${provider.provider_name || provider.provider_id}</div>
+                    <div class="provider-meta">
+                        ${provider.provider_type ? `<span class="provider-badge">${provider.provider_type}</span>` : ''}
+                        ${provider.role ? `<span>• ${provider.role}</span>` : ''}
+                        ${provider.provider_id ? `<span style="opacity: 0.7; font-size: 10px;">ID: ${provider.provider_id}</span>` : ''}
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
 }
 
 async function handleSave(e) {
