@@ -9,18 +9,18 @@
     <style>
         /* Override specifici per il quiz */
         body {
-            padding-bottom: 120px; /* Spazio per i bottoni */
+            padding-bottom: 100px; /* Spazio per i bottoni */
         }
 
         .quiz-container {
-            max-width: 900px;
+            max-width: 600px; /* Più stretto per mobile */
             margin: 0 auto;
-            padding: 20px;
+            padding: 16px;
         }
 
         .quiz-header {
             text-align: center;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
         }
 
         .quiz-header h1 {
@@ -28,21 +28,21 @@
             align-items: center;
             justify-content: center;
             gap: 10px;
-            font-size: 28px;
-            margin-bottom: 10px;
+            font-size: 24px;
+            margin-bottom: 8px;
         }
 
         .quiz-header p {
             color: var(--text-muted);
-            font-size: 14px;
+            font-size: 13px;
         }
 
         /* Progress bar usando lo stile SiteBoS */
         .quiz-progress {
             background: rgba(255, 255, 255, 0.1);
             border-radius: var(--radius-md);
-            height: 8px;
-            margin: 25px 0 10px 0;
+            height: 6px;
+            margin: 20px 0 8px 0;
             overflow: hidden;
             border: 1px solid var(--glass-border);
         }
@@ -58,69 +58,63 @@
             text-align: center;
             color: var(--text-muted);
             font-size: 12px;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
         }
 
-        /* Scenario con stile card SiteBoS */
+        /* Scenario con stile card SiteBoS - PIÙ COMPATTO */
         .scenario-card {
             background: var(--card-bg);
             backdrop-filter: blur(10px);
             border-radius: var(--radius-lg);
             border: 1px solid var(--glass-border);
-            padding: 25px;
-            margin-bottom: 25px;
+            padding: 18px;
+            margin-bottom: 20px;
             box-shadow: 0 4px 20px rgba(0,0,0,0.1);
         }
 
         .scenario-text {
-            font-size: 17px;
-            line-height: 1.6;
+            font-size: 16px;
+            line-height: 1.5;
             color: var(--text-main);
             font-weight: 500;
         }
 
-        /* Grid 2x2 per le opzioni */
+        /* ✅ NUOVO: Grid 2x2 COMPATTO */
         .options-grid {
             display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
-            margin-bottom: 25px;
+            grid-template-columns: 1fr 1fr; /* 2 colonne sempre */
+            gap: 12px;
+            margin-bottom: 20px;
         }
 
-        /* Card opzione con stile SiteBoS */
+        /* ✅ Card opzione COMPATTA con immagine QUADRATA */
         .option-card {
             background: var(--card-bg);
             border: 2px solid var(--glass-border);
             border-radius: var(--radius-md);
-            padding: 15px;
             cursor: pointer;
-            transition: all 0.3s ease;
-            text-align: center;
-            min-height: 200px;
+            transition: all 0.2s ease;
+            overflow: hidden;
+            position: relative;
+            aspect-ratio: 1; /* 🔥 FORZA QUADRATO */
             display: flex;
             flex-direction: column;
-            justify-content: space-between;
-            position: relative;
         }
 
-        .option-card:hover {
-            transform: translateY(-3px);
-            border-color: var(--primary);
-            background: var(--hover-bg);
-            box-shadow: 0 5px 20px rgba(91, 111, 237, 0.3);
+        .option-card:active {
+            transform: scale(0.97);
         }
 
         .option-card.selected {
             border-color: var(--primary);
-            background: rgba(91, 111, 237, 0.2);
-            box-shadow: 0 0 20px rgba(91, 111, 237, 0.4);
+            box-shadow: 0 0 0 3px rgba(91, 111, 237, 0.3);
         }
 
         .option-card.selected::before {
             content: '✓';
             position: absolute;
-            top: 10px;
-            right: 10px;
+            top: 8px;
+            right: 8px;
             background: var(--primary);
             color: white;
             width: 24px;
@@ -130,36 +124,50 @@
             align-items: center;
             justify-content: center;
             font-weight: bold;
+            font-size: 14px;
+            z-index: 2;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
         }
 
+        /* ✅ Immagine QUADRATA (occupa tutto lo spazio) */
         .option-image {
             width: 100%;
-            height: 120px;
+            flex: 1; /* Occupa tutto lo spazio disponibile */
             object-fit: cover;
-            border-radius: var(--radius-sm);
-            margin-bottom: 12px;
-            border: 1px solid var(--glass-border);
+            display: block;
         }
 
+        /* ✅ Caption su sfondo gradient */
         .option-caption {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(to top, rgba(0,0,0,0.85), rgba(0,0,0,0.4) 70%, transparent);
+            color: white;
             font-weight: 600;
-            font-size: 14px;
-            color: var(--text-main);
+            font-size: 13px;
+            padding: 20px 10px 10px;
+            text-align: center;
+            line-height: 1.3;
         }
 
         /* Bottoni navigazione usando FAB style */
         .nav-buttons {
             position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
+            bottom: 16px;
+            left: 16px;
+            right: 16px;
             display: flex;
-            gap: 15px;
+            gap: 12px;
             z-index: 100;
+            max-width: 600px;
+            margin: 0 auto;
         }
 
         .nav-btn {
-            padding: 12px 24px;
+            flex: 1;
+            padding: 14px 20px;
             border-radius: var(--radius-md);
             border: none;
             font-weight: 600;
@@ -168,6 +176,7 @@
             transition: all 0.2s;
             display: flex;
             align-items: center;
+            justify-content: center;
             gap: 8px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.3);
         }
@@ -253,20 +262,45 @@
             transition: width 0.5s ease;
         }
 
-        /* Mobile responsive */
-        @media (max-width: 600px) {
-            .options-grid {
-                grid-template-columns: 1fr;
+        /* Tablet e Desktop */
+        @media (min-width: 600px) {
+            .quiz-container {
+                padding: 20px;
             }
-
-            .quiz-header h1 {
-                font-size: 22px;
+            
+            .scenario-text {
+                font-size: 17px;
             }
-
+            
+            .option-caption {
+                font-size: 14px;
+                padding: 24px 12px 12px;
+            }
+            
             .nav-buttons {
-                width: 90%;
-                left: 5%;
-                transform: none;
+                bottom: 20px;
+                left: 50%;
+                right: auto;
+                transform: translateX(-50%);
+                width: auto;
+                max-width: none;
+            }
+            
+            .nav-btn {
+                flex: none;
+                min-width: 140px;
+            }
+        }
+
+        /* Desktop: opzionalmente 4 colonne inline */
+        @media (min-width: 900px) {
+            .quiz-container {
+                max-width: 900px;
+            }
+            
+            .options-grid {
+                grid-template-columns: repeat(4, 1fr);
+                gap: 16px;
             }
         }
 
@@ -284,6 +318,11 @@
             padding: 20px;
             margin: 20px 0;
             color: var(--error);
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
     </style>
 </head>
