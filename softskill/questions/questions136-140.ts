@@ -3,7 +3,7 @@ import { Question } from "../types";
 export const questions136to140: Question[] = [
   {
     num: 136,
-    scenario: "Sei in gruppo con amici, ti allontani un attimo e Trovi una Banconota. Come la dividi?",
+    scenario: "Sei in gruppo con amici, ti allontani un attimo e trovi una Banconota. Come la dividi?",
     instructions: [
       "Immagine di una persona che si \"spazza via\" tutto il bottino senza lasciare niente all'altro,  massima priorità al guadagno personale,  negoziazione \"predatoria\".",
       "Immagine di una bilancia che pesa i due lati del bottino in modo da dividerlo perfettamente a metà,  divisione equa e  paritaria,  negoziazione \"bilanciata\".",
@@ -22,11 +22,11 @@ export const questions136to140: Question[] = [
         text: "(Negativo: approccio predatorio e non etico e danneggiamento potenziale della relazione con l'altra parte, percezione di persona avida e egoista e poco affidabile sul piano relazionale e collaborativo, rischio di bruciare opportunità future di collaborazione) (Positivo: massimizzazione del guadagno personale immediato e efficacia nel massimizzare il profitto nella singola transazione, approccio iper-competitivo e orientato al risultato economico senza compromessi, massima efficienza nel capitalizzare immediatamente l'opportunità di guadagno, *ma positivo solo in ottica strettamente economica e non etica o relazionale*)."
       },
       {
-        value: "Meta a Testa",
+        value: "A Tutti una Parte Uguale",
         text: "(Positivo: massima equità e giustizia percepita nella divisione e soddisfazione paritaria di entrambe le parti, creazione di un clima di fiducia e reciprocità, approccio collaborativo e win-win, persona percepita come corretta e affidabile) (Negativo: potenziale non massimizzazione del guadagno personale estremo e rinuncia a sfruttare eventuali asimmetrie di potere a proprio vantaggio, percezione di ambizione personale moderata e non sempre massimizzata in ottica di profitto individuale puro, approccio forse non sempre ottimizzato per la massima performance ego-centrica senza compromessi etici o di equità)."
       },
       {
-        value: "A Te la Parte Migliore",
+        value: "La Spendo per Tutti",
         text: "(Positivo: massima attenzione alla soddisfazione altrui e approccio generoso e altruista, costruzione di una relazione forte e duratura basata sulla fiducia e reciprocità, persona percepita come leale e generosa e profondamente orientata alla relazione e alla soddisfazione altrui) (Negativo: sacrificio guadagno personale immediato e non massimizzazione profitto individuale diretto, percezione di eccessivo altruismo o generosità non sempre giustificata in contesti competitivi o meramente commerciali, approccio forse non sempre ottimizzato per la massima performance economica ego-centrica e profit-oriented senza compromessi)."
       },
       {
@@ -55,19 +55,19 @@ export const questions136to140: Question[] = [
     options: [
       {
         value: "Propongo Subito un'Iniziativa",
-        text: "(Negativo:  **scarsa negoziazione**:  nessun tentativo di negoziazione o compromesso con il team,  approccio unilaterale. **Scarso orientamento al cliente (team)**:  non considera le preferenze o la soddisfazione del team,  approccio autocratico e  non partecipativo,  rischio di demotivazione del team) (Positivo: **massima efficienza decisionale**:  decisione rapida e  senza perdite di tempo,  utile in situazioni urgenti.  Chiarezza e  direzione univoca,  evita ambiguità.  Leadership decisa,  anche se autoritaria. Massimizzazione della velocità decisionale e  operativa)."
+        text: "(Negativo: scarsa negoziazione e nessun tentativo di compromesso con il team, approccio unilaterale e autocratico, scarso orientamento al cliente (team) e rischio di demotivazione del gruppo) (Positivo: massima efficienza decisionale e decisione rapida senza perdite di tempo, chiarezza e direzione univoca, leadership decisa (anche se autoritaria) e massimizzazione della velocità decisionale e operativa)."
       },
       {
         value: "Vince la Maggioranza",
-        text: "(Negativo:  **negoziazione limitata**:  negoziazione ridotta alla fase di presentazione delle proposte,  ma non vera mediazione o ricerca di consenso. **Orientamento al cliente (team) parziale**:  considera le preferenze del team in modo formale, ma non garantisce la soddisfazione di tutti, minoranza potenzialmente frustrata. Rischio di decisione percepita come  fredda o  distaccata) (Positivo: **equità formale**:  processo decisionale percepito come  equo e  democratico,  rispetto formale delle opinioni di tutti.  Efficienza decisionale moderata,  più rapido del consenso,  accettabile compromesso tra velocità e  partecipazione.  Coinvolgimento di base del team nel processo decisionale)."
+        text: "(Negativo: negoziazione limitata alla sola fase di proposta senza vera mediazione o ricerca di consenso, orientamento al cliente (team) parziale con minoranza potenzialmente frustrata, rischio di decisione percepita come fredda o distaccata) (Positivo: equità formale e processo percepito come equo e democratico, rispetto formale delle opinioni di tutti, efficienza decisionale moderata (più rapida del consenso) e buon compromesso tra velocità e partecipazione, coinvolgimento di base del team nel processo decisionale)."
       },
       {
         value: "Offro Opzioni",
-        text: "(Positivo: **alta negoziazione**:  massimo impegno nella negoziazione e  ricerca di un accordo che soddisfi tutti,  priorità al consenso. **Forte orientamento al cliente (team)**:  massima attenzione alla soddisfazione e all'armonia del team,  valorizzazione delle preferenze di tutti,  massimizzazione della coesione di gruppo.  Team building potenziale,  rafforzamento legami) (Negativo: **lentezza decisionale**:  processo decisionale potenzialmente lungo e  faticoso,  rischio di compromessi eccessivi o  decisioni \"annacquate\".  Inefficienza potenziale se il team è  troppo eterogeneo o  conflittuale.  Richiede tempo e  abilità di mediazione)."
+        text: "(Positivo: alta negoziazione e massimo impegno nel trovare un accordo che soddisfi tutti, forte orientamento al cliente (team) e massima attenzione alla soddisfazione e all'armonia del gruppo, potenziale di team building e rafforzamento dei legami) (Negativo: lentezza decisionale e processo potenzialmente lungo e faticoso, rischio di compromessi eccessivi o decisioni \"annacquate\", inefficienza se il team è molto eterogeneo o conflittuale, richiede tempo e abilità di mediazione)."
       },
       {
         value: "Fate Vobis",
-        text: "(Positivo: **massimo orientamento al cliente (team)**:  fiducia totale nel team e  massima autonomia decisionale concessa al gruppo,  valorizzazione dell'iniziativa e  responsabilizzazione del team.  Forte empowerment del team,  clima di fiducia e  autonomia.  Minimo sforzo decisionale per il leader,  delega completa.  Flessibilità e  adattamento alle preferenze del team) (Negativo: **negoziazione indiretta/assente**:  nessuna negoziazione diretta da parte del leader,  delega totale della negoziazione interna al team (se presente).  Rischio di decisioni non ottimali per l'azienda o  non allineate con obiettivi strategici.  Perdita di controllo e  direzione da parte del leader.  Potenziale inefficienza o  decisioni caotiche se il team non è  autonomo o  responsabile)."
+        text: "(Positivo: massimo orientamento al cliente (team) e fiducia totale nel gruppo, massima autonomia decisionale e empowerment del team, clima di fiducia e autonomia e minimo sforzo decisionale per il leader grazie alla delega completa, flessibilità e adattamento alle preferenze del team) (Negativo: negoziazione indiretta o assente da parte del leader, rischio di decisioni non ottimali per l'azienda o non allineate agli obiettivi strategici, perdita di controllo e direzione da parte del leader, potenziale inefficienza o decisioni caotiche se il team non è autonomo o responsabile)."
       }
     ],
     softSkill: "Negoziazione, OrientamentoAlCliente",
@@ -152,7 +152,7 @@ export const questions136to140: Question[] = [
       "Immagine di una pacco di consegna anonimo,  asseconda la richiesta senza obiezioni,  servizio \"passivo\".",
       "Immagine di una mano che porge un punto interrogativo,  dubbio sull'attrezzo giusto,  servizio \"incerto\".",
       "Immagine di un venditore che mostra diversi attrezzi \"spiegando\" quale sarebbe il migliore per quel lavoro,  guida il cliente verso la scelta \"giusta\",  servizio \"consultivo\".",
-      "Immagine di una mano che prende un l'attrezzo dalle mani del cliente,  \"corregge\" attivamente l'errore del cliente,  servizio \"proattivo\" e  \"correttivo\"."
+      "Immagine di una mano che prende l'attrezzo dalle mani del cliente,  \"corregge\" attivamente l'errore del cliente,  servizio \"proattivo\" e  \"correttivo\"."
     ],
     captions: [
       "Accontento e Consegno",
