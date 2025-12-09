@@ -26,25 +26,25 @@ export const questions121to125: Question[] = [
         text: "(Positivo: resilienza moderata e capacità di reazione al rifiuto, volontà di non arrendersi completamente e di riparare la situazione, approccio costruttivo e non distruttivo, persona percepita come tenace e non facilmente abbattibile) (Negativo: resilienza non completa o non perfetta e rischio di insicurezza residua, potenziale ombra del rifiuto passato, percezione di fragilità emotiva residua o non completa guarigione dalla ferita del rifiuto)."
       },
       {
-        value: "Terreno Arido",
-        text: "(Positivo: resilienza attiva e proattiva e ricerca di soluzioni per superare le obiezioni, approccio costruttivo e orientato al miglioramento e alla crescita attraverso il rifiuto, persona percepita come pragmatica e orientata alla soluzione) (Negativo: potenziale dipendenza da supporto esterno per la crescita e rischio di non sviluppare piena autonomia nel superamento ostacoli, percezione di non completa autosufficienza nella crescita personale e nel superamento autonomo delle obiezioni, approccio forse non sempre ottimizzato per l'indipendenza e l'auto-apprendimento autonomo)."
+        value: "Vaso Scheggiato",
+        text: "(Positivo: resilienza attiva e volontà di riparare e riprovare, approccio costruttivo che vede il rifiuto come un'opportunità di miglioramento, non si lascia abbattere ma cerca di capire come migliorare, persona percepita come pragmatica e orientata alla soluzione) (Negativo: il rifiuto lascia comunque un segno, potenziale impatto sull'autostima anche se temporaneo, rischio di non affrontare completamente la causa del rifiuto ma solo di 'riparare' superficialmente, percezione di resilienza ma con una cicatrice visibile)."
       },
       {
         value: "Vaso Intatto",
         text: "(Positivo: massima autostima e resilienza totale e fiducia incrollabile nel proprio valore e nelle proprie capacità, indifferenza al giudizio esterno negativo, approccio self-confident e indipendente, persona percepita come forte e sicura di sé) (Negativo: potenziale mancanza di autocritica costruttiva e rischio di non imparare dagli errori, percezione di eccessiva autostima auto-referenziale e narcisistica, mancanza di umiltà e apertura al feedback negativo come fonte di miglioramento e crescita personale e professionale)."
       }
     ],
-    softSkill: "SviluppoPersonale,GestioneDelleObiezioni",
-    characteristics: "Resilienza,Reazione al Rifiuto,Fiducia in Sé"
+    softSkill: "SviluppoPersonale, GestioneDelleObiezioni",
+    characteristics: "Resilienza, Reazione al Rifiuto, Fiducia in Sé"
   },
   {
     num: 122,
-    scenario: "Il tuo partner deve trasferirsi lontano per lavoro che strada scegli?",
+    scenario: "Il tuo partner deve trasferirsi lontano per lavoro. Che strada scegli?",
     instructions: [
       "Immagine di un bivio con due strade separate,  scelta di strade separate,  priorità allo sviluppo personale \"separato\".",
       "Immagine di due strade parallele che proseguono affiancate ma distanti,  scelta di mantenere una \"distanza\" ma con una certa \"vicinanza\" parallela.",
       "Immagine di due strade che convergono in un'unica strada,  ricerca di un \"punto di incontro\" tra sviluppo personale e relazione,  convergenza graduale.",
-      "Immagine di grande svincolo stradale dove più strade sifondono completamente in un'unica strada ampia e condivisa,  priorità assoluta alla relazione,  sviluppo personale \"integrato\" nella coppia."
+      "Immagine di grande svincolo stradale dove più strade si fondono completamente in un'unica strada ampia e condivisa,  priorità assoluta alla relazione,  sviluppo personale \"integrato\" nella coppia."
     ],
     captions: [
       "Strade Separate",
@@ -55,23 +55,23 @@ export const questions121to125: Question[] = [
     options: [
       {
         value: "Strade Separate",
-        text: "(Negativo: perdita cliente e mancata fidelizzazione, approccio non orientato alla relazione a distanza, opportunità di business future potenzialmente mancate, percezione di scarsa flessibilità e adattabilità al cambiamento geografico della clientela) (Positivo: semplificazione gestione e focalizzazione risorse su clientela locale, efficienza operativa geografica, approccio pragmatico e local-centric, ottimizzazione risorse su area geografica circoscritta)."
+        text: "(Positivo: priorità alla carriera e allo sviluppo personale individuale, approccio pragmatico che riconosce l'impossibilità di proseguire, scelta chiara e senza ambiguità) (Negativo: fine della relazione per incompatibilità logistica, scarsa propensione al sacrificio per la coppia, percezione di individualismo e di non voler investire in una soluzione per la relazione)."
       },
       {
         value: "Strade Parallele",
-        text: "(Positivo: mantenimento relazione cliente a distanza e tentativo di fidelizzazione non invasivo, utilizzo di strumenti remoti per la comunicazione e il servizio, approccio ibrido che bilancia presenza fisica e supporto virtuale, flessibilità e adattabilità moderata al cambiamento geografico) (Negativo: relazione meno calda e personale a distanza e richiede maggiore sforzo comunicativo per mantenere vivo il rapporto, percezione di minore vicinanza e presenza fisica, efficacia relazionale potenzialmente inferiore rispetto a interazioni in presenza)."
+        text: "(Positivo: volontà di mantenere la relazione nonostante la distanza, fiducia nella solidità del rapporto, approccio che bilancia esigenze individuali e di coppia, flessibilità e adattabilità) (Negativo: potenziale stress e difficoltà di una relazione a distanza, rischio di allontanamento emotivo nel tempo, percezione di una soluzione temporanea e non definitiva, richiede grande impegno comunicativo)."
       },
       {
         value: "Strade Convergenti",
-        text: "(Positivo: forte adattabilità al cambiamento e volontà di mantenere la relazione attivamente nonostante la distanza, ricerca di soluzioni creative per la fidelizzazione a distanza, approccio proattivo e orientato alla soluzione, persona percepita come flessibile e adattabile) (Negativo: richiede sforzo di adattamento e relazione a distanza non sempre ottimale come quella in presenza, potenziale percezione di approccio forzato o non completamente naturale nel mantenere la relazione a distanza, efficacia della relazione potenzialmente inferiore rispetto a interazioni face-to-face ideali)."
+        text: "(Positivo: forte impegno a trovare una soluzione a lungo termine per riunirsi, approccio proattivo e orientato al futuro della coppia, ricerca di un compromesso che unisca i percorsi di vita, persona percepita come dedita alla relazione e orientata alla soluzione) (Negativo: periodo di incertezza e sacrificio durante la fase di convergenza, potenziale frustrazione se la soluzione tarda ad arrivare, richiede pianificazione e rinunce da entrambe le parti)."
       },
       {
         value: "Strada Comune",
-        text: "(Positivo: massimo impegno per la fidelizzazione totale e estrema attenzione al cliente, disponibilità a cambiamenti radicali per mantenere la relazione, approccio customer-centric spinto all'estremo, persona percepita come estremamente dedicata al cliente e affidabile al 100%) (Negativo: cambiamento radicale e potenzialmente stressante per la vita privata e non scalabilità, rischio di dipendenza eccessiva da singolo cliente, percezione di approccio non sempre razionale in termini di costo-beneficio e sostenibilità a lungo termine, eccessivo sacrificio personale per la fidelizzazione estrema)."
+        text: "(Positivo: massimo impegno per la relazione e disponibilità a cambiamenti radicali per stare insieme, approccio che mette la coppia al primo posto, persona percepita come estremamente dedita e disposta al sacrificio per il partner) (Negativo: potenziale sacrificio della propria carriera o stabilità personale, rischio di dipendenza dal partner nella nuova città, percezione di una scelta non sempre razionale in termini di equilibrio individuale, possibile stress legato a un cambiamento di vita radicale)."
       }
     ],
-    softSkill: "FidelizzazioneDelCliente,GestioneDelCambiamento",
-    characteristics: "Fidelizzazione del Cliente,Adattabilità,Orientamento al Servizio"
+    softSkill: "FidelizzazioneDelCliente, GestioneDelCambiamento",
+    characteristics: "Fidelizzazione del Cliente, Adattabilità, Orientamento al Servizio"
   },
   {
     num: 123,
@@ -106,8 +106,8 @@ export const questions121to125: Question[] = [
         text: "(Negativo: danno reputazionale permanente e non costruttivo e mancanza di feedback privato e diretto per il miglioramento, percezione di approccio vendicativo e aggressivo, poco collaborativo e impersonale, non orientato alla soluzione ma alla punizione pubblica) (Positivo: massima espressione della propria insoddisfazione in modo plateale e inequivocabile, vendetta simbolica contro il ristorante, potenziale sfogo emotivo e catartico, approccio tranchant e senza mezzi termini, denuncia pubblica della cattiva esperienza)."
       }
     ],
-    softSkill: "SoddisfazioneDelCliente,FidelizzazioneDelCliente",
-    characteristics: "Gestione della Insoddisfazione,Stile di Feedback,Approccio alla Critica"
+    softSkill: "SoddisfazioneDelCliente, FidelizzazioneDelCliente",
+    characteristics: "Gestione della Insoddisfazione, Stile di Feedback, Approccio alla Critica"
   },
   {
     num: 124,
@@ -142,8 +142,8 @@ export const questions121to125: Question[] = [
         text: "(Positivo: massima esclusività in assoluto e creazione di un evento leggendario e mitico per pochi iniziati, effetto buzz elevatissimo nel cerchio ristretto degli eletti, approccio ultra-esclusivo e misterioso, massimizzazione del desiderio e della curiosità nel pubblico target, effetto alone di segretezza e prestigio estremo) (Negativo: portata ridottissima e quasi invisibile al di fuori della cerchia ristretta, rischio di non raggiungere neanche un pubblico target sufficientemente ampio, percezione di eccessivo elitarismo, snobismo e chiusura, approccio non scalabile e non gestibile in termini di partecipazione)."
       }
     ],
-    softSkill: "Presentazione,SicurezzaDigitale",
-    characteristics: "Stile di Promozione,Gestione della Privacy,Portata vs. Esclusività"
+    softSkill: "Presentazione, SicurezzaDigitale",
+    characteristics: "Stile di Promozione, Gestione della Privacy, Portata vs. Esclusività"
   },
   {
     num: 125,
@@ -178,7 +178,7 @@ export const questions121to125: Question[] = [
         text: "(Positivo: massima apertura al cambiamento e all'innovazione radicale e capacità di reinventarsi completamente e ripartire da zero se necessario, approccio disruptive e rivoluzionario, persona percepita come visionaria e coraggiosa e iper-adattabile e pronta a cogliere ogni sfida del cambiamento radicale) (Negativo: rischio di perdita identità distintiva e potenziale percezione di opportunismo o imitazione acritica, sostenibilità a lungo termine incerta di cambiamenti troppo radicali, percezione di approccio camaleontico e non sempre autentico o coerente con la propria storia e brand identity)."
       }
     ],
-    softSkill: "FidelizzazioneDelCliente,MenteAperta",
-    characteristics: "Adattabilità al Cambiamento,Apertura Mentale,Prontezza Innovativa"
+    softSkill: "FidelizzazioneDelCliente, MenteAperta",
+    characteristics: "Adattabilità al Cambiamento, Apertura Mentale, Prontezza Innovativa"
   }
 ];
