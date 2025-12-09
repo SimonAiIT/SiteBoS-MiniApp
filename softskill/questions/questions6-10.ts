@@ -1,4 +1,3 @@
-
 import { Question } from "../types";
 
 export const questions: Question[] = [
@@ -19,7 +18,7 @@ export const questions: Question[] = [
     ],
     options: [
       {
-        value: "Va Bene, non Capisco, Me lo Spiega Qualcun Altro.",
+        value: "Va Bene, non Capisco, Me lo Spiega Qualcun Altro",
         text: "(Negativo: mancanza di comprensione reale e potenziale rischio di errore per non aver capito, approccio passivo e non proattivo nell'affrontare la difficoltà di comprensione, opportunità mancate di apprendimento e chiarezza immediata, percezione di superficialità o mancanza di impegno nel capire a fondo) (Positivo: mantenimento dell'armonia relazionale e del bon ton in riunione, evitamento di interruzioni o domande percepite come inopportune o stupide in pubblico, approccio prudente che privilegia l'armonia del gruppo e l'evitamento di far perdere tempo agli altri con proprie difficoltà di comprensione personali, massimizzazione dell'efficienza apparente della riunione nel breve termine)."
       },
       {
@@ -99,11 +98,11 @@ export const questions: Question[] = [
         text: "(Negativo: lentezza e diluizione della responsabilità, potenziale rallentamento della risoluzione per eccessiva condivisione e processi decisionali collettivi più farraginosi e meno rapidi e incisivi, rischio di diluizione della responsabilità individuale e di scarso protagonismo e iniziativa personale nella gestione del problema in prima persona, percezione di approccio troppo collegiale e poco decisionista e individualmente responsabile quando serve davvero azioni rapide e unilaterali) (Positivo: lavoro di squadra e condivisione della responsabilità, massima valorizzazione del teamwork e della collaborazione paritaria, approccio inclusivo e democratico che coinvolge attivamente il team nella ricerca di soluzioni e nella gestione del problema in modo condiviso e collettivo, promozione di un clima di lavoro collaborativo, partecipativo e orientato al team e alla coesione di gruppo)."
       },
       {
-        value: "Affronto qualsiasi problema",
+        value: "Se c'è un problema, io la scalo anche da solo",
         text: "(Positivo: iniziativa e proattività nella risoluzione dei problemi, massima autonomia e self-reliance nel problem-solving, approccio proattivo e orientato all'azione immediata e diretta, valorizzazione della sfida e del superamento degli ostacoli come occasione di crescita personale e professionale, percezione di persona intraprendente, coraggiosa, autonoma e orientata all'azione risolutiva in prima persona) (Negativo: rischio di sovraccarico e difficoltà nel chiedere aiuto quando serve davvero, potenziale isolamento autoreferenziale nel problem-solving individuale, mancanza di valorizzazione del teamwork e della collaborazione come risorsa utile e preziosa per risolvere i problemi in modo più efficace e efficiente, percezione di approccio iper-individualista e poco incline alla delega e al lavoro di squadra collaborativo quando opportuno e utile davvero per massimizzare l'efficacia complessiva della risoluzione del problema nel lungo periodo)."
       },
       {
-        value: "E' Dovere Risolvere",
+        value: "Lo Affronto, Io Proteggo il mio Team",
         text: "(Positivo: disponibilità e spirito di servizio spiccati verso gli altri e verso il team, approccio altruista e orientato al servizio e al supporto proattivo dei colleghi, volontà di farsi carico dei problemi altrui e di alleggerire il carico di lavoro dei colleghi, percezione di persona disponibile, generosa, altruista e orientata al supporto e all'aiuto proattivo verso gli altri) (Negativo: rischio di sfruttamento e mancanza di confini sani, potenziale burnout per eccessivo carico di lavoro non equamente distribuito, rischio di non riuscire a gestire tutti i problemi da solo in modo efficace e tempestivo e senza delegare quando necessario davvero, percezione di persona troppo disponibile, poco assertiva nel dire di no e non sempre ottimizzata per la massima efficienza personale e del team nel lungo periodo (che potrebbe anche richiedere maggiore assertività nel definire confini chiari e non superabili e nel delegare responsabilità e compiti agli altri quando opportuno e necessario per evitare il sovraccarico personale e il burnout nel lungo periodo))."
       }
     ],

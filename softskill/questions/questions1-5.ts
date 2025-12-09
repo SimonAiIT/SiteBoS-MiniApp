@@ -1,4 +1,3 @@
-
 import { Question } from "../types";
 
 export const questions: Question[] = [
@@ -20,7 +19,7 @@ export const questions: Question[] = [
     options: [
       {
         value: "Investimento",
-        text: "(Positivo: massima pianificazione strategica e visione a lungo termine, forte orientamento al futuro e ai risultati differiti, perseveranza e costanza nel perseguire obiettivi ambiziosi, approccio paziente e disciplinato che valorizza i benefici a lungo termine, persona affidabile e orientata alla costruzione di valore duraturo) (Negativo: lenta gratificazione e rinuncia al godimento del presente, approccio rigido e poco flessibile di fronte a opportunità immediate, potenziale frustrazione e demotivazione nel breve termine per mancanza di feedback immediato, rischiodi non cogliere occasioni irripetibili nel \"qui e ora\")."
+        text: "(Positivo: massima pianificazione strategica e visione a lungo termine, forte orientamento al futuro e ai risultati differiti, perseveranza e costanza nel perseguire obiettivi ambiziosi, approccio paziente e disciplinato che valorizza i benefici a lungo termine, persona affidabile e orientata alla costruzione di valore duraturo) (Negativo: lenta gratificazione e rinuncia al godimento del presente, approccio rigido e poco flessibile di fronte a opportunità immediate, potenziale frustrazione e demotivazione nel breve termine per mancanza di feedback immediato, rischio di non cogliere occasioni irripetibili nel \"qui e ora\")."
       },
       {
         value: "Compromesso",
@@ -28,7 +27,7 @@ export const questions: Question[] = [
       },
       {
         value: "Presente",
-        text: "(Positivo: massima capacità di godersi appieno il presente e cogliere ogni opportunità immediata, approccio carpe diem e orientato al piacere hic et nunc, valorizzazione delle emozioni e delle esperienze immediate e tangibili, persona spontanea, entusiasta, focata sul vivere a pieno ogni singolo istante) (Negativo: forte imprevidenza e scarsa pianificazione a lungo termine, approccio miope che rischia di trascurare le conseguenze future delle scelte impulsive, potenziale mancanza di responsabilità e visione strategica nella gestione del tempo e delle risorse, percezione di eccessiva leggerezza o mancanza di serietà e affidabilità in contesti che richiederebbero maggiore visione futura e pianificazione responsabile)."
+        text: "(Positivo: massima capacità di godersi appieno il presente e cogliere ogni opportunità immediata, approccio carpe diem e orientato al piacere hic et nunc, valorizzazione delle emozioni e delle esperienze immediate e tangibili, persona spontanea, entusiasta, focalizzata sul vivere a pieno ogni singolo istante) (Negativo: forte imprevidenza e scarsa pianificazione a lungo termine, approccio miope che rischia di trascurare le conseguenze future delle scelte impulsive, potenziale mancanza di responsabilità e visione strategica nella gestione del tempo e delle risorse, percezione di eccessiva leggerezza o mancanza di serietà e affidabilità in contesti che richiederebbero maggiore visione futura e pianificazione responsabile)."
       },
       {
         value: "Ricompensa Immediata",
@@ -99,7 +98,7 @@ export const questions: Question[] = [
         text: "(Negativo: supporto parziale e mancato intervento deciso contro dinamiche irrispettose e tossiche, rischio di non cambiare concretamente la situazione e di legittimare implicitamente comportamenti inaccettabili con il proprio silenzio-assenso di fatto, percezione di persona tiepida, non pienamente coraggiosa e poco incline a prendere posizione nettamente in difesa di valori come l' equità e il rispetto reciproco in modo aperto e inequivocabile) (Positivo: riconoscimento formale dell'idea della collega e tentativo soft di smorzare la tensione e non farne una questione personale, approccio diplomatico e moderato che cerca di mediare tra diverse esigenze e sensibilità, volontà di non esacerbare il conflitto apertamente e in modo frontale, mantenimento di un clima di lavoro formalmente educato e non ostile apertamente)."
       },
       {
-        value: "Riprendo l'Idea Apro la Discussione",
+        value: "Riprendo l'Idea e Apro la Discussione",
         text: "(Positivo: supporto attivo e concreto all'inclusione e valorizzazione delle idee di tutti senza distinzioni di genere, affermazione di un approccio paritario e meritocratico, promozione di un clima di lavoro collaborativo e rispettoso delle diversità di genere e di opinione, percezione di persona attenta all'inclusione, orientata al team e non sorda alle dinamiche di genere problematiche esistenti sul posto di lavoro) (Negativo: condanna indiretta e non esplicita del comportamento irrispettoso (manca presa di posizione diretta contro il molestatore verbale), rischio di non fermare completamente dinamiche patriarcali e tossiche con un approccio solo indiretto e non pienamente assertivo in prima persona contro il molestatore verbale in quanto tale, percezione di approccio forse non pienamente risolutivo alla radice del problema specifico del sessismo verbale manifesto in quel momento (pur essendo utile a livello generale per promuovere l'inclusione in modo ampio e continuativo nel tempo))."
       },
       {
