@@ -15,12 +15,6 @@
     .social-inputs-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 8px; }
     @media (max-width: 600px) { .social-inputs-grid { grid-template-columns: 1fr; } }
     
-    .profile-mode-selector { display: flex; gap: 12px; margin: 16px 0; }
-    .mode-option { flex: 1; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; cursor: pointer; text-align: center; transition: all 0.2s; }
-    .mode-option input[type="radio"] { display: none; }
-    .mode-option input:checked + span { font-weight: 600; }
-    .mode-option:has(input:checked) { border-color: var(--primary); background: rgba(var(--primary-rgb), 0.05); }
-    
     .checkbox-grid-compact { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
     .checkbox-grid-compact label { display: flex; align-items: center; gap: 6px; font-size: 13px; padding: 6px; border-radius: 4px; transition: background 0.2s; }
     .checkbox-grid-compact label:hover { background: rgba(0,0,0,0.02); }
@@ -29,6 +23,11 @@
     
     .skills-input-grid { display: grid; gap: 8px; margin-top: 8px; }
     .skills-input-grid input { font-size: 14px; }
+    
+    .questionnaire-section { margin-top: 24px; padding-top: 20px; border-top: 2px solid #e0e0e0; }
+    .question-block { margin-bottom: 16px; }
+    .question-label { font-weight: 600; font-size: 14px; margin-bottom: 8px; display: block; color: #333; }
+    .hint-text { font-size: 12px; color: #666; margin-top: 4px; font-style: italic; }
   </style>
 </head>
 <body>
@@ -225,6 +224,198 @@
 
             <div class="input-group"><label data-i18n="lbl_what_we_do"></label><textarea id="what_we_do" rows="2"></textarea></div>
             <div class="input-group"><label data-i18n="lbl_goal"></label><select id="main_goal"><option value="automate_support">Supporto</option><option value="increase_sales">Vendite</option><option value="organize_workflow">Processi</option><option value="knowledge_base">KB</option></select></div>
+        </div>
+        
+        <!-- QUESTIONARIO PROFESSIONALE (12 DOMANDE) -->
+        <div class="questionnaire-section">
+          <div class="section-title">
+            <i class="fas fa-user-tie"></i>
+            <span data-i18n="section_professional">PROFILO PROFESSIONALE (5 min)</span>
+          </div>
+          <p class="hint-text" data-i18n="hint_professional">💡 Aiutaci a personalizzare il sistema rispondendo a queste domande</p>
+          
+          <!-- Q1: Ruolo -->
+          <div class="question-block">
+            <label class="question-label" data-i18n="q_role">1️⃣ Qual è il tuo ruolo principale?</label>
+            <select id="profile_role" required>
+              <option value="">-- Seleziona --</option>
+              <optgroup label="Imprenditoria">
+                <option value="founder_ceo">Fondatore/CEO</option>
+                <option value="owner_manager">Titolare/Gestore</option>
+                <option value="partner">Socio/Partner</option>
+              </optgroup>
+              <optgroup label="Libera Professione">
+                <option value="freelance_solo">Freelance (da solo)</option>
+                <option value="freelance_team">Freelance con collaboratori</option>
+                <option value="professional">Professionista (Avvocato, Commercialista...)</option>
+              </optgroup>
+              <optgroup label="Operativo">
+                <option value="manager">Manager/Responsabile</option>
+                <option value="artisan">Artigiano/Produttore</option>
+                <option value="tech_specialist">Tecnico Specializzato</option>
+              </optgroup>
+            </select>
+          </div>
+          
+          <!-- Q2: Team Size -->
+          <div class="question-block">
+            <label class="question-label" data-i18n="q_team_size">2️⃣ Quante persone lavorano con te?</label>
+            <select id="team_size" required>
+              <option value="">-- Seleziona --</option>
+              <option value="solo">Solo io (one-man-band)</option>
+              <option value="2-5">2-5 persone (micro team)</option>
+              <option value="6-10">6-10 persone (piccolo team)</option>
+              <option value="11-20">11-20 persone (team strutturato)</option>
+              <option value="20+">Oltre 20 persone</option>
+            </select>
+          </div>
+          
+          <!-- Q3: Esperienza -->
+          <div class="question-block">
+            <label class="question-label" data-i18n="q_experience">3️⃣ Da quanti anni fai questo lavoro?</label>
+            <select id="years_experience" required>
+              <option value="">-- Seleziona --</option>
+              <option value="0-1">Meno di 1 anno (appena iniziato)</option>
+              <option value="1-3">1-3 anni (fase di rodaggio)</option>
+              <option value="3-5">3-5 anni (in crescita)</option>
+              <option value="5-10">5-10 anni (consolidato)</option>
+              <option value="10-15">10-15 anni (esperto)</option>
+              <option value="15-20">15-20 anni (senior)</option>
+              <option value="20+">Oltre 20 anni (veterano)</option>
+            </select>
+          </div>
+          
+          <!-- Q4-7: Hard Skills (min 3) -->
+          <div class="question-block">
+            <label class="question-label" data-i18n="q_skills">4️⃣ Elenca le tue competenze tecniche principali (3-7)</label>
+            <p class="hint-text">💡 Es: "Saldatura TIG", "SEO", "Gestione cantieri"</p>
+            <div class="skills-input-grid">
+              <input type="text" id="skill_1" placeholder="Competenza #1" required>
+              <input type="text" id="skill_2" placeholder="Competenza #2" required>
+              <input type="text" id="skill_3" placeholder="Competenza #3" required>
+              <input type="text" id="skill_4" placeholder="Competenza #4">
+              <input type="text" id="skill_5" placeholder="Competenza #5">
+              <input type="text" id="skill_6" placeholder="Competenza #6">
+              <input type="text" id="skill_7" placeholder="Competenza #7">
+            </div>
+          </div>
+          
+          <!-- Q5: Certificazioni -->
+          <div class="question-block">
+            <label class="question-label" data-i18n="q_certifications">5️⃣ Hai certificazioni o abilitazioni professionali?</label>
+            <textarea id="certifications" rows="2" placeholder="Es: Albo Avvocati, Patentino Saldatore, ISO 9001..."></textarea>
+            <p class="hint-text">Se non ne hai, lascia vuoto</p>
+          </div>
+          
+          <!-- Q6: Formazione Recente -->
+          <div class="question-block">
+            <label class="question-label" data-i18n="q_training">6️⃣ Hai fatto corsi/formazione negli ultimi 2 anni?</label>
+            <select id="recent_training" required>
+              <option value="">-- Seleziona --</option>
+              <option value="none">No, non ho fatto formazione</option>
+              <option value="self_taught">Sì, autoformazione (YouTube, libri...)</option>
+              <option value="online_course">Sì, corsi online (Udemy, Coursera...)</option>
+              <option value="formal_course">Sì, corsi certificati (in aula/professionali)</option>
+              <option value="university">Sì, percorsi universitari/master</option>
+            </select>
+          </div>
+          
+          <!-- Q7: Specializzazione -->
+          <div class="question-block">
+            <label class="question-label" data-i18n="q_specialization">7️⃣ Come ti definiresti meglio?</label>
+            <select id="specialization_level" required>
+              <option value="">-- Seleziona --</option>
+              <option value="hyper_specialist">Iper-specialista (faccio 1-2 cose, ma al top)</option>
+              <option value="specialist">Specialista (focus su un settore specifico)</option>
+              <option value="versatile">Versatile (so fare più cose in ambiti vicini)</option>
+              <option value="generalist">Generalista (mi adatto a tutto)</option>
+            </select>
+          </div>
+          
+          <!-- Q8: Strumenti Digitali -->
+          <div class="question-block">
+            <label class="question-label" data-i18n="q_tools">8️⃣ Quali strumenti usi OGNI GIORNO? (Seleziona tutte)</label>
+            <div class="checkbox-grid-compact">
+              <label><input type="checkbox" name="tools" value="email"> 📧 Email</label>
+              <label><input type="checkbox" name="tools" value="whatsapp"> 💬 WhatsApp/Telegram</label>
+              <label><input type="checkbox" name="tools" value="excel"> 📊 Excel/Sheets</label>
+              <label><input type="checkbox" name="tools" value="word"> 📝 Word/Docs</label>
+              <label><input type="checkbox" name="tools" value="calendar"> 📅 Calendar</label>
+              <label><input type="checkbox" name="tools" value="social"> 📱 Social Media</label>
+              <label><input type="checkbox" name="tools" value="crm"> 📇 CRM</label>
+              <label><input type="checkbox" name="tools" value="accounting"> 💼 Gestionale</label>
+              <label><input type="checkbox" name="tools" value="project_mgmt"> 📋 Project Mgmt</label>
+              <label><input type="checkbox" name="tools" value="design"> 🎨 Design Tools</label>
+              <label><input type="checkbox" name="tools" value="ecommerce"> 🛒 E-commerce</label>
+              <label><input type="checkbox" name="tools" value="analytics"> 📈 Analytics</label>
+              <label><input type="checkbox" name="tools" value="video"> 🎥 Video Editing</label>
+              <label><input type="checkbox" name="tools" value="code"> 💻 Programmazione</label>
+              <label><input type="checkbox" name="tools" value="none"> ❌ Nessuno (offline)</label>
+            </div>
+          </div>
+          
+          <!-- Q9: Workflow Clienti -->
+          <div class="question-block">
+            <label class="question-label" data-i18n="q_workflow">9️⃣ Come lavori principalmente con i clienti?</label>
+            <select id="client_workflow" required>
+              <option value="">-- Seleziona --</option>
+              <option value="physical_only">Solo fisico (negozio, studio, cantiere)</option>
+              <option value="physical_dominant">Principalmente fisico, ma uso email/phone</option>
+              <option value="hybrid">Mix (incontri fisici + comunicazione digitale)</option>
+              <option value="digital_dominant">Principalmente online (email, call, piattaforme)</option>
+              <option value="digital_only">100% online (mai incontri fisici)</option>
+            </select>
+          </div>
+          
+          <!-- Q10: Gestione Documenti -->
+          <div class="question-block">
+            <label class="question-label" data-i18n="q_documents">🔟 Come gestisci fatture e documenti aziendali?</label>
+            <select id="document_management" required>
+              <option value="">-- Seleziona --</option>
+              <option value="paper">Carta e archivi fisici (old school)</option>
+              <option value="commercialist">Li porta il commercialista (io non li tocco)</option>
+              <option value="basic_digital">Excel/Word (manuale ma digitale)</option>
+              <option value="gestionale">Software gestionale (Fatture in Cloud, Aruba...)</option>
+              <option value="erp">ERP avanzato (SAP, Odoo...)</option>
+            </select>
+          </div>
+          
+          <!-- Q11: Pain Points (MAX 3) -->
+          <div class="question-block">
+            <label class="question-label" data-i18n="q_pain">1️⃣1️⃣ Quali sono le tue 3 PRINCIPALI sfide ORA?</label>
+            <p class="hint-text">⚠️ Seleziona MAX 3 (le più critiche)</p>
+            <div class="checkbox-grid-compact" id="pain-points-grid">
+              <label><input type="checkbox" name="pain" value="bureaucracy"> 📄 Burocrazia</label>
+              <label><input type="checkbox" name="pain" value="find_clients"> 🔍 Trovare clienti</label>
+              <label><input type="checkbox" name="pain" value="client_retention"> 🔁 Fidelizzare clienti</label>
+              <label><input type="checkbox" name="pain" value="time_management"> ⏰ Gestione tempo</label>
+              <label><input type="checkbox" name="pain" value="disorganization"> 📋 Disorganizzazione</label>
+              <label><input type="checkbox" name="pain" value="team_management"> 👥 Gestire team</label>
+              <label><input type="checkbox" name="pain" value="costs_control"> 💰 Controllo costi</label>
+              <label><input type="checkbox" name="pain" value="scaling"> 📈 Scalare business</label>
+              <label><input type="checkbox" name="pain" value="visibility"> 🌐 Visibilità online</label>
+              <label><input type="checkbox" name="pain" value="competition"> ⚔️ Competizione</label>
+              <label><input type="checkbox" name="pain" value="pricing"> 💸 Definire prezzi</label>
+              <label><input type="checkbox" name="pain" value="repetitive_tasks"> 🔁 Attività ripetitive</label>
+            </div>
+          </div>
+          
+          <!-- Q12: Obiettivo Primario -->
+          <div class="question-block">
+            <label class="question-label" data-i18n="q_main_goal">1️⃣2️⃣ Qual è il TUO obiettivo principale con l'AI?</label>
+            <select id="ai_main_goal" required>
+              <option value="">-- Seleziona --</option>
+              <option value="save_time">⏱️ Risparmiare tempo</option>
+              <option value="grow_revenue">💰 Aumentare fatturato</option>
+              <option value="reduce_costs">💸 Ridurre costi</option>
+              <option value="improve_quality">⭐ Migliorare qualità</option>
+              <option value="scale_business">📈 Scalare business</option>
+              <option value="better_decisions">🧠 Decisioni migliori</option>
+              <option value="automate_boring">🤖 Automatizzare il noioso</option>
+              <option value="digital_transformation">🚀 Digitalizzarmi</option>
+              <option value="beat_competition">⚔️ Battere concorrenza</option>
+            </select>
+          </div>
         </div>
 
         <div class="btn-container">
