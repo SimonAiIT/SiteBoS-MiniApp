@@ -13,7 +13,7 @@
         }
 
         .quiz-container {
-            max-width: 600px; /* Più stretto per mobile */
+            max-width: 600px;
             margin: 0 auto;
             padding: 16px;
         }
@@ -37,32 +37,33 @@
             font-size: 13px;
         }
 
-        /* ✅ FIX: Progress bar VISIBILE con sfondo bianco */
+        /* ✅ FIX: Progress bar DENTRO IL CONTAINER */
         .quiz-progress {
-            background: rgba(255, 255, 255, 0.95); /* 🔥 Sfondo quasi bianco */
+            background: rgba(255, 255, 255, 0.95);
             border-radius: var(--radius-md);
-            height: 8px; /* Più alta per visibilità */
-            margin: 20px 0 8px 0;
+            height: 8px;
+            margin: 20px 0 8px 0; /* 🔥 Margin normale, NO auto */
             overflow: hidden;
             border: 1px solid rgba(255, 255, 255, 0.3);
-            box-shadow: 0 2px 8px rgba(0,0,0,0.2); /* 🔥 Ombra per depth */
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            width: 100%; /* 🔥 Larghezza 100% del container */
         }
 
         .progress-fill {
-            background: linear-gradient(90deg, #5b6fed 0%, #4cd964 100%); /* 🔥 Colori brillanti */
+            background: linear-gradient(90deg, #5b6fed 0%, #4cd964 100%);
             height: 100%;
             transition: width 0.5s ease;
             width: 0%;
-            box-shadow: 0 0 10px rgba(91, 111, 237, 0.5); /* 🔥 Glow */
+            box-shadow: 0 0 10px rgba(91, 111, 237, 0.5);
         }
 
         .progress-text {
             text-align: center;
-            color: rgba(255, 255, 255, 0.9); /* 🔥 Bianco leggibile */
+            color: rgba(255, 255, 255, 0.9);
             font-size: 13px;
             font-weight: 600;
             margin-bottom: 20px;
-            text-shadow: 0 1px 3px rgba(0,0,0,0.3); /* 🔥 Shadow per contrasto */
+            text-shadow: 0 1px 3px rgba(0,0,0,0.3);
         }
 
         /* Scenario con stile card SiteBoS - PIÙ COMPATTO */
@@ -86,7 +87,7 @@
         /* ✅ NUOVO: Grid 2x2 COMPATTO */
         .options-grid {
             display: grid;
-            grid-template-columns: 1fr 1fr; /* 2 colonne sempre */
+            grid-template-columns: 1fr 1fr;
             gap: 12px;
             margin-bottom: 20px;
         }
@@ -100,7 +101,7 @@
             transition: all 0.2s ease;
             overflow: hidden;
             position: relative;
-            aspect-ratio: 1; /* 🔥 FORZA QUADRATO */
+            aspect-ratio: 1;
             display: flex;
             flex-direction: column;
         }
@@ -136,7 +137,7 @@
         /* ✅ Immagine QUADRATA (occupa tutto lo spazio) */
         .option-image {
             width: 100%;
-            flex: 1; /* Occupa tutto lo spazio disponibile */
+            flex: 1;
             object-fit: cover;
             display: block;
         }
