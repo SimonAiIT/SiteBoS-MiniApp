@@ -3,7 +3,7 @@ import { Question } from "../types";
 export const questions146to150: Question[] = [
   {
     num: 146,
-    scenario: "Dopo una lunga attesa allo sportelo, ti accorgi che hai sbagliato fila, che fai?",
+    scenario: "Dopo una lunga attesa allo sportello, ti accorgi che hai sbagliato fila. Che fai?",
     instructions: [
       "Immagine di una persona che sussurra al commesso e gli porge di nascosto una banconota,  tentativo di \"ungere le ruote\" per ottenere un trattamento speciale.",
       "Immagine di una persona che alza la mano timidamente per chiedere informazioni a chi è nella fila giusta,  richiesta di chiarimenti \"formale\" e  \"rispettosa della fila\".",
@@ -11,39 +11,39 @@ export const questions146to150: Question[] = [
       "Immagine di una persona che volta le spalle allo sportello e si allontana con rabbia,  rinuncia impulsiva e  \"vendicativa\" al servizio per frustrazione."
     ],
     captions: [
-      "Chiedo Un Eccezione al Commesso",
-      "Chiedo Se Sono il Prossimo nella Fila Giusta",
-      "Cambio Fila Pazienza",
-      "Vado Via, Ritorno Domani"
+      "Chiedo un'eccezione al commesso",
+      "Chiedo se sono il prossimo nella fila giusta",
+      "Cambio fila, pazienza",
+      "Vado via, ritorno domani"
     ],
     options: [
       {
-        value: "Chiedo Un Eccezione al Commesso",
-        text: "(Negativo: approccio non etico e corruttivo, violazione del principio di equità e fair play, percezione di persona opportunista, arrivista e poco rispettosa delle regole e della parità di trattamento per tutti, rischio di danno reputazionale se scoperto) (Positivo: massimizzazione efficienza e velocità, approccio pragmatico e risolutivo, ottenimento del servizio senza attese, furbizia percepita come abilità nel farsi strada e ottenere vantaggi individuali in contesti competitivi o burocratici, *ma positivo solo in ottica strettamente individualista e non etica*)."
+        value: "Chiedo un'eccezione al commesso",
+        text: "(Negativo: approccio non etico e corruttivo, violazione del principio di equità e fair play, percezione di persona opportunista, arrivista e poco rispettosa delle regole e della parità di trattamento per tutti, rischio di danno reputazionale se scoperto) (Positivo: massimizzazione efficienza e velocità, approccio pragmatico e risolutivo, ottenimento del servizio senza attese, furbizia percepita come abilità nel farsi strada e ottenere vantaggi individuali in contesti competitivi o burocratici, ma positivo solo in ottica strettamente individualista e non etica)."
       },
       {
-        value: "Chiedo Se Sono il Prossimo nella Fila Giusta",
+        value: "Chiedo se sono il prossimo nella fila giusta",
         text: "(Positivo: approccio corretto e rispettoso delle regole e dell'ordine della fila, tentativo di risolvere il problema in modo legittimo e trasparente, ricerca di una soluzione equa e non privilegiata, percezione di persona educata, rispettosa, corretta e orientata alla giustizia e all'equità formale) (Negativo: potenziale perdita di tempo in chiacchiere inutili, rischio di non risolvere il problema velocemente e direttamente, percezione di approccio ingenuo o eccessivamente fiducioso nella bontà del sistema e nella disponibilità altrui, approccio forse non sempre ottimizzato per la massima efficienza e velocità nella risoluzione del problema pratico immediato)."
       },
       {
-        value: "Cambio Fila Pazienza",
+        value: "Cambio fila, pazienza",
         text: "(Positivo: massimo rispetto per le regole e per gli altri, approccio responsabile che si assume le conseguenze dei propri errori senza scaricarle sugli altri, senso civico e fair play ineccepibili, percezione di persona corretta, responsabile, paziente e rispettosa delle regole e del tempo altrui) (Negativo: auto-penalizzazione eccessiva, perdita di tempo non necessaria, mancanza di iniziativa nel cercare soluzioni alternative legittime, percezione di passività o eccessiva autocolpevolizzazione, approccio forse non sempre ottimizzato per la massima efficienza e ottimizzazione del tempo e delle risorse personali, eccessiva enfasi sul senso del dovere e colpa personale a scapito della pragmaticità e della ricerca di soluzioni alternative legittime e creative)."
       },
       {
-        value: "Vado Via, Ritorno Domani",
-        text: "(Negativo: reazione impulsiva e non costruttiva, bassa tolleranza alla frustrazione e all'attesa, rinuncia al servizio desiderato per rabbia e orgoglio, approccio capriccioso e poco maturo e paziente, percezione di persona impulsiva, poco paziente, capricciosa e non sempre affidabile nel gestire la frustrazione e i contrattempi in modo adulto e costruttivo) (Positivo: affermazione estrema della libertà di scelta individuale, reazione assertiva e non passiva, non sottomissione alla frustrazione, approccio non remissivo e non attendista, reazione forte anche se negativa e autolesionista, percezione di forte carattere e individualità spiccata, *ma positivo solo in ottica di affermazione di sé estrema e non di efficacia pragmatica o costruttività sociale e personale nel lungo periodo e in contesti civili e collaborativi - non anarchici o individualisti estremi e non cooperativi*)."
+        value: "Vado via, ritorno domani",
+        text: "(Negativo: reazione impulsiva e non costruttiva, bassa tolleranza alla frustrazione e all'attesa, rinuncia al servizio desiderato per rabbia e orgoglio, approccio capriccioso e poco maturo e paziente, percezione di persona impulsiva, poco paziente, capricciosa e non sempre affidabile nel gestire la frustrazione e i contrattempi in modo adulto e costruttivo) (Positivo: affermazione estrema della libertà di scelta individuale, reazione assertiva e non passiva, non sottomissione alla frustrazione, approccio non remissivo e non attendista, reazione forte anche se negativa e autolesionista, percezione di forte carattere e individualità spiccata)."
       }
     ],
-    softSkill: "Integrita, TematicheSociali",
+    softSkill: "Integrità, TematicheSociali",
     characteristics: "Senso Civico, Equità, Rispetto delle Regole, Pazienza"
   },
   {
     num: 147,
-    scenario: "Stai Giocando ad Indovina chi è?, quale è la tua prima domanda, è un? (Hai un Biglietto Sulla Fronte con Un Qualsiasi Personaggio)",
+    scenario: "Stai giocando a 'Indovina Chi?'. Hai un biglietto sulla fronte con un personaggio. Qual è la tua prima domanda: 'È un...?'",
     instructions: [
       "Immagine di un pittore rinascimentale che dipinge una rockband.",
       "Immagine di una lente di ingrandimento puntata sul simbolo di \"genere\" maschio e femmina.",
-      "Immagine di una lente di ingrandimento puntata sulla \"testa\" di un personaggio calvo,  focalizzazione su una caratteristica \"fisica\"",
+      "Immagine di una lente di ingrandimento puntata sulla \"testa\" di un personaggio calvo,  focalizzazione su una caratteristica \"fisica\".",
       "Immagine di una lapide di cimitero."
     ],
     captions: [
@@ -75,7 +75,7 @@ export const questions146to150: Question[] = [
   },
   {
     num: 148,
-    scenario: "Stai appendendo qualcosa e sfortunatamente fori un tubo d'acqua, di corsa chiudi il rubinetto generale e poi?",
+    scenario: "Stai appendendo qualcosa e sfortunatamente fori un tubo d'acqua. Di corsa chiudi il rubinetto generale e poi?",
     instructions: [
       "Immagine di una persona che telefona frettolosamente ad un contatto in rubrica,  richiesta di aiuto \"informale\" a una \"persona di fiducia\" non esperta.",
       "Immagine di qualcuno che armeggia con nastro adesivo e mastice per bloccare la falla alla \"bell'e meglio\",  improvvisazione \"casalinga\" e soluzione \"temporanea\" \"di fortuna\".",
@@ -111,12 +111,12 @@ export const questions146to150: Question[] = [
   },
   {
     num: 149,
-    scenario: "Devi creare la tua squadra di tiro alla fune, chi perde va nel fango, hai vinto il sorteggio e cominci tu, che fai?",
+    scenario: "Devi creare la tua squadra di tiro alla fune, chi perde va nel fango. Hai vinto il sorteggio e cominci tu, che fai?",
     instructions: [
       "Immagine di un gruppo di amici più cari,  priorità ai legami affettivi e alla \"simpatia\" personale nella scelta del team.",
       "Immagine di un gruppo di persone dall'aspetto \"divertente\" o \"simpatico\".",
-      "Immagine di un gruppo di persone dall aspetto furbo .",
-      "IImmagine di un gruppo di persone muscolose e \"forti\" fisicamente,  priorità assoluta alla \"forza bruta\" e al potenziale di \"vittoria\" \"fisica\" nella selezione del team."
+      "Immagine di un gruppo di persone dall aspetto furbo.",
+      "Immagine di un gruppo di persone muscolose e \"forti\" fisicamente,  priorità assoluta alla \"forza bruta\" e al potenziale di \"vittoria\" \"fisica\" nella selezione del team."
     ],
     captions: [
       "Prendo i Miei Amici",
@@ -142,12 +142,12 @@ export const questions146to150: Question[] = [
         text: "(Positivo: massimizzazione delle probabilità di vittoria competitiva pura e oggettiva, approccio iper-competitivo e orientato al risultato massimo (la vittoria a tutti i costi), selezione basata su criteri oggettivi e misurabili di performance fisica pura, percezione di persona determinata, competitiva, focalizzata sulla performance e non disposta a compromessi pur di vincere, approccio spartano e orientato all'eccellenza competitiva pura e senza fronzoli) (Negativo: potenziale squilibrio del team sul piano umano e relazionale, rischio di creare un clima eccessivamente competitivo e poco collaborativo, percezione di approccio troppo selettivo, spietato, competitivo e poco incline al compromesso e alla mediazione per creare un team veramente vincente nel complesso, approccio forse non sempre ottimizzato per la massima performance del team nel suo complesso che richiede anche coesione, collaborazione e dinamiche relazionali positive e sinergiche e non solo forza bruta individuale)."
       }
     ],
-    softSkill: "DecisionMakingStrategico, Integrita",
-    characteristics: "Decision Making, Strategia, Integrita, Leadership"
+    softSkill: "DecisionMakingStrategico, Integrità",
+    characteristics: "Decision Making, Strategia, Integrità, Leadership"
   },
   {
     num: 150,
-    scenario: "Hai l'opportunità di parlare con un personaggio nella storia chi scegli?",
+    scenario: "Hai l'opportunità di parlare con un personaggio della storia: chi scegli?",
     instructions: [
       "Immagine di Albert Einstein,  icona della genialità visionaria e della soluzione di problemi tecnologici complessi attraverso l'innovazione radicale.",
       "Immagine di Cristoforo Colombo che scruta l'orizzonte marino con una bussola in mano,  simbolo di esplorazione strategica e  problem-solving orientato alla scoperta e all'ignoto.",
