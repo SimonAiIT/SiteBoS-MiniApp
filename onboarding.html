@@ -10,6 +10,26 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
   <link rel="stylesheet" href="styles.css">
+  
+  <style>
+    .social-inputs-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 8px; }
+    @media (max-width: 600px) { .social-inputs-grid { grid-template-columns: 1fr; } }
+    
+    .profile-mode-selector { display: flex; gap: 12px; margin: 16px 0; }
+    .mode-option { flex: 1; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; cursor: pointer; text-align: center; transition: all 0.2s; }
+    .mode-option input[type="radio"] { display: none; }
+    .mode-option input:checked + span { font-weight: 600; }
+    .mode-option:has(input:checked) { border-color: var(--primary); background: rgba(var(--primary-rgb), 0.05); }
+    
+    .checkbox-grid-compact { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
+    .checkbox-grid-compact label { display: flex; align-items: center; gap: 6px; font-size: 13px; padding: 6px; border-radius: 4px; transition: background 0.2s; }
+    .checkbox-grid-compact label:hover { background: rgba(0,0,0,0.02); }
+    .checkbox-grid-compact input[type="checkbox"] { margin: 0; }
+    @media (max-width: 600px) { .checkbox-grid-compact { grid-template-columns: 1fr; } }
+    
+    .skills-input-grid { display: grid; gap: 8px; margin-top: 8px; }
+    .skills-input-grid input { font-size: 14px; }
+  </style>
 </head>
 <body>
 
@@ -103,7 +123,7 @@
         </div>
       </div>
 
-      <!-- STEP 2: Azienda -->
+      <!-- STEP 2: Azienda + Profilo Professionale -->
       <div class="step-content hidden fade-in" id="step-2">
         <h2 data-i18n="h_company"></h2>
         <p class="subtitle" data-i18n="sub_company"></p>
@@ -114,13 +134,70 @@
           <div class="col"><label data-i18n="lbl_sdi"></label><input type="text" id="sdi_pec"></div>
         </div>
         
-        <div>
-            <div class="section-title" data-i18n="section_identity" style="margin-top:0;"></div>
+        <div class="input-group">
+           <label class="required" data-i18n="lbl_address"></label>
+           <div class="row">
+             <div class="col-2"><input type="text" id="addr_route" placeholder="Via/Piazza" required></div>
+             <div class="col"><input type="text" id="addr_num" placeholder="N°" required></div>
+           </div>
+           <div class="row">
+             <div class="col"><input type="text" id="addr_zip" placeholder="CAP" required></div>
+             <div class="col-2"><input type="text" id="addr_city" placeholder="Città" required></div>
+             <div class="col"><input type="text" id="addr_prov" placeholder="PR" maxlength="2" required></div>
+           </div>
+        </div>
+        
+        <div class="input-group"><label data-i18n="lbl_site"></label><input type="url" id="site" placeholder="https://..."></div>
+        
+        <!-- SOCIAL MEDIA -->
+        <div class="form-section" style="margin-top: 16px;">
+          <div class="section-title">
+            <i class="fas fa-share-alt"></i>
+            <span data-i18n="section_social">SOCIAL MEDIA</span>
+          </div>
+          
+          <div class="social-inputs-grid">
+            <div class="input-group">
+              <label>
+                <i class="fab fa-linkedin" style="color: #0077b5;"></i>
+                LinkedIn
+              </label>
+              <input type="url" id="linkedin_page" placeholder="URL profilo/pagina">
+            </div>
             
-            <!-- NUOVA LISTA SETTORI COMPLETA -->
+            <div class="input-group">
+              <label>
+                <i class="fab fa-facebook" style="color: #1877f2;"></i>
+                Facebook
+              </label>
+              <input type="url" id="facebook_page" placeholder="URL pagina">
+            </div>
+            
+            <div class="input-group">
+              <label>
+                <i class="fab fa-instagram" style="color: #e4405f;"></i>
+                Instagram
+              </label>
+              <input type="text" id="instagram_page" placeholder="@account o URL">
+            </div>
+            
+            <div class="input-group">
+              <label>
+                <i class="fab fa-x-twitter" style="color: #000;"></i>
+                X (Twitter)
+              </label>
+              <input type="text" id="twitter_page" placeholder="@account o URL">
+            </div>
+          </div>
+        </div>
+        
+        <!-- IDENTITÀ OPERATIVA -->
+        <div style="margin-top: 20px;">
+            <div class="section-title" data-i18n="section_identity"></div>
+            
             <div class="input-group">
                 <label data-i18n="lbl_sector"></label>
-                <select id="sector">
+                <select id="sector" required>
                     <optgroup data-i18n="sector_group_services"></optgroup>
                     <option value="services_professional" data-i18n="sector_pro"></option>
                     <option value="services_consulting" data-i18n="sector_consulting"></option>
@@ -149,22 +226,6 @@
             <div class="input-group"><label data-i18n="lbl_what_we_do"></label><textarea id="what_we_do" rows="2"></textarea></div>
             <div class="input-group"><label data-i18n="lbl_goal"></label><select id="main_goal"><option value="automate_support">Supporto</option><option value="increase_sales">Vendite</option><option value="organize_workflow">Processi</option><option value="knowledge_base">KB</option></select></div>
         </div>
-
-        <div class="input-group">
-           <label class="required" data-i18n="lbl_address"></label>
-           <div class="row">
-             <div class="col-2"><input type="text" id="addr_route" placeholder="Via/Piazza" required></div>
-             <div class="col"><input type="text" id="addr_num" placeholder="N°" required></div>
-           </div>
-           <div class="row">
-             <div class="col"><input type="text" id="addr_zip" placeholder="CAP" required></div>
-             <div class="col-2"><input type="text" id="addr_city" placeholder="Città" required></div>
-             <div class="col"><input type="text" id="addr_prov" placeholder="PR" maxlength="2" required></div>
-           </div>
-        </div>
-        <div class="input-group"><label data-i18n="lbl_site"></label><input type="url" id="site" placeholder="https://..."></div>
-        <div class="input-group"><label>LinkedIn</label><input type="url" id="linkedin_page"></div>
-        <div class="input-group"><label>Facebook</label><input type="url" id="facebook_page"></div>
 
         <div class="btn-container">
           <button type="button" class="btn btn-secondary" id="btn-back-s2"><i class="fas fa-arrow-left"></i> <span data-i18n="btn_back"></span></button>
