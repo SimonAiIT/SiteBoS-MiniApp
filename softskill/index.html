@@ -37,28 +37,32 @@
             font-size: 13px;
         }
 
-        /* Progress bar usando lo stile SiteBoS */
+        /* ✅ FIX: Progress bar VISIBILE con sfondo bianco */
         .quiz-progress {
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.95); /* 🔥 Sfondo quasi bianco */
             border-radius: var(--radius-md);
-            height: 6px;
+            height: 8px; /* Più alta per visibilità */
             margin: 20px 0 8px 0;
             overflow: hidden;
-            border: 1px solid var(--glass-border);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2); /* 🔥 Ombra per depth */
         }
 
         .progress-fill {
-            background: linear-gradient(90deg, var(--primary) 0%, var(--success) 100%);
+            background: linear-gradient(90deg, #5b6fed 0%, #4cd964 100%); /* 🔥 Colori brillanti */
             height: 100%;
             transition: width 0.5s ease;
             width: 0%;
+            box-shadow: 0 0 10px rgba(91, 111, 237, 0.5); /* 🔥 Glow */
         }
 
         .progress-text {
             text-align: center;
-            color: var(--text-muted);
-            font-size: 12px;
+            color: rgba(255, 255, 255, 0.9); /* 🔥 Bianco leggibile */
+            font-size: 13px;
+            font-weight: 600;
             margin-bottom: 20px;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.3); /* 🔥 Shadow per contrasto */
         }
 
         /* Scenario con stile card SiteBoS - PIÙ COMPATTO */
