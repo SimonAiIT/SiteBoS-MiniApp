@@ -21,8 +21,12 @@ async function loadQuestions() {
     } catch (error) {
         console.error('❌ Errore nel caricamento:', error);
         document.getElementById('scenario').innerHTML = 
-            `<p style="color: red;">⚠️ Errore: ${error.message}</p>
-             <p>Assicurati di aver copiato tutti i file .ts nella cartella questions/</p>`;
+            `<div class="error-message">
+                <i class="fas fa-exclamation-triangle"></i>
+                <strong>Errore di caricamento</strong>
+                <p>${error.message}</p>
+                <p style="font-size: 12px; margin-top: 10px;">Assicurati di aver copiato tutti i file .ts nella cartella questions/</p>
+            </div>`;
     }
 }
 
@@ -41,7 +45,7 @@ function displayQuestion() {
     // Mostra scenario
     document.getElementById('scenario').textContent = question.scenario;
 
-    // Mostra opzioni
+    // Mostra opzioni (2x2 grid)
     const optionsContainer = document.getElementById('options');
     optionsContainer.innerHTML = '';
 
@@ -84,9 +88,9 @@ function updateNavigation() {
     nextBtn.disabled = answers[currentQuestionIndex] === undefined;
 
     if (currentQuestionIndex === questions.length - 1) {
-        nextBtn.textContent = '🎯 Vedi Risultati';
+        nextBtn.innerHTML = '<i class="fas fa-trophy"></i> Vedi Risultati';
     } else {
-        nextBtn.textContent = 'Successiva ➡️';
+        nextBtn.innerHTML = 'Successiva <i class="fas fa-arrow-right"></i>';
     }
 }
 
@@ -95,6 +99,8 @@ function nextQuestion() {
     if (currentQuestionIndex < questions.length - 1) {
         currentQuestionIndex++;
         displayQuestion();
+        // Scroll to top
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     } else {
         showResults();
     }
@@ -105,6 +111,8 @@ function previousQuestion() {
     if (currentQuestionIndex > 0) {
         currentQuestionIndex--;
         displayQuestion();
+        // Scroll to top
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 }
 
@@ -128,17 +136,27 @@ function showResults() {
         .sort((a, b) => b[1] - a[1])
         .slice(0, 10);
 
-    // Mostra risultati
+    // Mostra risultati con il nuovo design
     const resultsContent = document.getElementById('resultsContent');
-    resultsContent.innerHTML = sortedSkills.map(([skill, count]) => `
-        <div class="skill-result">
-            <strong>${skill}</strong>: ${count} occorrenze
-            <div style="background: linear-gradient(90deg, #667eea ${(count / questions.length) * 100}%, #e0e0e0 0%); height: 10px; border-radius: 5px; margin-top: 5px;"></div>
-        </div>
-    `).join('');
+    resultsContent.innerHTML = sortedSkills.map(([skill, count]) => {
+        const percentage = Math.round((count / questions.length) * 100);
+        return `
+            <div class="skill-card">
+                <div class="skill-name">
+                    <i class="fas fa-star" style="color: var(--primary); margin-right: 8px;"></i>
+                    ${skill}
+                </div>
+                <div class="skill-count">${count} occorrenze (${percentage}%)</div>
+                <div class="skill-bar">
+                    <div class="skill-bar-fill" style="width: ${percentage}%"></div>
+                </div>
+            </div>
+        `;
+    }).join('');
 
+    // Nascondi quiz, mostra risultati
     document.getElementById('questionSection').style.display = 'none';
-    document.querySelector('.navigation').style.display = 'none';
+    document.getElementById('navButtons').style.display = 'none';
     document.getElementById('results').classList.add('active');
 
     // Salva in localStorage
@@ -147,6 +165,9 @@ function showResults() {
         skills: sortedSkills,
         completedAt: new Date().toISOString()
     }));
+
+    // Scroll to top
+    window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 // Ricomincia il quiz
@@ -156,10 +177,11 @@ function restartQuiz() {
     localStorage.removeItem('softSkillResults');
 
     document.getElementById('questionSection').style.display = 'block';
-    document.querySelector('.navigation').style.display = 'flex';
+    document.getElementById('navButtons').style.display = 'flex';
     document.getElementById('results').classList.remove('active');
 
     displayQuestion();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 // Inizializza al caricamento della pagina
