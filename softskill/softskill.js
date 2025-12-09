@@ -1,21 +1,45 @@
 // Soft Skill Selector - Main Application
-// Carica direttamente i file TypeScript dalla cartella questions/
+// Integrato con sistema moduli e webhook Make.com
 
 let questions = [];
 let currentQuestionIndex = 0;
 let answers = {};
+let webhook;
+let moduleId = 'complete';
+let startTime;
 
 // Carica le domande usando il loader
 async function loadQuestions() {
     try {
-        // Usa il loader per caricare tutti i file TypeScript
-        questions = await getQuestions();
+        // Inizializza webhook handler
+        webhook = new WebhookHandler();
         
-        if (questions.length === 0) {
+        // Recupera parametro modulo dall'URL
+        const urlParams = new URLSearchParams(window.location.search);
+        moduleId = urlParams.get('module') || 'complete';
+        
+        // Usa il loader per caricare tutti i file TypeScript
+        const allQuestions = await getQuestions();
+        
+        if (allQuestions.length === 0) {
             throw new Error('Nessuna domanda caricata');
         }
         
+        // Filtra domande per modulo
+        if (moduleId !== 'complete' && MODULE_MAPPING[moduleId]) {
+            const moduleQuestionNums = MODULE_MAPPING[moduleId].questions;
+            questions = allQuestions.filter(q => moduleQuestionNums.includes(q.num));
+            console.log(`🎯 Caricato modulo: ${MODULE_MAPPING[moduleId].name}`);
+        } else {
+            questions = allQuestions;
+            console.log(`🎯 Caricato percorso completo`);
+        }
+        
         console.log(`✅ ${questions.length} domande pronte!`);
+        
+        // Salva tempo inizio
+        startTime = Date.now();
+        
         displayQuestion();
         
     } catch (error) {
@@ -116,7 +140,7 @@ function selectOptionAndAdvance(index) {
             displayQuestion();
             window.scrollTo({ top: 0, behavior: 'smooth' });
         } else {
-            showResults();
+            finishQuiz();
         }
     }, 300);
 }
@@ -145,7 +169,7 @@ function nextQuestion() {
         displayQuestion();
         window.scrollTo({ top: 0, behavior: 'smooth' });
     } else {
-        showResults();
+        finishQuiz();
     }
 }
 
@@ -158,37 +182,87 @@ function previousQuestion() {
     }
 }
 
-// Mostra i risultati
-function showResults() {
+// 🆕 Calcola risultati e salva
+async function finishQuiz() {
+    const completionTime = Math.floor((Date.now() - startTime) / 1000);
+    
+    // Calcola skill counts
     const skillCounts = {};
+    const answersArray = [];
 
-    // Conta le soft skill
     questions.forEach((question, index) => {
         const selectedOption = answers[index];
         if (selectedOption !== undefined) {
-            const skills = question.softSkill.split(', ');
+            // Conta skills
+            const skills = question.softSkill.split(', ').map(s => s.trim());
             skills.forEach(skill => {
                 skillCounts[skill] = (skillCounts[skill] || 0) + 1;
+            });
+            
+            // Prepara array risposte per webhook
+            answersArray.push({
+                question_num: question.num,
+                scenario: question.scenario,
+                answer: question.options[selectedOption].value,
+                soft_skills: skills
             });
         }
     });
 
-    // Ordina per frequenza
-    const sortedSkills = Object.entries(skillCounts)
+    // Converti counts in percentuali
+    const skillPercentages = {};
+    Object.entries(skillCounts).forEach(([skill, count]) => {
+        skillPercentages[skill] = Math.round((count / questions.length) * 100);
+    });
+
+    // Ordina per frequenza (top 10)
+    const sortedSkills = Object.entries(skillPercentages)
         .sort((a, b) => b[1] - a[1])
         .slice(0, 10);
 
-    // Mostra risultati con il nuovo design
+    // 🔥 SALVA SU WEBHOOK (se non è percorso completo)
+    if (moduleId !== 'complete') {
+        try {
+            await webhook.saveModule({
+                module_id: moduleId,
+                module_name: MODULE_MAPPING[moduleId].name,
+                total_questions: questions.length,
+                completion_time_seconds: completionTime,
+                completion_date: new Date().toISOString(),
+                answers: answersArray,
+                results: skillPercentages,
+                completion_percentage: webhook.getCompletedModulesCount() * 25
+            });
+            
+            // Salva anche in localStorage
+            webhook.saveModuleToLocalStorage(moduleId, {
+                completion_time_seconds: completionTime,
+                results: skillPercentages
+            });
+            
+            console.log('✅ Modulo salvato con successo!');
+            
+        } catch (error) {
+            console.error('❌ Errore salvataggio webhook:', error);
+            alert('⚠️ Attenzione: errore nel salvataggio dati. I risultati sono comunque visibili.');
+        }
+    }
+
+    // Mostra risultati
+    showResults(sortedSkills);
+}
+
+// Mostra i risultati
+function showResults(sortedSkills) {
     const resultsContent = document.getElementById('resultsContent');
-    resultsContent.innerHTML = sortedSkills.map(([skill, count]) => {
-        const percentage = Math.round((count / questions.length) * 100);
+    resultsContent.innerHTML = sortedSkills.map(([skill, percentage]) => {
         return `
             <div class="skill-card">
                 <div class="skill-name">
                     <i class="fas fa-star" style="color: var(--primary); margin-right: 8px;"></i>
                     ${skill}
                 </div>
-                <div class="skill-count">${count} occorrenze (${percentage}%)</div>
+                <div class="skill-count">${percentage}% di affinità</div>
                 <div class="skill-bar">
                     <div class="skill-bar-fill" style="width: ${percentage}%"></div>
                 </div>
@@ -201,29 +275,17 @@ function showResults() {
     document.getElementById('navButtons').style.display = 'none';
     document.getElementById('results').classList.add('active');
 
-    // Salva in localStorage
-    localStorage.setItem('softSkillResults', JSON.stringify({
-        answers,
-        skills: sortedSkills,
-        completedAt: new Date().toISOString()
-    }));
-
     // Scroll to top
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 // Ricomincia il quiz
 function restartQuiz() {
-    currentQuestionIndex = 0;
-    answers = {};
-    localStorage.removeItem('softSkillResults');
-
-    document.getElementById('questionSection').style.display = 'block';
-    document.getElementById('navButtons').style.display = 'flex';
-    document.getElementById('results').classList.remove('active');
-
-    displayQuestion();
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    // Torna alla dashboard invece di riavviare
+    const urlParams = new URLSearchParams(window.location.search);
+    const vat = urlParams.get('vat') || 'TEST_VAT';
+    const userId = urlParams.get('user_id') || 'TEST_USER';
+    window.location.href = `dashboard.html?vat=${vat}&user_id=${userId}`;
 }
 
 // Inizializza al caricamento della pagina
