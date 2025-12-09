@@ -5,7 +5,7 @@ export const questions91to95: Question[] = [
     num: 91,
     scenario: "Quale strumento pensi sia più importante per viaggiare?",
     instructions: [
-      "Immagine di una strumenti di navigazione digitale,  ogni rotta tracciata con precisione millimetrica,  pianificazione ossessiva.",
+      "Immagine di strumenti di navigazione digitale,  ogni rotta tracciata con precisione millimetrica,  pianificazione ossessiva.",
       "Immagine di una mappa,  ogni rotta tracciata con precisione,  pianificazione prevalente ma con margini di libertà.",
       "Immagine di una rosa dei venti che indica tutte le direzioni contemporaneamente,  equilibrio tra ragione e intuito,  approccio misto.",
       "Immagine di una bussola,  istinto puro,  assenza di pianificazione."
@@ -31,7 +31,7 @@ export const questions91to95: Question[] = [
       },
       {
         value: "Rosa dei Venti",
-        text: "(Positivo: massima spontaneità, creatività e  capacità  di  reagire  rapidamente  e  con  efficacia  di  fronte  a  situazioni  inattese  o  emergenze  improvvise,  approccio  dinamico,  istintivo  e  non  convenzionale  che  valorizza  l' improvvisazione  creativa  e  la  capacità  di  cogliere  \"al  volo\"  opportunità  immediate  e  non  pianificate,  persona percepita come  intrepida,  audace,  dinamica,  reattiva,  anticonformista  e  capace  di  \"pensare  fuori  dagli  schemi\"  e  di  prendere  decisioni  rapide  e  coraggiose  anche  in  condizioni  di  incertezza  o  rischio  elevato) (Negativo: potenziale mancanza di  strategia  a  lungo  termine  e  rischio  di  decisioni  affrettate,  impulsive,  poco  ponderate  o  addirittura  caotiche  e  contraddittorie,  percezione  di  approccio  forse  non  sempre  ottimizzato  per  contesti  che  richiederebbero  massima  pianificazione,  organizzazione,  metodo,  rigore  decisionale,  analisi  razionale  dei  dati  e  delle  informazioni  disponibili  e  valutazione  attenta  e  ponderata  di  tutti  i  pro  e  i  contro  prima  di  prendere  decisioni  importanti  o  strategiche  per  il  futuro)."
+        text: "(Positivo: massima spontaneità, creatività e  capacità  di  reagire  rapidamente  e  con  efficacia  di  fronte  a  situazioni  inattese  o  emergenze  improvvise,  approccio  dinamico,  istintivo  e  non  convenzionale  che  valorizza  l' improvvisazione  creativa  e  la  capacità  di  cogliere  \"al  volo\"  opportunità  immediate  e  non  pianificate,  persona percepita come  intrepida,  audace,  dinamica,  reattiva,  anticonformista  e  capace  di  \"pensare  fuori  dagli  schemi\"  e  di  prendere  decisioni  rapide  e  coraggioose  anche  in  condizioni  di  incertezza  o  rischio  elevato) (Negativo: potenziale mancanza di  strategia  a  lungo  termine  e  rischio  di  decisioni  affrettate,  impulsive,  poco  ponderate  o  addirittura  caotiche  e  contraddittorie,  percezione  di  approccio  forse  non  sempre  ottimizzato  per  contesti  che  richiederebbero  massima  pianificazione,  organizzazione,  metodo,  rigore  decisionale,  analisi  razionale  dei  dati  e  delle  informazioni  disponibili  e  valutazione  attenta  e  ponderata  di  tutti  i  pro  e  i  contro  prima  di  prendere  decisioni  importanti  o  strategiche  per  il  futuro)."
       }
     ],
     softSkill: "PianificazioneEOrganizzazione, Autodisciplina",
@@ -39,7 +39,7 @@ export const questions91to95: Question[] = [
   },
   {
     num: 92,
-    scenario: "Quando ti trovi in un posto affollato come procedi?",
+    scenario: "Quando ti trovi in un posto affollato, come procedi?",
     instructions: [
       "Immagine di un pesce che nuota in un banco di pesci,  movimenti sincronizzati con la massa,  integrazione totale nel gruppo.",
       "Immagine di un pesce che nuota in un banco ma leggermente defilato,  segue la corrente ma con una certa autonomia,  integrazione prevalente.",
@@ -48,7 +48,7 @@ export const questions91to95: Question[] = [
     ],
     captions: [
       "Seguo la  Fila",
-      "Mantengo le Distanza",
+      "Mantengo le Distanze",
       "Mi allontano se Posso",
       "Vado dove Voglio"
     ],
@@ -58,7 +58,7 @@ export const questions91to95: Question[] = [
         text: "(Positivo: massima armonia relazionale e  integrazione  nel  gruppo,  approccio  collaborativo  e  orientato  al  consenso  che  facilita  la  coesione  sociale  e  la  convivenza  pacifica,  persona percepita come  gentile,  disponibile,  accondiscendente,  collaborativa  e  non  conflittuale  o  prevaricante  nei  confronti  degli  altri) (Negativo: eccessiva accondiscendenza e  mancanza  di  assertività  nel  far  valere  le  proprie  idee  e  i  propri  bisogni  legittimi,  rischio  di  sacrificare  i  propri  obiettivi  personali  e  di  non  esprimere  pienamente  il  proprio  potenziale  e  la  propria  individualità  per  eccessiva  preoccupazione  di  non  \"disturbare\"  o  \"andare  controcorrente\"  rispetto  al  gruppo  o  alla  massa,  percezione  di  approccio  forse  non  sempre  ottimizzato  per  contesti  che  richiederebbero  maggiore  assertività,  determinazione,  capacità  di  leadership  e  di  \"farsi  sentire\"  e  di  \"emergere\"  in  modo  chiaro  e  inequivocabile  anche  in  situazioni  di  folla  o  di  forte  pressione  sociale  o  conformista) ."
       },
       {
-        value: "Mantengo le Distanza",
+        value: "Mantengo le Distanze",
         text: "(Positivo: equilibrio tra armonia  relazionale  e  affermazione  della  propria  autonomia  e  individualità,  approccio  collaborativo  ma  non  passivo  o  rinunciatario  che  permette  di  integrare  le  proprie  esigenze  con  quelle  del  gruppo  senza  annullarsi  o  omologarsi  completamente  alla  massa,  persona percepita come  socievole,  collaborativa,  empatica  ma  anche  sufficientemente  autonoma,  indipendente  e  capace  di  far  valere  i  propri  bisogni  e  le  proprie  opinioni  quando  necessario  senza  eccessiva  aggressività  o  conflittualità) (Negativo: potenziale  mancanza  di  piena  assertività  e  rischio  di  non  far  valere  pienamente  le  proprie  idee  o  i  propri  bisogni  più  profondi  per  eccessiva  moderazione,  diplomazia  o  preoccupazione  di  non  \"disturbare\"  o  \"creare  tensioni\"  nel  gruppo,  percezione  di  approccio  forse  non  sempre  ottimizzato  per  contesti  che  richiederebbero  massima  assertività,  determinazione  e  capacità  di  \"farsi  sentire\"  e  di  \"emergere\"  in  modo  chiaro  e  inequivocabile  anche  in  situazioni  di  forte  competizione  o  conflittualità  aperta)."
       },
       {
