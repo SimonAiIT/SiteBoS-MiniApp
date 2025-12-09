@@ -14,6 +14,55 @@ class WebhookHandler {
   }
 
   /**
+   * 🆕 RECUPERA PROGRESSO UTENTE DAL SERVER
+   * Chiamato all'inizio per sincronizzare dati
+   * @returns {Promise<Object>} Dati progresso utente
+   */
+  async getProgress() {
+    const payload = {
+      action: "get_progress",
+      vat: this.vat,
+      user_id: this.userId,
+      timestamp: new Date().toISOString()
+    };
+
+    console.log('📡 Recupero progresso da server:', payload);
+
+    try {
+      const response = await fetch(this.webhookUrl, {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (!response.ok) {
+        throw new Error(`Webhook failed: ${response.status}`);
+      }
+      
+      const result = await response.json();
+      console.log('✅ Progresso recuperato:', result);
+      
+      // Salva in localStorage come cache
+      if (result.modules_completed) {
+        const key = `modules_${this.vat}_${this.userId}`;
+        localStorage.setItem(key, JSON.stringify(result.modules_completed));
+      }
+      
+      return result;
+      
+    } catch (error) {
+      console.warn('⚠️ Errore recupero progresso, uso localStorage:', error);
+      // Fallback: usa localStorage
+      return {
+        modules_completed: this.loadModulesData(),
+        completion_percentage: this.getCompletionPercentage()
+      };
+    }
+  }
+
+  /**
    * Salva modulo completato su webhook Make.com
    * @param {Object} moduleData - Dati del modulo completato
    * @returns {Promise} Response del webhook
