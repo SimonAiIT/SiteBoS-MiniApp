@@ -62,21 +62,34 @@ function displayQuestion() {
             <img src="${imgPath}" 
                  alt="${question.captions[index]}" 
                  class="option-image"
-                 onerror="this.src='../images/softskill/${index + 1}.png'">
+                 onerror="this.style.display='none'; this.nextElementSibling.style.paddingTop='60px';">
             <div class="option-caption">${question.captions[index]}</div>
         `;
 
-        card.onclick = () => selectOption(index);
+        // 🔥 Click diretto avanza alla domanda successiva
+        card.onclick = () => selectOptionAndAdvance(index);
         optionsContainer.appendChild(card);
     });
 
     updateNavigation();
 }
 
-// Seleziona un'opzione
-function selectOption(index) {
+// 🆕 Seleziona un'opzione e avanza automaticamente
+function selectOptionAndAdvance(index) {
     answers[currentQuestionIndex] = index;
+    
+    // Breve delay per mostrare la selezione prima di avanzare
     displayQuestion();
+    
+    setTimeout(() => {
+        if (currentQuestionIndex < questions.length - 1) {
+            currentQuestionIndex++;
+            displayQuestion();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        } else {
+            showResults();
+        }
+    }, 300);
 }
 
 // Aggiorna i bottoni di navigazione
@@ -85,21 +98,22 @@ function updateNavigation() {
     const nextBtn = document.getElementById('nextBtn');
 
     prevBtn.disabled = currentQuestionIndex === 0;
-    nextBtn.disabled = answers[currentQuestionIndex] === undefined;
+    
+    // Il bottone "Avanti" ora è sempre attivo (per chi vuole saltare)
+    nextBtn.disabled = false;
 
     if (currentQuestionIndex === questions.length - 1) {
         nextBtn.innerHTML = '<i class="fas fa-trophy"></i> Vedi Risultati';
     } else {
-        nextBtn.innerHTML = 'Successiva <i class="fas fa-arrow-right"></i>';
+        nextBtn.innerHTML = 'Salta <i class="fas fa-forward"></i>';
     }
 }
 
-// Domanda successiva
+// Domanda successiva (ora serve solo per "Salta" o "Vedi Risultati")
 function nextQuestion() {
     if (currentQuestionIndex < questions.length - 1) {
         currentQuestionIndex++;
         displayQuestion();
-        // Scroll to top
         window.scrollTo({ top: 0, behavior: 'smooth' });
     } else {
         showResults();
@@ -111,7 +125,6 @@ function previousQuestion() {
     if (currentQuestionIndex > 0) {
         currentQuestionIndex--;
         displayQuestion();
-        // Scroll to top
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 }
