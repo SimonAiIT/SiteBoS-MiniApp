@@ -223,10 +223,9 @@
             </div>
 
             <div class="input-group"><label data-i18n="lbl_what_we_do"></label><textarea id="what_we_do" rows="2"></textarea></div>
-            <div class="input-group"><label data-i18n="lbl_goal"></label><select id="main_goal"><option value="automate_support">Supporto</option><option value="increase_sales">Vendite</option><option value="organize_workflow">Processi</option><option value="knowledge_base">KB</option></select></div>
         </div>
         
-        <!-- QUESTIONARIO PROFESSIONALE (12 DOMANDE) -->
+        <!-- QUESTIONARIO PROFESSIONALE (11 DOMANDE) -->
         <div class="questionnaire-section">
           <div class="section-title">
             <i class="fas fa-user-tie"></i>
@@ -236,7 +235,7 @@
           
           <!-- Q1: Ruolo -->
           <div class="question-block">
-            <label class="question-label" data-i18n="q_role">1️⃣ Qual è il tuo ruolo principale?</label>
+            <label class="question-label" data-i18n="q_role">QUAL È IL TUO RUOLO PRINCIPALE?</label>
             <select id="profile_role" required>
               <option value="">-- Seleziona --</option>
               <optgroup label="Imprenditoria">
@@ -259,7 +258,7 @@
           
           <!-- Q2: Team Size -->
           <div class="question-block">
-            <label class="question-label" data-i18n="q_team_size">2️⃣ Quante persone lavorano con te?</label>
+            <label class="question-label" data-i18n="q_team_size">QUANTE PERSONE LAVORANO CON TE?</label>
             <select id="team_size" required>
               <option value="">-- Seleziona --</option>
               <option value="solo">Solo io (one-man-band)</option>
@@ -272,7 +271,7 @@
           
           <!-- Q3: Esperienza -->
           <div class="question-block">
-            <label class="question-label" data-i18n="q_experience">3️⃣ Da quanti anni fai questo lavoro?</label>
+            <label class="question-label" data-i18n="q_experience">DA QUANTI ANNI FAI QUESTO LAVORO?</label>
             <select id="years_experience" required>
               <option value="">-- Seleziona --</option>
               <option value="0-1">Meno di 1 anno (appena iniziato)</option>
@@ -285,9 +284,9 @@
             </select>
           </div>
           
-          <!-- Q4-7: Hard Skills (min 3) -->
+          <!-- Q4: Hard Skills (min 3) -->
           <div class="question-block">
-            <label class="question-label" data-i18n="q_skills">4️⃣ Elenca le tue competenze tecniche principali (3-7)</label>
+            <label class="question-label" data-i18n="q_skills">ELENCA LE TUE COMPETENZE TECNICHE PRINCIPALI (3-7)</label>
             <p class="hint-text">💡 Es: "Saldatura TIG", "SEO", "Gestione cantieri"</p>
             <div class="skills-input-grid">
               <input type="text" id="skill_1" placeholder="Competenza #1" required>
@@ -302,14 +301,14 @@
           
           <!-- Q5: Certificazioni -->
           <div class="question-block">
-            <label class="question-label" data-i18n="q_certifications">5️⃣ Hai certificazioni o abilitazioni professionali?</label>
+            <label class="question-label" data-i18n="q_certifications">HAI CERTIFICAZIONI O ABILITAZIONI PROFESSIONALI?</label>
             <textarea id="certifications" rows="2" placeholder="Es: Albo Avvocati, Patentino Saldatore, ISO 9001..."></textarea>
             <p class="hint-text">Se non ne hai, lascia vuoto</p>
           </div>
           
           <!-- Q6: Formazione Recente -->
           <div class="question-block">
-            <label class="question-label" data-i18n="q_training">6️⃣ Hai fatto corsi/formazione negli ultimi 2 anni?</label>
+            <label class="question-label" data-i18n="q_training">HAI FATTO CORSI/FORMAZIONE NEGLI ULTIMI 2 ANNI?</label>
             <select id="recent_training" required>
               <option value="">-- Seleziona --</option>
               <option value="none">No, non ho fatto formazione</option>
@@ -322,7 +321,7 @@
           
           <!-- Q7: Specializzazione -->
           <div class="question-block">
-            <label class="question-label" data-i18n="q_specialization">7️⃣ Come ti definiresti meglio?</label>
+            <label class="question-label" data-i18n="q_specialization">COME TI DEFINIRESTI MEGLIO?</label>
             <select id="specialization_level" required>
               <option value="">-- Seleziona --</option>
               <option value="hyper_specialist">Iper-specialista (faccio 1-2 cose, ma al top)</option>
@@ -334,7 +333,7 @@
           
           <!-- Q8: Strumenti Digitali -->
           <div class="question-block">
-            <label class="question-label" data-i18n="q_tools">8️⃣ Quali strumenti usi OGNI GIORNO? (Seleziona tutte)</label>
+            <label class="question-label" data-i18n="q_tools">QUALI STRUMENTI USI OGNI GIORNO? (Seleziona tutte)</label>
             <div class="checkbox-grid-compact">
               <label><input type="checkbox" name="tools" value="email"> 📧 Email</label>
               <label><input type="checkbox" name="tools" value="whatsapp"> 💬 WhatsApp/Telegram</label>
@@ -356,7 +355,7 @@
           
           <!-- Q9: Workflow Clienti -->
           <div class="question-block">
-            <label class="question-label" data-i18n="q_workflow">9️⃣ Come lavori principalmente con i clienti?</label>
+            <label class="question-label" data-i18n="q_workflow">COME LAVORI PRINCIPALMENTE CON I CLIENTI?</label>
             <select id="client_workflow" required>
               <option value="">-- Seleziona --</option>
               <option value="physical_only">Solo fisico (negozio, studio, cantiere)</option>
@@ -369,7 +368,7 @@
           
           <!-- Q10: Gestione Documenti -->
           <div class="question-block">
-            <label class="question-label" data-i18n="q_documents">🔟 Come gestisci fatture e documenti aziendali?</label>
+            <label class="question-label" data-i18n="q_documents">COME GESTISCI FATTURE E DOCUMENTI AZIENDALI?</label>
             <select id="document_management" required>
               <option value="">-- Seleziona --</option>
               <option value="paper">Carta e archivi fisici (old school)</option>
@@ -382,7 +381,7 @@
           
           <!-- Q11: Pain Points (MAX 3) -->
           <div class="question-block">
-            <label class="question-label" data-i18n="q_pain">1️⃣1️⃣ Quali sono le tue 3 PRINCIPALI sfide ORA?</label>
+            <label class="question-label" data-i18n="q_pain">QUALI SONO LE TUE 3 PRINCIPALI SFIDE ORA?</label>
             <p class="hint-text">⚠️ Seleziona MAX 3 (le più critiche)</p>
             <div class="checkbox-grid-compact" id="pain-points-grid">
               <label><input type="checkbox" name="pain" value="bureaucracy"> 📄 Burocrazia</label>
@@ -400,9 +399,9 @@
             </div>
           </div>
           
-          <!-- Q12: Obiettivo Primario -->
+          <!-- Q12: Obiettivo Primario con l'AI -->
           <div class="question-block">
-            <label class="question-label" data-i18n="q_main_goal">1️⃣2️⃣ Qual è il TUO obiettivo principale con l'AI?</label>
+            <label class="question-label" data-i18n="q_main_goal">QUAL È IL TUO OBIETTIVO PRINCIPALE CON L'AI?</label>
             <select id="ai_main_goal" required>
               <option value="">-- Seleziona --</option>
               <option value="save_time">⏱️ Risparmiare tempo</option>
