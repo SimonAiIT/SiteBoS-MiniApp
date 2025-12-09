@@ -55,7 +55,7 @@ export const questions106to110: Question[] = [
     options: [
       {
         value: "Faccio Finta di Niente",
-        text: "(Negativo:  negligenza sicurezza e evitamento confronto, mancanza di senso di responsabilità, potenziale rischio per la sicurezza altrui, percezione di irresponsabilità e superficialità) (Positivo:  evitamento conflitti interpersonali e mantenimento di un clima di lavoro disteso, approccio \"laissez-faire\" e non giudicante, rispetto apparente autonomia altrui)."
+        text: "(Negativo: negligenza sicurezza e evitamento confronto, mancanza di senso di responsabilità, potenziale rischio per la sicurezza altrui, percezione di irresponsabilità e superficialità) (Positivo: evitamento conflitti interpersonali e mantenimento di un clima di lavoro disteso, approccio \"laissez-faire\" e non giudicante, rispetto apparente autonomia altrui)."
       },
       {
         value: "Un Segnale Discreto",
@@ -127,19 +127,19 @@ export const questions106to110: Question[] = [
     options: [
       {
         value: "Sonnambulo Distratto",
-        text: "Bassa consapevolezza della sicurezza personale in pubblico,  potenzialmente negligente e vulnerabile ai rischi (negativo:  scarsa consapevolezza sicurezza,  negligenza,  vulnerabilità ai rischi,  percezione di imprudenza e  superficialità),  ma  vive il momento senza preoccupazioni e  si gode la \"passeggiata\" senza ansie e  approccio \"spensierato\" e  fiducioso (positivo:  spensieratezza,  godimento del momento presente,  assenza di ansia,  approccio \"leggero\",  fiducia nell'ambiente circostante,  non si lascia condizionare dalla \"paura\")."
+        text: "(Negativo: scarsa consapevolezza sicurezza, negligenza, vulnerabilità ai rischi, percezione di imprudenza e superficialità) (Positivo: spensieratezza, godimento del momento presente, assenza di ansia, approccio \"leggero\", fiducia nell'ambiente circostante, non si lascia condizionare dalla \"paura\")."
       },
       {
         value: "Paraocchi Sociali",
-        text: "Moderata consapevolezza dell'ambiente circostante,  ma le distrazioni possono ridurre il tempo di reazione alle minacce,  moderata consapevolezza della sicurezza (positivo:  moderata attenzione all'ambiente,  equilibrio tra vigilanza e  relax,  consapevolezza \"sufficiente\" senza eccessivo allarmismo,  approccio \"normale\" e  \"non paranoico\"),  ma  le distrazioni possono ridurre la prontezza di riflessi e  aumentare il rischio di imprevisti e  essere percepito come  non sempre \"sufficientemente\" attento o  un po' \"distratto\" in situazioni potenzialmente rischiose (negativo:  potenziale riduzione prontezza di riflessi per distrazioni,  rischio di imprevisti per minore attenzione,  percezione di attenzione \"moderata\" ma non \"massima\",  approccio forse non sempre \"ottimale\" in termini di \"prevenzione\" e  \"sicurezza proattiva\")."
+        text: "(Positivo: moderata attenzione all'ambiente, equilibrio tra vigilanza e relax, consapevolezza \"sufficiente\" senza eccessivo allarmismo, approccio \"normale\" e \"non paranoico\") (Negativo: potenziale riduzione prontezza di riflessi per distrazioni, rischio di imprevisti per minore attenzione, percezione di attenzione \"moderata\" ma non \"massima\", approccio forse non sempre \"ottimale\" in termini di \"prevenzione\" e \"sicurezza proattiva\")."
       },
       {
         value: "Suricato Sentinella",
-        text: "Bilancia consapevolezza e comfort,  generalmente attento all'ambiente circostante senza essere eccessivamente ansioso,  buona consapevolezza della sicurezza (positivo:  buona consapevolezza del contesto,  equilibrio tra attenzione e  relax,  vigilanza \"attiva\" ma non \"ansiosa\",  approccio \"responsabile\" e  \"consapevole\" senza eccessi,  percezione di persona \"attenta\" e  \"presente\" ma non \"paranoica\"),  ma  l'attenzione \"rilassata\" potrebbe non cogliere segnali di pericolo \"subdoli\" o  \"molto rapidi\" e  non massimizzare la \"reattività\" in caso di emergenza improvvisa e  essere percepito come  non sempre \"iper-vigile\" o  pronto a reagire \"fulmineamente\" in situazioni di pericolo \"estremo\" (negativo:  potenziale minore reattività di fronte a pericoli \"improvvisi\" o  \"subdoli\",  rischio di non intercettare segnali di allarme \"impercettibili\" ad un occhio \"non allenato\" all'iper-vigilanza,  percezione di vigilanza \"buona\" ma non \"massima\" in contesti di pericolo \"estremo\" e  \"immediato\")."
+        text: "(Positivo: buona consapevolezza del contesto, equilibrio tra attenzione e relax, vigilanza \"attiva\" ma non \"ansiosa\", approccio \"responsabile\" e \"consapevole\" senza eccessi, percezione di persona \"attenta\" e \"presente\" ma non \"paranoica\") (Negativo: potenziale minore reattività di fronte a pericoli \"improvvisi\" o \"subdoli\", rischio di non intercettare segnali di allarme \"impercettibili\" ad un occhio \"non allenato\" all'iper-vigilanza, percezione di vigilanza \"buona\" ma non \"massima\" in contesti di pericolo \"estremo\" e \"immediato\")."
       },
       {
         value: "Molla Tesa",
-        text: "Estremamente attento alla sicurezza,  costantemente in allerta,  potenzialmente ansioso o eccessivamente cauto nelle situazioni quotidiane (positivo:  massima attenzione alla sicurezza,  iper-vigilanza e  massima \"prontezza\" di reazione di fronte al pericolo,  approccio \"iper-protettivo\" e  orientato alla \"prevenzione assoluta\",  percezione di persona estremamente \"attenta\",  \"responsabile\" e  \"pronta\" a reagire in emergenza \"estrema\"),  ma  potrebbe vivere in uno stato di ansia costante e  percepire pericoli ovunque e  essere percepito come  eccessivamente \"paranoico\" o  stressato e  non godersi appieno la \"passeggiata\" e  vivere il quotidiano con eccessiva tensione e  allarmismo (negativo:  stress e ansia elevati,  percezione di paranoia,  eccessiva cautela limitante,  approccio \"iper-vigile\" che può diventare \"stressante\" e  \"controproducente\" nel lungo periodo per il benessere psicofisico,  mancanza di \"leggerezza\" e  \"spontaneità\" nel vivere il quotidiano)."
+        text: "(Positivo: massima attenzione alla sicurezza, iper-vigilanza e massima \"prontezza\" di reazione di fronte al pericolo, approccio \"iper-protettivo\" e orientato alla \"prevenzione assoluta\", percezione di persona estremamente \"attenta\", \"responsabile\" e \"pronta\" a reagire in emergenza \"estrema\") (Negativo: stress e ansia elevati, percezione di paranoia, eccessiva cautela limitante, approccio \"iper-vigile\" che può diventare \"stressante\" e \"controproducente\" nel lungo periodo per il benessere psicofisico, mancanza di \"leggerezza\" e \"spontaneità\" nel vivere il quotidiano)."
       }
     ],
     softSkill: "SicurezzaSulLavoro, GestioneDelloStress",
@@ -151,7 +151,7 @@ export const questions106to110: Question[] = [
     instructions: [
       "Immagine di un cavaliere che indossa subito e con entusiasmo una nuova armatura scintillante,  adozione proattiva e immediata delle nuove difese.",
       "Immagine di un cavaliere che esamina attentamente l'armatura nuova,  leggendo le istruzioni prima di indossarla,  approccio cauto e  ponderato.",
-      "Immagine di uno scudiero che veste un calvaliere,  ricerca di supporto esterno per l'implementazione.",
+      "Immagine di uno scudiero che veste un cavaliere,  ricerca di supporto esterno per l'implementazione.",
       "Immagine di un cavaliere che rifiuta l'armatura e continua a combattere senza protezioni,  resistenza al cambiamento e rifiuto delle nuove difese."
     ],
     captions: [
