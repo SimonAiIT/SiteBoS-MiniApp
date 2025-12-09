@@ -4,7 +4,7 @@
  * 2. Logica di sicurezza e validazione completa.
  * 3. Traduzioni complete.
  * 4. ✅ Instagram e Twitter nei social media.
- * 5. ✅ Professional questionnaire (12 domande) salvato in kyc_details.
+ * 5. ✅ Professional questionnaire (11 domande) salvato in kyc_details.
  */
 
 // --- CONFIG ---
@@ -52,19 +52,19 @@ const i18n = {
             sector_agriculture: "Agricoltura e Allevamento",
             sector_transport: "Trasporti e Logistica",
             sector_other: "Altro",
-        lbl_what_we_do: "Cosa fate?", lbl_goal: "Obiettivo AI",
-        q_role: "1️⃣ Qual è il tuo ruolo principale?",
-        q_team_size: "2️⃣ Quante persone lavorano con te?",
-        q_experience: "3️⃣ Da quanti anni fai questo lavoro?",
-        q_skills: "4️⃣ Elenca le tue competenze tecniche principali (3-7)",
-        q_certifications: "5️⃣ Hai certificazioni o abilitazioni professionali?",
-        q_training: "6️⃣ Hai fatto corsi/formazione negli ultimi 2 anni?",
-        q_specialization: "7️⃣ Come ti definiresti meglio?",
-        q_tools: "8️⃣ Quali strumenti usi OGNI GIORNO? (Seleziona tutte)",
-        q_workflow: "9️⃣ Come lavori principalmente con i clienti?",
-        q_documents: "🔟 Come gestisci fatture e documenti aziendali?",
-        q_pain: "1️⃣1️⃣ Quali sono le tue 3 PRINCIPALI sfide ORA?",
-        q_main_goal: "1️⃣2️⃣ Qual è il TUO obiettivo principale con l'AI?",
+        lbl_what_we_do: "Cosa fate?",
+        q_role: "Qual è il tuo ruolo principale?",
+        q_team_size: "Quante persone lavorano con te?",
+        q_experience: "Da quanti anni fai questo lavoro?",
+        q_skills: "Elenca le tue competenze tecniche principali (3-7)",
+        q_certifications: "Hai certificazioni o abilitazioni professionali?",
+        q_training: "Hai fatto corsi/formazione negli ultimi 2 anni?",
+        q_specialization: "Come ti definiresti meglio?",
+        q_tools: "Quali strumenti usi OGNI GIORNO? (Seleziona tutte)",
+        q_workflow: "Come lavori principalmente con i clienti?",
+        q_documents: "Come gestisci fatture e documenti aziendali?",
+        q_pain: "Quali sono le tue 3 PRINCIPALI sfide ORA?",
+        q_main_goal: "Qual è il TUO obiettivo principale con l'AI?",
         h_plan:"Offerta Pionieri", sub_plan:"Attivazione gratuita.", pioneer_desc:"Accesso completo.", pioneer_free:"GRATIS ORA",
         lbl_payment_pref: "Preferenza pagamento futuro:", pay_wire: "Bonifico", btn_build: "AVVIA CONFIGURAZIONE",
         alert_missing_fields: "Compila tutti i campi obbligatori.",
@@ -113,7 +113,7 @@ const i18n = {
             sector_agriculture: "Agriculture and Farming",
             sector_transport: "Transport and Logistics",
             sector_other: "Other",
-        lbl_what_we_do: "What do you do?", lbl_goal: "AI Goal",
+        lbl_what_we_do: "What do you do?",
         h_plan:"Pioneer Offer", sub_plan:"Activate now, decide later.", pioneer_desc:"Full Enterprise Access.", pioneer_free:"FREE NOW",
         lbl_payment_pref: "Future payment preference:", pay_wire: "Wire Transfer", btn_build: "START CONFIGURATION",
         alert_missing_fields: "Please fill all required fields.",
@@ -304,7 +304,7 @@ async function analyzeId() {
     }
 }
 
-// ✅ NUOVA FUNZIONE: Arricchisce kycData con questionnaire
+// ✅ FUNZIONE: Arricchisce kycData con questionnaire
 function enrichKycWithQuestionnaire() {
     if (!kycData) kycData = {};
     
@@ -378,7 +378,6 @@ function submitFinalForm() {
             
             sector: document.getElementById('sector').value,
             what_we_do: document.getElementById('what_we_do').value,
-            main_goal: document.getElementById('main_goal').value,
             payment_preference: document.getElementById('payment_pref').value || 'wire',
             plan: 'pioneer_free_trial',
             terms_accepted: true,
