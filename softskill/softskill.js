@@ -30,6 +30,14 @@ async function loadQuestions() {
     }
 }
 
+// 🔥 Funzione che prova png, jpg, jpeg in ordine
+function tryImageFormats(questionNum, optionIndex) {
+    const formats = ['png', 'jpg', 'jpeg'];
+    const basePath = `../images/softskill/question${questionNum}/${optionIndex + 1}`;
+    
+    return formats.map(ext => `${basePath}.${ext}`);
+}
+
 // Mostra la domanda corrente
 function displayQuestion() {
     if (!questions.length) return;
@@ -56,15 +64,36 @@ function displayQuestion() {
             card.classList.add('selected');
         }
 
-        const imgPath = `../images/softskill/question${question.num}/${index + 1}.png`;
+        // 🔥 Prova tutti i formati possibili
+        const imagePaths = tryImageFormats(question.num, index);
         
-        card.innerHTML = `
-            <img src="${imgPath}" 
-                 alt="${question.captions[index]}" 
-                 class="option-image"
-                 onerror="this.style.display='none'; this.nextElementSibling.style.paddingTop='60px';">
-            <div class="option-caption">${question.captions[index]}</div>
-        `;
+        const img = document.createElement('img');
+        img.className = 'option-image';
+        img.alt = question.captions[index];
+        
+        let currentFormatIndex = 0;
+        
+        // Funzione ricorsiva che prova i formati
+        const tryNextFormat = () => {
+            if (currentFormatIndex < imagePaths.length) {
+                img.src = imagePaths[currentFormatIndex];
+                currentFormatIndex++;
+            } else {
+                // Nessun formato ha funzionato, nascondi l'immagine
+                img.style.display = 'none';
+                console.warn(`⚠️ Immagine non trovata per Q${question.num} opzione ${index + 1}`);
+            }
+        };
+        
+        img.onerror = tryNextFormat;
+        tryNextFormat(); // Inizia con il primo formato (png)
+        
+        const caption = document.createElement('div');
+        caption.className = 'option-caption';
+        caption.textContent = question.captions[index];
+        
+        card.appendChild(img);
+        card.appendChild(caption);
 
         // 🔥 Click diretto avanza alla domanda successiva
         card.onclick = () => selectOptionAndAdvance(index);
