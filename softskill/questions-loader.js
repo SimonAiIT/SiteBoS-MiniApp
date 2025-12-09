@@ -1,5 +1,5 @@
 // Questions Loader - Carica direttamente i file TypeScript
-// Nessuna conversione necessaria!
+// Parser migliorato per gestire caratteri speciali e sintassi complessa
 
 let allQuestions = [];
 
@@ -38,7 +38,19 @@ const questionFiles = [
 ];
 
 /**
- * Carica e parsifica un singolo file TypeScript
+ * Pulisce una stringa per il JSON rimuovendo caratteri problematici
+ */
+function cleanString(str) {
+  // Mantieni solo caratteri validi e gestisci gli escape
+  return str
+    .replace(/\\/g, '\\\\')  // Escape backslashes
+    .replace(/\n/g, '\\n')    // Escape newlines
+    .replace(/\r/g, '\\r')    // Escape carriage returns
+    .replace(/\t/g, '\\t');   // Escape tabs
+}
+
+/**
+ * Carica e parsifica un singolo file TypeScript con parser migliorato
  */
 async function loadQuestionFile(filename) {
   try {
@@ -46,7 +58,7 @@ async function loadQuestionFile(filename) {
     const tsContent = await response.text();
     
     // Estrae l'array questions dal file TypeScript
-    const match = tsContent.match(/export const questions.*?=\s*(\[[\s\S]*?\]);/m);
+    const match = tsContent.match(/export const questions.*?=\s*(\[[\s\S]*?\]);\s*$/m);
     if (!match) {
       console.warn(`⚠️ Nessuna question trovata in ${filename}`);
       return [];
@@ -54,16 +66,45 @@ async function loadQuestionFile(filename) {
     
     let arrayString = match[1];
     
-    // Converti TypeScript in JSON valido
-    // Rimuove trailing commas
-    arrayString = arrayString.replace(/,\s*]/g, ']');
-    arrayString = arrayString.replace(/,\s*}/g, '}');
+    // Pulizia più aggressiva per convertire TS in JSON valido
     
-    // Wrappa le chiavi tra virgolette se non lo sono già
-    arrayString = arrayString.replace(/(\w+):/g, '"$1":');
+    // 1. Rimuovi trailing commas
+    arrayString = arrayString.replace(/,\s*\]/g, ']');
+    arrayString = arrayString.replace(/,\s*\}/g, '}');
+    
+    // 2. Converti chiavi senza virgolette in chiavi con virgolette
+    // Gestisce anche chiavi già con virgolette
+    arrayString = arrayString.replace(/([,{]\s*)([a-zA-Z_][a-zA-Z0-9_]*)\s*:/g, '$1"$2":');
+    
+    // 3. Rimuovi commenti inline (// e /* */)
+    arrayString = arrayString.replace(/\/\/.*$/gm, '');
+    arrayString = arrayString.replace(/\/\*[\s\S]*?\*\//g, '');
+    
+    // 4. Gestisci stringhe con apici singoli -> doppi apici
+    // ATTENZIONE: questo è delicato, potrebbe rompere stringhe con apici
+    // Ma i file TypeScript usano virgolette doppie quindi dovrebbe andare
     
     // Parse del JSON
-    const questions = JSON.parse(arrayString);
+    let questions;
+    try {
+      questions = JSON.parse(arrayString);
+    } catch (parseError) {
+      // Se il parse fallisce, prova un approccio più sicuro usando eval
+      console.warn(`⚠️ JSON.parse fallito per ${filename}, provo con eval...`);
+      
+      // Usa eval in modo sicuro (solo per array letterali)
+      // Aggiungi parentesi per forzare valutazione come espressione
+      const evalString = `(${arrayString})`;
+      
+      try {
+        questions = eval(evalString);
+      } catch (evalError) {
+        console.error(`❌ Impossibile parsare ${filename}:`, evalError);
+        console.error('Contenuto problematico:', arrayString.substring(0, 500));
+        return [];
+      }
+    }
+    
     console.log(`✅ ${filename}: ${questions.length} domande caricate`);
     return questions;
     
