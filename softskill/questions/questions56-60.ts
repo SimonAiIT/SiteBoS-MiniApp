@@ -163,7 +163,7 @@ export const questions56to60: Question[] = [
     options: [
       {
         value: "Seme Geloso",
-        text: "(Negativo:  mancanza di collaborazione  e  di  scambio  di  idee  con  gli  altrui,  potenziale  isolamento  professionale  e  chiusura  autoreferenziale,  opportunità  manate  di  arricchimento  e  miglioramento  delle  proprie  idee  grazie  al  feedback  e  al  confronto  con  punti  di  vista  diversi  e  complementari  al  proprio) (Positivo:  massima protezione  delle  proprie  idee  e  tutela  della  proprietà  intellettuale  e  del  copyright,  controllo  totale  sul  processo  di  sviluppo  e  implementazione  dell' idea  senza  interferenze  o  condizionamenti  esterni  non  desiderati,  massima riservatezza  e  discrezione  e  volontà  di  non  esporsi  eccessivamente  al  giudizio  altrui  o  a  critiche  premature  o  non  costruttive)."
+        text: "(Negativo:  mancanza di collaborazione  e  di  scambio  di  idee  con  gli  altrui,  potenziale  isolamento  professionale  e  chiusura  autoreferenziale,  opportunità  mancate  di  arricchimento  e  miglioramento  delle  proprie  idee  grazie  al  feedback  e  al  confronto  con  punti  di  vista  diversi  e  complementari  al  proprio) (Positivo:  massima protezione  delle  proprie  idee  e  tutela  della  proprietà  intellettuale  e  del  copyright,  controllo  totale  sul  processo  di  sviluppo  e  implementazione  dell' idea  senza  interferenze  o  condizionamenti  esterni  non  desiderati,  massima riservatezza  e  discrezione  e  volontà  di  non  esporsi  eccessivamente  al  giudizio  altrui  o  a  critiche  premature  o  non  costruttive)."
       },
       {
         value: "Seme Prudente",
