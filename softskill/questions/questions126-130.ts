@@ -8,7 +8,7 @@ export const questions126to130: Question[] = [
       "Immagine di una tazza di caffè intatta e abbandonata sul tavolo,  rifiuto netto del cambiamento,  \"non bevo questa roba\".",
       "Immagine di una persona che beve il caffè nuovo con una smorfia di disappunto,  accettazione passiva e silenziosa del cambiamento.",
       "Immagine di una persona che assaggia il caffè nuovo con attenzione e  chiede al barista \"cosa è cambiato?\",  analisi e  dialogo per capire il cambiamento.",
-      "Immagine di una persona che aggiunge zucchero, latte e aromi al caffè nuovo per \"aggiustarlo\" a suo gusto,  adattamento attivo e  \"personalizzazione\" per rendere accettabile il cambiamento."
+      "Immagine di una persona che esce dal bar lasciando la tazza sul tavolo e si dirige verso un altro locale,  decisione di cambiare caffetteria per non accettare il nuovo sapore imposto."
     ],
     captions: [
       "Non la Bevo",
@@ -91,7 +91,7 @@ export const questions126to130: Question[] = [
     options: [
       {
         value: "Cambio Strada",
-        text: "(Negativo: omissione di soccorso potenziale e mancanza di solidarietà verso la vittima, perpetuazione dell'ingiustizia per non intervento, percezione di persona egoista, indifferente e poco coraggiosa) (Positivo: massimizzazione sicurezza personale e evitamento rischi non necessari, approccio razionale e non impulsivo, priorità alla propria incolumità e sopravvivenza individuale, approccio pragmatico e self-preservation-oriented)."
+        text: "(Negativo: omissione di soccorso potenziale e mancanza di solidarietà verso la vittima, perpetuazione dell'ingiustizia per non intervento, percezione di persona egoista, indifferente e poco coraggiosa) (Positivo: massimizzazione sicurezza personale e evitamento rischi non necessari, approccio razionale e non impulsivo, priorità alla propria incolumità e sopravvivenza individuale, approccio pragmatico and self-preservation-oriented)."
       },
       {
         value: "Urlo e Filmo",
@@ -131,15 +131,15 @@ export const questions126to130: Question[] = [
       },
       {
         value: "Tieni la Mia Cassetta",
-        text: "(Negativo: approccio non guidato e dispersivo e cliente confuso dalla troppa scelta, mancanza di supporto nella decisione, rischio di non soddisfare il cliente per indecisione o scelta sbagliata a causa della mancanza di guida esperta, percezione di approccio incompleto e non pienamente orientato al servizio personalizzato) (Positivo: offerta completa e trasparente e libertà di scelta al cliente, approccio non direttivo e non invasivo, rispetto dell'autonomia decisionale del cliente, evitamento di suggerimenti potenzialmente indebiti o non richiesti)."
+        text: "(Negativo: approccio non guidato e dispersivo e cliente confuso dalla troppa scelta, mancanza di supporto nella decisione, rischio di non soddisfare il cliente per indecisione o scelta sbagliata a causa della mancanza di guida esperta, percezione di approccio incompleto e non pienamente orientato al servizio personalizzato) (Positivo: offerta completa e trasparente e libertà di scelta al cliente, approccio non direttivo and non invasivo, rispetto dell'autonomia decisionale del cliente, evitamento di suggerimenti potenzialmente indebiti o non richiesti)."
       },
       {
         value: "Cosa Devi Fare?",
-        text: "(Positivo: massima attenzione ai bisogni specifici del cliente e approccio tailored e personalizzato, offerta della soluzione migliore per quel cliente specifico, costruzione di fiducia e relazione solida e duratura, percezione di consulenza esperta e attenta e orientata alla vera soddisfazione del cliente) (Negativo: richiede tempo e impegno nella consulenza e analisi e potenziale allungamento dei tempi di vendita, non sempre scalabile per tutti i clienti, percezione di approccio dispendioso in termini di tempo/risorse se applicato sempre e a tutti)."
+        text: "(Positivo: massima attenzione ai bisogni specifici del cliente e approccio tailored e personalizzato, offerta della soluzione migliore per quel cliente specifico, costruzione di fiducia e relazione solida e duratura, percezione di consulenza esperta and attenta e orientata alla vera soddisfazione del cliente) (Negativo: richiede tempo e impegno nella consulenza e analisi e potenziale allungamento dei tempi di vendita, non sempre scalabile per tutti i clienti, percezione di approccio dispendioso in termini di tempo/risorse se applicato sempre e a tutti)."
       },
       {
         value: "Lo Faccio Io",
-        text: "(Positivo: massima comodità e semplicità per il cliente e soluzione completa e pronta all'uso, approccio problem-solving spinto all'estremo, offerta di un servizio premium e senza pensieri per il cliente, massimizzazione della facilità d'acquisto e della user experience) (Negativo: potenziale infantilizzazione del cliente e mancanza di empowerment e crescita del cliente, percezione di approccio paternalistico e troppo semplificato, rischio di non educare il cliente al valore intrinseco della soluzione, non massimizzazione della consapevolezza e autonomia del cliente)."
+        text: "(Positivo: massima comodità e semplicità per il cliente e soluzione completa e pronta all'uso, approccio problem-solving spinto all'estremo, offerta di un servizio premium e senza pensieri per il cliente, massimizzazione della facilità d'acquisto e della user experience) (Negativo: potenziale infantilizzazione del cliente and mancanza di empowerment e crescita del cliente, percezione di approccio paternalistico e troppo semplificato, rischio di non educare il cliente al valore intrinseco della soluzione, non massimizzazione della consapevolezza e autonomia del cliente)."
       }
     ],
     softSkill: "VenditaConsultiva, ServizioAlCliente",
