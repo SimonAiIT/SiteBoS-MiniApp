@@ -1,0 +1,8 @@
+
+Images for Question 8 should be placed in this directory with the following naming convention:
+- 1.jpg, 1.jpeg or 1.png for the first image
+- 2.jpg, 2.jpeg or 2.png for the second image
+- 3.jpg, 3.jpeg or 3.png for the third image  
+- 4.jpg, 4.jpeg or 4.png for the fourth image
+
+The application will look for any existing file with these names and the supported extensions.

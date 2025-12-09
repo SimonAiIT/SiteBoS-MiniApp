@@ -1,0 +1,3 @@
+
+Question 2 images are now being used in the Results page.
+The four images (1.png, 2.png, 3.png, 4.png) represent different response options for Question 2.
