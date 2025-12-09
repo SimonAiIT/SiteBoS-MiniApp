@@ -39,16 +39,16 @@ export const questions131to135: Question[] = [
   },
   {
     num: 132,
-    scenario: "Un collega ti chiede una di \"confidenza delicata su un cliente\". Che fai?",
+    scenario: "Un collega ti chiede una \"confidenza delicata su un cliente\". Che fai?",
     instructions: [
-      "Immagine di un muro di mattoni invalicabile,  rifiuto netto di compromettere l'etica,  confine invalicabile.",
-      "Immagine di un muro con una piccola \"crepa\" appena visibile,  esitazione etica,  leggera \"apertura\" al compromesso,  confine \"incrinato\".",
-      "Immagine di una porta aperta \"a metà\",  valutazione del \"pro e contro\" del compromesso etico,  equilibrio incerto tra etica e favore al cliente.",
-      "Immagine di una porta spalancata che invita ad entrare senza esitazione,  compromesso etico totale per accontentare il cliente,  confine etico \"superato\"."
+      "Immagine di una persona che alza le mani in segno di stop, rifiuto netto e cortese.",
+      "Immagine di una persona che sorride in modo ammiccante, accennando a un compromesso.",
+      "Immagine di una persona che si gratta la testa pensierosa, prendendo tempo per decidere.",
+      "Immagine di una persona che fa l'occhiolino e indica di parlare in un secondo momento, accettando il compromesso etico."
     ],
     captions: [
       "Mi spiace, non Posso",
-      "Lo Conosco, Dai ",
+      "Lo Conosco, Dai",
       "Ci Devo Pensare",
       "Ci Sentiamo Dopo"
     ],
@@ -58,7 +58,7 @@ export const questions131to135: Question[] = [
         text: "(Positivo: massima integrità etica e coerenza con i propri valori, affermazione di principi non negoziabili, tutela della propria reputazione e affidabilità morale a lungo termine, persona percepita come integra e affidabile) (Negativo: rischio di perdere il cliente e danneggiare la relazione commerciale nel breve termine e percezione di eccessiva rigidità o poca flessibilità e non sempre orientato al cliente a tutti i costi)."
       },
       {
-        value: "Lo Conosco, Dai ",
+        value: "Lo Conosco, Dai",
         text: "(Positivo: tentativo di mediazione tra etica e fidelizzazione del cliente e approccio pragmatico che cerca un compromesso sostenibile, volontà di non perdere il cliente senza rinunciare completamente all'etica, persona percepita come flessibile e negoziatrice) (Negativo: rischio di danno reputazionale a lungo termine per compromesso etico e percezione di ambiguità o non piena trasparenza, soluzione non pienamente soddisfacente né sul piano etico né su quello della massima fidelizzazione, approccio potenzialmente fragile e non pienamente convincente)."
       },
       {
@@ -113,10 +113,10 @@ export const questions131to135: Question[] = [
     num: 134,
     scenario: "\"Non mi serviva questo, grazie\". Come reagisci?",
     instructions: [
-      "Immagine di una persona che si tappa le orecchie con le mani,  rifiuto totale di ascoltare l'obiezione del cliente,  chiusura difensiva.",
-      "Immagine di una persona che parla \"sopra\" la voce del cliente,  interrompendo e  sovrapponendosi per \"contro-battere\" all'obiezione,  non ascolto attivo ma \"contro-replica\" immediata.",
-      "Immagine di una persona che si avvicina al cliente con un orecchio teso in avanti,  ascolto attivo e  focalizzato sulla \"voce\" del cliente per capire l'obiezione.",
-      "Immagine di una persona che getta via il feedback del cliente in un cestino,  rifiuto totale del feedback \"negativo\",  \"cestinamento\" dell'obiezione."
+      "Immagine di una persona che insiste mostrando il prodotto, ignorando il feedback.",
+      "Immagine di una persona che si giustifica indicando il prodotto, con un'espressione leggermente contrariata.",
+      "Immagine di una persona che ascolta attentamente, con un'espressione aperta al dialogo.",
+      "Immagine di una persona che offre un prodotto alternativo, mostrando flessibilità e orientamento alla soluzione."
     ],
     captions: [
       "Ti Serve, Fidati",
@@ -147,7 +147,7 @@ export const questions131to135: Question[] = [
   },
   {
     num: 135,
-    scenario: "Disegno a Mano contro Grafica Computerizzata Schierati",
+    scenario: "Disegno a Mano contro Grafica Computerizzata: schierati!",
     instructions: [
       "Immagine di una mano d'artista che traccia un segno intenso e materico con carboncino su carta ruvida,  anima e autenticità del tratto manuale.",
       "Immagine di una mano che digitalizza uno schizzo su uno schermo,  integrazione tra manualità e digitale,  tradizione che si evolve.",
