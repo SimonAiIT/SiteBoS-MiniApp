@@ -5,7 +5,7 @@ export const questions116to120: Question[] = [
     num: 116,
     scenario: "Il tuo partner ha paura che in futuro il vostro rapporto finisca, questo come ti fa sentire?",
     instructions: [
-      "Immagine di un disco rotto che salta ripetendo sempre lo stesso punto,  ripetizioneStandard di argomentazioni generiche.",
+      "Immagine di un disco rotto che salta ripetendo sempre lo stesso punto,  ripetizione Standard di argomentazioni generiche.",
       "Immagine di una mano che accarezza frettolosamente un oggetto fragile,  rassicurazione superficiale e generica.",
       "Immagine di una pergamena antica sigillata con ceralacca,  prova di valore \"certificato\" e duraturo,  testimonianze e casi studio.",
       "Immagine di un architetto che mostra i solidi pilastri di un edificio destinato a durare nel tempo,  accordo personalizzato e impegno a lungo termine sulla \"solidità\"."
@@ -75,10 +75,10 @@ export const questions116to120: Question[] = [
   },
   {
     num: 118,
-    scenario: "Il tuo capo ti risponde per l'ennesima volta \"Non si puo fare!\", come te lo immagini in quel momento.",
+    scenario: "Il tuo capo ti risponde per l'ennesima volta \"Non si può fare!\", come te lo immagini in quel momento.",
     instructions: [
       "Immagine di un seme rinsecchito che non germoglia,  scoraggiamento totale di fronte al primo ostacolo.",
-      "Immagine di una Balla di fieno nel deserto,  iniziale difficoltà ma tentativo di crescita nonostante le obiezioni.",
+      "Immagine di una balla di fieno nel deserto,  iniziale difficoltà ma tentativo di crescita nonostante le obiezioni.",
       "Immagine di una pianta che cresce rigogliosa anche in un terreno difficile,  crescita guidata e supportata per superare le obiezioni.",
       "Immagine di un albero maestoso che svetta solitario e forte in cima a una montagna impervia,  crescita autonoma e resiliente che supera ogni obiezione da solo."
     ],
@@ -115,7 +115,7 @@ export const questions116to120: Question[] = [
     instructions: [
       "Immagine di un campo di fiori di lavanda che sboccia,  priorità assoluta alla crescita personale,  focus sul proprio \"fiorire\".",
       "Immagine di un campo di alberi giovani che iniziano a dare i primi frutti,  crescita personale bilanciata con l'inizio del \"dare frutti\" per gli altri.",
-      "Immagine di una Coltivazione di Ortaggi,  crescita personale orientata soprattutto a \"dare frutti\" per gli altri (clienti).",
+      "Immagine di una coltivazione di ortaggi,  crescita personale orientata soprattutto a \"dare frutti\" per gli altri (clienti).",
       "Immagine di un campo arato e pronto per la semina,  rinuncia alla \"fioritura\" personale immediata,  priorità assoluta alla preparazione per \"dare frutti\" futuri per gli altri."
     ],
     captions: [
@@ -147,7 +147,7 @@ export const questions116to120: Question[] = [
   },
   {
     num: 120,
-    scenario: "Un collega fa battute inappropriate ad una collega. Cosa fai?",
+    scenario: "Un collega fa battute inappropriate a una collega. Cosa fai?",
     instructions: [
       "Immagine di tre scimmie sagge: \"non vedo, non sento, non parlo\",  ignora completamente la situazione,  non si intromette.",
       "Immagine di una persona che tossisce discretamente per segnalare il problema,  intervento indiretto e \"velato\".",
