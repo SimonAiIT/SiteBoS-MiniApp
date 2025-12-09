@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Soft Skill Selector - Dashboard</title>
+    <link rel="stylesheet" href="../styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        body {
+            padding-bottom: 40px;
+        }
+
+        .dashboard-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .dashboard-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .dashboard-header h1 {
+            font-size: 28px;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .progress-container {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+            border: 1px solid var(--glass-border);
+        }
+
+        .progress-bar-outer {
+            background: rgba(255, 255, 255, 0.1);
+            height: 12px;
+            border-radius: 6px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+
+        .progress-bar-inner {
+            background: linear-gradient(90deg, #5b6fed, #4cd964);
+            height: 100%;
+            transition: width 0.5s ease;
+            border-radius: 6px;
+        }
+
+        .progress-text {
+            text-align: center;
+            font-size: 14px;
+            color: var(--text-muted);
+            margin-top: 8px;
+        }
+
+        .module-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 20px;
+            border: 2px solid var(--glass-border);
+            transition: all 0.3s ease;
+        }
+
+        .module-card.completed {
+            border-color: var(--success);
+            background: linear-gradient(135deg, rgba(76, 217, 100, 0.05), transparent);
+        }
+
+        .module-card.locked {
+            opacity: 0.9;
+        }
+
+        .module-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .module-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .module-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .badge-completed {
+            background: var(--success);
+            color: white;
+        }
+
+        .badge-locked {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-muted);
+        }
+
+        .module-subtitle {
+            color: var(--text-muted);
+            font-size: 14px;
+            margin-bottom: 16px;
+            line-height: 1.4;
+        }
+
+        .results-preview {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            padding: 16px;
+            margin: 16px 0;
+        }
+
+        .results-preview h4 {
+            font-size: 14px;
+            margin-bottom: 12px;
+            color: var(--text-muted);
+        }
+
+        .skill-bar-item {
+            margin-bottom: 12px;
+        }
+
+        .skill-bar-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .skill-bar-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            margin-bottom: 4px;
+        }
+
+        .skill-bar-bg {
+            background: rgba(255, 255, 255, 0.1);
+            height: 8px;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .skill-bar-fill {
+            background: linear-gradient(90deg, #5b6fed, #4cd964);
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
+
+        .module-meta {
+            display: flex;
+            gap: 20px;
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 12px;
+        }
+
+        .module-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 16px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 14px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background: var(--primary-hover);
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-main);
+            border: 1px solid var(--glass-border);
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .unlock-card {
+            background: linear-gradient(135deg, rgba(91, 111, 237, 0.2), rgba(76, 217, 100, 0.2));
+            border: 2px solid var(--primary);
+            text-align: center;
+            padding: 40px 24px;
+        }
+
+        .unlock-card.locked {
+            opacity: 0.6;
+            border-style: dashed;
+        }
+
+        .unlock-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        @media (max-width: 600px) {
+            .dashboard-header h1 {
+                font-size: 24px;
+            }
+
+            .module-title {
+                font-size: 18px;
+            }
+
+            .module-actions {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Header -->
+        <div class="dashboard-header">
+            <h1><i class="fas fa-brain"></i> Soft Skill Selector</h1>
+            <p>Scopri il tuo profilo professionale completo</p>
+        </div>
+
+        <!-- Progress Global -->
+        <div class="progress-container">
+            <div class="progress-bar-outer">
+                <div class="progress-bar-inner" id="globalProgress" style="width: 0%"></div>
+            </div>
+            <p class="progress-text" id="progressText">0/4 Moduli Completati</p>
+        </div>
+
+        <!-- Modules Container -->
+        <div id="modulesContainer">
+            <!-- Generato dinamicamente da JS -->
+        </div>
+
+        <!-- Unlock Complete Profile -->
+        <div class="module-card unlock-card locked" id="unlockCard">
+            <div class="unlock-icon">🏆</div>
+            <h2>Profilo Completo</h2>
+            <p style="margin: 16px 0;">Completa tutti e 4 i moduli per sbloccare l'analisi AI completa del tuo profilo professionale</p>
+            <div class="progress-bar-outer" style="margin: 20px auto; max-width: 300px;">
+                <div class="progress-bar-inner" id="unlockProgress" style="width: 0%"></div>
+            </div>
+            <button class="btn btn-primary" id="unlockBtn" disabled style="margin-top: 20px;">
+                <i class="fas fa-lock"></i> Bloccato
+            </button>
+        </div>
+    </div>
+
+    <script src="modules-mapping.js"></script>
+    <script src="webhook-handler.js"></script>
+    <script>
+        const webhook = new WebhookHandler();
+        
+        function loadDashboard() {
+            const modulesData = webhook.loadModulesData();
+            const container = document.getElementById('modulesContainer');
+            
+            let completedCount = 0;
+            
+            // Render each module
+            Object.keys(MODULE_MAPPING).forEach(moduleId => {
+                const module = MODULE_MAPPING[moduleId];
+                const data = modulesData[moduleId];
+                const isCompleted = data && data.completed;
+                
+                if (isCompleted) completedCount++;
+                
+                const card = createModuleCard(moduleId, module, data, isCompleted);
+                container.appendChild(card);
+            });
+            
+            // Update global progress
+            const percentage = (completedCount / 4) * 100;
+            document.getElementById('globalProgress').style.width = `${percentage}%`;
+            document.getElementById('progressText').textContent = `${completedCount}/4 Moduli Completati`;
+            document.getElementById('unlockProgress').style.width = `${percentage}%`;
+            
+            // Check unlock
+            if (completedCount === 4) {
+                unlockCompleteProfile();
+            }
+        }
+        
+        function createModuleCard(moduleId, module, data, isCompleted) {
+            const card = document.createElement('div');
+            card.className = `module-card ${isCompleted ? 'completed' : 'locked'}`;
+            
+            if (isCompleted) {
+                // MODULO COMPLETATO - Mostra risultati
+                card.innerHTML = `
+                    <div class="module-header">
+                        <div class="module-title">
+                            <span>${module.icon}</span>
+                            <span>${module.name}</span>
+                        </div>
+                        <span class="module-badge badge-completed">
+                            <i class="fas fa-check-circle"></i> COMPLETATO
+                        </span>
+                    </div>
+                    <p class="module-subtitle">${module.description}</p>
+                    
+                    <div class="results-preview">
+                        <h4><i class="fas fa-chart-bar"></i> I Tuoi Punteggi:</h4>
+                        <div id="skills-${moduleId}"></div>
+                        <div class="module-meta">
+                            <span><i class="fas fa-calendar"></i> ${data.date}</span>
+                            <span><i class="fas fa-clock"></i> ${Math.floor(data.time / 60)} min</span>
+                        </div>
+                    </div>
+                    
+                    <div class="module-actions">
+                        <button class="btn btn-secondary" onclick="retakeModule('${moduleId}')">
+                            <i class="fas fa-redo"></i> Rifai il Test
+                        </button>
+                    </div>
+                `;
+                
+                // Render skill bars dopo un momento (per animazione)
+                setTimeout(() => renderSkillBars(moduleId, data.results), 100);
+                
+            } else {
+                // MODULO NON COMPLETATO
+                card.innerHTML = `
+                    <div class="module-header">
+                        <div class="module-title">
+                            <span>${module.icon}</span>
+                            <span>${module.name}</span>
+                        </div>
+                        <span class="module-badge badge-locked">
+                            <i class="fas fa-lock"></i> DA FARE
+                        </span>
+                    </div>
+                    <p class="module-subtitle">${module.description}</p>
+                    <p style="font-size: 14px; color: var(--text-muted); margin: 12px 0;">
+                        ${module.questions.length} domande • ~${Math.ceil(module.questions.length / 3)} minuti
+                    </p>
+                    <div class="module-actions">
+                        <button class="btn btn-primary" onclick="startModule('${moduleId}')">
+                            <i class="fas fa-play"></i> INIZIA IL TEST
+                        </button>
+                    </div>
+                `;
+            }
+            
+            return card;
+        }
+        
+        function renderSkillBars(moduleId, results) {
+            const container = document.getElementById(`skills-${moduleId}`);
+            if (!container || !results) return;
+            
+            const topSkills = Object.entries(results)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 4); // Top 4 skills
+            
+            topSkills.forEach(([skill, score]) => {
+                const item = document.createElement('div');
+                item.className = 'skill-bar-item';
+                item.innerHTML = `
+                    <div class="skill-bar-label">
+                        <span>${skill}</span>
+                        <span>${score}%</span>
+                    </div>
+                    <div class="skill-bar-bg">
+                        <div class="skill-bar-fill" style="width: ${score}%"></div>
+                    </div>
+                `;
+                container.appendChild(item);
+            });
+        }
+        
+        function startModule(moduleId) {
+            const urlParams = new URLSearchParams(window.location.search);
+            const vat = urlParams.get('vat') || 'TEST_VAT';
+            const userId = urlParams.get('user_id') || 'TEST_USER';
+            window.location.href = `index.html?module=${moduleId}&vat=${vat}&user_id=${userId}`;
+        }
+        
+        function retakeModule(moduleId) {
+            if (confirm('Vuoi davvero rifare questo modulo? I risultati precedenti verranno sovrascritti.')) {
+                startModule(moduleId);
+            }
+        }
+        
+        function unlockCompleteProfile() {
+            const card = document.getElementById('unlockCard');
+            const btn = document.getElementById('unlockBtn');
+            
+            card.classList.remove('locked');
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-unlock"></i> VISUALIZZA PROFILO COMPLETO';
+            btn.onclick = () => {
+                const urlParams = new URLSearchParams(window.location.search);
+                window.location.href = 'complete-profile.html?vat=' + urlParams.get('vat') + '&user_id=' + urlParams.get('user_id');
+            };
+        }
+        
+        // Load dashboard on page load
+        window.onload = loadDashboard;
+    </script>
+</body>
+</html>
