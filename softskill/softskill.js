@@ -1,20 +1,28 @@
-// Soft Skill Selector - Main Logic
-// Vanilla JavaScript Implementation
+// Soft Skill Selector - Main Application
+// Carica direttamente i file TypeScript dalla cartella questions/
 
 let questions = [];
 let currentQuestionIndex = 0;
 let answers = {};
 
-// Carica le domande
+// Carica le domande usando il loader
 async function loadQuestions() {
     try {
-        const response = await fetch('questions_data.json');
-        questions = await response.json();
+        // Usa il loader per caricare tutti i file TypeScript
+        questions = await getQuestions();
+        
+        if (questions.length === 0) {
+            throw new Error('Nessuna domanda caricata');
+        }
+        
+        console.log(`✅ ${questions.length} domande pronte!`);
         displayQuestion();
+        
     } catch (error) {
-        console.error('Errore nel caricamento delle domande:', error);
+        console.error('❌ Errore nel caricamento:', error);
         document.getElementById('scenario').innerHTML = 
-            '<p style="color: red;">⚠️ Errore nel caricamento delle domande. Assicurati che questions_data.json sia presente.</p>';
+            `<p style="color: red;">⚠️ Errore: ${error.message}</p>
+             <p>Assicurati di aver copiato tutti i file .ts nella cartella questions/</p>`;
     }
 }
 

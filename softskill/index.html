@@ -181,10 +181,10 @@
         <div class="progress-bar">
             <div class="progress-fill" id="progressFill"></div>
         </div>
-        <p style="text-align: center; color: #666;" id="progressText">Domanda 1 di 150</p>
+        <p style="text-align: center; color: #666;" id="progressText">Caricamento...</p>
 
         <div class="question-section" id="questionSection">
-            <div class="scenario" id="scenario"></div>
+            <div class="scenario" id="scenario">Caricamento domande...</div>
             <div class="options" id="options"></div>
         </div>
 
@@ -200,6 +200,8 @@
         </div>
     </div>
 
+    <!-- Carica prima il loader, poi l'app -->
+    <script src="questions-loader.js"></script>
     <script src="softskill.js"></script>
 </body>
 </html>
