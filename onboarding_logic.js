@@ -1,10 +1,10 @@
 /**
- * ONBOARDING LOGIC - SITEBOS (v3.8 - SOCIAL + PROFILING)
+ * ONBOARDING LOGIC - SITEBOS (v4.0 - COMPLETE QUESTIONNAIRE)
  * 1. FIX: Aggiornamento immediato e visibile dei campi input dopo l'analisi AI.
  * 2. Logica di sicurezza e validazione completa.
  * 3. Traduzioni complete.
- * 4. 🆕 NUOVO: Instagram e Twitter nei social media.
- * 5. 🆕 NUOVO: Professional questionnaire in kyc_details (ready for future).
+ * 4. ✅ Instagram e Twitter nei social media.
+ * 5. ✅ Professional questionnaire (12 domande) salvato in kyc_details.
  */
 
 // --- CONFIG ---
@@ -29,6 +29,7 @@ const i18n = {
         h_company:"Profilo Aziendale", sub_company:"Configurazione operativa e fiscale.",
         lbl_company_name:"Ragione Sociale", lbl_vat:"P.IVA", lbl_sdi:"SDI / PEC", lbl_address:"Sede Legale", lbl_site:"Sito Web",
         section_identity: "IDENTITÀ OPERATIVA", section_social: "SOCIAL MEDIA (Opzionali)", lbl_sector: "Settore di Attività",
+        section_professional: "PROFILO PROFESSIONALE (5 min)", hint_professional: "💡 Aiutaci a personalizzare il sistema rispondendo a queste domande",
         sector_group_services: "Servizi",
             sector_pro: "Servizi Professionali (Avvocato, Commercialista...)",
             sector_consulting: "Consulenza (IT, Marketing, HR...)",
@@ -52,9 +53,23 @@ const i18n = {
             sector_transport: "Trasporti e Logistica",
             sector_other: "Altro",
         lbl_what_we_do: "Cosa fate?", lbl_goal: "Obiettivo AI",
+        q_role: "1️⃣ Qual è il tuo ruolo principale?",
+        q_team_size: "2️⃣ Quante persone lavorano con te?",
+        q_experience: "3️⃣ Da quanti anni fai questo lavoro?",
+        q_skills: "4️⃣ Elenca le tue competenze tecniche principali (3-7)",
+        q_certifications: "5️⃣ Hai certificazioni o abilitazioni professionali?",
+        q_training: "6️⃣ Hai fatto corsi/formazione negli ultimi 2 anni?",
+        q_specialization: "7️⃣ Come ti definiresti meglio?",
+        q_tools: "8️⃣ Quali strumenti usi OGNI GIORNO? (Seleziona tutte)",
+        q_workflow: "9️⃣ Come lavori principalmente con i clienti?",
+        q_documents: "🔟 Come gestisci fatture e documenti aziendali?",
+        q_pain: "1️⃣1️⃣ Quali sono le tue 3 PRINCIPALI sfide ORA?",
+        q_main_goal: "1️⃣2️⃣ Qual è il TUO obiettivo principale con l'AI?",
         h_plan:"Offerta Pionieri", sub_plan:"Attivazione gratuita.", pioneer_desc:"Accesso completo.", pioneer_free:"GRATIS ORA",
         lbl_payment_pref: "Preferenza pagamento futuro:", pay_wire: "Bonifico", btn_build: "AVVIA CONFIGURAZIONE",
-        alert_missing_fields: "Compila tutti i campi obbligatori.", alert_browser_error: "Errore Browser: impossibile salvare dati. Disattiva modalità privata.",
+        alert_missing_fields: "Compila tutti i campi obbligatori.",
+        alert_pain_limit: "⚠️ Seleziona MAX 3 priorità nelle sfide principali.",
+        alert_browser_error: "Errore Browser: impossibile salvare dati. Disattiva modalità privata.",
         alert_invalid_doc_title: "Documento Non Valido",
         alert_invalid_doc_body: "L'immagine caricata non sembra essere un documento d'identità valido o non è leggibile. Per favore, riprova con una foto chiara.",
         upload_error_manual: "Errore AI. Inserisci a mano.",
@@ -75,6 +90,7 @@ const i18n = {
         h_company:"Company Profile", sub_company:"Operational & Tax Setup.",
         lbl_company_name:"Company Name", lbl_vat:"VAT ID", lbl_sdi:"Tax Code", lbl_address:"Address", lbl_site:"Website",
         section_identity: "OPERATIONAL IDENTITY", section_social: "SOCIAL MEDIA (Optional)", lbl_sector: "Business Sector",
+        section_professional: "PROFESSIONAL PROFILE (5 min)", hint_professional: "💡 Help us personalize the system by answering these questions",
         sector_group_services: "Services",
             sector_pro: "Professional Services (Lawyer, Accountant...)",
             sector_consulting: "Consulting (IT, Marketing, HR...)",
@@ -100,15 +116,18 @@ const i18n = {
         lbl_what_we_do: "What do you do?", lbl_goal: "AI Goal",
         h_plan:"Pioneer Offer", sub_plan:"Activate now, decide later.", pioneer_desc:"Full Enterprise Access.", pioneer_free:"FREE NOW",
         lbl_payment_pref: "Future payment preference:", pay_wire: "Wire Transfer", btn_build: "START CONFIGURATION",
-        alert_missing_fields: "Please fill all required fields.", alert_browser_error: "Browser Error: cannot save data. Disable strict private mode.",
+        alert_missing_fields: "Please fill all required fields.",
+        alert_pain_limit: "⚠️ Select MAX 3 priorities in main challenges.",
+        alert_browser_error: "Browser Error: cannot save data. Disable strict private mode.",
         alert_invalid_doc_title: "Invalid Document",
         alert_invalid_doc_body: "The uploaded image does not appear to be a valid or readable ID document. Please try again with a clear photo.",
         upload_error_manual: "AI Error. Please enter manually.",
         upload_error_invalid: "Invalid document. Please try again.",
         alert_key_missing: "Enter your Gemini Key before uploading the document."
-    },
-    // ... altre lingue (fr, de, es, pt) identiche alla versione precedente
+    }
 };
+
+const langParam = new URLSearchParams(window.location.search).get('lang') || 'it';
 const t = i18n[langParam.slice(0,2)] || i18n.it;
 
 // --- DOM & STATE ---
@@ -167,6 +186,13 @@ function goToStep(step) {
                 input.focus();
                 return;
             }
+        }
+        
+        // ✅ Valida pain points (MAX 3)
+        const painChecked = document.querySelectorAll('input[name="pain"]:checked');
+        if (painChecked.length > 3) {
+            tg.showAlert(dict.alert_pain_limit);
+            return;
         }
     }
     currentStep = step;
@@ -278,6 +304,43 @@ async function analyzeId() {
     }
 }
 
+// ✅ NUOVA FUNZIONE: Arricchisce kycData con questionnaire
+function enrichKycWithQuestionnaire() {
+    if (!kycData) kycData = {};
+    
+    // Raccogli dati questionnaire
+    kycData.professional_questionnaire = {
+        role: document.getElementById('profile_role')?.value || null,
+        team_size: document.getElementById('team_size')?.value || null,
+        years_experience: document.getElementById('years_experience')?.value || null,
+        
+        hard_skills: [
+            document.getElementById('skill_1')?.value,
+            document.getElementById('skill_2')?.value,
+            document.getElementById('skill_3')?.value,
+            document.getElementById('skill_4')?.value,
+            document.getElementById('skill_5')?.value,
+            document.getElementById('skill_6')?.value,
+            document.getElementById('skill_7')?.value
+        ].filter(s => s && s.trim() !== ''),
+        
+        certifications: document.getElementById('certifications')?.value || null,
+        recent_training: document.getElementById('recent_training')?.value || null,
+        specialization_level: document.getElementById('specialization_level')?.value || null,
+        
+        digital_tools: Array.from(document.querySelectorAll('input[name="tools"]:checked') || [])
+            .map(cb => cb.value),
+        
+        client_workflow: document.getElementById('client_workflow')?.value || null,
+        document_management: document.getElementById('document_management')?.value || null,
+        
+        pain_points: Array.from(document.querySelectorAll('input[name="pain"]:checked') || [])
+            .map(cb => cb.value),
+        
+        main_goal: document.getElementById('ai_main_goal')?.value || null
+    };
+}
+
 function submitFinalForm() {
     const btn = document.getElementById('submitBtn');
     btn.disabled = true;
@@ -285,6 +348,9 @@ function submitFinalForm() {
 
     const addr = `${document.getElementById('addr_route').value} ${document.getElementById('addr_num').value}, ${document.getElementById('addr_zip').value} ${document.getElementById('addr_city').value} (${document.getElementById('addr_prov').value})`;
     const vatNumber = document.getElementById('vat_number').value;
+
+    // ✅ ARRICCHISCI kycData con questionnaire PRIMA di inviare
+    enrichKycWithQuestionnaire();
 
     const payload = {
         action: 'payment_checkout', 
@@ -318,6 +384,7 @@ function submitFinalForm() {
             terms_accepted: true,
             lenguage: currentLang,
             
+            // ✅ kyc_details ORA CONTIENE ANCHE professional_questionnaire
             kyc_details: kycData
         }
     };
@@ -386,6 +453,18 @@ function initialize() {
             document.querySelectorAll('.payment-option').forEach(el => el.classList.remove('selected'));
             this.classList.add('selected');
             document.getElementById('payment_pref').value = this.dataset.value;
+        });
+    });
+    
+    // ✅ Pain Points Limiter (MAX 3)
+    document.querySelectorAll('input[name="pain"]').forEach(cb => {
+        cb.addEventListener('change', () => {
+            const checked = document.querySelectorAll('input[name="pain"]:checked');
+            if (checked.length > 3) {
+                cb.checked = false;
+                const dict = i18n[currentLang] || i18n.it;
+                tg.showAlert(dict.alert_pain_limit);
+            }
         });
     });
 }
