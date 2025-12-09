@@ -75,7 +75,7 @@ export const questions61to65: Question[] = [
   },
   {
     num: 63,
-    scenario: "Sei in ascensore con altri colleghi, e qualcuno fà dei \"rumori indesiderati\". Qual è la tua reazione?",
+    scenario: "Sei in ascensore con altri colleghi, e qualcuno fa dei \"rumori indesiderati\". Qual è la tua reazione?",
     instructions: [
       "Immagine di una statua di marmo impassibile e fredda,  totale distacco emotivo.",
       "Immagine di una persona che alza gli occhi al cielo con un sorriso forzato,  leggera disapprovazione ma auto-controllo.",
@@ -115,7 +115,7 @@ export const questions61to65: Question[] = [
     instructions: [
       "Immagine di un filo sottile teso tra due persone,  divario quasi inesistente,  minima distanza.",
       "Immagine di un ruscello che scorre tra due persone,  piccolo divario,  facilmente superabile.",
-      "Immagine di un fossato profondo e largo che separa due persone,  grande divario,  difficile daSuperare.",
+      "Immagine di un fossato profondo e largo che separa due persone,  grande divario,  difficile da superare.",
       "Immagine di un canyon immenso e invalicabile che divide due persone,  divario incolmabile."
     ],
     captions: [
@@ -147,7 +147,7 @@ export const questions61to65: Question[] = [
   },
   {
     num: 65,
-    scenario: "Quale strada scegli?",
+    scenario: "Per raggiungere un obiettivo, quale strada scegli?",
     instructions: [
       "Immagine di una strada rettilinea e asfaltata che scende rapidamente verso la valle,  scorciatoia facile ma \"sospetta\".",
       "Immagine di una strada di campagna tortuosa che si allontana dal percorso principale,  via \"obliqua\" che compromette un po' l'integrità.",
