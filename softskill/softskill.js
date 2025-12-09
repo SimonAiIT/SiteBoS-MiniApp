@@ -220,32 +220,34 @@ async function finishQuiz() {
         .sort((a, b) => b[1] - a[1])
         .slice(0, 10);
 
-    // 🔥 SALVA SU WEBHOOK (se non è percorso completo)
-    if (moduleId !== 'complete') {
-        try {
-            await webhook.saveModule({
-                module_id: moduleId,
-                module_name: MODULE_MAPPING[moduleId].name,
-                total_questions: questions.length,
-                completion_time_seconds: completionTime,
-                completion_date: new Date().toISOString(),
-                answers: answersArray,
-                results: skillPercentages,
-                completion_percentage: webhook.getCompletedModulesCount() * 25
-            });
-            
-            // Salva anche in localStorage
+    // 🔥 SALVA SU WEBHOOK SEMPRE (rimosso check !== 'complete')
+    try {
+        const moduleData = {
+            module_id: moduleId,
+            module_name: moduleId !== 'complete' ? MODULE_MAPPING[moduleId].name : 'Percorso Completo',
+            total_questions: questions.length,
+            completion_time_seconds: completionTime,
+            completion_date: new Date().toISOString(),
+            answers: answersArray,
+            results: skillPercentages,
+            completion_percentage: moduleId !== 'complete' ? (webhook.getCompletedModulesCount() + 1) * 25 : 100
+        };
+        
+        await webhook.saveModule(moduleData);
+        
+        // Salva anche in localStorage (solo se è un modulo singolo)
+        if (moduleId !== 'complete') {
             webhook.saveModuleToLocalStorage(moduleId, {
                 completion_time_seconds: completionTime,
                 results: skillPercentages
             });
-            
-            console.log('✅ Modulo salvato con successo!');
-            
-        } catch (error) {
-            console.error('❌ Errore salvataggio webhook:', error);
-            alert('⚠️ Attenzione: errore nel salvataggio dati. I risultati sono comunque visibili.');
         }
+        
+        console.log('✅ Modulo salvato con successo!');
+        
+    } catch (error) {
+        console.error('❌ Errore salvataggio webhook:', error);
+        alert('⚠️ Attenzione: errore nel salvataggio dati. I risultati sono comunque visibili.');
     }
 
     // Mostra risultati
