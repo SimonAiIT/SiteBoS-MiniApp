@@ -3,7 +3,7 @@ import { Question } from "../types";
 export const questions141to145: Question[] = [
   {
     num: 141,
-    scenario: "Devi comprare un elettrodomestico nuovo ma è rimasto solo quello in esposizione, Come reagisci?",
+    scenario: "Devi comprare un elettrodomestico nuovo ma è rimasto solo quello in esposizione, come reagisci?",
     instructions: [
       "Immagine di una mano che prende l'elettrodomestico \"esposto\" senza esitare,  accettazione immediata dello \"status quo\" e  della \"seconda scelta\".",
       "Immagine di una persona che osserva attentamente l'elettrodomestico esposto cercando \"difetti\",  esitazione e  verifica \"minuziosa\" prima di accettare.",
@@ -55,19 +55,19 @@ export const questions141to145: Question[] = [
     options: [
       {
         value: "Lascio Fare alla Natura",
-        text: "Leadership \"laissez-faire\",  minimo intervento e massima autonomia,  fiducia nel potenziale \"naturale\" di crescita delle persone (negativo:  mancanza di guida e supporto attivo,  rischio di \"dispersione\" e  \"crescita non ottimizzata\",  potenziale sottoutilizzo del potenziale individuale e  collettivo,  percezione di leadership \"assente\" o  \"poco presente\" e  \"non sempre \"utile\" per la crescita \"guidata\" e  \"strutturata\"),  ma  massima autonomia e  libertà di crescita individuale,  valorizzazione dell'iniziativa personale e  dell'auto-organizzazione,  approccio \"non direttivo\" e  \"non invasivo\" e  rispetto della \"spontaneità\" e  \"autonomia\" altrui (positivo:  massima autonomia individuale,  valorizzazione iniziativa personale,  rispetto spontaneità e autonomia,  approccio \"non direttivo\" e  \"non \"soffocante\",  promozione dell' \"auto-responsabilità\" e  della \"self-leadership\")."
+        text: "(Positivo: massima autonomia e libertà di crescita individuale, valorizzazione dell'iniziativa personale, approccio non direttivo e non invasivo che rispetta la spontaneità e l'auto-responsabilità) (Negativo: mancanza di guida e supporto attivo, rischio di crescita non ottimizzata e sottoutilizzo del potenziale, percezione di leadership assente o poco presente per una crescita strutturata)."
       },
       {
         value: "Supporto Essenziale",
-        text: "Leadership di \"supporto essenziale\",  fornisce \"tutori\" e strumenti di base ma lascia autonomia di crescita,  guida \"leggera\" e  non \"invasiva\" (positivo:  supporto \"sufficiente\" per la crescita senza \"eccessivo\" controllo,  equilibrio tra guida e autonomia,  valorizzazione della crescita \"autonoma\" ma \"supportata\",  approccio \"moderato\" e  \"non direttivo\",  percezione di leadership \"presente\" ma \"non oppressiva\" e  \"non eccessivamente \"invadente\",  promozione di una \"crescita \"semi-guidata\" e  \"non totalmente libera\" ma neanche \"eccessivamente \"diretta\" e  \"controllata\"\"),  ma  potrebbe non fornire una guida \"sufficiente\" per chi ha bisogno di maggiore supporto e  non massimizzare il potenziale di crescita \"guidato\" e  \"strutturato\" e  essere percepito come  un po' \"distaccato\" o  non sempre \"sufficientemente\" \"presente\" e  \"attivo\" nel \"guidare\" la crescita \"personale\" e  \"professionale\" dei membri del team (negativo:  guida \"non sempre sufficiente\" per chi ha bisogno di maggiore supporto,  rischio di crescita \"non pienamente ottimizzata\" e  \"non sempre \"guidata\" e  \"strutturata\",  percezione di leadership \"presente\" ma \"non sempre \"attiva\" o  \"incisiva\",  approccio forse non sempre \"ottimizzato\" per la \"massima\" \"crescita\" e  \"sviluppo\" \"guidato\" e  \"strutturato\" del team e dei singoli membri). "
+        text: "(Positivo: supporto sufficiente per la crescita senza eccessivo controllo, equilibrio tra guida e autonomia, valorizzazione di una crescita autonoma ma supportata, percezione di leadership presente ma non oppressiva) (Negativo: guida non sempre sufficiente per chi ha bisogno di maggiore supporto, rischio di crescita non pienamente ottimizzata, percezione di leadership non sempre attiva o incisiva per il massimo sviluppo guidato)."
       },
       {
         value: "Guida Personalizzata",
-        text: "Leadership di \"guida personalizzata\" e \"mentoring attivo\",  cura e potatura individualizzata per massimizzare il potenziale di ogni persona,  approccio \"one-to-one\" e  \"people-developer\" (positivo:  massima attenzione allo sviluppo \"individuale\" di ogni membro del team,  guida \"personalizzata\" e  \"mirata\" sui bisogni specifici di ognuno,  valorizzazione del potenziale unico di ogni persona,  approccio \"people-centric\" e  \"human-first\",  percezione di leadership \"attenta\",  \"dedicata\",  \"supportiva\" e  \"genuinamente orientata allo sviluppo\" \"reale\" delle persone \"singole\"),  ma  richiede un investimento significativo di tempo e risorse per la \"cura individuale\" e  potrebbe non essere scalabile per team numerosi e  rischiare di creare dipendenza dalla \"guida\" del leader e  essere percepito come  un po' \"micromanaging\" o  eccessivamente \"focalizzato sul singolo\" a scapito della \"dinamica di gruppo\" e  della \"collaborazione\" \"orizzontale\" tra i membri del team (negativo:  alto investimento di tempo e risorse,  potenziale problema di scalabilità per team numerosi,  rischio di dipendenza dalla \"guida\" del leader,  percezione di \"micromanagement\" o  eccessiva enfasi sulla \"cura individuale\" a scapito della \"dinamica di gruppo\" e  della \"collaborazione\" \"orizzontale\" tra i membri del team,  approccio forse non sempre \"ottimizzato\" per la \"massima\" \"efficienza\" gestionale di team \"ampi\" e  \"complessi\")."
+        text: "(Positivo: massima attenzione allo sviluppo individuale, guida personalizzata e mirata sui bisogni specifici, valorizzazione del potenziale unico di ogni persona, approccio people-centric e orientato allo sviluppo reale delle persone) (Negativo: alto investimento di tempo e risorse, potenziale problema di scalabilità per team numerosi, rischio di creare dipendenza dalla guida del leader e percezione di micromanagement a scapito della dinamica di gruppo)."
       },
       {
         value: "Controllo Totale",
-        text: "Leadership di \"controllo totale\" e \"direttiva\",  modellamento rigido e geometrico della crescita secondo standard predefiniti,  approccio \"autoritario\" e \"iper-controllante\" (negativo:  soffocamento della creatività e  dell'iniziativa individuale,  demotivazione e  rischio di burnout per eccessiva pressione e  controllo \"rigido\",  mancanza di valorizzazione della \"spontaneità\" e  dell' \"autonomia\",  percezione di leadership \"autoritaria\",  \"iper-controllante\" e  \"poco incline alla delega\" e  all' \"empowerment\" dei membri del team,  clima di lavoro potenzialmente \"teso\",  \"stressante\" e  \"poco \"stimolante\" in termini di \"autonomia\" e  \"iniziativa\" \"personale\"),  ma  garantisce la massima \"conformità\" a standard predefiniti e  massimizza il controllo sulla \"direzione\" della crescita e  l' \"uniformità\" dei risultati e  approccio \"efficiente\" (in apparenza) per raggiungere obiettivi \"specifici\" e  \"predefiniti\" in modo \"rapido\" e  \"diretto\" (positivo:  massima \"conformità\" a standard predefiniti,  controllo totale sulla direzione della crescita,  massimizzazione \"apparente\" dell'efficienza nel breve termine per obiettivi \"specifici\" e  \"circoscritti\",  approccio \"direttivo\" e  \"orientato all'esecuzione\" \"rigorosa\" di \"compiti\" e  \"procedure\" \"predefinite\",  percezione di leadership \"forte\",  \"determinata\" e  \"focalizzata sul risultato\" \"immediato\" e  \"misurabile\", *ma positivo solo in ottica di \"controllo\" \"rigido\" e  \"massimizzazione dell'efficienza\" \"a breve termine\" per compiti \"specifici\" e  \"ripetitivi\" e  non di \"vera\" \"crescita\" \"personale\" e  \"professionale\" \"a lungo termine\" e  di \"sviluppo\" \"autonomo\" e  \"creativo\" del team e dei singoli membri*)."
+        text: "(Positivo: massima conformità a standard predefiniti, controllo totale sulla direzione della crescita, apparente efficienza nel breve termine per obiettivi specifici, approccio direttivo e orientato all'esecuzione rigorosa) (Negativo: soffocamento della creatività e dell'iniziativa individuale, demotivazione e rischio di burnout per eccessiva pressione, percezione di leadership autoritaria e poco incline alla delega, clima di lavoro potenzialmente teso e poco stimolante)."
       }
     ],
     softSkill: "SviluppoDellePersone, Leadership",
@@ -75,7 +75,7 @@ export const questions141to145: Question[] = [
   },
   {
     num: 143,
-    scenario: "Ti sei Perso in una foresta piena di rumori, come trovi la strada per uscire?",
+    scenario: "Ti sei perso in una foresta piena di rumori, come trovi la strada per uscire?",
     instructions: [
       "Immagine di una persona persa e confusa in un bosco fitto,  ignora le \"voci\" intorno,  navigazione \"a caso\" senza ascolto.",
       "Immagine di una persona che segue un sentiero tracciato ignorando i suoni della foresta,  ascolto \"selettivo\" e  focalizzato solo sulla \"direzione\" predefinita.",
@@ -94,7 +94,7 @@ export const questions141to145: Question[] = [
         text: "(Negativo: dipendenza eccessiva da aiuto esterno e mancanza di autonomia e self-reliance, rinuncia a sviluppare le proprie capacità di orientamento e problem-solving autonomo, percezione di persona dipendente e poco autonoma) (Positivo: massimizzazione probabilità di successo rapido grazie a intervento esterno, approccio pragmatico che riconosce i propri limiti, valorizzazione aiuto esterno come risorsa legittima ed efficace, realismo e consapevolezza dei propri limiti e della necessità di chiedere aiuto quando necessario)."
       },
       {
-        value: "Seguo il Sentiero",
+        value: "Cerco il Sentiero",
         text: "(Positivo: sviluppo personale focalizzato e diretto verso obiettivi chiari e ottimizzazione delle energie e del tempo per raggiungere mete prestabilite, approccio efficiente e orientato all'obiettivo, persona percepita come determinata e focalizzata) (Negativo: mancanza di apertura a feedback inattesi e rischio di visione limitata dal sentiero predefinito, opportunità di crescita mancate fuori dal percorso prestabilito, percezione di rigidità e focalizzazione eccessiva sugli obiettivi preimpostati, approccio forse non sempre ottimizzato per la massima esplorazione creativa e non convenzionale del proprio potenziale a 360 gradi)."
       },
       {
@@ -103,7 +103,7 @@ export const questions141to145: Question[] = [
       },
       {
         value: "Focalizzato sui Suoni",
-        text: "(Negativo: paralisi decisionale da eccesso di analisi e blocco della crescita personale per iper-ascolto, approccio iper-razionale che soffoca l'azione e la spontaneità, percezione di persona insicura e bloccata, rischio di burnout da eccessivo carico informativo e iper-analisi) (Positivo: massima attenzione al feedback a 360 gradi e volontà di non trascurare nessuna voce potenzialmente utile, approccio iper-analitico e iper-razionale, ricerca della completezza informativa assoluta prima di agire, persona percepita come coscienziosa e attenta ai dettagli, *ma positivo solo in ottica di iper-analisi e completezza informativa estrema e non di efficacia operativa e benessere psicofisico*)."
+        text: "(Negativo: paralisi decisionale da eccesso di analisi e blocco della crescita personale per iper-ascolto, approccio iper-razionale che soffoca l'azione e la spontaneità, percezione di persona insicura e bloccata, rischio di burnout da eccessivo carico informativo e iper-analisi) (Positivo: massima attenzione al feedback a 360 gradi e volontà di non trascurare nessuna voce potenzialmente utile, approccio iper-analitico e iper-razionale, ricerca della completezza informativa assoluta prima di agire, persona percepita come coscienziosa e attenta ai dettagli)."
       }
     ],
     softSkill: "SviluppoPersonale, AscoltoAttivo",
@@ -142,7 +142,7 @@ export const questions141to145: Question[] = [
         text: "(Positivo: massima integrità personale e rispetto delle regole del gioco e valorizzazione della competizione leale e autentica, approccio etico e sportivo, persona percepita come integra e leale e rispettosa delle regole e orientata al vero spirito del gioco e della competizione sana e leale) (Negativo: rinuncia a una potenziale vittoria facile e immediata e non massimizzazione del risultato pratico vittoria tout court, percezione di eccessivo purismo etico o rigidità morale, approccio forse non sempre ottimizzato per la massima efficienza e pragmatismo nella competizione pura e semplice orientata al risultato immediato vittoria)."
       }
     ],
-    softSkill: "DecisionMakingStrategico, Integrita",
+    softSkill: "DecisionMakingStrategico, Integrità",
     characteristics: "Etica, Fair Play, Integrità, Stile Competitivo, Pragmatismo"
   },
   {
@@ -163,11 +163,11 @@ export const questions141to145: Question[] = [
     options: [
       {
         value: "Vado da Solo",
-        text: "(Negativo: mancanza di metodo e pianificazione, approccio impulsivo e inefficiente, rischio di perdersi ulteriormente,  percezione di scarsa capacità di problem-solving strategico e strutturato, approccio caotico e poco efficace in contesti complessi che richiederebbero maggiore pianificazione e pensiero critico organizzato) (Positivo: approccio dinamico e action-oriented, velocità nell'azione, approccio pragmatico e learning-by-doing, massimizzazione della velocità di reazione e azione immediata di fronte al problema, approccio non paralizzato dall'analisi eccessiva, *ma positivo solo in contesti che richiedono azione immediata e non analisi complessa e strutturata*)."
+        text: "(Negativo: mancanza di metodo e pianificazione, approccio impulsivo e inefficiente, rischio di perdersi ulteriormente, percezione di scarsa capacità di problem-solving strategico e strutturato, approccio caotico e poco efficace in contesti complessi che richiederebbero maggiore pianificazione e pensiero critico organizzato) (Positivo: approccio dinamico e action-oriented, velocità nell'azione, approccio pragmatico e learning-by-doing, massimizzazione della velocità di reazione e azione immediata di fronte al problema, approccio non paralizzato dall'analisi eccessiva)."
       },
       {
         value: "Seguo la Folla",
-        text: "(Negativo: mancanza di autonomia decisionale e di pensiero critico personale, dipendenza dalle decisioni altrui, rischio di omologazione e pensiero gregario, approccio passivo e non protagonista nella risoluzione dei problemi, percezione di persona dipendente, non autonoma e poco incline all'iniziativa e al pensiero critico personale) (Positivo: evitamento del rischio di sbagliare strada da soli, affidamento alla saggezza della folla (ipotetica), approccio collaborativo (apparente), senso di sicurezza nel seguire la massa, non isolamento di fronte al problema, approccio sociale e di adeguamento al gruppo, *ma positivo solo in contesti in cui la massa è veramente saggia e affidabile e non cieca e disorientata come il singolo - cosa non sempre garantita in contesti complessi e ambigui*)."
+        text: "(Negativo: mancanza di autonomia decisionale e di pensiero critico personale, dipendenza dalle decisioni altrui, rischio di omologazione e pensiero gregario, approccio passivo e non protagonista nella risoluzione dei problemi, percezione di persona dipendente, non autonoma e poco incline all'iniziativa e al pensiero critico personale) (Positivo: evitamento del rischio di sbagliare strada da soli, affidamento alla saggezza della folla (ipotetica), approccio collaborativo (apparente), senso di sicurezza nel seguire la massa, non isolamento di fronte al problema, approccio sociale e di adeguamento al gruppo)."
       },
       {
         value: "Uso la Bussola",
