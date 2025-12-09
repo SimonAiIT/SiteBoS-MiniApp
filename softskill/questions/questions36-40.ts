@@ -3,7 +3,7 @@ import { Question } from "../types";
 export const questions36to40: Question[] = [
   {
     num: 36,
-    scenario: "Pensa a come ti organizzi di solito,  Quanto sei orinato/a, di solito?",
+    scenario: "Pensa a come ti organizzi di solito,  Quanto sei ordinato/a, di solito?",
     instructions: [
       "Immagine di una scrivania nel caos totale.",
       "Immagine di una scrivania un po' in disordine.",
