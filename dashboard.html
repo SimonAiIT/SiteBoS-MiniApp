@@ -53,13 +53,9 @@
         </div>
     </div>
 
-    <!-- ✨ NUOVO: Bottone Ricarica Crediti -->
-    <div style="margin-bottom: 20px;">
-        <button class="btn btn-block" onclick="openRechargeWithAd()" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);">
-            <i class="fas fa-bolt" style="font-size: 18px;"></i>
-            <span>Ricarica Crediti</span>
-            <i class="fas fa-arrow-right" style="font-size: 12px;"></i>
-        </button>
+    <!-- ✨ BANNER SPONSOR ROTATING (Ricarica Crediti) -->
+    <div id="recharge-banner-container" style="margin-bottom: 20px; min-height: 80px; cursor: pointer;" onclick="goToRecharge()">
+        <!-- Sponsor.js inietterà qui il banner rotating -->
     </div>
 
     <div style="margin-bottom:15px;">
@@ -167,36 +163,6 @@
       <p style="margin-top: 15px; font-size: 11px; color: var(--text-secondary); text-align: center;">
         I crediti verranno detratti al momento della conferma
       </p>
-    </div>
-  </div>
-
-  <!-- ✨ NUOVO: Overlay Sponsor per Ricarica -->
-  <div id="sponsor-overlay" class="modal-overlay hidden">
-    <div class="modal-content" style="max-width: 450px;">
-      <h3 style="margin-bottom: 15px; color: var(--success);">
-        <i class="fas fa-bolt"></i> Ricarica Crediti
-      </h3>
-      
-      <p style="margin-bottom: 20px; color: var(--text-muted); line-height: 1.6; font-size: 14px;">
-        Stai per essere reindirizzato alla piattaforma di ricarica. Nel frattempo, dai un'occhiata alle nostre partnership:
-      </p>
-
-      <!-- Container per lo sponsor rotating -->
-      <div id="sponsor-container" style="margin: 20px 0; min-height: 90px;"></div>
-
-      <div class="note" style="margin-top: 20px; font-size: 12px;">
-        <i class="fas fa-info-circle"></i> 
-        Verrai reindirizzato automaticamente tra <span id="countdown">3</span> secondi...
-      </div>
-
-      <div class="btn-container" style="margin-top: 20px;">
-        <button class="btn btn-secondary" onclick="closeSponsorOverlay()" style="flex: 1;">
-          <i class="fas fa-times"></i> Annulla
-        </button>
-        <button class="btn" onclick="proceedToRecharge()" style="flex: 1; background: var(--success);">
-          <i class="fas fa-arrow-right"></i> Vai Subito
-        </button>
-      </div>
     </div>
   </div>
 
