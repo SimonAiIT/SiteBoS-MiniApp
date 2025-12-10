@@ -207,13 +207,13 @@ async function finishQuiz() {
             const optionObject = question.options[selectedOption];
             const skills = question.softSkill.split(', ').map(s => s.trim());
             
-            // Prepara array risposte GREZZE per webhook
+            // 🔥 PAYLOAD PULITO: solo answer, answer_text e soft_skills
             answersArray.push({
                 question_num: question.num,
                 scenario: question.scenario,
                 answer: optionObject.value,
                 answer_text: optionObject.text,
-                option: optionObject,
+                // ❌ RIMOSSO: option (duplicato inutile)
                 soft_skills: skills
             });
         }
