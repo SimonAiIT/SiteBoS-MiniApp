@@ -1,58 +1,80 @@
 /**
- * SPONSOR MANAGER (v5.0 - CREDIT BUNDLES EDITION)
- * Mostra i bundle di ricarica crediti come sponsor rotating
+ * SPONSOR MANAGER (v5.1 - CREDIT BUNDLES REALISTIC PRICING)
+ * Bundle crediti con pricing progressivo: da 2.50€/1K a 0.70€/1K
  */
 
 const SPONSORS = [
     {
+        id: "bundle_mini",
+        name: "Mini Pack",
+        badge: "10.000 CREDITI",
+        text: "Inizia subito! Solo 22€ (2.20€/1K)",
+        logo: "https://via.placeholder.com/150x50/22c55e/ffffff?text=10K",
+        color: "#22c55e", 
+        link: "#recharge",
+        bg: "#ffffff",
+        credits: "10K",
+        price: "22€"
+    },
+    {
         id: "bundle_starter",
         name: "Starter Pack",
-        badge: "100K CREDITI",
-        text: "Perfetto per iniziare. Solo 9.99€",
-        logo: "https://via.placeholder.com/150x50/10b981/ffffff?text=100K",
-        color: "#10b981", 
+        badge: "50.000 CREDITI",
+        text: "Il più richiesto! 95€ (1.90€/1K)",
+        logo: "https://via.placeholder.com/150x50/10b981/ffffff?text=50K",
+        color: "#10b981",
         link: "#recharge",
-        bg: "#ffffff"
+        bg: "#ffffff",
+        credits: "50K",
+        price: "95€"
     },
     {
         id: "bundle_pro",
         name: "Pro Bundle",
-        badge: "500K CREDITI",
-        text: "Il più venduto! Solo 39.99€",
-        logo: "https://via.placeholder.com/150x50/3b82f6/ffffff?text=500K",
+        badge: "100.000 CREDITI",
+        text: "Best seller! 170€ (1.70€/1K)",
+        logo: "https://via.placeholder.com/150x50/3b82f6/ffffff?text=100K",
         color: "#3b82f6",
         link: "#recharge",
-        bg: "#ffffff"
+        bg: "#ffffff",
+        credits: "100K",
+        price: "170€"
     },
     {
         id: "bundle_business",
         name: "Business Pack",
-        badge: "1M CREDITI",
-        text: "Massima convenienza. Solo 69.99€",
-        logo: "https://via.placeholder.com/150x50/8b5cf6/ffffff?text=1M",
+        badge: "250.000 CREDITI",
+        text: "Per aziende. 350€ (1.40€/1K)",
+        logo: "https://via.placeholder.com/150x50/8b5cf6/ffffff?text=250K",
         color: "#8b5cf6",
         link: "#recharge",
-        bg: "#ffffff"
+        bg: "#ffffff",
+        credits: "250K",
+        price: "350€"
     },
     {
         id: "bundle_enterprise",
         name: "Enterprise",
-        badge: "5M CREDITI",
-        text: "Per aziende che fanno sul serio. 299.99€",
-        logo: "https://via.placeholder.com/150x50/f59e0b/ffffff?text=5M",
+        badge: "500.000 CREDITI",
+        text: "Grande volume. 550€ (1.10€/1K)",
+        logo: "https://via.placeholder.com/150x50/f59e0b/ffffff?text=500K",
         color: "#f59e0b",
         link: "#recharge",
-        bg: "#ffffff"
+        bg: "#ffffff",
+        credits: "500K",
+        price: "550€"
     },
     {
         id: "bundle_unlimited",
-        name: "Unlimited",
-        badge: "10M CREDITI",
-        text: "Illimitato per 1 anno. 499.99€",
-        logo: "https://via.placeholder.com/150x50/ef4444/ffffff?text=10M",
+        name: "Mega Pack",
+        badge: "1.000.000 CREDITI",
+        text: "Massimo sconto! 700€ (0.70€/1K)",
+        logo: "https://via.placeholder.com/150x50/ef4444/ffffff?text=1M",
         color: "#ef4444",
         link: "#recharge",
-        bg: "#ffffff"
+        bg: "#ffffff",
+        credits: "1M",
+        price: "700€"
     }
 ];
 
@@ -102,10 +124,24 @@ class SponsorEngine {
                 cursor: pointer;
                 transition: all 0.3s ease;
                 box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+                position: relative;
             }
             .recharge-banner:hover {
                 transform: translateY(-2px);
                 box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+            }
+            .price-badge {
+                position: absolute;
+                top: -10px;
+                right: 10px;
+                background: linear-gradient(135deg, #f59e0b 0%, #ef4444 100%);
+                color: #fff;
+                font-weight: 800;
+                padding: 6px 12px;
+                border-radius: 20px;
+                font-size: 11px;
+                box-shadow: 0 3px 10px rgba(0,0,0,0.4);
+                letter-spacing: 0.5px;
             }
         `;
         document.head.appendChild(style);
@@ -119,15 +155,17 @@ class SponsorEngine {
             return `
             <div class="recharge-banner fade-in" style="border-color:${sponsor.color};">
                 
-                <span class="ad-badge" style="background:${sponsor.color}; color:#fff; font-weight:800; position: absolute; top: -8px; right: 10px; padding: 4px 10px; border-radius: 8px; font-size: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.3);">${sponsor.badge}</span>
+                <div class="price-badge">${sponsor.price}</div>
                 
                 <div class="ad-layout">
                     <div class="ad-img-box" style="background:${imgBg}; width: 80px; height: 50px;">
                         <img src="${sponsor.logo}" alt="${sponsor.name}">
                     </div>
                     <div class="ad-content-box">
-                        <div style="font-weight:bold; font-size:15px; color:${sponsor.color}; margin-bottom:4px;">⚡ ${sponsor.name}</div>
-                        <div style="font-size:12px; opacity:0.9; line-height:1.3; color: #fff;">${sponsor.text}</div>
+                        <div style="font-weight:700; font-size:13px; color:${sponsor.color}; margin-bottom:3px; text-transform: uppercase; letter-spacing: 0.5px;">
+                            ⚡ ${sponsor.badge}
+                        </div>
+                        <div style="font-size:12px; opacity:0.9; line-height:1.3; color: #fff; font-weight: 500;">${sponsor.text}</div>
                     </div>
                     <div style="margin-left: auto; padding-left: 10px;">
                         <i class="fas fa-arrow-right" style="color:${sponsor.color}; font-size:20px;"></i>
@@ -144,8 +182,8 @@ class SponsorEngine {
                         <img src="${sponsor.logo}" alt="${sponsor.name}">
                     </div>
                     <div class="ad-content-box">
-                        <div style="font-size:10px; color:${sponsor.color}; font-weight:800; text-transform:uppercase;">${sponsor.badge}</div>
-                        <div style="font-size:11px; font-weight:600; color:#fff;">${sponsor.text}</div>
+                        <div style="font-size:10px; color:${sponsor.color}; font-weight:800; text-transform:uppercase;">${sponsor.credits}</div>
+                        <div style="font-size:11px; font-weight:600; color:#fff;">${sponsor.price}</div>
                     </div>
                     <i class="fas fa-chevron-right" style="color:${sponsor.color}; opacity:0.7; font-size:12px;"></i>
                 </div>
