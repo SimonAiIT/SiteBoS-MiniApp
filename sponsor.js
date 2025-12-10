@@ -1,6 +1,6 @@
 /**
- * SPONSOR MANAGER (v5.2 - CREDIT BUNDLES WITH TAX INFO)
- * Bundle crediti con pricing progressivo + IVA inclusa visibile
+ * SPONSOR MANAGER (v5.3 - CREDIT BUNDLES WITH ANIMATED GIFs)
+ * Bundle crediti con GIF animate reali + IVA inclusa
  */
 
 const SPONSORS = [
@@ -9,10 +9,10 @@ const SPONSORS = [
         name: "Mini Pack",
         badge: "10.000 CREDITI",
         text: "Inizia subito! Solo 22€ (2.20€/1K)",
-        logo: "https://via.placeholder.com/150x50/22c55e/ffffff?text=10K",
+        logo: "images/MiniPack.gif",
         color: "#22c55e", 
         link: "#recharge",
-        bg: "#ffffff",
+        bg: "transparent",
         credits: "10K",
         price: "22€"
     },
@@ -21,10 +21,10 @@ const SPONSORS = [
         name: "Starter Pack",
         badge: "50.000 CREDITI",
         text: "Il più richiesto! 95€ (1.90€/1K)",
-        logo: "https://via.placeholder.com/150x50/10b981/ffffff?text=50K",
+        logo: "images/StarterPack.gif",
         color: "#10b981",
         link: "#recharge",
-        bg: "#ffffff",
+        bg: "transparent",
         credits: "50K",
         price: "95€"
     },
@@ -33,10 +33,10 @@ const SPONSORS = [
         name: "Pro Bundle",
         badge: "100.000 CREDITI",
         text: "Best seller! 170€ (1.70€/1K)",
-        logo: "https://via.placeholder.com/150x50/3b82f6/ffffff?text=100K",
+        logo: "images/ProBundle.gif",
         color: "#3b82f6",
         link: "#recharge",
-        bg: "#ffffff",
+        bg: "transparent",
         credits: "100K",
         price: "170€"
     },
@@ -45,10 +45,10 @@ const SPONSORS = [
         name: "Business Pack",
         badge: "250.000 CREDITI",
         text: "Per aziende. 350€ (1.40€/1K)",
-        logo: "https://via.placeholder.com/150x50/8b5cf6/ffffff?text=250K",
+        logo: "images/BusinessPack.gif",
         color: "#8b5cf6",
         link: "#recharge",
-        bg: "#ffffff",
+        bg: "transparent",
         credits: "250K",
         price: "350€"
     },
@@ -57,10 +57,10 @@ const SPONSORS = [
         name: "Enterprise",
         badge: "500.000 CREDITI",
         text: "Grande volume. 550€ (1.10€/1K)",
-        logo: "https://via.placeholder.com/150x50/f59e0b/ffffff?text=500K",
+        logo: "images/BusinessPack.gif",
         color: "#f59e0b",
         link: "#recharge",
-        bg: "#ffffff",
+        bg: "transparent",
         credits: "500K",
         price: "550€"
     },
@@ -69,10 +69,10 @@ const SPONSORS = [
         name: "Mega Pack",
         badge: "1.000.000 CREDITI",
         text: "Massimo sconto! 700€ (0.70€/1K)",
-        logo: "https://via.placeholder.com/150x50/ef4444/ffffff?text=1M",
+        logo: "images/MegaPack.gif",
         color: "#ef4444",
         link: "#recharge",
-        bg: "#ffffff",
+        bg: "transparent",
         credits: "1M",
         price: "700€"
     }
@@ -129,7 +129,7 @@ class SponsorEngine {
                 width: 70px; height: 50px; 
                 display: flex; align-items: center; justify-content: center;
                 margin-right: 12px; border-radius: 6px; padding: 5px;
-                background: rgba(255,255,255,0.05);
+                background: transparent;
             }
             .ad-img-box img { max-width: 100%; max-height: 100%; object-fit: contain; }
             .ad-content-box { flex: 1; text-align: left; display: flex; flex-direction: column; justify-content: center; }
