@@ -194,108 +194,61 @@ function previousQuestion() {
     }
 }
 
-// 🆕 Calcola risultati e salva
+// 🔥 NUOVO: Invia solo risposte grezze - la valutazione la fa il backend!
 async function finishQuiz() {
     const completionTime = Math.floor((Date.now() - startTime) / 1000);
     
-    // Calcola skill counts
-    const skillCounts = {};
+    // 🔥 PREPARA SOLO LE RISPOSTE SENZA CALCOLARE NULLA
     const answersArray = [];
 
     questions.forEach((question, index) => {
         const selectedOption = answers[index];
         if (selectedOption !== undefined) {
-            // Conta skills
-            const skills = question.softSkill.split(', ').map(s => s.trim());
-            skills.forEach(skill => {
-                skillCounts[skill] = (skillCounts[skill] || 0) + 1;
-            });
-            
-            // 🔥 AGGIUNGI OPTION COMPLETO (value + text)
             const optionObject = question.options[selectedOption];
+            const skills = question.softSkill.split(', ').map(s => s.trim());
             
-            // Prepara array risposte per webhook
+            // Prepara array risposte GREZZE per webhook
             answersArray.push({
                 question_num: question.num,
                 scenario: question.scenario,
                 answer: optionObject.value,
-                answer_text: optionObject.text, // 🆕 AGGIUNTO
-                option: optionObject, // 🆕 OGGETTO COMPLETO
+                answer_text: optionObject.text,
+                option: optionObject,
                 soft_skills: skills
             });
         }
     });
 
-    // Converti counts in percentuali
-    const skillPercentages = {};
-    Object.entries(skillCounts).forEach(([skill, count]) => {
-        skillPercentages[skill] = Math.round((count / questions.length) * 100);
-    });
-
-    // Ordina per frequenza (top 10)
-    const sortedSkills = Object.entries(skillPercentages)
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, 10);
-
-    // 🔥 SALVA SU WEBHOOK SEMPRE (rimosso check !== 'complete')
+    // 🔥 INVIA AL WEBHOOK - LA VALUTAZIONE LA FA IL BACKEND!
     try {
         const moduleData = {
             module_id: moduleId,
             module_name: moduleId !== 'complete' ? MODULE_MAPPING[moduleId].name : 'Percorso Completo',
             total_questions: questions.length,
+            answered_questions: answersArray.length,
             completion_time_seconds: completionTime,
             completion_date: new Date().toISOString(),
-            answers: answersArray,
-            results: skillPercentages,
-            completion_percentage: moduleId !== 'complete' ? (webhook.getCompletedModulesCount() + 1) * 25 : 100
+            answers: answersArray
+            // ❌ RIMOSSO: results, skillPercentages, sortedSkills
+            // 👆 LA VALUTAZIONE LA FA IL BACKEND!
         };
         
         await webhook.saveModule(moduleData);
         
-        // Salva anche in localStorage (solo se è un modulo singolo)
-        if (moduleId !== 'complete') {
-            webhook.saveModuleToLocalStorage(moduleId, {
-                completion_time_seconds: completionTime,
-                results: skillPercentages
-            });
-        }
+        console.log('✅ Risposte inviate con successo! La valutazione verrà fatta dal backend.');
         
-        console.log('✅ Modulo salvato con successo!');
+        // Redirect alla dashboard per vedere i risultati calcolati dal backend
+        const urlParams = new URLSearchParams(window.location.search);
+        const vat = urlParams.get('vat') || 'TEST_VAT';
+        const userId = urlParams.get('user_id') || 'TEST_USER';
+        
+        alert('✅ Test completato! Verrai reindirizzato alla dashboard per vedere i risultati.');
+        window.location.href = `dashboard.html?vat=${vat}&user_id=${userId}`;
         
     } catch (error) {
         console.error('❌ Errore salvataggio webhook:', error);
-        alert('⚠️ Attenzione: errore nel salvataggio dati. I risultati sono comunque visibili.');
+        alert('⚠️ Errore nel salvataggio dati. Riprova più tardi.');
     }
-
-    // Mostra risultati
-    showResults(sortedSkills);
-}
-
-// Mostra i risultati
-function showResults(sortedSkills) {
-    const resultsContent = document.getElementById('resultsContent');
-    resultsContent.innerHTML = sortedSkills.map(([skill, percentage]) => {
-        return `
-            <div class="skill-card">
-                <div class="skill-name">
-                    <i class="fas fa-star" style="color: var(--primary); margin-right: 8px;"></i>
-                    ${skill}
-                </div>
-                <div class="skill-count">${percentage}% di affinità</div>
-                <div class="skill-bar">
-                    <div class="skill-bar-fill" style="width: ${percentage}%"></div>
-                </div>
-            </div>
-        `;
-    }).join('');
-
-    // Nascondi quiz, mostra risultati
-    document.getElementById('questionSection').style.display = 'none';
-    document.getElementById('navButtons').style.display = 'none';
-    document.getElementById('results').classList.add('active');
-
-    // Scroll to top
-    window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 // Ricomincia il quiz
