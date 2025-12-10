@@ -414,7 +414,7 @@ const UI = {
 
         completedModules.forEach(moduleId => {
             const module = modulesData[moduleId];
-            const eval = module.evaluation;
+            const evaluation = module.evaluation; // ✅ FIX: rinominato da 'eval' a 'evaluation'
             const completionDate = new Date(module.completion_date).toLocaleDateString('it-IT');
 
             html += `
@@ -426,19 +426,19 @@ const UI = {
                     
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
                         <div style="text-align: center; background: rgba(76, 217, 100, 0.1); padding: 12px; border-radius: 8px; border: 1px solid rgba(76, 217, 100, 0.3);">
-                            <div style="font-size: 24px; font-weight: bold; color: #4cd964;">${eval.PP}%</div>
+                            <div style="font-size: 24px; font-weight: bold; color: #4cd964;">${evaluation.PP}%</div>
                             <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">POSITIVO</div>
-                            <div style="font-size: 12px; margin-top: 6px; line-height: 1.3;">${eval.CP}</div>
+                            <div style="font-size: 12px; margin-top: 6px; line-height: 1.3;">${evaluation.CP}</div>
                         </div>
                         <div style="text-align: center; background: rgba(255, 59, 48, 0.1); padding: 12px; border-radius: 8px; border: 1px solid rgba(255, 59, 48, 0.3);">
-                            <div style="font-size: 24px; font-weight: bold; color: #ff3b30;">${eval.PN}%</div>
+                            <div style="font-size: 24px; font-weight: bold; color: #ff3b30;">${evaluation.PN}%</div>
                             <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">NEGATIVO</div>
-                            <div style="font-size: 12px; margin-top: 6px; line-height: 1.3;">${eval.CN}</div>
+                            <div style="font-size: 12px; margin-top: 6px; line-height: 1.3;">${evaluation.CN}</div>
                         </div>
                     </div>
                     
                     <div style="font-size: 12px; color: var(--text-muted); line-height: 1.5;">
-                        <strong style="color: var(--primary);">⏱ Valutazione:</strong> ${eval.Valutazione_Tempi}
+                        <strong style="color: var(--primary);">⏱ Valutazione:</strong> ${evaluation.Valutazione_Tempi}
                     </div>
                 </div>
             `;
