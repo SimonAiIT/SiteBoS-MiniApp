@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Profilo Team</title>
+  
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="../styles.css">
+  
+</head>
+<body>
+
+  <!-- LOADER -->
+  <div id="loader"><div class="spinner"></div></div>
+
+  <!-- MAIN CONTENT -->
+  <div id="app-content" class="container hidden">
+    
+    <h1 id="page-title" data-i18n="title">Profilo Stakeholder</h1>
+    <p class="subtitle" id="page-subtitle"></p>
+    
+    <!-- IDENTITY -->
+    <div class="knowledge-card open">
+      <div class="card-header">
+        <h3><i class="fas fa-id-card"></i> <span data-i18n="section_identity">Identità</span></h3>
+        <i class="fas fa-chevron-down chevron"></i>
+      </div>
+      <div class="card-content">
+        <div class="input-group">
+          <label data-i18n="lbl_full_name">Nome Completo</label>
+          <input type="text" id="full_name" readonly>
+        </div>
+        <div class="input-group">
+          <label data-i18n="lbl_email">Email</label>
+          <input type="email" id="email" readonly>
+        </div>
+        <div class="input-group">
+          <label data-i18n="lbl_phone">Telefono</label>
+          <input type="tel" id="phone" readonly>
+        </div>
+        <div class="input-group">
+          <label data-i18n="lbl_role">Ruolo</label>
+          <input type="text" id="current_role" readonly>
+        </div>
+      </div>
+    </div>
+
+    <!-- PROFESSIONAL BACKGROUND -->
+    <div class="knowledge-card">
+      <div class="card-header">
+        <h3><i class="fas fa-briefcase"></i> <span data-i18n="section_professional">Background Professionale</span></h3>
+        <i class="fas fa-chevron-down chevron"></i>
+      </div>
+      <div class="card-content">
+        <div class="input-group">
+          <label data-i18n="lbl_experience">Anni di Esperienza</label>
+          <input type="text" id="years_experience" readonly>
+        </div>
+        <div class="input-group">
+          <label data-i18n="lbl_education">Istruzione</label>
+          <textarea id="education" rows="2" readonly></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- BEHAVIORAL PROFILE -->
+    <div class="knowledge-card">
+      <div class="card-header">
+        <h3><i class="fas fa-brain"></i> <span data-i18n="section_behavioral">Profilo Comportamentale</span></h3>
+        <i class="fas fa-chevron-down chevron"></i>
+      </div>
+      <div class="card-content">
+        <div class="input-group">
+          <label data-i18n="lbl_expertise">Aree di Competenza</label>
+          <div id="expertise-tags" class="tag-container"></div>
+        </div>
+        <div class="input-group">
+          <label data-i18n="lbl_communication">Stile di Comunicazione</label>
+          <textarea id="communication_style" rows="3" readonly></textarea>
+        </div>
+        <div class="input-group">
+          <label data-i18n="lbl_notes">Note</label>
+          <textarea id="notes" rows="4" readonly></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- SOFT SKILLS -->
+    <div class="knowledge-card highlight">
+      <div class="card-header">
+        <h3><i class="fas fa-chart-line"></i> <span data-i18n="section_softskills">Soft Skills</span></h3>
+        <i class="fas fa-chevron-down chevron"></i>
+      </div>
+      <div class="card-content">
+        <div id="softskills-container">
+          <p id="no-softskills" class="text-muted" data-i18n="no_softskills">Nessuna valutazione disponibile</p>
+          <div id="softskills-data" class="hidden">
+            <!-- Soft skills renderizzate dinamicamente -->
+          </div>
+        </div>
+        <button class="btn btn-primary btn-block mt-2" id="btn-assess-softskills">
+          <i class="fas fa-edit"></i> <span data-i18n="btn_assess_skills">Valuta Soft Skills</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- COMMERCIAL PROFILE -->
+    <div class="knowledge-card">
+      <div class="card-header">
+        <h3><i class="fas fa-tags"></i> <span data-i18n="section_commercial">Profilo Commerciale</span></h3>
+        <i class="fas fa-chevron-down chevron"></i>
+      </div>
+      <div class="card-content">
+        <div class="input-group">
+          <label data-i18n="lbl_tags">Tag</label>
+          <div id="commercial-tags" class="tag-container"></div>
+        </div>
+        <div class="input-group">
+          <label data-i18n="lbl_customer_since">Cliente Dal</label>
+          <input type="text" id="customer_since" readonly>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Spazio per FAB -->
+    <div style="height: 80px;"></div>
+    
+  </div>
+
+  <!-- FAB BUTTONS -->
+  <div class="fab-container">
+    <!-- FAB Salva (solo per owner) -->
+    <button class="fab-btn hidden" id="btn-save" title="Salva Modifiche">
+      <i class="fas fa-save"></i>
+    </button>
+    
+    <!-- FAB Indietro -->
+    <button class="fab-btn fab-secondary" id="btn-back" title="Torna al Team">
+      <i class="fas fa-arrow-left"></i>
+    </button>
+  </div>
+
+  <script src="profile_logic.js"></script>
+
+</body>
+</html>
