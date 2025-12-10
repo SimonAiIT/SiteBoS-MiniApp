@@ -1,5 +1,5 @@
 // dashboard_logic.js
-// Versione Definitiva - 6 Lingue, Routing Completo, Fix UI e Gatekeepers + Warehouse Overlay + Recharge with Sponsor
+// Versione Definitiva - 6 Lingue, Routing Completo, Fix UI e Gatekeepers + Warehouse Overlay + Sponsor Banner Ricarica
 
 // 0. INIT TELEGRAM
 const tg = window.Telegram.WebApp;
@@ -10,7 +10,6 @@ tg.expand();
 const DASHBOARD_API = "https://trinai.api.workflow.dcmake.it/webhook/ef4aece4-9ec0-4026-a7a7-328562bcbdf6"; 
 const WAREHOUSE_COST = 50000; // Costo in crediti per sbloccare analisi magazzino
 const RECHARGE_URL = "http://dashboard.trinai.it/ricarica"; // URL piattaforma ricarica
-const COUNTDOWN_SECONDS = 3; // Secondi prima del redirect
 
 // ROUTING (Mappa delle destinazioni)
 const ROUTES = {
@@ -31,7 +30,6 @@ let currentCredits = 0;
 let currentVat = null;
 let currentOwner = null;
 let currentToken = null;
-let countdownTimer = null;
 
 // 1. DIZIONARIO TRADUZIONI COMPLETO
 const i18n = {
@@ -182,62 +180,9 @@ window.navTo = function(routeKey) {
     window.location.href = `${targetPath}?${p.toString()}`;
 }
 
-// ✨ RECHARGE WITH SPONSOR AD
-window.openRechargeWithAd = function() {
+// ✨ FUNZIONE REDIRECT RICARICA (Click sul banner)
+window.goToRecharge = function() {
     if (tg?.HapticFeedback) tg.HapticFeedback.impactOccurred('medium');
-    
-    const overlay = document.getElementById('sponsor-overlay');
-    overlay.classList.remove('hidden');
-    
-    // Inizializza sponsor rotating
-    if (window.SponsorManager) {
-        window.SponsorManager.inject('#sponsor-container', 'loader');
-    }
-    
-    // Avvia countdown automatico
-    startRechargeCountdown();
-}
-
-window.closeSponsorOverlay = function() {
-    if (tg?.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
-    
-    // Ferma countdown
-    if (countdownTimer) {
-        clearInterval(countdownTimer);
-        countdownTimer = null;
-    }
-    
-    // Ferma sponsor rotation
-    if (window.adIntervals) {
-        window.adIntervals.forEach(interval => clearInterval(interval));
-        window.adIntervals = [];
-    }
-    
-    document.getElementById('sponsor-overlay').classList.add('hidden');
-    
-    // Reset countdown display
-    document.getElementById('countdown').textContent = COUNTDOWN_SECONDS;
-}
-
-function startRechargeCountdown() {
-    let seconds = COUNTDOWN_SECONDS;
-    const countdownEl = document.getElementById('countdown');
-    
-    countdownEl.textContent = seconds;
-    
-    countdownTimer = setInterval(() => {
-        seconds--;
-        countdownEl.textContent = seconds;
-        
-        if (seconds <= 0) {
-            clearInterval(countdownTimer);
-            proceedToRecharge();
-        }
-    }, 1000);
-}
-
-window.proceedToRecharge = function() {
-    if (tg?.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
     
     // Costruisci URL con parametri utente
     const params = new URLSearchParams();
@@ -249,9 +194,6 @@ window.proceedToRecharge = function() {
     
     // Apri in nuova finestra
     window.open(fullUrl, '_blank');
-    
-    // Chiudi overlay
-    closeSponsorOverlay();
 }
 
 // ✨ WAREHOUSE OVERLAY FUNCTIONS
@@ -363,6 +305,11 @@ async function startDashboard() {
     currentVat = vat;
     currentOwner = owner;
     currentToken = token;
+
+    // ✨ INIZIALIZZA SPONSOR BANNER (Ricarica Crediti)
+    if (window.SponsorManager) {
+        window.SponsorManager.inject('#recharge-banner-container', 'loader');
+    }
 
     // Bonus Crediti (Gamification)
     const bonus = p.get('bonus_credits');
