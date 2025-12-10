@@ -1,6 +1,6 @@
 /**
- * SPONSOR MANAGER (v5.1 - CREDIT BUNDLES REALISTIC PRICING)
- * Bundle crediti con pricing progressivo: da 2.50€/1K a 0.70€/1K
+ * SPONSOR MANAGER (v5.2 - CREDIT BUNDLES WITH TAX INFO)
+ * Bundle crediti con pricing progressivo + IVA inclusa visibile
  */
 
 const SPONSORS = [
@@ -98,6 +98,27 @@ class SponsorEngine {
         return sponsor;
     }
 
+    // Rileva lingua da URL params
+    getLanguage() {
+        const params = new URLSearchParams(window.location.search);
+        const lang = params.get('lang') || 'it';
+        return lang.toLowerCase().slice(0, 2);
+    }
+
+    // Traduzione "IVA inclusa" / "Tax included"
+    getTaxLabel() {
+        const lang = this.getLanguage();
+        const labels = {
+            'it': 'IVA inclusa',
+            'en': 'Tax included',
+            'fr': 'TVA incluse',
+            'de': 'MwSt. inkl.',
+            'es': 'IVA incluido',
+            'pt': 'IVA incluído'
+        };
+        return labels[lang] || labels['en'];
+    }
+
     injectStyles() {
         if(document.getElementById('sponsor-css')) return;
         const style = document.createElement('style');
@@ -139,23 +160,46 @@ class SponsorEngine {
                 font-weight: 800;
                 padding: 6px 12px;
                 border-radius: 20px;
-                font-size: 11px;
+                font-size: 13px;
                 box-shadow: 0 3px 10px rgba(0,0,0,0.4);
                 letter-spacing: 0.5px;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 2px;
+            }
+            .price-main {
+                font-size: 16px;
+                font-weight: 900;
+                line-height: 1;
+            }
+            .tax-label {
+                font-size: 8px;
+                font-weight: 600;
+                text-transform: uppercase;
+                opacity: 0.9;
+                letter-spacing: 0.5px;
+                background: rgba(0,0,0,0.2);
+                padding: 2px 6px;
+                border-radius: 8px;
             }
         `;
         document.head.appendChild(style);
     }
 
     renderBannerHTML(sponsor, type) {
-        const imgBg = sponsor.bg || 'transparent'; 
+        const imgBg = sponsor.bg || 'transparent';
+        const taxLabel = this.getTaxLabel();
         
         if (type === 'loader') {
             // BANNER GRANDE (Dashboard)
             return `
             <div class="recharge-banner fade-in" style="border-color:${sponsor.color};">
                 
-                <div class="price-badge">${sponsor.price}</div>
+                <div class="price-badge">
+                    <div class="price-main">${sponsor.price}</div>
+                    <div class="tax-label">${taxLabel}</div>
+                </div>
                 
                 <div class="ad-layout">
                     <div class="ad-img-box" style="background:${imgBg}; width: 80px; height: 50px;">
@@ -183,7 +227,7 @@ class SponsorEngine {
                     </div>
                     <div class="ad-content-box">
                         <div style="font-size:10px; color:${sponsor.color}; font-weight:800; text-transform:uppercase;">${sponsor.credits}</div>
-                        <div style="font-size:11px; font-weight:600; color:#fff;">${sponsor.price}</div>
+                        <div style="font-size:11px; font-weight:600; color:#fff;">${sponsor.price} <span style="font-size:8px; opacity:0.7;">${taxLabel}</span></div>
                     </div>
                     <i class="fas fa-chevron-right" style="color:${sponsor.color}; opacity:0.7; font-size:12px;"></i>
                 </div>
