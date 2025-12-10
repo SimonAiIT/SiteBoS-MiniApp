@@ -11,7 +11,7 @@
 // ==========================================
 const CONFIG = {
     WEBHOOK_URL: "https://trinai.api.workflow.dcmake.it/webhook/502d2019-b5ee-4c9b-a14d-8d6545fbb05e",
-    SOFTSKILL_PATH: "../softskill/index.html"
+    SOFTSKILL_PATH: "../softskill/dashboard.html"
 };
 
 const urlParams = new URLSearchParams(window.location.search);
@@ -322,7 +322,6 @@ const Api = {
 
 const UI = {
     renderProfile: () => {
-        // ✅ FIX: Prendi i dati dal campo giusto
         const data = STATE.profileData;
         
         // Nome e contatti
@@ -340,14 +339,18 @@ const UI = {
         const behavioral = data.behavioral_profile || {};
         UI.renderTags(DOM.expertiseTags, prof.expertise_areas || []);
         DOM.communicationStyle.value = behavioral.communication_style || '';
-        DOM.notes.value = ''; // Note non presenti nella risposta API
+        DOM.notes.value = '';
 
-        // Soft Skills
-        const softSkills = data.soft_skills_assessment || {};
-        if (softSkills.is_complete && softSkills.profile_summary) {
+        // 🔥 SOFT SKILLS - NUOVA STRUTTURA CON MODULI
+        const softSkillsModules = data.professional_profile?.soft_skills_modules || {};
+        const completedModules = Object.keys(softSkillsModules).filter(
+            moduleId => softSkillsModules[moduleId]?.completed
+        );
+
+        if (completedModules.length > 0) {
             DOM.noSoftskills.classList.add('hidden');
             DOM.softskillsData.classList.remove('hidden');
-            UI.renderSoftSkills(softSkills.profile_summary);
+            UI.renderSoftSkills(softSkillsModules, completedModules);
         } else {
             DOM.noSoftskills.classList.remove('hidden');
             DOM.softskillsData.classList.add('hidden');
@@ -360,7 +363,6 @@ const UI = {
             DOM.customerSince.value = new Date(metadata.last_updated).toLocaleDateString();
         }
 
-        // Subtitle
         DOM.pageSubtitle.innerText = STATE.isOwner ? I18n.get('subtitle_owner') : I18n.get('subtitle_operator');
 
         // Enable/Disable editing for Owner
@@ -389,36 +391,60 @@ const UI = {
         });
     },
 
-    renderSoftSkills: (profileSummary) => {
-        DOM.softskillsData.innerHTML = '<div class="soft-skills-preview">';
-        
-        // Top Skills
-        if (profileSummary.top_skills && profileSummary.top_skills.length > 0) {
-            DOM.softskillsData.innerHTML += '<h4 style="margin-bottom: 10px;">Top Skills</h4>';
-            profileSummary.top_skills.forEach(skill => {
-                DOM.softskillsData.innerHTML += `
-                    <div class="skill-item">
-                        <span class="skill-name">${skill}</span>
-                        <span class="skill-value">✓</span>
+    renderSoftSkills: (modulesData, completedModules) => {
+        const moduleNames = {
+            modulo1: '🧘 L\'Io Interiore',
+            modulo2: '🤝 Sfera Interpersonale',
+            modulo3: '🎯 Leadership e Performance',
+            modulo4: '🚀 Innovazione e Adattamento'
+        };
+
+        let html = `
+            <div style="margin-bottom: 15px;">
+                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
+                    <span style="font-size: 14px; color: var(--success); font-weight: 600;">
+                        ✅ ${completedModules.length}/4 Moduli Completati
+                    </span>
+                </div>
+                <div style="background: rgba(255,255,255,0.1); height: 8px; border-radius: 4px; overflow: hidden;">
+                    <div style="background: linear-gradient(90deg, #5b6fed, #4cd964); height: 100%; width: ${(completedModules.length / 4) * 100}%; transition: width 0.5s ease;"></div>
+                </div>
+            </div>
+        `;
+
+        completedModules.forEach(moduleId => {
+            const module = modulesData[moduleId];
+            const eval = module.evaluation;
+            const completionDate = new Date(module.completion_date).toLocaleDateString('it-IT');
+
+            html += `
+                <div style="background: rgba(0,0,0,0.2); border-radius: 10px; padding: 16px; margin-bottom: 12px; border-left: 4px solid var(--success);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                        <h4 style="margin: 0; font-size: 16px;">${moduleNames[moduleId] || moduleId}</h4>
+                        <span style="font-size: 12px; color: var(--text-muted);">${completionDate}</span>
                     </div>
-                `;
-            });
-        }
-        
-        // Development Areas
-        if (profileSummary.development_areas && profileSummary.development_areas.length > 0) {
-            DOM.softskillsData.innerHTML += '<h4 style="margin: 15px 0 10px;">Aree di Sviluppo</h4>';
-            profileSummary.development_areas.forEach(area => {
-                DOM.softskillsData.innerHTML += `
-                    <div class="skill-item">
-                        <span class="skill-name">${area}</span>
-                        <span class="skill-value">→</span>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+                        <div style="text-align: center; background: rgba(76, 217, 100, 0.1); padding: 12px; border-radius: 8px; border: 1px solid rgba(76, 217, 100, 0.3);">
+                            <div style="font-size: 24px; font-weight: bold; color: #4cd964;">${eval.PP}%</div>
+                            <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">POSITIVO</div>
+                            <div style="font-size: 12px; margin-top: 6px; line-height: 1.3;">${eval.CP}</div>
+                        </div>
+                        <div style="text-align: center; background: rgba(255, 59, 48, 0.1); padding: 12px; border-radius: 8px; border: 1px solid rgba(255, 59, 48, 0.3);">
+                            <div style="font-size: 24px; font-weight: bold; color: #ff3b30;">${eval.PN}%</div>
+                            <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">NEGATIVO</div>
+                            <div style="font-size: 12px; margin-top: 6px; line-height: 1.3;">${eval.CN}</div>
+                        </div>
                     </div>
-                `;
-            });
-        }
-        
-        DOM.softskillsData.innerHTML += '</div>';
+                    
+                    <div style="font-size: 12px; color: var(--text-muted); line-height: 1.5;">
+                        <strong style="color: var(--primary);">⏱ Valutazione:</strong> ${eval.Valutazione_Tempi}
+                    </div>
+                </div>
+            `;
+        });
+
+        DOM.softskillsData.innerHTML = html;
     },
 
     toggleDirty: () => {
@@ -445,7 +471,6 @@ const App = {
         try {
             const response = await Api.getProfile();
             
-            // ✅ FIX CRITICO: Prendi i dati da response.data, non response.stakeholder_profile
             if (response.success && response.data) {
                 STATE.profileData = response.data;
             } else {
@@ -512,7 +537,6 @@ const App = {
     },
 
     updateProfileData: () => {
-        // Aggiorna i campi modificabili
         STATE.profileData.name = DOM.fullName.value;
         STATE.profileData.email = DOM.email.value;
         STATE.profileData.phone = DOM.phone.value;
