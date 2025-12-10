@@ -135,8 +135,8 @@ const I18n = {
             btn_save: "Guardar", saving_progress: "Guardando...", saving_success: "¡Guardado!",
             alert_loading_error: "Error al cargar.", alert_saving_error: "Error al guardar.",
             access_denied: "Acceso Denegado: Token faltante.",
-            ai_error_title: "¡Vaya! Fallo de IA 🤖", ai_error_msg: "La llamada a la Inteligencia Artificial ha fallado.\n\nPodría ser un problema temporal. Por favor, inténtalo de nuevo en unos segundos.", btn_retry: "Reintentar",
-            msg_saved_success: "✅ Datos actualizados con éxito.",
+            ai_error_title: "¡Vaya! Fallo de IA 🤖", ai_error_msg: "La llamada a la Inteligencia Artificial ha fallado.\n\nPodría ser un problema temporaneo. Por favor, inténtalo de nuevo en unos segundos.", btn_retry: "Reintentar",
+            msg_saved_success: "✅ Dados atualizados con éxito.",
             msg_saved_incomplete: "⚠️ Guardado. Completa Logo, Foto y Oferta para lanzar el sitio.",
             launching_process: "Iniciando creación del sitio..."
         },
@@ -513,8 +513,8 @@ const App = {
     },
 
     generateOffer: async () => {
-        const prompt = DOM.offerPrompt.value.trim();
-        if (!prompt) return tg.showAlert(I18n.get('alert_offer_required'));
+        const prompt = DOM.offerPrompt.value.trim() || ""; // ✅ permetti anche prompt vuoto
+        // rimosso il controllo che obbligava ad avere testo
         UI.setLoading(true, DOM.btnGenerateOffer, 'generating');
         try {
             const res = await Api.generateOffer(prompt);
@@ -657,7 +657,7 @@ const App = {
     copyOffer: () => {
         const html = DOM.offerStorage.value; 
         if (!html) return;
-        let text = html.replace(/<br\s*\/?>/gi, '\n').replace(/<\/p>/gi, '\n\n').replace(/<\/?[^>]+(>|$)/g, "").trim();
+        let text = html.replace(/<br\s*\/?/gi, '\n').replace(/<\/p>/gi, '\n\n').replace(/<\/?[^>]+(>|$)/g, "").trim();
         const link = `https://simonaiit.github.io/SiteBoS-MiniApp/SiteBos.html?vat=${STATE.vatNumber}`;
         if (!text.includes(link)) text += `\n\n👉 Accedi qui: ${link}`;
         navigator.clipboard.writeText(text).then(() => { 
