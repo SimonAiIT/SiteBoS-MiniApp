@@ -75,11 +75,31 @@
             background: linear-gradient(135deg, rgba(76, 217, 100, 0.05), transparent);
         }
 
+        /* 🔥 COLLAPSIBLE HEADER */
         .module-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 12px;
+        }
+
+        .module-card.completed .module-header {
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .module-card.completed .module-header:hover {
+            opacity: 0.8;
+        }
+
+        .collapse-icon {
+            font-size: 18px;
+            color: var(--success);
+            transition: transform 0.3s ease;
+        }
+
+        .module-card.collapsed .collapse-icon {
+            transform: rotate(-90deg);
         }
 
         .module-title {
@@ -114,7 +134,19 @@
             line-height: 1.4;
         }
 
-        /* 🔥 EVALUATION SECTION */
+        /* 🔥 COLLAPSIBLE CONTENT */
+        .module-content {
+            max-height: 5000px;
+            overflow: hidden;
+            transition: max-height 0.5s ease, opacity 0.3s ease;
+            opacity: 1;
+        }
+
+        .module-card.collapsed .module-content {
+            max-height: 0;
+            opacity: 0;
+        }
+
         .evaluation-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -425,64 +457,72 @@
         
         function createModuleCard(moduleId, module, data, isCompleted) {
             const card = document.createElement('div');
-            card.className = `module-card ${isCompleted ? 'completed' : 'locked'}`;
+            card.className = `module-card ${isCompleted ? 'completed collapsed' : 'locked'}`;
+            card.id = `card-${moduleId}`;
             
             if (isCompleted && data.evaluation) {
-                // 🔥 MODULO COMPLETATO CON EVALUATION COMPLETA
+                // 🔥 MODULO COMPLETATO CON EVALUATION (COLLASSABILE)
                 const eval = data.evaluation;
                 const completionDate = new Date(data.completion_date).toLocaleDateString('it-IT');
                 
                 card.innerHTML = `
-                    <div class="module-header">
+                    <div class="module-header" onclick="toggleCard('${moduleId}')">
                         <div class="module-title">
                             <span>${module.icon}</span>
                             <span>${module.name}</span>
                         </div>
-                        <span class="module-badge badge-completed">
-                            <i class="fas fa-check-circle"></i> COMPLETATO
-                        </span>
-                    </div>
-                    <p class="module-subtitle">${module.description}</p>
-                    
-                    <!-- 🔥 EVALUATION SCORES -->
-                    <div class="evaluation-grid">
-                        <div class="score-card positive">
-                            <div class="score-label">Punteggio Positivo</div>
-                            <div class="score-value">${eval.PP}%</div>
-                            <div class="score-caption">${eval.CP}</div>
-                        </div>
-                        <div class="score-card negative">
-                            <div class="score-label">Punteggio Negativo</div>
-                            <div class="score-value">${eval.PN}%</div>
-                            <div class="score-caption">${eval.CN}</div>
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <span class="module-badge badge-completed">
+                                <i class="fas fa-check-circle"></i> COMPLETATO
+                            </span>
+                            <i class="fas fa-chevron-down collapse-icon"></i>
                         </div>
                     </div>
                     
-                    <!-- 🔥 EVALUATION DETAILS (TESTO COMPLETO) -->
-                    <div class="evaluation-details">
-                        <h4><i class="fas fa-clock"></i> Valutazione Tempi</h4>
-                        <p>${eval.Valutazione_Tempi}</p>
+                    <!-- 🔥 COLLAPSIBLE CONTENT -->
+                    <div class="module-content">
+                        <p class="module-subtitle">${module.description}</p>
                         
-                        <h4><i class="fas fa-chart-line"></i> Analisi Strategica</h4>
-                        <p>${eval.Analisi_Strategica}</p>
+                        <!-- EVALUATION SCORES -->
+                        <div class="evaluation-grid">
+                            <div class="score-card positive">
+                                <div class="score-label">Punteggio Positivo</div>
+                                <div class="score-value">${eval.PP}%</div>
+                                <div class="score-caption">${eval.CP}</div>
+                            </div>
+                            <div class="score-card negative">
+                                <div class="score-label">Punteggio Negativo</div>
+                                <div class="score-value">${eval.PN}%</div>
+                                <div class="score-caption">${eval.CN}</div>
+                            </div>
+                        </div>
                         
-                        <h4><i class="fas fa-briefcase"></i> Impatto Business</h4>
-                        <p>${eval.Impatto_Business}</p>
+                        <!-- EVALUATION DETAILS -->
+                        <div class="evaluation-details">
+                            <h4><i class="fas fa-clock"></i> Valutazione Tempi</h4>
+                            <p>${eval.Valutazione_Tempi}</p>
+                            
+                            <h4><i class="fas fa-chart-line"></i> Analisi Strategica</h4>
+                            <p>${eval.Analisi_Strategica}</p>
+                            
+                            <h4><i class="fas fa-briefcase"></i> Impatto Business</h4>
+                            <p>${eval.Impatto_Business}</p>
+                            
+                            <h4><i class="fas fa-lightbulb"></i> Consigli Operativi</h4>
+                            <ul>
+                                ${eval.Consigli_Operativi.map(c => `<li>${c}</li>`).join('')}
+                            </ul>
+                        </div>
                         
-                        <h4><i class="fas fa-lightbulb"></i> Consigli Operativi</h4>
-                        <ul>
-                            ${eval.Consigli_Operativi.map(c => `<li>${c}</li>`).join('')}
-                        </ul>
-                    </div>
-                    
-                    <div class="module-meta">
-                        <span><i class="fas fa-calendar"></i> ${completionDate}</span>
-                    </div>
-                    
-                    <div class="module-actions">
-                        <button class="btn btn-secondary" onclick="retakeModule('${moduleId}')">
-                            <i class="fas fa-redo"></i> Rifai il Test
-                        </button>
+                        <div class="module-meta">
+                            <span><i class="fas fa-calendar"></i> ${completionDate}</span>
+                        </div>
+                        
+                        <div class="module-actions">
+                            <button class="btn btn-secondary" onclick="event.stopPropagation(); retakeModule('${moduleId}');">
+                                <i class="fas fa-redo"></i> Rifai il Test
+                            </button>
+                        </div>
                     </div>
                 `;
                 
@@ -511,6 +551,14 @@
             }
             
             return card;
+        }
+        
+        // 🔥 TOGGLE CARD COLLAPSE/EXPAND
+        function toggleCard(moduleId) {
+            const card = document.getElementById(`card-${moduleId}`);
+            if (card) {
+                card.classList.toggle('collapsed');
+            }
         }
         
         function startModule(moduleId) {
