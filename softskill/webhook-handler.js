@@ -16,7 +16,7 @@ class WebhookHandler {
   /**
    * 🆕 RECUPERA PROGRESSO UTENTE DAL SERVER
    * Chiamato all'inizio per sincronizzare dati
-   * @returns {Promise<Object>} Dati progresso utente
+   * @returns {Promise<Object>} Dati progresso utente con evaluation
    */
   async getProgress() {
     const payload = {
@@ -44,7 +44,7 @@ class WebhookHandler {
       const result = await response.json();
       console.log('✅ Progresso recuperato:', result);
       
-      // Salva in localStorage come cache
+      // 🔥 Salva in localStorage come cache (NUOVA STRUTTURA)
       if (result.modules_completed) {
         const key = `modules_${this.vat}_${this.userId}`;
         localStorage.setItem(key, JSON.stringify(result.modules_completed));
@@ -65,7 +65,7 @@ class WebhookHandler {
   /**
    * Salva modulo completato su webhook Make.com
    * @param {Object} moduleData - Dati del modulo completato
-   * @returns {Promise} Response del webhook
+   * @returns {Promise} Response del webhook con evaluation
    */
   async saveModule(moduleData) {
     const payload = {
@@ -93,6 +93,16 @@ class WebhookHandler {
       
       const result = await response.json();
       console.log('✅ Modulo salvato con successo!', result);
+      
+      // 🔥 SALVA LA NUOVA STRUTTURA CON EVALUATION IN LOCALSTORAGE
+      if (result.success && result.evaluation) {
+        this.saveModuleToLocalStorage(result.module_id, {
+          completed: true,
+          completion_date: result.completion_date,
+          evaluation: result.evaluation
+        });
+      }
+      
       return result;
       
     } catch (error) {
@@ -104,20 +114,19 @@ class WebhookHandler {
   }
 
   /**
-   * Salva dati completamento modulo in localStorage
+   * 🔥 AGGIORNATO: Salva dati completamento modulo in localStorage (NUOVA STRUTTURA)
    * @param {string} moduleId - ID del modulo (modulo1, modulo2, etc)
-   * @param {Object} data - Dati da salvare
+   * @param {Object} data - Dati da salvare con evaluation
    */
   saveModuleToLocalStorage(moduleId, data) {
     const key = `modules_${this.vat}_${this.userId}`;
     let stored = JSON.parse(localStorage.getItem(key) || '{}');
     
+    // 🔥 NUOVA STRUTTURA CON EVALUATION
     stored[moduleId] = {
       completed: true,
-      date: new Date().toLocaleDateString('it-IT'),
-      time: data.completion_time_seconds,
-      results: data.results,
-      timestamp: new Date().toISOString()
+      completion_date: data.completion_date || new Date().toISOString(),
+      evaluation: data.evaluation || null
     };
     
     localStorage.setItem(key, JSON.stringify(stored));
@@ -126,11 +135,21 @@ class WebhookHandler {
 
   /**
    * Recupera dati moduli da localStorage
-   * @returns {Object} Dati moduli salvati
+   * @returns {Object} Dati moduli salvati con evaluation
    */
   loadModulesData() {
     const key = `modules_${this.vat}_${this.userId}`;
     return JSON.parse(localStorage.getItem(key) || '{}');
+  }
+
+  /**
+   * 🆕 AGGIORNATO: Recupera evaluation di un modulo specifico
+   * @param {string} moduleId - ID del modulo
+   * @returns {Object|null} Evaluation data
+   */
+  getModuleEvaluation(moduleId) {
+    const data = this.loadModulesData();
+    return data[moduleId]?.evaluation || null;
   }
 
   /**
