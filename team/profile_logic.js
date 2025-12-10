@@ -322,44 +322,46 @@ const Api = {
 
 const UI = {
     renderProfile: () => {
-        const identity = STATE.profileData.identity || {};
-        const professional = identity.professional_background || {};
-        const behavioral = STATE.profileData.behavioral_profile || {};
-        const commercial = STATE.profileData.commercial_profile || {};
+        // ✅ FIX: Prendi i dati dal campo giusto
+        const data = STATE.profileData;
+        
+        // Nome e contatti
+        DOM.fullName.value = data.name || '';
+        DOM.email.value = data.email || '';
+        DOM.phone.value = data.phone || '';
+        DOM.currentRole.value = data.role || '';
 
-        // Subtitle
-        DOM.pageSubtitle.innerText = STATE.isOwner ? I18n.get('subtitle_owner') : I18n.get('subtitle_operator');
+        // Professional Info
+        const prof = data.professional_info || {};
+        DOM.yearsExperience.value = prof.years_experience || '';
+        DOM.education.value = prof.certifications || '';
 
-        // Identity
-        DOM.fullName.value = identity.full_name || '';
-        DOM.email.value = identity.primary_contact?.email || '';
-        DOM.phone.value = identity.primary_contact?.phone || '';
-        DOM.currentRole.value = professional.current_role || '';
-
-        // Professional
-        DOM.yearsExperience.value = professional.years_experience || '';
-        DOM.education.value = professional.education || '';
-
-        // Behavioral
-        UI.renderTags(DOM.expertiseTags, behavioral.expertise_areas || []);
+        // Behavioral Profile
+        const behavioral = data.behavioral_profile || {};
+        UI.renderTags(DOM.expertiseTags, prof.expertise_areas || []);
         DOM.communicationStyle.value = behavioral.communication_style || '';
-        DOM.notes.value = behavioral.notes || '';
+        DOM.notes.value = ''; // Note non presenti nella risposta API
 
         // Soft Skills
-        if (STATE.profileData.soft_skills && Object.keys(STATE.profileData.soft_skills).length > 0) {
+        const softSkills = data.soft_skills_assessment || {};
+        if (softSkills.is_complete && softSkills.profile_summary) {
             DOM.noSoftskills.classList.add('hidden');
             DOM.softskillsData.classList.remove('hidden');
-            UI.renderSoftSkills(STATE.profileData.soft_skills);
+            UI.renderSoftSkills(softSkills.profile_summary);
         } else {
             DOM.noSoftskills.classList.remove('hidden');
             DOM.softskillsData.classList.add('hidden');
         }
 
         // Commercial
-        UI.renderTags(DOM.commercialTags, commercial.tags || []);
-        if (commercial.customer_since) {
-            DOM.customerSince.value = new Date(commercial.customer_since).toLocaleDateString();
+        const metadata = data.metadata || {};
+        UI.renderTags(DOM.commercialTags, [metadata.stakeholder_type] || []);
+        if (metadata.last_updated) {
+            DOM.customerSince.value = new Date(metadata.last_updated).toLocaleDateString();
         }
+
+        // Subtitle
+        DOM.pageSubtitle.innerText = STATE.isOwner ? I18n.get('subtitle_owner') : I18n.get('subtitle_operator');
 
         // Enable/Disable editing for Owner
         if (STATE.isOwner) {
@@ -387,24 +389,41 @@ const UI = {
         });
     },
 
-    renderSoftSkills: (skills) => {
-        // Rendering semplificato soft skills
+    renderSoftSkills: (profileSummary) => {
         DOM.softskillsData.innerHTML = '<div class="soft-skills-preview">';
-        Object.entries(skills).forEach(([key, value]) => {
-            DOM.softskillsData.innerHTML += `
-                <div class="skill-item">
-                    <span class="skill-name">${key}</span>
-                    <span class="skill-value">${value}</span>
-                </div>
-            `;
-        });
+        
+        // Top Skills
+        if (profileSummary.top_skills && profileSummary.top_skills.length > 0) {
+            DOM.softskillsData.innerHTML += '<h4 style="margin-bottom: 10px;">Top Skills</h4>';
+            profileSummary.top_skills.forEach(skill => {
+                DOM.softskillsData.innerHTML += `
+                    <div class="skill-item">
+                        <span class="skill-name">${skill}</span>
+                        <span class="skill-value">✓</span>
+                    </div>
+                `;
+            });
+        }
+        
+        // Development Areas
+        if (profileSummary.development_areas && profileSummary.development_areas.length > 0) {
+            DOM.softskillsData.innerHTML += '<h4 style="margin: 15px 0 10px;">Aree di Sviluppo</h4>';
+            profileSummary.development_areas.forEach(area => {
+                DOM.softskillsData.innerHTML += `
+                    <div class="skill-item">
+                        <span class="skill-name">${area}</span>
+                        <span class="skill-value">→</span>
+                    </div>
+                `;
+            });
+        }
+        
         DOM.softskillsData.innerHTML += '</div>';
     },
 
     toggleDirty: () => {
         const currentStr = JSON.stringify(STATE.profileData);
         STATE.hasChanges = (currentStr !== STATE.initialString);
-        // FAB già visibile per owner, nessuna gestione condizionale necessaria
     }
 };
 
@@ -424,8 +443,15 @@ const App = {
         I18n.init();
 
         try {
-            const data = await Api.getProfile();
-            STATE.profileData = data.stakeholder_profile || data;
+            const response = await Api.getProfile();
+            
+            // ✅ FIX CRITICO: Prendi i dati da response.data, non response.stakeholder_profile
+            if (response.success && response.data) {
+                STATE.profileData = response.data;
+            } else {
+                throw new Error('Invalid API response structure');
+            }
+            
             STATE.initialString = JSON.stringify(STATE.profileData);
 
             UI.renderProfile();
@@ -486,17 +512,16 @@ const App = {
     },
 
     updateProfileData: () => {
-        if (!STATE.profileData.identity) STATE.profileData.identity = {};
-        if (!STATE.profileData.identity.primary_contact) STATE.profileData.identity.primary_contact = {};
-        if (!STATE.profileData.identity.professional_background) STATE.profileData.identity.professional_background = {};
+        // Aggiorna i campi modificabili
+        STATE.profileData.name = DOM.fullName.value;
+        STATE.profileData.email = DOM.email.value;
+        STATE.profileData.phone = DOM.phone.value;
+        
+        if (!STATE.profileData.professional_info) STATE.profileData.professional_info = {};
+        STATE.profileData.professional_info.certifications = DOM.education.value;
+        
         if (!STATE.profileData.behavioral_profile) STATE.profileData.behavioral_profile = {};
-
-        STATE.profileData.identity.full_name = DOM.fullName.value;
-        STATE.profileData.identity.primary_contact.email = DOM.email.value;
-        STATE.profileData.identity.primary_contact.phone = DOM.phone.value;
-        STATE.profileData.identity.professional_background.education = DOM.education.value;
         STATE.profileData.behavioral_profile.communication_style = DOM.communicationStyle.value;
-        STATE.profileData.behavioral_profile.notes = DOM.notes.value;
     },
 
     save: async () => {
