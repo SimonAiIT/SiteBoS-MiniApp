@@ -21,7 +21,7 @@ const STATE = {
     accessToken: urlParams.get('token'),
     ownerId: urlParams.get('owner'),
     operatorId: urlParams.get('operator_id'),
-    role: urlParams.get('role'), // 'owner' or 'operator'
+    role: urlParams.get('role'),
     companyName: urlParams.get('ragione_sociale'),
     currentLang: 'it',
     profileData: {},
@@ -36,13 +36,24 @@ const DOM = {
     pageTitle: document.getElementById('page-title'),
     pageSubtitle: document.getElementById('page-subtitle'),
     fullName: document.getElementById('full_name'),
+    stakeholderType: document.getElementById('stakeholder_type'),
     email: document.getElementById('email'),
     phone: document.getElementById('phone'),
+    vatNumber: document.getElementById('vat_number'),
     currentRole: document.getElementById('current_role'),
+    teamSize: document.getElementById('team_size'),
     yearsExperience: document.getElementById('years_experience'),
     education: document.getElementById('education'),
+    hardSkillsTags: document.getElementById('hard-skills-tags'),
+    specializationLevel: document.getElementById('specialization_level'),
+    clientWorkflow: document.getElementById('client_workflow'),
+    digitalToolsTags: document.getElementById('digital-tools-tags'),
+    challengesTags: document.getElementById('challenges-tags'),
+    mainGoal: document.getElementById('main_goal'),
     expertiseTags: document.getElementById('expertise-tags'),
     communicationStyle: document.getElementById('communication_style'),
+    currentStance: document.getElementById('current_stance'),
+    reputationContainer: document.getElementById('reputation-container'),
     notes: document.getElementById('notes'),
     softskillsContainer: document.getElementById('softskills-container'),
     noSoftskills: document.getElementById('no-softskills'),
@@ -50,20 +61,19 @@ const DOM = {
     btnAssessSoftskills: document.getElementById('btn-assess-softskills'),
     commercialTags: document.getElementById('commercial-tags'),
     customerSince: document.getElementById('customer_since'),
+    lifetimeValue: document.getElementById('lifetime_value'),
+    socialLinks: document.getElementById('social-links'),
     btnSave: document.getElementById('btn-save'),
     btnBack: document.getElementById('btn-back')
 };
 
-// Telegram WebApp Init
 const tg = window.Telegram.WebApp;
 tg.ready();
 tg.expand();
 
-
 // ==========================================
-// 2. I18N - TRADUZIONI
+// 2. I18N
 // ==========================================
-
 const I18n = {
     dict: {
         it: {
@@ -72,280 +82,121 @@ const I18n = {
             subtitle_operator: "Visualizzazione profilo collaboratore",
             section_identity: "Identità",
             lbl_full_name: "Nome Completo",
+            lbl_stakeholder_type: "Tipo Stakeholder",
             lbl_email: "Email",
             lbl_phone: "Telefono",
+            lbl_vat: "Partita IVA",
             lbl_role: "Ruolo",
+            lbl_team_size: "Team Size",
             section_professional: "Background Professionale",
             lbl_experience: "Anni di Esperienza",
-            lbl_education: "Istruzione",
+            lbl_education: "Certificazioni",
+            lbl_hard_skills: "Hard Skills",
+            lbl_specialization: "Livello Specializzazione",
+            lbl_client_workflow: "Workflow Cliente",
+            lbl_digital_tools: "Strumenti Digitali",
+            lbl_challenges: "Sfide Attuali",
+            lbl_main_goal: "Obiettivo Principale",
             section_behavioral: "Profilo Comportamentale",
             lbl_expertise: "Aree di Competenza",
             lbl_communication: "Stile di Comunicazione",
-            lbl_notes: "Note",
+            lbl_current_stance: "Stance Attuale",
+            lbl_public_reputation: "Reputazione Pubblica",
+            lbl_notes: "Note Intelligence",
             section_softskills: "Soft Skills",
             no_softskills: "Nessuna valutazione disponibile",
             btn_assess_skills: "Valuta Soft Skills",
             section_commercial: "Profilo Commerciale",
+            section_social: "Profili Social",
             lbl_tags: "Tag",
             lbl_customer_since: "Cliente Dal",
-            access_denied: "Accesso Negato: Parametri mancanti.",
-            alert_loading_error: "Errore caricamento profilo.",
-            alert_saving_error: "Errore salvataggio.",
-            saving_progress: "Salvataggio...",
+            lbl_lifetime_value: "Lifetime Value",
+            access_denied: "Accesso Negato",
+            alert_loading_error: "Errore caricamento",
+            alert_saving_error: "Errore salvataggio",
             saving_success: "Salvato!"
-        },
-        en: {
-            title: "Stakeholder Profile",
-            subtitle_owner: "View and edit your profile",
-            subtitle_operator: "Team member profile view",
-            section_identity: "Identity",
-            lbl_full_name: "Full Name",
-            lbl_email: "Email",
-            lbl_phone: "Phone",
-            lbl_role: "Role",
-            section_professional: "Professional Background",
-            lbl_experience: "Years of Experience",
-            lbl_education: "Education",
-            section_behavioral: "Behavioral Profile",
-            lbl_expertise: "Expertise Areas",
-            lbl_communication: "Communication Style",
-            lbl_notes: "Notes",
-            section_softskills: "Soft Skills",
-            no_softskills: "No assessment available",
-            btn_assess_skills: "Assess Soft Skills",
-            section_commercial: "Commercial Profile",
-            lbl_tags: "Tags",
-            lbl_customer_since: "Customer Since",
-            access_denied: "Access Denied: Missing parameters.",
-            alert_loading_error: "Error loading profile.",
-            alert_saving_error: "Error saving.",
-            saving_progress: "Saving...",
-            saving_success: "Saved!"
-        },
-        fr: {
-            title: "Profil Stakeholder",
-            subtitle_owner: "Voir et modifier votre profil",
-            subtitle_operator: "Vue du profil du membre",
-            section_identity: "Identité",
-            lbl_full_name: "Nom Complet",
-            lbl_email: "Email",
-            lbl_phone: "Téléphone",
-            lbl_role: "Rôle",
-            section_professional: "Parcours Professionnel",
-            lbl_experience: "Années d'Expérience",
-            lbl_education: "Formation",
-            section_behavioral: "Profil Comportemental",
-            lbl_expertise: "Domaines d'Expertise",
-            lbl_communication: "Style de Communication",
-            lbl_notes: "Notes",
-            section_softskills: "Compétences Douces",
-            no_softskills: "Aucune évaluation disponible",
-            btn_assess_skills: "Évaluer Compétences",
-            section_commercial: "Profil Commercial",
-            lbl_tags: "Tags",
-            lbl_customer_since: "Client Depuis",
-            access_denied: "Accès Refusé : Paramètres manquants.",
-            alert_loading_error: "Erreur de chargement.",
-            alert_saving_error: "Erreur d'enregistrement.",
-            saving_progress: "Enregistrement...",
-            saving_success: "Enregistré !"
-        },
-        de: {
-            title: "Stakeholder-Profil",
-            subtitle_owner: "Profil anzeigen und bearbeiten",
-            subtitle_operator: "Mitgliederprofil-Ansicht",
-            section_identity: "Identität",
-            lbl_full_name: "Vollständiger Name",
-            lbl_email: "Email",
-            lbl_phone: "Telefon",
-            lbl_role: "Rolle",
-            section_professional: "Beruflicher Hintergrund",
-            lbl_experience: "Berufserfahrung",
-            lbl_education: "Ausbildung",
-            section_behavioral: "Verhaltensprofil",
-            lbl_expertise: "Fachgebiete",
-            lbl_communication: "Kommunikationsstil",
-            lbl_notes: "Notizen",
-            section_softskills: "Soft Skills",
-            no_softskills: "Keine Bewertung verfügbar",
-            btn_assess_skills: "Soft Skills Bewerten",
-            section_commercial: "Handelsprofil",
-            lbl_tags: "Tags",
-            lbl_customer_since: "Kunde Seit",
-            access_denied: "Zugriff Verweigert: Fehlende Parameter.",
-            alert_loading_error: "Ladefehler.",
-            alert_saving_error: "Speicherfehler.",
-            saving_progress: "Speichern...",
-            saving_success: "Gespeichert!"
-        },
-        es: {
-            title: "Perfil Stakeholder",
-            subtitle_owner: "Ver y editar tu perfil",
-            subtitle_operator: "Vista de perfil del miembro",
-            section_identity: "Identidad",
-            lbl_full_name: "Nombre Completo",
-            lbl_email: "Email",
-            lbl_phone: "Teléfono",
-            lbl_role: "Rol",
-            section_professional: "Experiencia Profesional",
-            lbl_experience: "Años de Experiencia",
-            lbl_education: "Educación",
-            section_behavioral: "Perfil Comportamental",
-            lbl_expertise: "Áreas de Experiencia",
-            lbl_communication: "Estilo de Comunicación",
-            lbl_notes: "Notas",
-            section_softskills: "Competencias Blandas",
-            no_softskills: "Sin evaluación disponible",
-            btn_assess_skills: "Evaluar Competencias",
-            section_commercial: "Perfil Comercial",
-            lbl_tags: "Etiquetas",
-            lbl_customer_since: "Cliente Desde",
-            access_denied: "Acceso Denegado: Parámetros faltantes.",
-            alert_loading_error: "Error al cargar.",
-            alert_saving_error: "Error al guardar.",
-            saving_progress: "Guardando...",
-            saving_success: "¡Guardado!"
-        },
-        pt: {
-            title: "Perfil Stakeholder",
-            subtitle_owner: "Ver e editar o seu perfil",
-            subtitle_operator: "Visualização de perfil do membro",
-            section_identity: "Identidade",
-            lbl_full_name: "Nome Completo",
-            lbl_email: "Email",
-            lbl_phone: "Telefone",
-            lbl_role: "Função",
-            section_professional: "Experiência Profissional",
-            lbl_experience: "Anos de Experiência",
-            lbl_education: "Educação",
-            section_behavioral: "Perfil Comportamental",
-            lbl_expertise: "Áreas de Especialização",
-            lbl_communication: "Estilo de Comunicação",
-            lbl_notes: "Notas",
-            section_softskills: "Competências Interpessoais",
-            no_softskills: "Sem avaliação disponível",
-            btn_assess_skills: "Avaliar Competências",
-            section_commercial: "Perfil Comercial",
-            lbl_tags: "Tags",
-            lbl_customer_since: "Cliente Desde",
-            access_denied: "Acesso Negado: Parâmetros em falta.",
-            alert_loading_error: "Erro ao carregar.",
-            alert_saving_error: "Erro ao guardar.",
-            saving_progress: "A guardar...",
-            saving_success: "Guardado!"
         }
     },
-
     init: function() {
-        let l = urlParams.get('lang') || urlParams.get('language') || tg.initDataUnsafe?.user?.language_code || 'it';
-        STATE.currentLang = this.dict[l.toLowerCase().slice(0, 2)] ? l.toLowerCase().slice(0, 2) : 'it';
-        if (!this.dict[STATE.currentLang]) STATE.currentLang = 'it';
+        STATE.currentLang = 'it';
         this.apply();
     },
-
     get: function(key) {
-        const d = this.dict[STATE.currentLang] || this.dict.it; 
-        return d[key] || key;
+        return this.dict.it[key] || key;
     },
-
     apply: function() {
         document.querySelectorAll('[data-i18n]').forEach(el => {
-            const key = el.getAttribute('data-i18n');
-            el.innerHTML = this.get(key);
+            el.innerHTML = this.get(el.getAttribute('data-i18n'));
         });
     }
 };
 
-
 // ==========================================
-// 3. API CALLS
+// 3. API
 // ==========================================
-
 const Api = {
     async getProfile() {
-        try {
-            const payload = {
-                action: 'get_single_operator',
-                vat_number: STATE.vatNumber,
-                access_token: STATE.accessToken,
-                owner_id: STATE.ownerId,
-                role: STATE.role
-            };
-            
-            if (STATE.role === 'operator' && STATE.operatorId) {
-                payload.operator_id = STATE.operatorId;
-            }
-
-            const response = await fetch(CONFIG.WEBHOOK_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            });
-
-            if (!response.ok) throw new Error(`HTTP ${response.status}`);
-            return await response.json();
-        } catch (e) {
-            console.error("API Error:", e);
-            tg.showAlert(I18n.get('alert_loading_error'));
-            throw e;
+        const payload = {
+            action: 'get_single_operator',
+            vat_number: STATE.vatNumber,
+            access_token: STATE.accessToken,
+            owner_id: STATE.ownerId,
+            role: STATE.role
+        };
+        if (STATE.role === 'operator' && STATE.operatorId) {
+            payload.operator_id = STATE.operatorId;
         }
-    },
-
-    async saveProfile(data) {
-        try {
-            const response = await fetch(CONFIG.WEBHOOK_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    action: 'save_operator_profile',
-                    vat_number: STATE.vatNumber,
-                    access_token: STATE.accessToken,
-                    owner_id: STATE.ownerId,
-                    profile_data: data
-                })
-            });
-
-            if (!response.ok) throw new Error(`HTTP ${response.status}`);
-            return await response.json();
-        } catch (e) {
-            console.error("Save Error:", e);
-            tg.showAlert(I18n.get('alert_saving_error'));
-            throw e;
-        }
+        const response = await fetch(CONFIG.WEBHOOK_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        return await response.json();
     }
 };
-
 
 // ==========================================
 // 4. UI RENDERER
 // ==========================================
-
 const UI = {
     renderProfile: () => {
         const data = STATE.profileData;
+        const identity = data.identity || {};
+        const prof = data.professional_info || {};
+        const behavioral = data.behavioral_profile || {};
+        const commercial = data.commercial_profile || {};
+        const social = data.social_profiles || {};
         
-        // Nome e contatti
+        // IDENTITY
         DOM.fullName.value = data.name || '';
+        DOM.stakeholderType.value = identity.stakeholder_type || 'N/A';
         DOM.email.value = data.email || '';
         DOM.phone.value = data.phone || '';
-        DOM.currentRole.value = data.role || '';
+        DOM.vatNumber.value = identity.fiscal_info?.vat_number || 'N/A';
 
-        // Professional Info
-        const prof = data.professional_info || {};
-        DOM.yearsExperience.value = prof.years_experience || '';
+        // PROFESSIONAL
+        DOM.currentRole.value = prof.role || 'N/A';
+        DOM.teamSize.value = prof.team_size || 'N/A';
+        DOM.yearsExperience.value = prof.years_experience || 'N/A';
         DOM.education.value = prof.certifications || '';
+        UI.renderTags(DOM.hardSkillsTags, prof.hard_skills || []);
+        DOM.specializationLevel.value = prof.specialization_level || 'N/A';
+        DOM.clientWorkflow.value = prof.client_workflow || 'N/A';
+        UI.renderTags(DOM.digitalToolsTags, prof.digital_tools || []);
+        UI.renderTags(DOM.challengesTags, prof.current_challenges || []);
+        DOM.mainGoal.value = prof.main_goal || 'N/A';
 
-        // Behavioral Profile
-        const behavioral = data.behavioral_profile || {};
+        // BEHAVIORAL
         UI.renderTags(DOM.expertiseTags, prof.expertise_areas || []);
-        DOM.communicationStyle.value = behavioral.communication_style || '';
-        DOM.notes.value = '';
+        DOM.communicationStyle.value = behavioral.communication_style || 'N/A';
+        DOM.currentStance.value = behavioral.current_stance?.stance_id || 'UNKNOWN';
+        UI.renderReputation(behavioral.public_reputation || {});
+        DOM.notes.value = behavioral.notes || '';
 
-        // 🔥 SOFT SKILLS - CORREGGE PATH: legge da soft_skills_assessment
+        // SOFT SKILLS
         const softSkillsAssessment = data.soft_skills_assessment || {};
         const modulesCompleted = softSkillsAssessment.modules_completed || [];
-        
-        // Conta moduli con evaluation (non solo module name)
         const validModules = modulesCompleted.filter(m => m.evaluation);
 
         if (validModules.length > 0) {
@@ -357,25 +208,17 @@ const UI = {
             DOM.softskillsData.classList.add('hidden');
         }
 
-        // Commercial
-        const metadata = data.metadata || {};
-        UI.renderTags(DOM.commercialTags, [metadata.stakeholder_type] || []);
-        if (metadata.last_updated) {
-            DOM.customerSince.value = new Date(metadata.last_updated).toLocaleDateString();
+        // COMMERCIAL
+        UI.renderTags(DOM.commercialTags, commercial.tags || []);
+        if (commercial.customer_since) {
+            DOM.customerSince.value = new Date(commercial.customer_since).toLocaleDateString('it-IT');
         }
+        DOM.lifetimeValue.value = `€ ${commercial.lifetime_value || 0}`;
+
+        // SOCIAL
+        UI.renderSocialLinks(social);
 
         DOM.pageSubtitle.innerText = STATE.isOwner ? I18n.get('subtitle_owner') : I18n.get('subtitle_operator');
-
-        // Enable/Disable editing for Owner
-        if (STATE.isOwner) {
-            DOM.fullName.removeAttribute('readonly');
-            DOM.email.removeAttribute('readonly');
-            DOM.phone.removeAttribute('readonly');
-            DOM.education.removeAttribute('readonly');
-            DOM.communicationStyle.removeAttribute('readonly');
-            DOM.notes.removeAttribute('readonly');
-            DOM.btnSave.classList.remove('hidden');
-        }
     },
 
     renderTags: (container, tags) => {
@@ -390,6 +233,50 @@ const UI = {
             span.innerText = tag;
             container.appendChild(span);
         });
+    },
+
+    renderReputation: (reputation) => {
+        const sentiment = reputation.sentiment || 'neutral';
+        const trustScore = reputation.trust_score || 0;
+        const mentions = reputation.media_mentions_count || 0;
+        
+        DOM.reputationContainer.innerHTML = `
+            <div style="margin-bottom: 8px;">
+                <strong>Sentiment:</strong> <span style="color: ${sentiment === 'positive' ? '#4cd964' : sentiment === 'negative' ? '#ff3b30' : '#999'};">${sentiment}</span>
+            </div>
+            <div style="margin-bottom: 8px;">
+                <strong>Trust Score:</strong> ${trustScore}/100
+            </div>
+            <div>
+                <strong>Media Mentions:</strong> ${mentions}
+            </div>
+        `;
+    },
+
+    renderSocialLinks: (social) => {
+        DOM.socialLinks.innerHTML = '';
+        const platforms = [
+            { key: 'website', icon: 'fa-globe', label: 'Website' },
+            { key: 'linkedin', icon: 'fa-linkedin', label: 'LinkedIn' },
+            { key: 'facebook', icon: 'fa-facebook', label: 'Facebook' },
+            { key: 'twitter', icon: 'fa-twitter', label: 'Twitter' },
+            { key: 'instagram', icon: 'fa-instagram', label: 'Instagram' }
+        ];
+        
+        platforms.forEach(platform => {
+            if (social[platform.key]) {
+                const link = document.createElement('a');
+                link.href = social[platform.key];
+                link.target = '_blank';
+                link.style.cssText = 'display: flex; align-items: center; gap: 10px; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 8px; text-decoration: none; color: var(--text-main);';
+                link.innerHTML = `<i class="fab ${platform.icon}" style="font-size: 20px;"></i> <span>${platform.label}</span>`;
+                DOM.socialLinks.appendChild(link);
+            }
+        });
+        
+        if (DOM.socialLinks.children.length === 0) {
+            DOM.socialLinks.innerHTML = '<span class="text-muted">Nessun profilo social configurato</span>';
+        }
     },
 
     renderSoftSkills: (validModules, completedCount) => {
@@ -446,19 +333,12 @@ const UI = {
         });
 
         DOM.softskillsData.innerHTML = html;
-    },
-
-    toggleDirty: () => {
-        const currentStr = JSON.stringify(STATE.profileData);
-        STATE.hasChanges = (currentStr !== STATE.initialString);
     }
 };
 
-
 // ==========================================
-// 5. CORE APPLICATION LOGIC
+// 5. APP LOGIC
 // ==========================================
-
 const App = {
     init: async () => {
         if (!STATE.vatNumber || !STATE.accessToken || !STATE.role) {
@@ -471,48 +351,33 @@ const App = {
 
         try {
             const response = await Api.getProfile();
-            
             if (response.success && response.data) {
                 STATE.profileData = response.data;
             } else {
-                throw new Error('Invalid API response structure');
+                throw new Error('Invalid response');
             }
             
-            STATE.initialString = JSON.stringify(STATE.profileData);
-
             UI.renderProfile();
-
             DOM.loader.classList.add('hidden');
             DOM.app.classList.remove('hidden');
         } catch (e) {
-            console.error("Initialization Error:", e);
+            console.error("Error:", e);
+            tg.showAlert(I18n.get('alert_loading_error'));
         }
 
         App.attachEvents();
     },
 
     attachEvents: () => {
-        // Toggle card accordion
         DOM.app.addEventListener('click', (e) => {
             if (e.target.closest('.card-header')) {
                 e.target.closest('.card-header').parentElement.classList.toggle('open');
             }
         });
 
-        // Input changes (solo owner)
-        if (STATE.isOwner) {
-            [DOM.fullName, DOM.email, DOM.phone, DOM.education, DOM.communicationStyle, DOM.notes].forEach(el => {
-                el.addEventListener('input', () => {
-                    App.updateProfileData();
-                    UI.toggleDirty();
-                });
-            });
-        }
-
-        // Bottone Assess Soft Skills
         DOM.btnAssessSoftskills.addEventListener('click', () => {
             if (!STATE.isOwner) {
-                tg.showAlert('Solo l\'owner può valutare le proprie soft skills');
+                tg.showAlert('Solo l\'owner può valutare le soft skills');
                 return;
             }
             const params = new URLSearchParams();
@@ -523,10 +388,6 @@ const App = {
             window.location.href = `${CONFIG.SOFTSKILL_PATH}?${params.toString()}`;
         });
 
-        // Bottone Salva
-        DOM.btnSave.addEventListener('click', App.save);
-
-        // Bottone Back
         DOM.btnBack.addEventListener('click', () => {
             const params = new URLSearchParams();
             if (STATE.vatNumber) params.set('vat', STATE.vatNumber);
@@ -535,42 +396,7 @@ const App = {
             if (STATE.companyName) params.set('ragione_sociale', STATE.companyName);
             window.location.href = `team.html?${params.toString()}`;
         });
-    },
-
-    updateProfileData: () => {
-        STATE.profileData.name = DOM.fullName.value;
-        STATE.profileData.email = DOM.email.value;
-        STATE.profileData.phone = DOM.phone.value;
-        
-        if (!STATE.profileData.professional_info) STATE.profileData.professional_info = {};
-        STATE.profileData.professional_info.certifications = DOM.education.value;
-        
-        if (!STATE.profileData.behavioral_profile) STATE.profileData.behavioral_profile = {};
-        STATE.profileData.behavioral_profile.communication_style = DOM.communicationStyle.value;
-    },
-
-    save: async () => {
-        const originalIcon = DOM.btnSave.innerHTML;
-        DOM.btnSave.innerHTML = `<i class="fas fa-spinner fa-spin"></i>`;
-        DOM.btnSave.disabled = true;
-
-        try {
-            const res = await Api.saveProfile(STATE.profileData);
-            
-            if (res && res.success) {
-                STATE.initialString = JSON.stringify(STATE.profileData);
-                STATE.hasChanges = false;
-                tg.HapticFeedback.notificationOccurred('success');
-                tg.showAlert(I18n.get('saving_success'));
-            }
-        } catch (e) {
-            console.error("Save Error:", e);
-        } finally {
-            DOM.btnSave.innerHTML = originalIcon;
-            DOM.btnSave.disabled = false;
-        }
     }
 };
 
-// AVVIA APPLICAZIONE
 document.addEventListener('DOMContentLoaded', App.init);
