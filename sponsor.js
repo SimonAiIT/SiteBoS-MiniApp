@@ -1,6 +1,6 @@
 /**
- * SPONSOR MANAGER (v5.3 - CREDIT BUNDLES WITH ANIMATED GIFs)
- * Bundle crediti con GIF animate reali + IVA inclusa
+ * SPONSOR MANAGER (v5.4 - CLEAN DESIGN)
+ * Bundle crediti con GIF animate - senza freccia decorativa
  */
 
 const SPONSORS = [
@@ -192,7 +192,7 @@ class SponsorEngine {
         const taxLabel = this.getTaxLabel();
         
         if (type === 'loader') {
-            // BANNER GRANDE (Dashboard)
+            // BANNER GRANDE (Dashboard) - SENZA FRECCIA
             return `
             <div class="recharge-banner fade-in" style="border-color:${sponsor.color};">
                 
@@ -210,9 +210,6 @@ class SponsorEngine {
                             ⚡ ${sponsor.badge}
                         </div>
                         <div style="font-size:12px; opacity:0.9; line-height:1.3; color: #fff; font-weight: 500;">${sponsor.text}</div>
-                    </div>
-                    <div style="margin-left: auto; padding-left: 10px;">
-                        <i class="fas fa-arrow-right" style="color:${sponsor.color}; font-size:20px;"></i>
                     </div>
                 </div>
             </div>`;
