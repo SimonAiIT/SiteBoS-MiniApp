@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
         body {
-            padding-bottom: 100px; /* 🔥 Spazio per FAB */
+            padding-bottom: 100px;
         }
 
         .dashboard-container {
@@ -75,10 +75,6 @@
             background: linear-gradient(135deg, rgba(76, 217, 100, 0.05), transparent);
         }
 
-        .module-card.locked {
-            opacity: 0.9;
-        }
-
         .module-header {
             display: flex;
             justify-content: space-between;
@@ -118,46 +114,101 @@
             line-height: 1.4;
         }
 
-        .results-preview {
-            background: rgba(0, 0, 0, 0.2);
-            border-radius: 8px;
+        /* 🔥 NUOVA SEZIONE EVALUATION */
+        .evaluation-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin: 20px 0;
+        }
+
+        .score-card {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
             padding: 16px;
-            margin: 16px 0;
+            text-align: center;
         }
 
-        .results-preview h4 {
-            font-size: 14px;
-            margin-bottom: 12px;
+        .score-card.positive {
+            border: 2px solid #4cd964;
+        }
+
+        .score-card.negative {
+            border: 2px solid #ff3b30;
+        }
+
+        .score-value {
+            font-size: 36px;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .score-card.positive .score-value {
+            color: #4cd964;
+        }
+
+        .score-card.negative .score-value {
+            color: #ff3b30;
+        }
+
+        .score-label {
+            font-size: 12px;
             color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
         }
 
-        .skill-bar-item {
-            margin-bottom: 12px;
-        }
-
-        .skill-bar-item:last-child {
-            margin-bottom: 0;
-        }
-
-        .skill-bar-label {
-            display: flex;
-            justify-content: space-between;
+        .score-caption {
             font-size: 13px;
-            margin-bottom: 4px;
+            line-height: 1.4;
+            color: var(--text-main);
+            margin-top: 8px;
         }
 
-        .skill-bar-bg {
-            background: rgba(255, 255, 255, 0.1);
-            height: 8px;
-            border-radius: 4px;
-            overflow: hidden;
+        .evaluation-details {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            padding: 16px;
+            margin-top: 16px;
         }
 
-        .skill-bar-fill {
-            background: linear-gradient(90deg, #5b6fed, #4cd964);
-            height: 100%;
-            border-radius: 4px;
-            transition: width 0.5s ease;
+        .evaluation-details h4 {
+            font-size: 14px;
+            color: var(--primary);
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .evaluation-details p {
+            font-size: 13px;
+            line-height: 1.6;
+            color: var(--text-muted);
+            margin-bottom: 16px;
+        }
+
+        .evaluation-details ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .evaluation-details li {
+            font-size: 13px;
+            line-height: 1.6;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+            padding-left: 20px;
+            position: relative;
+        }
+
+        .evaluation-details li:before {
+            content: "•";
+            position: absolute;
+            left: 0;
+            color: var(--primary);
+            font-weight: bold;
         }
 
         .module-meta {
@@ -165,7 +216,7 @@
             gap: 20px;
             font-size: 12px;
             color: var(--text-muted);
-            margin-top: 12px;
+            margin-top: 16px;
         }
 
         .module-actions {
@@ -248,6 +299,10 @@
         }
 
         @media (max-width: 600px) {
+            .evaluation-grid {
+                grid-template-columns: 1fr;
+            }
+
             .dashboard-header h1 {
                 font-size: 24px;
             }
@@ -268,7 +323,6 @@
     </style>
 </head>
 <body>
-    <!-- Loading overlay -->
     <div class="loading-overlay" id="loadingOverlay">
         <div style="text-align: center;">
             <i class="fas fa-spinner fa-spin" style="font-size: 48px; color: var(--primary);"></i>
@@ -277,13 +331,11 @@
     </div>
 
     <div class="dashboard-container">
-        <!-- Header -->
         <div class="dashboard-header">
             <h1><i class="fas fa-brain"></i> Soft Skill Selector</h1>
             <p>Scopri il tuo profilo professionale completo</p>
         </div>
 
-        <!-- Progress Global -->
         <div class="progress-container">
             <div class="progress-bar-outer">
                 <div class="progress-bar-inner" id="globalProgress" style="width: 0%"></div>
@@ -291,12 +343,8 @@
             <p class="progress-text" id="progressText">0/4 Moduli Completati</p>
         </div>
 
-        <!-- Modules Container -->
-        <div id="modulesContainer">
-            <!-- Generato dinamicamente da JS -->
-        </div>
+        <div id="modulesContainer"></div>
 
-        <!-- Unlock Complete Profile -->
         <div class="module-card unlock-card locked" id="unlockCard">
             <div class="unlock-icon">🏆</div>
             <h2>Profilo Completo</h2>
@@ -310,7 +358,6 @@
         </div>
     </div>
 
-    <!-- 🆕 FAB CONTAINER -->
     <div class="fab-container">
         <button class="fab-btn fab-secondary" onclick="goBackToTeam()" title="Torna al Team Manager">
             <i class="fas fa-arrow-left"></i>
@@ -322,38 +369,29 @@
     <script>
         const webhook = new WebhookHandler();
         
-        // 🔥 FIX: Gestisce sia owner che user_id per preservare tutti i parametri
         function goBackToTeam() {
             const urlParams = new URLSearchParams(window.location.search);
             const params = new URLSearchParams();
             
-            // Passa VAT
             if (urlParams.get('vat')) params.set('vat', urlParams.get('vat'));
-            
-            // Passa TOKEN
             if (urlParams.get('token')) params.set('token', urlParams.get('token'));
             
-            // 🔥 CRITICO: user_id diventa owner per /team/team.html
             const ownerId = urlParams.get('user_id') || urlParams.get('owner');
             if (ownerId) params.set('owner', ownerId);
             
-            // Passa RAGIONE SOCIALE
             if (urlParams.get('ragione_sociale')) params.set('ragione_sociale', urlParams.get('ragione_sociale'));
             
             window.location.href = `../team/team.html?${params.toString()}`;
         }
         
-        // 🆕 CARICA DASHBOARD CON DATI DAL SERVER
         async function loadDashboard() {
             try {
-                // 🔥 CHIAMA WEBHOOK PER RECUPERARE DATI
                 const progressData = await webhook.getProgress();
                 const modulesData = progressData.modules_completed || webhook.loadModulesData();
                 
                 const container = document.getElementById('modulesContainer');
                 let completedCount = 0;
                 
-                // Render each module
                 Object.keys(MODULE_MAPPING).forEach(moduleId => {
                     const module = MODULE_MAPPING[moduleId];
                     const data = modulesData[moduleId];
@@ -365,18 +403,15 @@
                     container.appendChild(card);
                 });
                 
-                // Update global progress
                 const percentage = (completedCount / 4) * 100;
                 document.getElementById('globalProgress').style.width = `${percentage}%`;
                 document.getElementById('progressText').textContent = `${completedCount}/4 Moduli Completati`;
                 document.getElementById('unlockProgress').style.width = `${percentage}%`;
                 
-                // Check unlock
                 if (completedCount === 4) {
                     unlockCompleteProfile();
                 }
                 
-                // Nascondi loading
                 document.getElementById('loadingOverlay').classList.add('hidden');
                 
             } catch (error) {
@@ -390,8 +425,11 @@
             const card = document.createElement('div');
             card.className = `module-card ${isCompleted ? 'completed' : 'locked'}`;
             
-            if (isCompleted) {
-                // MODULO COMPLETATO - Mostra risultati
+            if (isCompleted && data.evaluation) {
+                // 🔥 MODULO COMPLETATO CON EVALUATION
+                const eval = data.evaluation;
+                const completionDate = new Date(data.completion_date).toLocaleDateString('it-IT');
+                
                 card.innerHTML = `
                     <div class="module-header">
                         <div class="module-title">
@@ -404,13 +442,36 @@
                     </div>
                     <p class="module-subtitle">${module.description}</p>
                     
-                    <div class="results-preview">
-                        <h4><i class="fas fa-chart-bar"></i> I Tuoi Punteggi:</h4>
-                        <div id="skills-${moduleId}"></div>
-                        <div class="module-meta">
-                            <span><i class="fas fa-calendar"></i> ${data.date}</span>
-                            <span><i class="fas fa-clock"></i> ${Math.floor(data.time / 60)} min</span>
+                    <!-- 🔥 EVALUATION SCORES -->
+                    <div class="evaluation-grid">
+                        <div class="score-card positive">
+                            <div class="score-label">Punteggio Positivo</div>
+                            <div class="score-value">${eval.PP}%</div>
+                            <div class="score-caption">${eval.CP}</div>
                         </div>
+                        <div class="score-card negative">
+                            <div class="score-label">Punteggio Negativo</div>
+                            <div class="score-value">${eval.PN}%</div>
+                            <div class="score-caption">${eval.CN}</div>
+                        </div>
+                    </div>
+                    
+                    <!-- 🔥 EVALUATION DETAILS -->
+                    <div class="evaluation-details">
+                        <h4><i class="fas fa-clock"></i> Valutazione Tempi</h4>
+                        <p>${eval.Valutazione_Tempi}</p>
+                        
+                        <h4><i class="fas fa-chart-line"></i> Analisi Strategica</h4>
+                        <p>${eval.Analisi_Strategica.substring(0, 200)}...</p>
+                        
+                        <h4><i class="fas fa-lightbulb"></i> Consigli Operativi</h4>
+                        <ul>
+                            ${eval.Consigli_Operativi.slice(0, 3).map(c => `<li>${c}</li>`).join('')}
+                        </ul>
+                    </div>
+                    
+                    <div class="module-meta">
+                        <span><i class="fas fa-calendar"></i> ${completionDate}</span>
                     </div>
                     
                     <div class="module-actions">
@@ -419,9 +480,6 @@
                         </button>
                     </div>
                 `;
-                
-                // Render skill bars dopo un momento (per animazione)
-                setTimeout(() => renderSkillBars(moduleId, data.results), 100);
                 
             } else {
                 // MODULO NON COMPLETATO
@@ -450,31 +508,6 @@
             return card;
         }
         
-        function renderSkillBars(moduleId, results) {
-            const container = document.getElementById(`skills-${moduleId}`);
-            if (!container || !results) return;
-            
-            const topSkills = Object.entries(results)
-                .sort((a, b) => b[1] - a[1])
-                .slice(0, 4); // Top 4 skills
-            
-            topSkills.forEach(([skill, score]) => {
-                const item = document.createElement('div');
-                item.className = 'skill-bar-item';
-                item.innerHTML = `
-                    <div class="skill-bar-label">
-                        <span>${skill}</span>
-                        <span>${score}%</span>
-                    </div>
-                    <div class="skill-bar-bg">
-                        <div class="skill-bar-fill" style="width: ${score}%"></div>
-                    </div>
-                `;
-                container.appendChild(item);
-            });
-        }
-        
-        // 🔧 FIX: Aggiunti TUTTI i parametri URL
         function startModule(moduleId) {
             const urlParams = new URLSearchParams(window.location.search);
             const params = new URLSearchParams();
@@ -495,7 +528,6 @@
             }
         }
         
-        // 🔧 FIX: Aggiunti TUTTI i parametri URL
         function unlockCompleteProfile() {
             const card = document.getElementById('unlockCard');
             const btn = document.getElementById('unlockBtn');
@@ -517,7 +549,6 @@
             };
         }
         
-        // Load dashboard on page load
         window.onload = loadDashboard;
     </script>
 </body>
