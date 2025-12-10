@@ -111,7 +111,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- 4. HELPER: Trova articolo pubblicato ---
     function findPublishedArticle(fragmentId) {
-        // ✅ FIX: Verifica che fragmentId non sia null/undefined
         if (!fragmentId || typeof fragmentId !== 'string') {
             console.warn('findPublishedArticle: Invalid fragmentId:', fragmentId);
             return null;
@@ -120,7 +119,6 @@ document.addEventListener('DOMContentLoaded', () => {
         let article = publishedArticles.find(art => art.articleId === fragmentId);
         if (article) return article;
         
-        // ✅ FIX: Ora possiamo fare split() in sicurezza
         const shortId = fragmentId.split('-').pop();
         article = publishedArticles.find(art => {
             if (!art.articleId || typeof art.articleId !== 'string') return false;
@@ -196,9 +194,36 @@ document.addEventListener('DOMContentLoaded', () => {
 
         blogList.innerHTML = categoriesHTML;
 
+        // ✨ FIX: Conta solo fragment REALI con contenuto, escludendo categorie vuote
+        const realFragmentsCount = countRealFragments();
         const publishedCount = publishedArticles.length;
-        const draftCount = allFragments.length - publishedCount;
-        updateStats(draftCount, publishedCount);
+        const draftCount = realFragmentsCount - publishedCount;
+        
+        console.log(`📊 Stats: Total real fragments: ${realFragmentsCount}, Published: ${publishedCount}, Drafts: ${draftCount}`);
+        
+        updateStats(Math.max(0, draftCount), publishedCount);
+    }
+
+    // ✨ NUOVA FUNZIONE: Conta solo fragment con contenuto reale
+    function countRealFragments() {
+        if (!catalogData || !catalogData.categories) {
+            return allFragments.length;
+        }
+        
+        let count = 0;
+        catalogData.categories.forEach(category => {
+            if (category.subcategories && Array.isArray(category.subcategories)) {
+                category.subcategories.forEach(subcat => {
+                    const hasFragment = allFragments.some(frag => {
+                        const fragId = frag.fragment_id || frag._id || '';
+                        return fragId.includes(subcat.callback_data);
+                    });
+                    if (hasFragment) count++;
+                });
+            }
+        });
+        
+        return count;
     }
 
     // --- 6. FALLBACK VIEW ---
@@ -223,7 +248,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const publishedCount = publishedArticles.length;
         const draftCount = allFragments.length - publishedCount;
-        updateStats(draftCount, publishedCount);
+        updateStats(Math.max(0, draftCount), publishedCount);
     }
 
     // --- 7. RENDER FRAGMENT CARD (COLLAPSED) ---
@@ -381,7 +406,6 @@ document.addEventListener('DOMContentLoaded', () => {
     window.handleSave = async function() {
         if (tg?.HapticFeedback) tg.HapticFeedback.impactOccurred('medium');
         
-        // Mostra icona loading
         const originalIcon = saveFab.innerHTML;
         saveFab.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
         saveFab.disabled = true;
@@ -408,11 +432,9 @@ document.addEventListener('DOMContentLoaded', () => {
             const result = await response.json();
             console.log('✅ Save result:', result);
             
-            // Reset stato
             hasChanges = false;
             saveFab.classList.add('hidden');
             
-            // Feedback positivo
             if (tg?.showPopup) {
                 tg.showPopup({ 
                     message: '✅ Salvataggio completato con successo!',
@@ -425,11 +447,9 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (error) {
             console.error('❌ Save error:', error);
             
-            // Ripristina icona
             saveFab.innerHTML = originalIcon;
             saveFab.disabled = false;
             
-            // Feedback negativo
             if (tg?.showPopup) {
                 tg.showPopup({ 
                     message: `❌ Errore durante il salvataggio: ${error.message}`,
