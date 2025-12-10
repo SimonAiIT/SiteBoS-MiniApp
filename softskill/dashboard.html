@@ -322,14 +322,22 @@
     <script>
         const webhook = new WebhookHandler();
         
-        // 🆕 Funzione per tornare al Team Manager
+        // 🔥 FIX: Gestisce sia owner che user_id per preservare tutti i parametri
         function goBackToTeam() {
             const urlParams = new URLSearchParams(window.location.search);
             const params = new URLSearchParams();
             
+            // Passa VAT
             if (urlParams.get('vat')) params.set('vat', urlParams.get('vat'));
+            
+            // Passa TOKEN
             if (urlParams.get('token')) params.set('token', urlParams.get('token'));
-            if (urlParams.get('owner')) params.set('owner', urlParams.get('owner'));
+            
+            // 🔥 CRITICO: user_id diventa owner per /team/team.html
+            const ownerId = urlParams.get('user_id') || urlParams.get('owner');
+            if (ownerId) params.set('owner', ownerId);
+            
+            // Passa RAGIONE SOCIALE
             if (urlParams.get('ragione_sociale')) params.set('ragione_sociale', urlParams.get('ragione_sociale'));
             
             window.location.href = `../team/team.html?${params.toString()}`;
