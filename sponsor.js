@@ -1,4 +1,4 @@
-terprice/**
+/**
  * SPONSOR MANAGER (v5.3 - CREDIT BUNDLES WITH ANIMATED GIFs)
  * Bundle crediti con GIF animate reali + IVA inclusa
  */
