@@ -388,13 +388,20 @@
     <script src="softskill.js"></script>
     
     <script>
-        // ✅ Funzione per tornare alla Dashboard (con conferma)
+        // 🔧 FIX CRITICO: Torna alla Dashboard con TUTTI i parametri
         function goBackToDashboard() {
             if (confirm('⚠️ Sei sicuro di voler uscire? Il progresso non salvato andrà perso.')) {
                 const urlParams = new URLSearchParams(window.location.search);
-                const vat = urlParams.get('vat') || 'TEST_VAT';
-                const userId = urlParams.get('user_id') || 'TEST_USER';
-                window.location.href = `dashboard.html?vat=${vat}&user_id=${userId}`;
+                const params = new URLSearchParams();
+                
+                // Passa TUTTI i parametri necessari
+                if (urlParams.get('vat')) params.set('vat', urlParams.get('vat'));
+                if (urlParams.get('user_id')) params.set('user_id', urlParams.get('user_id'));
+                if (urlParams.get('token')) params.set('token', urlParams.get('token'));  // ✅ FIX
+                if (urlParams.get('owner')) params.set('owner', urlParams.get('owner'));  // ✅ FIX
+                if (urlParams.get('ragione_sociale')) params.set('ragione_sociale', urlParams.get('ragione_sociale'));  // ✅ FIX
+                
+                window.location.href = `dashboard.html?${params.toString()}`;
             }
         }
     </script>
