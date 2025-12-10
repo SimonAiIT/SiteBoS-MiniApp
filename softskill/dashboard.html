@@ -474,11 +474,19 @@
             });
         }
         
+        // 🔧 FIX: Aggiunti TUTTI i parametri URL
         function startModule(moduleId) {
             const urlParams = new URLSearchParams(window.location.search);
-            const vat = urlParams.get('vat') || 'TEST_VAT';
-            const userId = urlParams.get('user_id') || 'TEST_USER';
-            window.location.href = `index.html?module=${moduleId}&vat=${vat}&user_id=${userId}`;
+            const params = new URLSearchParams();
+            
+            params.set('module', moduleId);
+            if (urlParams.get('vat')) params.set('vat', urlParams.get('vat'));
+            if (urlParams.get('user_id')) params.set('user_id', urlParams.get('user_id'));
+            if (urlParams.get('token')) params.set('token', urlParams.get('token'));
+            if (urlParams.get('owner')) params.set('owner', urlParams.get('owner'));
+            if (urlParams.get('ragione_sociale')) params.set('ragione_sociale', urlParams.get('ragione_sociale'));
+            
+            window.location.href = `index.html?${params.toString()}`;
         }
         
         function retakeModule(moduleId) {
@@ -487,6 +495,7 @@
             }
         }
         
+        // 🔧 FIX: Aggiunti TUTTI i parametri URL
         function unlockCompleteProfile() {
             const card = document.getElementById('unlockCard');
             const btn = document.getElementById('unlockBtn');
@@ -496,7 +505,15 @@
             btn.innerHTML = '<i class="fas fa-unlock"></i> VISUALIZZA PROFILO COMPLETO';
             btn.onclick = () => {
                 const urlParams = new URLSearchParams(window.location.search);
-                window.location.href = 'complete-profile.html?vat=' + urlParams.get('vat') + '&user_id=' + urlParams.get('user_id');
+                const params = new URLSearchParams();
+                
+                if (urlParams.get('vat')) params.set('vat', urlParams.get('vat'));
+                if (urlParams.get('user_id')) params.set('user_id', urlParams.get('user_id'));
+                if (urlParams.get('token')) params.set('token', urlParams.get('token'));
+                if (urlParams.get('owner')) params.set('owner', urlParams.get('owner'));
+                if (urlParams.get('ragione_sociale')) params.set('ragione_sociale', urlParams.get('ragione_sociale'));
+                
+                window.location.href = `complete-profile.html?${params.toString()}`;
             };
         }
         
