@@ -1,4 +1,4 @@
-/**
+terprice/**
  * SPONSOR MANAGER (v5.3 - CREDIT BUNDLES WITH ANIMATED GIFs)
  * Bundle crediti con GIF animate reali + IVA inclusa
  */
@@ -57,7 +57,7 @@ const SPONSORS = [
         name: "Enterprise",
         badge: "500.000 CREDITI",
         text: "Grande volume. 550€ (1.10€/1K)",
-        logo: "images/BusinessPack.gif",
+        logo: "images/Enterprice.gif",
         color: "#f59e0b",
         link: "#recharge",
         bg: "transparent",
