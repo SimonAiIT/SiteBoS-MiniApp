@@ -14,6 +14,7 @@
         .editor-wrapper {
             max-width: 1200px;
             margin: 0 auto;
+            padding: 15px;
             padding-bottom: 100px; /* Space for FABs */
         }
 
@@ -144,6 +145,34 @@
         .image-placeholder i {
             font-size: 48px;
             opacity: 0.3;
+        }
+
+        /* 📱 MOBILE BUTTONS FIX */
+        .btn-container {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .btn-container button {
+            width: 100%;
+            font-size: 13px;
+            padding: 10px 12px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* Riduce ulteriormente su schermi piccoli */
+        @media (max-width: 400px) {
+            .btn-container button {
+                font-size: 12px;
+                padding: 8px 10px;
+            }
+            
+            .btn-container button i {
+                font-size: 12px;
+            }
         }
 
         /* Content Section */
@@ -489,7 +518,7 @@
                     </div>
                 </div>
 
-                <div class="btn-container" style="flex-direction: column; gap: 8px;">
+                <div class="btn-container">
                     <button id="btnRegenerateImage" class="btn btn-sm btn-block">
                         <i class="fas fa-magic"></i> <span id="btnRegenerateText">Rigenera con AI</span>
                     </button>
