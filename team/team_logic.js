@@ -12,7 +12,7 @@
 // ==========================================
 const CONFIG = {
     WEBHOOK_URL: "https://trinai.api.workflow.dcmake.it/webhook/502d2019-b5ee-4c9b-a14d-8d6545fbb05e",
-    SOFTSKILL_PATH: "../softskill/index.html"
+    SOFTSKILL_DASHBOARD: "../softskill/dashboard.html" // ✨ CAMBIATO: ora punta alla dashboard
 };
 
 const urlParams = new URLSearchParams(window.location.search);
@@ -307,7 +307,7 @@ const App = {
             }
         });
 
-        // Bottone Owner Soft Skills
+        // Bottone Owner Soft Skills - ✨ ORA VA ALLA DASHBOARD
         DOM.btnOwnerSoftskill.addEventListener('click', () => {
             App.assessOwner();
         });
@@ -331,14 +331,18 @@ const App = {
         });
     },
 
+    // ✨ MODIFICATO: Ora reindirizza alla DASHBOARD delle soft skills
     assessOwner: () => {
         const params = new URLSearchParams();
         if (STATE.vatNumber) params.set('vat', STATE.vatNumber);
-        if (STATE.accessToken) params.set('token', STATE.accessToken);
         if (STATE.ownerId) params.set('user_id', STATE.ownerId);
-        params.set('role', 'owner');
         
-        window.location.href = `${CONFIG.SOFTSKILL_PATH}?${params.toString()}`;
+        // Parametri aggiuntivi per la dashboard
+        params.set('role', 'owner');
+        if (STATE.accessToken) params.set('token', STATE.accessToken);
+        if (STATE.companyName) params.set('ragione_sociale', STATE.companyName);
+        
+        window.location.href = `${CONFIG.SOFTSKILL_DASHBOARD}?${params.toString()}`;
     },
 
     viewProfile: (role, operatorId = null) => {
