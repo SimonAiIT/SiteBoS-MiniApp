@@ -111,11 +111,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- 4. HELPER: Trova articolo pubblicato ---
     function findPublishedArticle(fragmentId) {
+        // ✅ FIX: Verifica che fragmentId non sia null/undefined
+        if (!fragmentId || typeof fragmentId !== 'string') {
+            console.warn('findPublishedArticle: Invalid fragmentId:', fragmentId);
+            return null;
+        }
+        
         let article = publishedArticles.find(art => art.articleId === fragmentId);
         if (article) return article;
         
+        // ✅ FIX: Ora possiamo fare split() in sicurezza
         const shortId = fragmentId.split('-').pop();
         article = publishedArticles.find(art => {
+            if (!art.articleId || typeof art.articleId !== 'string') return false;
             const artShortId = art.articleId.split('-').pop();
             return artShortId === shortId;
         });
