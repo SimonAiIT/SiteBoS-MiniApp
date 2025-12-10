@@ -34,6 +34,10 @@
           <input type="text" id="full_name" readonly>
         </div>
         <div class="input-group">
+          <label data-i18n="lbl_stakeholder_type">Tipo Stakeholder</label>
+          <input type="text" id="stakeholder_type" readonly>
+        </div>
+        <div class="input-group">
           <label data-i18n="lbl_email">Email</label>
           <input type="email" id="email" readonly>
         </div>
@@ -42,8 +46,8 @@
           <input type="tel" id="phone" readonly>
         </div>
         <div class="input-group">
-          <label data-i18n="lbl_role">Ruolo</label>
-          <input type="text" id="current_role" readonly>
+          <label data-i18n="lbl_vat">Partita IVA</label>
+          <input type="text" id="vat_number" readonly>
         </div>
       </div>
     </div>
@@ -56,12 +60,44 @@
       </div>
       <div class="card-content">
         <div class="input-group">
+          <label data-i18n="lbl_role">Ruolo</label>
+          <input type="text" id="current_role" readonly>
+        </div>
+        <div class="input-group">
+          <label data-i18n="lbl_team_size">Team Size</label>
+          <input type="text" id="team_size" readonly>
+        </div>
+        <div class="input-group">
           <label data-i18n="lbl_experience">Anni di Esperienza</label>
           <input type="text" id="years_experience" readonly>
         </div>
         <div class="input-group">
-          <label data-i18n="lbl_education">Istruzione</label>
+          <label data-i18n="lbl_education">Certificazioni</label>
           <textarea id="education" rows="2" readonly></textarea>
+        </div>
+        <div class="input-group">
+          <label data-i18n="lbl_hard_skills">Hard Skills</label>
+          <div id="hard-skills-tags" class="tag-container"></div>
+        </div>
+        <div class="input-group">
+          <label data-i18n="lbl_specialization">Livello Specializzazione</label>
+          <input type="text" id="specialization_level" readonly>
+        </div>
+        <div class="input-group">
+          <label data-i18n="lbl_client_workflow">Workflow Cliente</label>
+          <input type="text" id="client_workflow" readonly>
+        </div>
+        <div class="input-group">
+          <label data-i18n="lbl_digital_tools">Strumenti Digitali</label>
+          <div id="digital-tools-tags" class="tag-container"></div>
+        </div>
+        <div class="input-group">
+          <label data-i18n="lbl_challenges">Sfide Attuali</label>
+          <div id="challenges-tags" class="tag-container"></div>
+        </div>
+        <div class="input-group">
+          <label data-i18n="lbl_main_goal">Obiettivo Principale</label>
+          <input type="text" id="main_goal" readonly>
         </div>
       </div>
     </div>
@@ -82,7 +118,15 @@
           <textarea id="communication_style" rows="3" readonly></textarea>
         </div>
         <div class="input-group">
-          <label data-i18n="lbl_notes">Note</label>
+          <label data-i18n="lbl_current_stance">Stance Attuale</label>
+          <input type="text" id="current_stance" readonly>
+        </div>
+        <div class="input-group">
+          <label data-i18n="lbl_public_reputation">Reputazione Pubblica</label>
+          <div id="reputation-container" style="font-size: 13px; color: var(--text-muted);"></div>
+        </div>
+        <div class="input-group">
+          <label data-i18n="lbl_notes">Note Intelligence</label>
           <textarea id="notes" rows="4" readonly></textarea>
         </div>
       </div>
@@ -121,6 +165,23 @@
         <div class="input-group">
           <label data-i18n="lbl_customer_since">Cliente Dal</label>
           <input type="text" id="customer_since" readonly>
+        </div>
+        <div class="input-group">
+          <label data-i18n="lbl_lifetime_value">Lifetime Value</label>
+          <input type="text" id="lifetime_value" readonly>
+        </div>
+      </div>
+    </div>
+
+    <!-- SOCIAL PROFILES -->
+    <div class="knowledge-card">
+      <div class="card-header">
+        <h3><i class="fas fa-globe"></i> <span data-i18n="section_social">Profili Social</span></h3>
+        <i class="fas fa-chevron-down chevron"></i>
+      </div>
+      <div class="card-content">
+        <div id="social-links" style="display: flex; flex-direction: column; gap: 10px;">
+          <!-- Social links renderizzati dinamicamente -->
         </div>
       </div>
     </div>
