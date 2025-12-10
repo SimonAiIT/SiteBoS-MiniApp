@@ -14,8 +14,8 @@ const ROUTES = {
     'honeypot': 'honeypot_editor.html',
     'catalog': 'catalog/catalog.html',
     'agenda': 'agenda/agenda.html',
-    'team': 'human_resources/team.html',
-    'marketing': 'knowledge_base/knowledge.html', // ✅ CAMBIATO DA 'knowledge'
+    'team': 'team/team.html', // ✅ AGGIORNATO
+    'marketing': 'knowledge_base/knowledge.html',
     'company': 'edit_owner.html', 
     'widget': 'SiteBos.html',
     'blog': 'blog/blog.html'
@@ -29,14 +29,14 @@ const i18n = {
         card_hp: "HoneyPot", sub_hp: "Gestisci Risposte", 
         card_catalog: "Catalogo", sub_catalog: "Prodotti & Servizi", 
         card_agenda: "Agenda", sub_agenda: "Appuntamenti", 
-        card_team: "Collaboratori", sub_team: "Team & Ruoli", 
+        card_team: "Team", sub_team: "Soft Skills & Ruoli", // ✅ AGGIORNATO
         card_company: "Dati Aziendali", sub_company: "Configurazione", 
-        card_marketing: "Marketing", sub_marketing: "Campagne & Asset", // ✅ NUOVO
+        card_marketing: "Marketing", sub_marketing: "Campagne & Asset",
         err_title: "⛔ Errore Parametri", err_msg: "Apri dal Bot Telegram.", 
         popup_site_title: "Site Builder", popup_site_msg: "Il modulo Sito Web Statico è in fase di sviluppo.",
         game_title: "🎮 GAME OVER!", game_msg: "Hai guadagnato {points} Crediti AI!",
         status_hp_lock: "⛔ DA CONFIGURARE", status_hp_ok: "✅ Attivo",
-        status_no_op: "Nessun Operatore", status_active: "Attivi", status_req: "⚠️ Richiesto"
+        status_no_op: "Owner", status_active: "Membri", status_req: "⚠️ Richiesto" // ✅ AGGIORNATO
     },
     en: { 
         btn_widget: "Widget", btn_site: "Site", 
@@ -44,14 +44,14 @@ const i18n = {
         card_hp: "HoneyPot", sub_hp: "Manage Responses", 
         card_catalog: "Catalog", sub_catalog: "Products & Services", 
         card_agenda: "Agenda", sub_agenda: "Appointments", 
-        card_team: "Team", sub_team: "Staff & Roles", 
+        card_team: "Team", sub_team: "Soft Skills & Roles", // ✅ AGGIORNATO
         card_company: "Company Data", sub_company: "Configuration", 
-        card_marketing: "Marketing", sub_marketing: "Campaigns & Assets", // ✅ NUOVO
+        card_marketing: "Marketing", sub_marketing: "Campaigns & Assets",
         err_title: "⛔ Param Error", err_msg: "Open from Telegram Bot.", 
         popup_site_title: "Site Builder", popup_site_msg: "Static Website module under development.",
         game_title: "🎮 GAME OVER!", game_msg: "You earned {points} AI Credits!",
         status_hp_lock: "⛔ SETUP REQUIRED", status_hp_ok: "✅ Active",
-        status_no_op: "No Operators", status_active: "Active", status_req: "⚠️ Required"
+        status_no_op: "Owner", status_active: "Members", status_req: "⚠️ Required"
     },
     fr: { 
         btn_widget: "Widget", btn_site: "Site", 
@@ -59,14 +59,14 @@ const i18n = {
         card_hp: "HoneyPot", sub_hp: "Gérer Réponses", 
         card_catalog: "Catalogue", sub_catalog: "Produits & Services", 
         card_agenda: "Agenda", sub_agenda: "Rendez-vous", 
-        card_team: "Équipe", sub_team: "Personnel & Rôles", 
+        card_team: "Équipe", sub_team: "Compétences & Rôles",
         card_company: "Données Entreprise", sub_company: "Configuration", 
         card_marketing: "Marketing", sub_marketing: "Campagnes & Actifs",
         err_title: "⛔ Erreur Param", err_msg: "Ouvrir via Bot Telegram.", 
         popup_site_title: "Site Builder", popup_site_msg: "Module Site Web en développement.",
         game_title: "🎮 GAME OVER !", game_msg: "Vous avez gagné {points} Crédits IA !",
         status_hp_lock: "⛔ À CONFIGURER", status_hp_ok: "✅ Actif",
-        status_no_op: "Aucun Opérateur", status_active: "Actifs", status_req: "⚠️ Requis"
+        status_no_op: "Propriétaire", status_active: "Membres", status_req: "⚠️ Requis"
     },
     de: { 
         btn_widget: "Widget", btn_site: "Webseite", 
@@ -74,14 +74,14 @@ const i18n = {
         card_hp: "HoneyPot", sub_hp: "Antworten verwalten", 
         card_catalog: "Katalog", sub_catalog: "Produkte & Dienste", 
         card_agenda: "Agenda", sub_agenda: "Termine", 
-        card_team: "Mitarbeiter", sub_team: "Team & Rollen", 
+        card_team: "Team", sub_team: "Soft Skills & Rollen",
         card_company: "Firmendaten", sub_company: "Konfiguration", 
         card_marketing: "Marketing", sub_marketing: "Kampagnen & Assets",
         err_title: "⛔ Parameterfehler", err_msg: "Über Telegram Bot öffnen.", 
         popup_site_title: "Site Builder", popup_site_msg: "Webseiten-Modul in Entwicklung.",
         game_title: "🎮 GAME OVER!", game_msg: "Du hast {points} KI-Credits verdient!",
         status_hp_lock: "⛔ SETUP NÖTIG", status_hp_ok: "✅ Aktiv",
-        status_no_op: "Keine Mitarbeiter", status_active: "Aktiv", status_req: "⚠️ Erforderlich"
+        status_no_op: "Besitzer", status_active: "Mitglieder", status_req: "⚠️ Erforderlich"
     },
     es: { 
         btn_widget: "Widget", btn_site: "Sitio", 
@@ -89,14 +89,14 @@ const i18n = {
         card_hp: "HoneyPot", sub_hp: "Gestionar Respuestas", 
         card_catalog: "Catálogo", sub_catalog: "Productos y Servicios", 
         card_agenda: "Agenda", sub_agenda: "Citas", 
-        card_team: "Colaboradores", sub_team: "Equipo y Roles", 
+        card_team: "Equipo", sub_team: "Competencias & Roles",
         card_company: "Datos Empresa", sub_company: "Configuración", 
         card_marketing: "Marketing", sub_marketing: "Campañas y Activos",
         err_title: "⛔ Error Param", err_msg: "Abrir desde Bot Telegram.", 
         popup_site_title: "Site Builder", popup_site_msg: "Módulo Sitio Web en desarrollo.",
         game_title: "🎮 ¡JUEGO TERMINADO!", game_msg: "¡Has ganado {points} Créditos IA!",
         status_hp_lock: "⛔ A CONFIGURAR", status_hp_ok: "✅ Activo",
-        status_no_op: "Sin Operadores", status_active: "Activos", status_req: "⚠️ Requerido"
+        status_no_op: "Propietario", status_active: "Miembros", status_req: "⚠️ Requerido"
     },
     pt: { 
         btn_widget: "Widget", btn_site: "Site", 
@@ -104,14 +104,14 @@ const i18n = {
         card_hp: "HoneyPot", sub_hp: "Gerir Respostas", 
         card_catalog: "Catálogo", sub_catalog: "Produtos e Serviços", 
         card_agenda: "Agenda", sub_agenda: "Compromissos", 
-        card_team: "Colaboradores", sub_team: "Equipa e Funções", 
+        card_team: "Equipe", sub_team: "Competências & Funções",
         card_company: "Dados da Empresa", sub_company: "Configuração", 
         card_marketing: "Marketing", sub_marketing: "Campanhas e Ativos",
         err_title: "⛔ Erro Param", err_msg: "Abrir via Bot Telegram.", 
         popup_site_title: "Site Builder", popup_site_msg: "Módulo Website em desenvolvimento.",
         game_title: "🎮 FIM DE JOGO!", game_msg: "Ganhou {points} Créditos de IA!",
         status_hp_lock: "⛔ CONFIGURAR", status_hp_ok: "✅ Ativo",
-        status_no_op: "Sem Operadores", status_active: "Ativos", status_req: "⚠️ Obrigatório"
+        status_no_op: "Proprietário", status_active: "Membros", status_req: "⚠️ Obrigatório"
     }
 };
 
@@ -264,8 +264,20 @@ function renderDashboard(data, vat) {
         // Marketing (Docs > 0)
         setLock('card-marketing', (status.knowledge_docs === 0), 'sub-marketing', t('status_req'), `${status.knowledge_docs} Docs`);
 
-        // Team (Operatori > 0)
-        setLock('card-team', (status.operators_count === 0), 'sub-team', t('status_no_op'), `${status.operators_count} ${t('status_active')}`);
+        // ✅ TEAM (Sempre sbloccato se HP è ok, mostra Owner o conteggio membri)
+        const teamCard = document.getElementById('card-team');
+        const teamSub = document.getElementById('sub-team');
+        teamCard.classList.remove('locked-item');
+        
+        if (status.operators_count === 0) {
+            teamSub.innerText = t('status_no_op'); // Mostra "Owner" quando non ci sono collaboratori
+            teamSub.classList.remove('text-warning');
+            teamSub.classList.add('text-muted');
+        } else {
+            teamSub.innerText = `${status.operators_count} ${t('status_active')}`;
+            teamSub.classList.remove('text-warning');
+            teamSub.classList.add('text-success');
+        }
     }
 
     // UI Pronta
