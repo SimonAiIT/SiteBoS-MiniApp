@@ -237,13 +237,18 @@ async function finishQuiz() {
         
         console.log('✅ Risposte inviate con successo! La valutazione verrà fatta dal backend.');
         
-        // Redirect alla dashboard per vedere i risultati calcolati dal backend
+        // 🔧 FIX: Redirect con TUTTI i parametri (vat, user_id, token, owner)
         const urlParams = new URLSearchParams(window.location.search);
-        const vat = urlParams.get('vat') || 'TEST_VAT';
-        const userId = urlParams.get('user_id') || 'TEST_USER';
+        const params = new URLSearchParams();
+        
+        if (urlParams.get('vat')) params.set('vat', urlParams.get('vat'));
+        if (urlParams.get('user_id')) params.set('user_id', urlParams.get('user_id'));
+        if (urlParams.get('token')) params.set('token', urlParams.get('token'));
+        if (urlParams.get('owner')) params.set('owner', urlParams.get('owner'));
+        if (urlParams.get('ragione_sociale')) params.set('ragione_sociale', urlParams.get('ragione_sociale'));
         
         alert('✅ Test completato! Verrai reindirizzato alla dashboard per vedere i risultati.');
-        window.location.href = `dashboard.html?vat=${vat}&user_id=${userId}`;
+        window.location.href = `dashboard.html?${params.toString()}`;
         
     } catch (error) {
         console.error('❌ Errore salvataggio webhook:', error);
@@ -253,11 +258,17 @@ async function finishQuiz() {
 
 // Ricomincia il quiz
 function restartQuiz() {
-    // Torna alla dashboard invece di riavviare
+    // 🔧 FIX: Torna alla dashboard con TUTTI i parametri
     const urlParams = new URLSearchParams(window.location.search);
-    const vat = urlParams.get('vat') || 'TEST_VAT';
-    const userId = urlParams.get('user_id') || 'TEST_USER';
-    window.location.href = `dashboard.html?vat=${vat}&user_id=${userId}`;
+    const params = new URLSearchParams();
+    
+    if (urlParams.get('vat')) params.set('vat', urlParams.get('vat'));
+    if (urlParams.get('user_id')) params.set('user_id', urlParams.get('user_id'));
+    if (urlParams.get('token')) params.set('token', urlParams.get('token'));
+    if (urlParams.get('owner')) params.set('owner', urlParams.get('owner'));
+    if (urlParams.get('ragione_sociale')) params.set('ragione_sociale', urlParams.get('ragione_sociale'));
+    
+    window.location.href = `dashboard.html?${params.toString()}`;
 }
 
 // Inizializza al caricamento della pagina
