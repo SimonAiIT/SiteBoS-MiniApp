@@ -341,16 +341,17 @@ const UI = {
         DOM.communicationStyle.value = behavioral.communication_style || '';
         DOM.notes.value = '';
 
-        // 🔥 SOFT SKILLS - NUOVA STRUTTURA CON MODULI
-        const softSkillsModules = data.professional_profile?.soft_skills_modules || {};
-        const completedModules = Object.keys(softSkillsModules).filter(
-            moduleId => softSkillsModules[moduleId]?.completed
-        );
+        // 🔥 SOFT SKILLS - CORREGGE PATH: legge da soft_skills_assessment
+        const softSkillsAssessment = data.soft_skills_assessment || {};
+        const modulesCompleted = softSkillsAssessment.modules_completed || [];
+        
+        // Conta moduli con evaluation (non solo module name)
+        const validModules = modulesCompleted.filter(m => m.evaluation);
 
-        if (completedModules.length > 0) {
+        if (validModules.length > 0) {
             DOM.noSoftskills.classList.add('hidden');
             DOM.softskillsData.classList.remove('hidden');
-            UI.renderSoftSkills(softSkillsModules, completedModules);
+            UI.renderSoftSkills(validModules, softSkillsAssessment.completed_count || 0);
         } else {
             DOM.noSoftskills.classList.remove('hidden');
             DOM.softskillsData.classList.add('hidden');
@@ -391,7 +392,7 @@ const UI = {
         });
     },
 
-    renderSoftSkills: (modulesData, completedModules) => {
+    renderSoftSkills: (validModules, completedCount) => {
         const moduleNames = {
             modulo1: '🧘 L\'Io Interiore',
             modulo2: '🤝 Sfera Interpersonale',
@@ -403,19 +404,19 @@ const UI = {
             <div style="margin-bottom: 15px;">
                 <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
                     <span style="font-size: 14px; color: var(--success); font-weight: 600;">
-                        ✅ ${completedModules.length}/4 Moduli Completati
+                        ✅ ${completedCount}/4 Moduli Completati
                     </span>
                 </div>
                 <div style="background: rgba(255,255,255,0.1); height: 8px; border-radius: 4px; overflow: hidden;">
-                    <div style="background: linear-gradient(90deg, #5b6fed, #4cd964); height: 100%; width: ${(completedModules.length / 4) * 100}%; transition: width 0.5s ease;"></div>
+                    <div style="background: linear-gradient(90deg, #5b6fed, #4cd964); height: 100%; width: ${(completedCount / 4) * 100}%; transition: width 0.5s ease;"></div>
                 </div>
             </div>
         `;
 
-        completedModules.forEach(moduleId => {
-            const module = modulesData[moduleId];
-            const evaluation = module.evaluation; // ✅ FIX: rinominato da 'eval' a 'evaluation'
-            const completionDate = new Date(module.completion_date).toLocaleDateString('it-IT');
+        validModules.forEach(item => {
+            const moduleId = item.module;
+            const evaluation = item.evaluation;
+            const completionDate = item.completion_date ? new Date(item.completion_date).toLocaleDateString('it-IT') : 'N/A';
 
             html += `
                 <div style="background: rgba(0,0,0,0.2); border-radius: 10px; padding: 16px; margin-bottom: 12px; border-left: 4px solid var(--success);">
