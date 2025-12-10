@@ -29,6 +29,18 @@ async function loadQuestions() {
         if (moduleId !== 'complete' && MODULE_MAPPING[moduleId]) {
             const moduleQuestionNums = MODULE_MAPPING[moduleId].questions;
             questions = allQuestions.filter(q => moduleQuestionNums.includes(q.num));
+            
+            // 🔥 RIMUOVI DUPLICATI (stesso num)
+            const seenNums = new Set();
+            questions = questions.filter(q => {
+                if (seenNums.has(q.num)) {
+                    console.warn(`⚠️ Domanda duplicata rimossa: Q${q.num}`);
+                    return false;
+                }
+                seenNums.add(q.num);
+                return true;
+            });
+            
             console.log(`🎯 Caricato modulo: ${MODULE_MAPPING[moduleId].name}`);
         } else {
             questions = allQuestions;
@@ -199,11 +211,16 @@ async function finishQuiz() {
                 skillCounts[skill] = (skillCounts[skill] || 0) + 1;
             });
             
+            // 🔥 AGGIUNGI OPTION COMPLETO (value + text)
+            const optionObject = question.options[selectedOption];
+            
             // Prepara array risposte per webhook
             answersArray.push({
                 question_num: question.num,
                 scenario: question.scenario,
-                answer: question.options[selectedOption].value,
+                answer: optionObject.value,
+                answer_text: optionObject.text, // 🆕 AGGIUNTO
+                option: optionObject, // 🆕 OGGETTO COMPLETO
                 soft_skills: skills
             });
         }
