@@ -268,6 +268,37 @@
             transition: width 0.5s ease;
         }
 
+        /* 🆕 FAB Indietro (stile iOS back button) */
+        .quiz-back-btn {
+            position: fixed;
+            top: 16px;
+            left: 16px;
+            z-index: 999;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            padding: 8px 16px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #fff;
+            font-size: 14px;
+            font-weight: 500;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .quiz-back-btn:hover {
+            background: rgba(0, 0, 0, 0.7);
+            transform: translateX(-2px);
+        }
+
+        .quiz-back-btn:active {
+            transform: scale(0.95);
+        }
+
         @media (min-width: 600px) {
             .quiz-container {
                 padding: 20px;
@@ -294,6 +325,11 @@
             .nav-btn {
                 flex: none;
                 min-width: 140px;
+            }
+            
+            .quiz-back-btn {
+                top: 20px;
+                left: 20px;
             }
         }
 
@@ -330,6 +366,12 @@
     </style>
 </head>
 <body>
+    <!-- 🆕 FAB Indietro -->
+    <button class="quiz-back-btn" onclick="goBackToDashboard()" title="Torna alla Dashboard">
+        <i class="fas fa-arrow-left"></i>
+        <span>Dashboard</span>
+    </button>
+
     <div class="quiz-container">
         <div class="quiz-header">
             <h1><i class="fas fa-brain"></i> Soft Skill Selector</h1>
@@ -379,5 +421,17 @@
     <script src="webhook-handler.js"></script>
     <script src="questions-loader.js"></script>
     <script src="softskill.js"></script>
+    
+    <script>
+        // 🆕 Funzione per tornare alla Dashboard
+        function goBackToDashboard() {
+            if (confirm('⚠️ Sei sicuro di voler uscire? Il progresso non salvato andrà perso.')) {
+                const urlParams = new URLSearchParams(window.location.search);
+                const vat = urlParams.get('vat') || 'TEST_VAT';
+                const userId = urlParams.get('user_id') || 'TEST_USER';
+                window.location.href = `dashboard.html?vat=${vat}&user_id=${userId}`;
+            }
+        }
+    </script>
 </body>
 </html>
