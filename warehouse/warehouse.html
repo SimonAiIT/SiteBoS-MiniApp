@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Analisi Magazzino</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+
+  <div class="container">
+    
+    <!-- HEADER -->
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 30px; padding-bottom: 15px; border-bottom: 1px solid var(--glass-border);">
+        <div>
+            <h1 style="font-size: 22px; margin: 0;">
+                <i class="fas fa-warehouse" style="color: var(--warning);"></i>
+                Analisi Magazzino
+            </h1>
+            <p class="subtitle">Insights AI per ottimizzare lo stock</p>
+        </div>
+        <button class="btn-icon" onclick="goBack()" title="Indietro">
+            <i class="fas fa-arrow-left"></i>
+        </button>
+    </div>
+
+    <!-- PLACEHOLDER CONTENT -->
+    <div class="card" style="text-align: center; padding: 60px 20px;">
+        <div style="font-size: 64px; color: var(--warning); margin-bottom: 20px;">
+            <i class="fas fa-warehouse"></i>
+        </div>
+        <h2 style="margin-bottom: 15px; color: var(--warning);">Modulo in Sviluppo</h2>
+        <p style="color: var(--text-muted); line-height: 1.6; max-width: 500px; margin: 0 auto;">
+            Il sistema di <strong>Analisi Magazzino</strong> è attualmente in fase di sviluppo. 
+            A breve potrai:
+        </p>
+        
+        <div style="margin-top: 30px; text-align: left; max-width: 500px; margin-left: auto; margin-right: auto;">
+            <div style="padding: 15px; background: rgba(0,0,0,0.2); border-radius: 12px; margin-bottom: 10px;">
+                <i class="fas fa-chart-line" style="color: var(--primary); margin-right: 10px;"></i>
+                <strong>Analizzare trend di vendita</strong> per prodotto
+            </div>
+            <div style="padding: 15px; background: rgba(0,0,0,0.2); border-radius: 12px; margin-bottom: 10px;">
+                <i class="fas fa-box" style="color: var(--success); margin-right: 10px;"></i>
+                <strong>Identificare prodotti lenti</strong> e best-seller
+            </div>
+            <div style="padding: 15px; background: rgba(0,0,0,0.2); border-radius: 12px; margin-bottom: 10px;">
+                <i class="fas fa-bell" style="color: var(--warning); margin-right: 10px;"></i>
+                <strong>Ricevere alert automatici</strong> per riordini
+            </div>
+            <div style="padding: 15px; background: rgba(0,0,0,0.2); border-radius: 12px;">
+                <i class="fas fa-brain" style="color: var(--info); margin-right: 10px;"></i>
+                <strong>Ottenere suggerimenti AI</strong> per l'ottimizzazione
+            </div>
+        </div>
+
+        <div style="margin-top: 40px;">
+            <button class="btn" onclick="goBack()">
+                <i class="fas fa-arrow-left"></i> Torna alla Dashboard
+            </button>
+        </div>
+    </div>
+
+    <div style="text-align:center; margin-top:40px; opacity:0.3; font-size:10px;">
+        <p>TrinAi Warehouse Analysis Module v0.1</p>
+    </div>
+
+  </div>
+
+  <script>
+    const tg = window.Telegram.WebApp;
+    tg.ready();
+    tg.expand();
+
+    function goBack() {
+        if (tg?.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
+        const params = new URLSearchParams(window.location.search);
+        window.location.href = `../dashboard.html?${params.toString()}`;
+    }
+  </script>
+
+</body>
+</html>
