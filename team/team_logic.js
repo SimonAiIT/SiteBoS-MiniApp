@@ -12,7 +12,8 @@
 // ==========================================
 const CONFIG = {
     WEBHOOK_URL: "https://trinai.api.workflow.dcmake.it/webhook/502d2019-b5ee-4c9b-a14d-8d6545fbb05e",
-    SOFTSKILL_DASHBOARD: "../softskill/dashboard.html" // ✨ CAMBIATO: ora punta alla dashboard
+    SOFTSKILL_DASHBOARD: "../softskill/dashboard.html",
+    EDIT_OWNER_PATH: "../edit_owner.html" // ✅ Path per aggiunta collaboratore
 };
 
 const urlParams = new URLSearchParams(window.location.search);
@@ -63,8 +64,6 @@ const I18n = {
             btn_add_member: "Aggiungi Collaboratore",
             access_denied: "Accesso Negato: Token mancante.",
             alert_loading_error: "Errore caricamento dati.",
-            feature_coming_soon: "Funzionalità in arrivo",
-            feature_coming_msg: "L'aggiunta di collaboratori sarà disponibile a breve.",
             badge_assessed: "Valutato",
             badge_pending: "Da Valutare"
         },
@@ -80,8 +79,6 @@ const I18n = {
             btn_add_member: "Add Team Member",
             access_denied: "Access Denied: Missing Token.",
             alert_loading_error: "Error loading data.",
-            feature_coming_soon: "Coming Soon",
-            feature_coming_msg: "Adding team members will be available soon.",
             badge_assessed: "Assessed",
             badge_pending: "Pending"
         },
@@ -97,8 +94,6 @@ const I18n = {
             btn_add_member: "Ajouter un Membre",
             access_denied: "Accès Refusé : Jeton manquant.",
             alert_loading_error: "Erreur de chargement.",
-            feature_coming_soon: "Bientôt Disponible",
-            feature_coming_msg: "L'ajout de membres sera bientôt disponible.",
             badge_assessed: "Évalué",
             badge_pending: "En Attente"
         },
@@ -114,8 +109,6 @@ const I18n = {
             btn_add_member: "Mitglied Hinzufügen",
             access_denied: "Zugriff Verweigert: Token fehlt.",
             alert_loading_error: "Ladefehler.",
-            feature_coming_soon: "Bald Verfügbar",
-            feature_coming_msg: "Mitglieder hinzufügen wird bald verfügbar sein.",
             badge_assessed: "Bewertet",
             badge_pending: "Ausstehend"
         },
@@ -131,8 +124,6 @@ const I18n = {
             btn_add_member: "Añadir Miembro",
             access_denied: "Acceso Denegado: Token faltante.",
             alert_loading_error: "Error al cargar.",
-            feature_coming_soon: "Próximamente",
-            feature_coming_msg: "Añadir miembros estará disponible pronto.",
             badge_assessed: "Evaluado",
             badge_pending: "Pendiente"
         },
@@ -148,8 +139,6 @@ const I18n = {
             btn_add_member: "Adicionar Membro",
             access_denied: "Acesso Negado: Token em falta.",
             alert_loading_error: "Erro ao carregar.",
-            feature_coming_soon: "Em Breve",
-            feature_coming_msg: "Adicionar membros estará disponível em breve.",
             badge_assessed: "Avaliado",
             badge_pending: "Pendente"
         }
@@ -307,17 +296,14 @@ const App = {
             }
         });
 
-        // Bottone Owner Soft Skills - ✨ ORA VA ALLA DASHBOARD
+        // Bottone Owner Soft Skills
         DOM.btnOwnerSoftskill.addEventListener('click', () => {
             App.assessOwner();
         });
 
-        // Bottone Aggiungi Collaboratore
+        // ✅ BOTTONE AGGIUNGI COLLABORATORE - Redirect a edit_owner.html
         DOM.btnAddMember.addEventListener('click', () => {
-            tg.showPopup({
-                title: I18n.get('feature_coming_soon'),
-                message: I18n.get('feature_coming_msg')
-            });
+            App.addCollaborator();
         });
 
         // Bottone Back
@@ -331,18 +317,29 @@ const App = {
         });
     },
 
-    // ✨ MODIFICATO: Ora reindirizza alla DASHBOARD delle soft skills
     assessOwner: () => {
         const params = new URLSearchParams();
         if (STATE.vatNumber) params.set('vat', STATE.vatNumber);
         if (STATE.ownerId) params.set('user_id', STATE.ownerId);
-        
-        // Parametri aggiuntivi per la dashboard
         params.set('role', 'owner');
         if (STATE.accessToken) params.set('token', STATE.accessToken);
         if (STATE.companyName) params.set('ragione_sociale', STATE.companyName);
         
         window.location.href = `${CONFIG.SOFTSKILL_DASHBOARD}?${params.toString()}`;
+    },
+
+    // ✅ NUOVA FUNZIONE: Aggiungi Collaboratore
+    addCollaborator: () => {
+        const params = new URLSearchParams();
+        if (STATE.vatNumber) params.set('vat', STATE.vatNumber);
+        if (STATE.accessToken) params.set('token', STATE.accessToken);
+        if (STATE.ownerId) params.set('owner', STATE.ownerId);
+        if (STATE.companyName) params.set('ragione_sociale', STATE.companyName);
+        
+        // Parametro per indicare che stiamo aggiungendo un collaboratore
+        params.set('mode', 'add_operator');
+        
+        window.location.href = `${CONFIG.EDIT_OWNER_PATH}?${params.toString()}`;
     },
 
     viewProfile: (role, operatorId = null) => {
