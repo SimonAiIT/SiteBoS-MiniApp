@@ -1,5 +1,5 @@
 // dashboard_logic.js
-// Versione Definitiva - 6 Lingue, Routing Completo, Fix UI e Gatekeepers + Warehouse Overlay
+// Versione Definitiva - 6 Lingue, Routing Completo, Fix UI e Gatekeepers + Warehouse Overlay + Recharge with Sponsor
 
 // 0. INIT TELEGRAM
 const tg = window.Telegram.WebApp;
@@ -9,6 +9,8 @@ tg.expand();
 // CONFIGURAZIONE
 const DASHBOARD_API = "https://trinai.api.workflow.dcmake.it/webhook/ef4aece4-9ec0-4026-a7a7-328562bcbdf6"; 
 const WAREHOUSE_COST = 50000; // Costo in crediti per sbloccare analisi magazzino
+const RECHARGE_URL = "http://dashboard.trinai.it/ricarica"; // URL piattaforma ricarica
+const COUNTDOWN_SECONDS = 3; // Secondi prima del redirect
 
 // ROUTING (Mappa delle destinazioni)
 const ROUTES = {
@@ -20,8 +22,8 @@ const ROUTES = {
     'company': 'edit_owner.html', 
     'widget': 'SiteBos.html',
     'blog': 'blog/blog.html',
-    'warehouse': 'warehouse/warehouse.html', // ✨ NUOVO
-    'functions': 'functions/dashboard.html' // ✨ NUOVO
+    'warehouse': 'warehouse/warehouse.html',
+    'functions': 'functions/dashboard.html'
 };
 
 // STATE GLOBALE
@@ -29,6 +31,7 @@ let currentCredits = 0;
 let currentVat = null;
 let currentOwner = null;
 let currentToken = null;
+let countdownTimer = null;
 
 // 1. DIZIONARIO TRADUZIONI COMPLETO
 const i18n = {
@@ -177,6 +180,78 @@ window.navTo = function(routeKey) {
     p.delete('bonus_credits'); 
     const targetPath = ROUTES[routeKey] || routeKey;
     window.location.href = `${targetPath}?${p.toString()}`;
+}
+
+// ✨ RECHARGE WITH SPONSOR AD
+window.openRechargeWithAd = function() {
+    if (tg?.HapticFeedback) tg.HapticFeedback.impactOccurred('medium');
+    
+    const overlay = document.getElementById('sponsor-overlay');
+    overlay.classList.remove('hidden');
+    
+    // Inizializza sponsor rotating
+    if (window.SponsorManager) {
+        window.SponsorManager.inject('#sponsor-container', 'loader');
+    }
+    
+    // Avvia countdown automatico
+    startRechargeCountdown();
+}
+
+window.closeSponsorOverlay = function() {
+    if (tg?.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
+    
+    // Ferma countdown
+    if (countdownTimer) {
+        clearInterval(countdownTimer);
+        countdownTimer = null;
+    }
+    
+    // Ferma sponsor rotation
+    if (window.adIntervals) {
+        window.adIntervals.forEach(interval => clearInterval(interval));
+        window.adIntervals = [];
+    }
+    
+    document.getElementById('sponsor-overlay').classList.add('hidden');
+    
+    // Reset countdown display
+    document.getElementById('countdown').textContent = COUNTDOWN_SECONDS;
+}
+
+function startRechargeCountdown() {
+    let seconds = COUNTDOWN_SECONDS;
+    const countdownEl = document.getElementById('countdown');
+    
+    countdownEl.textContent = seconds;
+    
+    countdownTimer = setInterval(() => {
+        seconds--;
+        countdownEl.textContent = seconds;
+        
+        if (seconds <= 0) {
+            clearInterval(countdownTimer);
+            proceedToRecharge();
+        }
+    }, 1000);
+}
+
+window.proceedToRecharge = function() {
+    if (tg?.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
+    
+    // Costruisci URL con parametri utente
+    const params = new URLSearchParams();
+    if (currentVat) params.set('vat', currentVat);
+    if (currentOwner) params.set('owner', currentOwner);
+    if (currentToken) params.set('token', currentToken);
+    
+    const fullUrl = `${RECHARGE_URL}?${params.toString()}`;
+    
+    // Apri in nuova finestra
+    window.open(fullUrl, '_blank');
+    
+    // Chiudi overlay
+    closeSponsorOverlay();
 }
 
 // ✨ WAREHOUSE OVERLAY FUNCTIONS
