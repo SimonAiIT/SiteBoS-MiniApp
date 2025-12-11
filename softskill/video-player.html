@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <base href="../">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Player - Soft Skill Training</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        body {
+            padding: 0;
+            margin: 0;
+            background: #000;
+            overflow: hidden;
+        }
+
+        .video-container {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .video-header {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            background: linear-gradient(180deg, rgba(0,0,0,0.8) 0%, transparent 100%);
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .back-btn {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .back-btn:hover {
+            background: rgba(255,255,255,0.2);
+            transform: scale(1.05);
+        }
+
+        .video-info {
+            flex: 1;
+        }
+
+        .video-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: white;
+            margin: 0;
+        }
+
+        .video-meta {
+            font-size: 12px;
+            color: rgba(255,255,255,0.7);
+            margin-top: 4px;
+        }
+
+        .video-player {
+            flex: 1;
+            width: 100%;
+            background: #000;
+        }
+
+        .video-player iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        .learning-panel {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(0deg, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.8) 100%);
+            padding: 20px;
+            transform: translateY(100%);
+            transition: transform 0.3s ease;
+            max-height: 40vh;
+            overflow-y: auto;
+            z-index: 100;
+        }
+
+        .learning-panel.visible {
+            transform: translateY(0);
+        }
+
+        .panel-toggle {
+            position: absolute;
+            top: -50px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--primary);
+            color: white;
+            padding: 12px 25px;
+            border-radius: 25px 25px 0 0;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 -4px 15px rgba(91, 111, 237, 0.4);
+            transition: all 0.2s;
+        }
+
+        .panel-toggle:hover {
+            transform: translateX(-50%) translateY(-3px);
+        }
+
+        .panel-toggle i {
+            transition: transform 0.3s;
+        }
+
+        .learning-panel.visible .panel-toggle i {
+            transform: rotate(180deg);
+        }
+
+        .learning-section {
+            margin-bottom: 25px;
+        }
+
+        .section-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .takeaway-item {
+            background: rgba(91, 111, 237, 0.1);
+            border-left: 3px solid var(--primary);
+            padding: 12px 15px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            font-size: 14px;
+            line-height: 1.6;
+            color: var(--text-main);
+        }
+
+        .reflection-prompt {
+            background: rgba(245, 158, 11, 0.1);
+            border-left: 3px solid var(--warning);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        .prompt-question {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--warning);
+            margin-bottom: 10px;
+        }
+
+        .reflection-textarea {
+            width: 100%;
+            min-height: 80px;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid var(--glass-border);
+            border-radius: 8px;
+            padding: 12px;
+            color: white;
+            font-size: 14px;
+            resize: vertical;
+            font-family: inherit;
+        }
+
+        .reflection-textarea:focus {
+            outline: none;
+            border-color: var(--warning);
+            background: rgba(245, 158, 11, 0.1);
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .btn-complete {
+            flex: 1;
+            background: var(--success);
+            color: white;
+            padding: 15px;
+            border: none;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+
+        .btn-complete:hover {
+            background: #3fb755;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(76, 217, 100, 0.4);
+        }
+
+        .btn-complete:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .progress-info {
+            background: rgba(76, 217, 100, 0.1);
+            border: 1px solid var(--success);
+            padding: 12px 15px;
+            border-radius: 10px;
+            text-align: center;
+            margin-top: 15px;
+        }
+
+        .progress-text {
+            font-size: 13px;
+            color: var(--success);
+            font-weight: 600;
+        }
+
+        .completion-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.95);
+            z-index: 1000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .completion-overlay.active {
+            display: flex;
+        }
+
+        .completion-card {
+            background: var(--card-bg);
+            border: 2px solid var(--success);
+            border-radius: 20px;
+            padding: 40px 30px;
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+        }
+
+        .completion-icon {
+            font-size: 64px;
+            color: var(--success);
+            margin-bottom: 20px;
+            animation: celebrationPulse 0.6s ease-out;
+        }
+
+        @keyframes celebrationPulse {
+            0% { transform: scale(0); opacity: 0; }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .completion-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 15px;
+        }
+
+        .completion-message {
+            font-size: 15px;
+            color: var(--text-muted);
+            line-height: 1.6;
+            margin-bottom: 25px;
+        }
+
+        .next-video-btn {
+            background: var(--primary);
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            margin-right: 10px;
+            transition: all 0.2s;
+        }
+
+        .next-video-btn:hover {
+            background: var(--primary-hover);
+            transform: translateY(-2px);
+        }
+
+        .back-profile-btn {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid var(--glass-border);
+            color: white;
+            padding: 15px 30px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .back-profile-btn:hover {
+            background: rgba(255,255,255,0.15);
+        }
+    </style>
+</head>
+<body>
+    <div class="video-container">
+        <!-- HEADER -->
+        <div class="video-header">
+            <button class="back-btn" onclick="goBack()">
+                <i class="fas fa-arrow-left"></i>
+            </button>
+            <div class="video-info">
+                <h1 class="video-title" id="videoTitle">Caricamento...</h1>
+                <div class="video-meta" id="videoMeta"></div>
+            </div>
+        </div>
+
+        <!-- VIDEO PLAYER -->
+        <div class="video-player" id="videoPlayer">
+            <!-- YouTube iframe will be injected here -->
+        </div>
+
+        <!-- LEARNING PANEL -->
+        <div class="learning-panel" id="learningPanel">
+            <div class="panel-toggle" onclick="togglePanel()">
+                <i class="fas fa-chevron-up"></i>
+                <span>Approfondisci</span>
+            </div>
+
+            <div class="learning-section">
+                <div class="section-title">
+                    <i class="fas fa-lightbulb"></i>
+                    Key Takeaways
+                </div>
+                <div id="takeawaysList">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+
+            <div class="learning-section">
+                <div class="section-title">
+                    <i class="fas fa-brain"></i>
+                    Riflessione Personale
+                </div>
+                <div class="reflection-prompt">
+                    <div class="prompt-question" id="reflectionQuestion">Caricamento...</div>
+                    <textarea 
+                        class="reflection-textarea" 
+                        id="reflectionText" 
+                        placeholder="Scrivi qui la tua riflessione..."
+                    ></textarea>
+                </div>
+            </div>
+
+            <div class="action-buttons">
+                <button class="btn-complete" onclick="completeVideo()" id="completeBtn">
+                    <i class="fas fa-check-circle"></i>
+                    Ho Completato il Video
+                </button>
+            </div>
+
+            <div class="progress-info">
+                <div class="progress-text" id="progressText">Video 1 di 3 completato</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- COMPLETION OVERLAY -->
+    <div class="completion-overlay" id="completionOverlay">
+        <div class="completion-card">
+            <div class="completion-icon">
+                <i class="fas fa-trophy"></i>
+            </div>
+            <h2 class="completion-title">🎉 Ottimo Lavoro!</h2>
+            <p class="completion-message">
+                Hai completato questo video e riflettuto sul contenuto. 
+                Continua così per sbloccare tutto il tuo potenziale!
+            </p>
+            <button class="next-video-btn" onclick="loadNextVideo()">Prossimo Video</button>
+            <button class="back-profile-btn" onclick="backToProfile()">Torna al Profilo</button>
+        </div>
+    </div>
+
+    <!-- SCRIPTS -->
+    <script src="softskill/modules-mapping.js"></script>
+    <script src="softskill/webhook-handler.js"></script>
+    
+    <script>
+        const webhook = new WebhookHandler();
+        const urlParams = new URLSearchParams(window.location.search);
+        const videoUrl = urlParams.get('url');
+        const priority = urlParams.get('priority') || '1';
+        const title = urlParams.get('title') || 'Video di Formazione';
+        const duration = urlParams.get('duration') || '';
+        const improvement = urlParams.get('improvement') || '';
+
+        let videoData = null;
+        let allVideos = [];
+        let currentVideoIndex = 0;
+
+        // 🎬 INIZIALIZZA VIDEO PLAYER
+        function initPlayer() {
+            if (!videoUrl) {
+                alert('URL video mancante');
+                goBack();
+                return;
+            }
+
+            // Estrai YouTube video ID
+            const videoId = extractYouTubeID(videoUrl);
+            if (!videoId) {
+                alert('URL YouTube non valido');
+                goBack();
+                return;
+            }
+
+            // Header info
+            document.getElementById('videoTitle').textContent = decodeURIComponent(title);
+            document.getElementById('videoMeta').textContent = `${duration} • Priorità ${priority}`;
+
+            // Inject YouTube iframe
+            const iframe = `
+                <iframe 
+                    src="https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0" 
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                    allowfullscreen
+                ></iframe>
+            `;
+            document.getElementById('videoPlayer').innerHTML = iframe;
+
+            // Key takeaways placeholder
+            const takeaways = [
+                "Applica le strategie discusse nel video alla tua routine quotidiana",
+                "Identifica una situazione recente dove avresti potuto usare questa soft skill",
+                "Pratica costantemente per trasformare la conoscenza in competenza"
+            ];
+
+            document.getElementById('takeawaysList').innerHTML = takeaways.map(t => `
+                <div class="takeaway-item">${t}</div>
+            `).join('');
+
+            // Reflection question
+            document.getElementById('reflectionQuestion').textContent = 
+                `Come puoi applicare ciò che hai imparato per migliorare ${decodeURIComponent(improvement)}?`;
+
+            // Progress
+            document.getElementById('progressText').textContent = `Video ${priority} di 3 • Continua così!`;
+        }
+
+        function extractYouTubeID(url) {
+            const patterns = [
+                /(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\n?#]+)/,
+                /youtube\.com\/embed\/([^&\n?#]+)/
+            ];
+            
+            for (const pattern of patterns) {
+                const match = url.match(pattern);
+                if (match) return match[1];
+            }
+            return null;
+        }
+
+        function togglePanel() {
+            const panel = document.getElementById('learningPanel');
+            panel.classList.toggle('visible');
+        }
+
+        async function completeVideo() {
+            const reflection = document.getElementById('reflectionText').value.trim();
+            
+            if (!reflection) {
+                alert('✍️ Scrivi una breve riflessione prima di completare!');
+                return;
+            }
+
+            // Disable button
+            const btn = document.getElementById('completeBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Salvataggio...';
+
+            try {
+                // 📊 TRACK COMPLETION
+                const response = await fetch(webhook.webhookUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: "track_video_completion",
+                        vat: webhook.vat,
+                        user_id: webhook.userId,
+                        video_url: videoUrl,
+                        priority: priority,
+                        reflection: reflection,
+                        timestamp: new Date().toISOString()
+                    })
+                });
+
+                if (response.ok) {
+                    console.log('✅ Video completion tracked');
+                    showCompletionOverlay();
+                } else {
+                    throw new Error('Tracking failed');
+                }
+
+            } catch (error) {
+                console.error('❌ Errore tracking:', error);
+                alert('Errore nel salvare il progresso. Riprova.');
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-check-circle"></i> Ho Completato il Video';
+            }
+        }
+
+        function showCompletionOverlay() {
+            document.getElementById('completionOverlay').classList.add('active');
+        }
+
+        function loadNextVideo() {
+            const nextPriority = parseInt(priority) + 1;
+            if (nextPriority <= 3) {
+                // TODO: Load next video from profile data
+                alert('Prossimo video in arrivo! (Da implementare: carica video successivo)');
+                backToProfile();
+            } else {
+                backToProfile();
+            }
+        }
+
+        function backToProfile() {
+            const params = new URLSearchParams();
+            if (urlParams.get('vat')) params.set('vat', urlParams.get('vat'));
+            if (urlParams.get('user_id')) params.set('user_id', urlParams.get('user_id'));
+            if (urlParams.get('token')) params.set('token', urlParams.get('token'));
+            if (urlParams.get('owner')) params.set('owner', urlParams.get('owner'));
+            if (urlParams.get('ragione_sociale')) params.set('ragione_sociale', urlParams.get('ragione_sociale'));
+            
+            window.location.href = `softskill/complete-profile.html?${params.toString()}`;
+        }
+
+        function goBack() {
+            backToProfile();
+        }
+
+        // 🚀 INIT
+        window.addEventListener('DOMContentLoaded', initPlayer);
+    </script>
+</body>
+</html>
