@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profilo Completo - Soft Skill Analysis</title>
+    <link rel="stylesheet" href="../styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        body {
+            padding-bottom: 100px;
+        }
+
+        .profile-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .profile-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .profile-header h1 {
+            font-size: 32px;
+            margin-bottom: 12px;
+            background: linear-gradient(135deg, var(--primary), var(--success));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .profile-header .subtitle {
+            color: var(--text-muted);
+            font-size: 16px;
+        }
+
+        /* SEZIONI PRINCIPALI */
+        .section-card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            border: 1px solid var(--glass-border);
+            padding: 30px;
+            margin-bottom: 24px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+
+        .section-title {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: var(--primary);
+        }
+
+        .section-title i {
+            font-size: 28px;
+        }
+
+        /* BEHAVIORAL PROFILE */
+        .behavioral-insights {
+            background: linear-gradient(135deg, rgba(91, 111, 237, 0.1), rgba(76, 217, 100, 0.1));
+            border-left: 4px solid var(--primary);
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+
+        .behavioral-insights h3 {
+            font-size: 18px;
+            margin-bottom: 12px;
+            color: var(--text-main);
+        }
+
+        .behavioral-insights p {
+            line-height: 1.8;
+            color: var(--text-muted);
+            text-align: justify;
+        }
+
+        /* GROWTH RECOMMENDATIONS */
+        .growth-area {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 16px;
+        }
+
+        .growth-area h4 {
+            font-size: 16px;
+            color: var(--primary);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .growth-area ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .growth-area li {
+            padding: 10px 0;
+            padding-left: 30px;
+            position: relative;
+            line-height: 1.6;
+            color: var(--text-muted);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .growth-area li:last-child {
+            border-bottom: none;
+        }
+
+        .growth-area li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: var(--success);
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        /* ANALYSIS OVERLAY */
+        .analysis-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 10000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .analysis-overlay.hidden {
+            display: none;
+        }
+
+        .analysis-content {
+            text-align: center;
+            max-width: 500px;
+            width: 100%;
+        }
+
+        .analysis-icon {
+            margin-bottom: 30px;
+        }
+
+        .analysis-icon i {
+            font-size: 64px;
+            color: var(--primary);
+            animation: analysisPulse 2s ease-in-out infinite;
+        }
+
+        .analysis-title {
+            color: #fff;
+            font-size: 28px;
+            margin-bottom: 12px;
+            font-weight: 700;
+        }
+
+        .analysis-subtitle {
+            color: var(--text-muted);
+            font-size: 16px;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+
+        .analysis-progress {
+            background: rgba(255,255,255,0.1);
+            height: 8px;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 40px;
+        }
+
+        .analysis-progress-bar {
+            background: linear-gradient(90deg, #5b6fed, #4cd964);
+            height: 100%;
+            width: 0%;
+            transition: width 0.3s ease;
+            border-radius: 4px;
+        }
+
+        .sponsor-section {
+            margin-top: 20px;
+        }
+
+        .sponsor-label {
+            color: var(--text-muted);
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+            opacity: 0.7;
+        }
+
+        #sponsorCarousel {
+            min-height: 100px;
+        }
+
+        @keyframes analysisPulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.15); opacity: 0.8; }
+        }
+
+        /* ERROR STATE */
+        .error-state {
+            text-align: center;
+            padding: 60px 20px;
+        }
+
+        .error-state i {
+            font-size: 64px;
+            color: var(--error);
+            margin-bottom: 20px;
+        }
+
+        .error-state h2 {
+            font-size: 24px;
+            margin-bottom: 12px;
+        }
+
+        .error-state p {
+            color: var(--text-muted);
+            margin-bottom: 30px;
+        }
+
+        @media (max-width: 768px) {
+            .profile-header h1 {
+                font-size: 24px;
+            }
+
+            .section-card {
+                padding: 20px;
+            }
+
+            .section-title {
+                font-size: 18px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- ANALYSIS OVERLAY -->
+    <div class="analysis-overlay" id="analysisOverlay">
+        <div class="analysis-content">
+            <div class="analysis-icon">
+                <i class="fas fa-user-astronaut"></i>
+            </div>
+            
+            <h2 class="analysis-title">🧠 Analisi Completa in Corso...</h2>
+            
+            <p class="analysis-subtitle">
+                La nostra AI sta elaborando i dati di tutti e 4 i moduli per generare il tuo profilo comportamentale completo e i consigli di crescita personalizzati.
+                <br><strong style="color: var(--primary);">Questo richiede circa 15-30 secondi.</strong>
+            </p>
+            
+            <div class="analysis-progress">
+                <div class="analysis-progress-bar" id="analysisProgressBar"></div>
+            </div>
+            
+            <div class="sponsor-section">
+                <p class="sponsor-label">Nel frattempo, scopri i nostri pacchetti crediti</p>
+                <div id="sponsorCarousel"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="profile-container" id="mainContent" style="display: none;">
+        <div class="profile-header">
+            <h1>🏆 Il Tuo Profilo Completo</h1>
+            <p class="subtitle">Analisi comportamentale basata su 150 domande e 4 moduli</p>
+        </div>
+
+        <div id="profileContent">
+            <!-- IL CONTENUTO VERRA' GENERATO DINAMICAMENTE -->
+        </div>
+    </div>
+
+    <!-- ERROR STATE (nascosto di default) -->
+    <div class="profile-container error-state" id="errorState" style="display: none;">
+        <i class="fas fa-exclamation-triangle"></i>
+        <h2>Profilo Non Disponibile</h2>
+        <p>Completa tutti e 4 i moduli per sbloccare l'analisi completa del tuo profilo.</p>
+        <button class="btn btn-primary" onclick="goBackToDashboard()">
+            <i class="fas fa-arrow-left"></i> Torna alla Dashboard
+        </button>
+    </div>
+
+    <!-- FAB -->
+    <div class="fab-container">
+        <button class="fab-btn fab-secondary" onclick="goBackToDashboard()" title="Torna alla Dashboard">
+            <i class="fas fa-arrow-left"></i>
+        </button>
+    </div>
+
+    <!-- SCRIPTS -->
+    <script src="modules-mapping.js"></script>
+    <script src="webhook-handler.js"></script>
+    <script src="../sponsor.js"></script>
+    
+    <script>
+        const webhook = new WebhookHandler();
+        let analysisData = null;
+
+        // 🚀 CARICA ANALISI ALL'APERTURA DELLA PAGINA
+        async function loadCompleteAnalysis() {
+            try {
+                // 🔥 MOSTRA OVERLAY IMMEDIATAMENTE
+                showAnalysisOverlay();
+                
+                // 🔥 CHIAMA WEBHOOK CON action: "get_analysis"
+                const response = await fetch(webhook.webhookUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: "get_analysis",
+                        vat: webhook.vat,
+                        user_id: webhook.userId,
+                        timestamp: new Date().toISOString()
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Webhook failed: ${response.status}`);
+                }
+
+                analysisData = await response.json();
+                console.log('✅ Analisi ricevuta:', analysisData);
+
+                // 🔥 VERIFICA CHE L'ANALISI SIA COMPLETA
+                if (!analysisData.success || !analysisData.complete_profile) {
+                    throw new Error('Profilo non completo');
+                }
+
+                // 🔥 CHIUDI OVERLAY
+                closeAnalysisOverlay();
+
+                // 🔥 RENDERIZZA IL PROFILO
+                setTimeout(() => {
+                    renderProfile(analysisData.complete_profile);
+                    document.getElementById('mainContent').style.display = 'block';
+                }, 800);
+
+            } catch (error) {
+                console.error('❌ Errore caricamento analisi:', error);
+                closeAnalysisOverlay();
+                
+                setTimeout(() => {
+                    document.getElementById('errorState').style.display = 'block';
+                }, 600);
+            }
+        }
+
+        // 🔥 MOSTRA OVERLAY DI ANALISI
+        function showAnalysisOverlay() {
+            const overlay = document.getElementById('analysisOverlay');
+            overlay.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+
+            // Progress bar animata
+            const progressBar = document.getElementById('analysisProgressBar');
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += Math.random() * 10;
+                if (progress > 90) progress = 90;
+                progressBar.style.width = `${progress}%`;
+            }, 800);
+
+            overlay.dataset.progressInterval = interval;
+
+            // Inizializza sponsor
+            if (window.SponsorManager) {
+                window.SponsorManager.inject('#sponsorCarousel', 'loader');
+            }
+        }
+
+        // 🔥 CHIUDI OVERLAY
+        function closeAnalysisOverlay() {
+            const overlay = document.getElementById('analysisOverlay');
+            const progressBar = document.getElementById('analysisProgressBar');
+            
+            // Completa progress
+            if (progressBar) progressBar.style.width = '100%';
+            
+            // Ferma animazione
+            const intervalId = overlay.dataset.progressInterval;
+            if (intervalId) clearInterval(parseInt(intervalId));
+            
+            setTimeout(() => {
+                overlay.classList.add('hidden');
+                document.body.style.overflow = '';
+            }, 500);
+        }
+
+        // 🔥 RENDERIZZA PROFILO COMPLETO
+        function renderProfile(profile) {
+            const container = document.getElementById('profileContent');
+            
+            // 🎯 RENDERING BASATO SULLA STRUTTURA DATI RICEVUTA
+            const html = `
+                <!-- SEZIONE 1: BEHAVIORAL PROFILE -->
+                <div class="section-card">
+                    <h2 class="section-title">
+                        <i class="fas fa-brain"></i>
+                        Profilo Comportamentale
+                    </h2>
+                    <div class="behavioral-insights">
+                        <h3>🎯 La Tua Essenza Professionale</h3>
+                        <p>${profile.behavioral_summary || 'Analisi non disponibile'}</p>
+                    </div>
+                    <div class="behavioral-insights">
+                        <h3>💡 Come Ti Relazioni con il Lavoro</h3>
+                        <p>${profile.work_style || 'Analisi non disponibile'}</p>
+                    </div>
+                </div>
+
+                <!-- SEZIONE 2: CONSIGLI DI CRESCITA -->
+                <div class="section-card">
+                    <h2 class="section-title">
+                        <i class="fas fa-seedling"></i>
+                        Piano di Crescita Personalizzato
+                    </h2>
+                    ${renderGrowthRecommendations(profile.growth_recommendations || [])}
+                </div>
+
+                <!-- SEZIONE 3: RISORSE CONSIGLIATE -->
+                ${profile.recommended_resources ? `
+                <div class="section-card">
+                    <h2 class="section-title">
+                        <i class="fas fa-book"></i>
+                        Risorse per Te
+                    </h2>
+                    ${renderResources(profile.recommended_resources)}
+                </div>
+                ` : ''}
+            `;
+
+            container.innerHTML = html;
+        }
+
+        // 🛠️ FUNZIONI DI RENDERING HELPER
+        function renderGrowthRecommendations(recommendations) {
+            if (!recommendations || recommendations.length === 0) {
+                return '<p style="color: var(--text-muted);">Nessuna raccomandazione disponibile</p>';
+            }
+
+            return recommendations.map((rec, index) => `
+                <div class="growth-area">
+                    <h4><i class="fas fa-lightbulb"></i> ${rec.title || `Area ${index + 1}`}</h4>
+                    <p style="color: var(--text-muted); margin-bottom: 12px;">${rec.description || ''}</p>
+                    ${rec.actions ? `
+                        <ul>
+                            ${rec.actions.map(action => `<li>${action}</li>`).join('')}
+                        </ul>
+                    ` : ''}
+                </div>
+            `).join('');
+        }
+
+        function renderResources(resources) {
+            if (!resources || resources.length === 0) {
+                return '<p style="color: var(--text-muted);">Nessuna risorsa disponibile</p>';
+            }
+
+            return resources.map(resource => `
+                <div style="background: rgba(0,0,0,0.2); padding: 16px; border-radius: 10px; margin-bottom: 12px;">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <i class="fas fa-${resource.type === 'video' ? 'play-circle' : 'file-alt'}" style="font-size: 24px; color: var(--primary);"></i>
+                        <div style="flex: 1;">
+                            <div style="font-weight: 600; margin-bottom: 4px;">${resource.title}</div>
+                            <div style="font-size: 12px; color: var(--text-muted);">
+                                ${resource.duration || resource.read_time || ''}
+                            </div>
+                        </div>
+                        ${resource.url ? `<a href="${resource.url}" class="btn btn-secondary" style="padding: 8px 16px; font-size: 12px;">Vai</a>` : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // 🔙 TORNA ALLA DASHBOARD
+        function goBackToDashboard() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const params = new URLSearchParams();
+            
+            if (urlParams.get('vat')) params.set('vat', urlParams.get('vat'));
+            if (urlParams.get('user_id')) params.set('user_id', urlParams.get('user_id'));
+            if (urlParams.get('token')) params.set('token', urlParams.get('token'));
+            if (urlParams.get('owner')) params.set('owner', urlParams.get('owner'));
+            if (urlParams.get('ragione_sociale')) params.set('ragione_sociale', urlParams.get('ragione_sociale'));
+            
+            window.location.href = `dashboard.html?${params.toString()}`;
+        }
+
+        // 🚀 AVVIA AL CARICAMENTO
+        window.addEventListener('DOMContentLoaded', loadCompleteAnalysis);
+    </script>
+</body>
+</html>
