@@ -194,9 +194,118 @@ function previousQuestion() {
     }
 }
 
-// 🔥 NUOVO: Invia solo risposte grezze - la valutazione la fa il backend!
+// 🔥 NUOVO: Mostra overlay di valutazione con sponsor
+function showEvaluationOverlay() {
+    // Crea overlay se non esiste
+    let overlay = document.getElementById('evaluationOverlay');
+    if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.id = 'evaluationOverlay';
+        overlay.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 10000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        `;
+        
+        overlay.innerHTML = `
+            <div style="text-align: center; max-width: 500px; width: 100%;">
+                <!-- ICON ANIMATO -->
+                <div style="margin-bottom: 30px;">
+                    <i class="fas fa-brain" style="font-size: 64px; color: var(--primary); animation: pulse 2s ease-in-out infinite;"></i>
+                </div>
+                
+                <!-- TITOLO -->
+                <h2 style="color: #fff; font-size: 28px; margin-bottom: 12px; font-weight: 700;">
+                    🧠 Valutazione in Corso...
+                </h2>
+                
+                <!-- SOTTOTITOLO -->
+                <p style="color: var(--text-muted); font-size: 16px; margin-bottom: 30px; line-height: 1.6;">
+                    La nostra AI sta analizzando le tue risposte e generando il profilo personalizzato.
+                    <br><strong style="color: var(--primary);">Ci vorranno pochi secondi.</strong>
+                </p>
+                
+                <!-- PROGRESS BAR -->
+                <div style="background: rgba(255,255,255,0.1); height: 8px; border-radius: 4px; overflow: hidden; margin-bottom: 40px;">
+                    <div id="evalProgressBar" style="background: linear-gradient(90deg, #5b6fed, #4cd964); height: 100%; width: 0%; transition: width 0.3s ease; border-radius: 4px;"></div>
+                </div>
+                
+                <!-- SPONSOR CAROUSEL -->
+                <div style="margin-bottom: 20px;">
+                    <p style="color: var(--text-muted); font-size: 12px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; opacity: 0.7;">
+                        Nel frattempo, scopri i nostri pacchetti crediti
+                    </p>
+                    <div id="sponsorCarousel" style="min-height: 100px;"></div>
+                </div>
+            </div>
+            
+            <style>
+                @keyframes pulse {
+                    0%, 100% { transform: scale(1); opacity: 1; }
+                    50% { transform: scale(1.1); opacity: 0.8; }
+                }
+            </style>
+        `;
+        
+        document.body.appendChild(overlay);
+    }
+    
+    overlay.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+    
+    // Avvia animazione progress bar (simulata)
+    const progressBar = document.getElementById('evalProgressBar');
+    let progress = 0;
+    const progressInterval = setInterval(() => {
+        progress += Math.random() * 15;
+        if (progress > 90) progress = 90; // Non superare 90% finché non finisce davvero
+        progressBar.style.width = `${progress}%`;
+    }, 500);
+    
+    // Salva l'interval per pulirlo dopo
+    overlay.dataset.progressInterval = progressInterval;
+    
+    // Inizializza sponsor carousel
+    if (window.SponsorManager) {
+        window.SponsorManager.inject('#sponsorCarousel', 'loader');
+    }
+}
+
+// 🔥 CHIUDI OVERLAY E COMPLETA PROGRESS
+function closeEvaluationOverlay() {
+    const overlay = document.getElementById('evaluationOverlay');
+    if (overlay) {
+        // Completa progress bar
+        const progressBar = document.getElementById('evalProgressBar');
+        if (progressBar) progressBar.style.width = '100%';
+        
+        // Ferma animazione progress
+        const intervalId = overlay.dataset.progressInterval;
+        if (intervalId) clearInterval(parseInt(intervalId));
+        
+        // Chiudi dopo breve delay
+        setTimeout(() => {
+            overlay.style.display = 'none';
+            document.body.style.overflow = '';
+        }, 500);
+    }
+}
+
+// 🔥 AGGIORNATO: Invia risposte e gestisce overlay
 async function finishQuiz() {
     const completionTime = Math.floor((Date.now() - startTime) / 1000);
+    
+    // 🔥 MOSTRA OVERLAY IMMEDIATAMENTE
+    showEvaluationOverlay();
     
     // 🔥 PREPARA SOLO LE RISPOSTE SENZA CALCOLARE NULLA
     const answersArray = [];
@@ -207,19 +316,17 @@ async function finishQuiz() {
             const optionObject = question.options[selectedOption];
             const skills = question.softSkill.split(', ').map(s => s.trim());
             
-            // 🔥 PAYLOAD PULITO: solo answer, answer_text e soft_skills
             answersArray.push({
                 question_num: question.num,
                 scenario: question.scenario,
                 answer: optionObject.value,
                 answer_text: optionObject.text,
-                // ❌ RIMOSSO: option (duplicato inutile)
                 soft_skills: skills
             });
         }
     });
 
-    // 🔥 INVIA AL WEBHOOK - LA VALUTAZIONE LA FA IL BACKEND!
+    // 🔥 INVIA AL WEBHOOK
     try {
         const moduleData = {
             module_id: moduleId,
@@ -229,36 +336,43 @@ async function finishQuiz() {
             completion_time_seconds: completionTime,
             completion_date: new Date().toISOString(),
             answers: answersArray
-            // ❌ RIMOSSO: results, skillPercentages, sortedSkills
-            // 👆 LA VALUTAZIONE LA FA IL BACKEND!
         };
         
         await webhook.saveModule(moduleData);
         
-        console.log('✅ Risposte inviate con successo! La valutazione verrà fatta dal backend.');
+        console.log('✅ Risposte inviate con successo! La valutazione è stata completata dal backend.');
         
-        // 🔧 FIX: Redirect con TUTTI i parametri (vat, user_id, token, owner)
-        const urlParams = new URLSearchParams(window.location.search);
-        const params = new URLSearchParams();
+        // 🔥 CHIUDI OVERLAY
+        closeEvaluationOverlay();
         
-        if (urlParams.get('vat')) params.set('vat', urlParams.get('vat'));
-        if (urlParams.get('user_id')) params.set('user_id', urlParams.get('user_id'));
-        if (urlParams.get('token')) params.set('token', urlParams.get('token'));
-        if (urlParams.get('owner')) params.set('owner', urlParams.get('owner'));
-        if (urlParams.get('ragione_sociale')) params.set('ragione_sociale', urlParams.get('ragione_sociale'));
-        
-        alert('✅ Test completato! Verrai reindirizzato alla dashboard per vedere i risultati.');
-        window.location.href = `dashboard.html?${params.toString()}`;
+        // 🔥 REDIRECT AUTOMATICO SENZA ALERT
+        setTimeout(() => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const params = new URLSearchParams();
+            
+            if (urlParams.get('vat')) params.set('vat', urlParams.get('vat'));
+            if (urlParams.get('user_id')) params.set('user_id', urlParams.get('user_id'));
+            if (urlParams.get('token')) params.set('token', urlParams.get('token'));
+            if (urlParams.get('owner')) params.set('owner', urlParams.get('owner'));
+            if (urlParams.get('ragione_sociale')) params.set('ragione_sociale', urlParams.get('ragione_sociale'));
+            
+            window.location.href = `dashboard.html?${params.toString()}`;
+        }, 800);
         
     } catch (error) {
         console.error('❌ Errore salvataggio webhook:', error);
-        alert('⚠️ Errore nel salvataggio dati. Riprova più tardi.');
+        
+        // Chiudi overlay anche in caso di errore
+        closeEvaluationOverlay();
+        
+        setTimeout(() => {
+            alert('⚠️ Errore nel salvataggio dati. Riprova più tardi.');
+        }, 600);
     }
 }
 
 // Ricomincia il quiz
 function restartQuiz() {
-    // 🔧 FIX: Torna alla dashboard con TUTTI i parametri
     const urlParams = new URLSearchParams(window.location.search);
     const params = new URLSearchParams();
     
