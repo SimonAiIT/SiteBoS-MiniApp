@@ -36,6 +36,49 @@
             font-size: 16px;
         }
 
+        /* 🎯 ARCHETYPE BADGE */
+        .archetype-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, var(--primary), var(--success));
+            color: white;
+            padding: 10px 25px;
+            border-radius: 30px;
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(91, 111, 237, 0.3);
+        }
+
+        /* 📊 STATS CARD */
+        .stats-card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            border: 1px solid var(--glass-border);
+            padding: 25px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-around;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 8px;
+        }
+
+        .stat-label {
+            font-size: 11px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
         /* SEZIONI PRINCIPALI */
         .section-card {
             background: var(--card-bg);
@@ -60,69 +103,175 @@
             font-size: 28px;
         }
 
-        /* BEHAVIORAL PROFILE */
-        .behavioral-insights {
-            background: linear-gradient(135deg, rgba(91, 111, 237, 0.1), rgba(76, 217, 100, 0.1));
-            border-left: 4px solid var(--primary);
-            padding: 20px;
-            border-radius: 12px;
-            margin-bottom: 20px;
+        /* ⭐ STRENGTHS */
+        .strengths-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 15px;
         }
 
-        .behavioral-insights h3 {
-            font-size: 18px;
-            margin-bottom: 12px;
+        .strength-item {
+            background: rgba(76, 217, 100, 0.1);
+            border-left: 4px solid var(--success);
+            padding: 15px;
+            border-radius: 10px;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .strength-item i {
+            color: var(--success);
+            font-size: 20px;
+            margin-top: 2px;
+        }
+
+        .strength-text {
+            font-size: 14px;
+            line-height: 1.6;
             color: var(--text-main);
         }
 
-        .behavioral-insights p {
-            line-height: 1.8;
-            color: var(--text-muted);
-            text-align: justify;
-        }
-
-        /* GROWTH RECOMMENDATIONS */
-        .growth-area {
-            background: rgba(0, 0, 0, 0.2);
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 16px;
-        }
-
-        .growth-area h4 {
-            font-size: 16px;
-            color: var(--primary);
-            margin-bottom: 12px;
+        /* 🎯 AREAS TO IMPROVE */
+        .areas-grid {
             display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .area-card {
+            background: rgba(245, 158, 11, 0.1);
+            border-left: 4px solid var(--warning);
+            padding: 20px;
+            border-radius: 12px;
+        }
+
+        .area-header {
+            display: flex;
+            justify-content: space-between;
             align-items: center;
-            gap: 8px;
+            margin-bottom: 12px;
         }
 
-        .growth-area ul {
-            list-style: none;
-            padding: 0;
+        .area-skill {
+            font-size: 17px;
+            font-weight: 700;
+            color: var(--text-main);
         }
 
-        .growth-area li {
-            padding: 10px 0;
-            padding-left: 30px;
-            position: relative;
+        .area-level {
+            font-size: 12px;
+            padding: 5px 12px;
+            background: rgba(245, 158, 11, 0.2);
+            color: var(--warning);
+            border-radius: 15px;
+            font-weight: 600;
+        }
+
+        .area-detail {
+            font-size: 14px;
             line-height: 1.6;
             color: var(--text-muted);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            margin-top: 10px;
         }
 
-        .growth-area li:last-child {
-            border-bottom: none;
+        .area-detail strong {
+            color: var(--text-main);
         }
 
-        .growth-area li:before {
-            content: "✓";
+        /* 🎥 VIDEOS */
+        .videos-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .video-card {
+            background: linear-gradient(135deg, rgba(91, 111, 237, 0.2), rgba(76, 217, 100, 0.2));
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 25px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .video-card::before {
+            content: '';
             position: absolute;
-            left: 0;
-            color: var(--success);
-            font-weight: bold;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+        }
+
+        .video-priority {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 20px;
+            color: white;
+        }
+
+        .video-title {
             font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            color: white;
+            padding-right: 50px;
+        }
+
+        .video-duration {
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 15px;
+        }
+
+        .video-why {
+            font-size: 14px;
+            line-height: 1.6;
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 15px;
+        }
+
+        .video-improvement {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 10px 15px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 600;
+            color: white;
+            display: inline-block;
+            margin-bottom: 15px;
+        }
+
+        .watch-btn {
+            width: 100%;
+            padding: 15px;
+            background: white;
+            color: var(--primary);
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .watch-btn:active {
+            transform: scale(0.98);
         }
 
         /* ANALYSIS OVERLAY */
@@ -247,6 +396,10 @@
             .section-title {
                 font-size: 18px;
             }
+
+            .strengths-grid {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
@@ -279,12 +432,59 @@
     <!-- MAIN CONTENT -->
     <div class="profile-container" id="mainContent" style="display: none;">
         <div class="profile-header">
-            <h1>🏆 Il Tuo Profilo Completo</h1>
-            <p class="subtitle">Analisi comportamentale basata su 150 domande e 4 moduli</p>
+            <div class="archetype-badge" id="archetypeBadge">L'Architetto Resiliente</div>
+            <h1 id="tagline">Sfrutta la tua visione per scalare senza compromessi</h1>
+            <p class="subtitle" id="description">Analisi comportamentale basata su 150 domande e 4 moduli</p>
         </div>
 
-        <div id="profileContent">
-            <!-- IL CONTENUTO VERRA' GENERATO DINAMICAMENTE -->
+        <!-- STATS CARD -->
+        <div class="stats-card">
+            <div class="stat-item">
+                <div class="stat-value" id="overallScore">62.5</div>
+                <div class="stat-label">Punteggio Globale</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="modulesCompleted">4/4</div>
+                <div class="stat-label">Moduli Completati</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="timeSpent">1h 53m</div>
+                <div class="stat-label">Tempo Dedicato</div>
+            </div>
+        </div>
+
+        <!-- STRENGTHS SECTION -->
+        <div class="section-card">
+            <h2 class="section-title">
+                <i class="fas fa-star"></i>
+                I Tuoi Super Poteri
+            </h2>
+            <div id="strengthsList" class="strengths-grid">
+                <!-- Populated by JS -->
+            </div>
+        </div>
+
+        <!-- AREAS TO IMPROVE SECTION -->
+        <div class="section-card">
+            <h2 class="section-title">
+                <i class="fas fa-bullseye"></i>
+                Dove Puoi Crescere
+            </h2>
+            <div id="areasToImprove" class="areas-grid">
+                <!-- Populated by JS -->
+            </div>
+        </div>
+
+        <!-- RECOMMENDED VIDEOS SECTION -->
+        <div class="section-card">
+            <h2 class="section-title">
+                <i class="fas fa-play-circle"></i>
+                I Tuoi Prossimi 3 Video
+            </h2>
+            <p class="subtitle">~27 minuti totali per sbloccare il tuo potenziale</p>
+            <div id="videosList" class="videos-grid">
+                <!-- Populated by JS -->
+            </div>
         </div>
     </div>
 
@@ -312,7 +512,7 @@
     
     <script>
         const webhook = new WebhookHandler();
-        let analysisData = null;
+        let profileData = null;
 
         // 🚀 CARICA ANALISI ALL'APERTURA DELLA PAGINA
         async function loadCompleteAnalysis() {
@@ -336,20 +536,25 @@
                     throw new Error(`Webhook failed: ${response.status}`);
                 }
 
-                analysisData = await response.json();
-                console.log('✅ Analisi ricevuta:', analysisData);
+                const result = await response.json();
+                console.log('✅ Risposta webhook:', result);
+
+                // 🔥 GESTISCI ARRAY O OGGETTO
+                const analysisData = Array.isArray(result) ? result[0] : result;
 
                 // 🔥 VERIFICA CHE L'ANALISI SIA COMPLETA
-                if (!analysisData.success || !analysisData.complete_profile) {
+                if (!analysisData.success || !analysisData.data) {
                     throw new Error('Profilo non completo');
                 }
+
+                profileData = analysisData.data;
 
                 // 🔥 CHIUDI OVERLAY
                 closeAnalysisOverlay();
 
                 // 🔥 RENDERIZZA IL PROFILO
                 setTimeout(() => {
-                    renderProfile(analysisData.complete_profile);
+                    renderProfile(profileData);
                     document.getElementById('mainContent').style.display = 'block';
                 }, 800);
 
@@ -405,89 +610,88 @@
         }
 
         // 🔥 RENDERIZZA PROFILO COMPLETO
-        function renderProfile(profile) {
-            const container = document.getElementById('profileContent');
-            
-            // 🎯 RENDERING BASATO SULLA STRUTTURA DATI RICEVUTA
-            const html = `
-                <!-- SEZIONE 1: BEHAVIORAL PROFILE -->
-                <div class="section-card">
-                    <h2 class="section-title">
-                        <i class="fas fa-brain"></i>
-                        Profilo Comportamentale
-                    </h2>
-                    <div class="behavioral-insights">
-                        <h3>🎯 La Tua Essenza Professionale</h3>
-                        <p>${profile.behavioral_summary || 'Analisi non disponibile'}</p>
+        function renderProfile(data) {
+            console.log('🎨 Rendering profilo con dati:', data);
+
+            // Header
+            document.getElementById('archetypeBadge').textContent = data.summary?.archetype || 'Profilo Unico';
+            document.getElementById('tagline').textContent = data.summary?.tagline || '';
+            document.getElementById('description').textContent = data.summary?.description || '';
+
+            // Stats
+            document.getElementById('overallScore').textContent = data.stats?.overall_score || '0';
+            document.getElementById('modulesCompleted').textContent = `${data.stats?.modules_completed || 0}/4`;
+            document.getElementById('timeSpent').textContent = formatTime(data.stats?.total_time_spent || '0 minuti');
+
+            // Strengths
+            const strengthsList = document.getElementById('strengthsList');
+            if (data.strengths && data.strengths.length > 0) {
+                strengthsList.innerHTML = data.strengths.map(strength => `
+                    <div class="strength-item">
+                        <i class="fas fa-check-circle"></i>
+                        <span class="strength-text">${strength}</span>
                     </div>
-                    <div class="behavioral-insights">
-                        <h3>💡 Come Ti Relazioni con il Lavoro</h3>
-                        <p>${profile.work_style || 'Analisi non disponibile'}</p>
-                    </div>
-                </div>
-
-                <!-- SEZIONE 2: CONSIGLI DI CRESCITA -->
-                <div class="section-card">
-                    <h2 class="section-title">
-                        <i class="fas fa-seedling"></i>
-                        Piano di Crescita Personalizzato
-                    </h2>
-                    ${renderGrowthRecommendations(profile.growth_recommendations || [])}
-                </div>
-
-                <!-- SEZIONE 3: RISORSE CONSIGLIATE -->
-                ${profile.recommended_resources ? `
-                <div class="section-card">
-                    <h2 class="section-title">
-                        <i class="fas fa-book"></i>
-                        Risorse per Te
-                    </h2>
-                    ${renderResources(profile.recommended_resources)}
-                </div>
-                ` : ''}
-            `;
-
-            container.innerHTML = html;
-        }
-
-        // 🛠️ FUNZIONI DI RENDERING HELPER
-        function renderGrowthRecommendations(recommendations) {
-            if (!recommendations || recommendations.length === 0) {
-                return '<p style="color: var(--text-muted);">Nessuna raccomandazione disponibile</p>';
+                `).join('');
+            } else {
+                strengthsList.innerHTML = '<p style="color: var(--text-muted);">Nessun punto di forza identificato</p>';
             }
 
-            return recommendations.map((rec, index) => `
-                <div class="growth-area">
-                    <h4><i class="fas fa-lightbulb"></i> ${rec.title || `Area ${index + 1}`}</h4>
-                    <p style="color: var(--text-muted); margin-bottom: 12px;">${rec.description || ''}</p>
-                    ${rec.actions ? `
-                        <ul>
-                            ${rec.actions.map(action => `<li>${action}</li>`).join('')}
-                        </ul>
-                    ` : ''}
-                </div>
-            `).join('');
-        }
-
-        function renderResources(resources) {
-            if (!resources || resources.length === 0) {
-                return '<p style="color: var(--text-muted);">Nessuna risorsa disponibile</p>';
-            }
-
-            return resources.map(resource => `
-                <div style="background: rgba(0,0,0,0.2); padding: 16px; border-radius: 10px; margin-bottom: 12px;">
-                    <div style="display: flex; align-items: center; gap: 12px;">
-                        <i class="fas fa-${resource.type === 'video' ? 'play-circle' : 'file-alt'}" style="font-size: 24px; color: var(--primary);"></i>
-                        <div style="flex: 1;">
-                            <div style="font-weight: 600; margin-bottom: 4px;">${resource.title}</div>
-                            <div style="font-size: 12px; color: var(--text-muted);">
-                                ${resource.duration || resource.read_time || ''}
-                            </div>
+            // Areas to Improve
+            const areasToImprove = document.getElementById('areasToImprove');
+            if (data.areas_to_improve && data.areas_to_improve.length > 0) {
+                areasToImprove.innerHTML = data.areas_to_improve.map(area => `
+                    <div class="area-card">
+                        <div class="area-header">
+                            <span class="area-skill">${area.skill}</span>
+                            <span class="area-level">${area.current_level}</span>
                         </div>
-                        ${resource.url ? `<a href="${resource.url}" class="btn btn-secondary" style="padding: 8px 16px; font-size: 12px;">Vai</a>` : ''}
+                        <div class="area-detail">
+                            <strong>Perché:</strong> ${area.why}
+                        </div>
+                        <div class="area-detail">
+                            <strong>Impatto:</strong> ${area.impact}
+                        </div>
                     </div>
-                </div>
-            `).join('');
+                `).join('');
+            } else {
+                areasToImprove.innerHTML = '<p style="color: var(--text-muted);">Nessuna area di miglioramento identificata</p>';
+            }
+
+            // Recommended Videos
+            const videosList = document.getElementById('videosList');
+            if (data.recommended_videos && data.recommended_videos.length > 0) {
+                videosList.innerHTML = data.recommended_videos.map(item => `
+                    <div class="video-card">
+                        <div class="video-priority">${item.priority}</div>
+                        <div class="video-title">${item.video.title}</div>
+                        <div class="video-duration">⏱️ ${item.video.duration}</div>
+                        <div class="video-why">${item.why_this}</div>
+                        <div class="video-improvement">💪 ${item.expected_improvement}</div>
+                        <button class="watch-btn" onclick="watchVideo('${item.video.url}', ${item.priority})">
+                            <i class="fas fa-play"></i> Guarda Ora
+                        </button>
+                    </div>
+                `).join('');
+            } else {
+                videosList.innerHTML = '<p style="color: var(--text-muted);">Nessun video raccomandato disponibile</p>';
+            }
+        }
+
+        function watchVideo(url, priority) {
+            // TODO: Apri video player nella miniapp (FASE 2)
+            window.open(url, '_blank');
+            
+            // Track event
+            console.log(`📹 User started watching video priority ${priority}`);
+        }
+
+        function formatTime(timeString) {
+            // "1 ora e 53 minuti" → "1h 53m"
+            const match = timeString.match(/(\d+)\s*ora.*?(\d+)\s*minuti/);
+            if (match) {
+                return `${match[1]}h ${match[2]}m`;
+            }
+            return timeString;
         }
 
         // 🔙 TORNA ALLA DASHBOARD
