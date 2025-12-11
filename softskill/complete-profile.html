@@ -37,7 +37,6 @@
             font-size: 16px;
         }
 
-        /* 🎯 ARCHETYPE BADGE */
         .archetype-badge {
             display: inline-block;
             background: linear-gradient(135deg, var(--primary), var(--success));
@@ -50,7 +49,6 @@
             box-shadow: 0 4px 15px rgba(91, 111, 237, 0.3);
         }
 
-        /* 📊 STATS CARD */
         .stats-card {
             background: var(--card-bg);
             border-radius: 16px;
@@ -80,7 +78,6 @@
             letter-spacing: 0.5px;
         }
 
-        /* SEZIONI PRINCIPALI */
         .section-card {
             background: var(--card-bg);
             border-radius: 16px;
@@ -104,7 +101,6 @@
             font-size: 28px;
         }
 
-        /* ⭐ STRENGTHS */
         .strengths-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -133,7 +129,6 @@
             color: var(--text-main);
         }
 
-        /* 🎯 AREAS TO IMPROVE */
         .areas-grid {
             display: flex;
             flex-direction: column;
@@ -180,7 +175,7 @@
             color: var(--text-main);
         }
 
-        /* 🎥 VIDEOS */
+        /* 🎥 VIDEO CARDS */
         .videos-grid {
             display: flex;
             flex-direction: column;
@@ -193,18 +188,6 @@
             border-radius: 16px;
             padding: 25px;
             position: relative;
-            overflow: hidden;
-        }
-
-        .video-card::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            right: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
-            pointer-events: none;
         }
 
         .video-priority {
@@ -221,7 +204,6 @@
             font-weight: 700;
             font-size: 20px;
             color: white;
-            z-index: 1;
         }
 
         .video-title {
@@ -230,16 +212,12 @@
             margin-bottom: 10px;
             color: white;
             padding-right: 50px;
-            position: relative;
-            z-index: 1;
         }
 
         .video-duration {
             font-size: 13px;
             color: rgba(255, 255, 255, 0.8);
             margin-bottom: 15px;
-            position: relative;
-            z-index: 1;
         }
 
         .video-why {
@@ -247,8 +225,6 @@
             line-height: 1.6;
             color: rgba(255, 255, 255, 0.9);
             margin-bottom: 15px;
-            position: relative;
-            z-index: 1;
         }
 
         .video-improvement {
@@ -260,38 +236,140 @@
             color: white;
             display: inline-block;
             margin-bottom: 15px;
-            position: relative;
-            z-index: 1;
         }
 
         .watch-btn {
             width: 100%;
             padding: 15px;
-            background: white !important;
-            color: var(--primary) !important;
+            background: white;
+            color: var(--primary);
             border: none;
             border-radius: 12px;
             font-size: 16px;
             font-weight: 700;
-            cursor: pointer !important;
-            transition: transform 0.2s, box-shadow 0.2s, background 0.2s;
+            cursor: pointer;
+            transition: all 0.2s;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 10px;
-            position: relative;
-            z-index: 2;
+            margin-bottom: 10px;
         }
 
         .watch-btn:hover {
-            background: var(--primary) !important;
-            color: white !important;
+            background: var(--primary);
+            color: white;
             transform: translateY(-2px);
             box-shadow: 0 6px 20px rgba(91, 111, 237, 0.4);
         }
 
-        .watch-btn:active {
-            transform: scale(0.98);
+        /* 📚 LEARNING PANEL COLLASSABILE */
+        .learning-panel {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 12px;
+            overflow: hidden;
+            margin-top: 15px;
+        }
+
+        .panel-header {
+            padding: 15px 20px;
+            background: rgba(91, 111, 237, 0.2);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: background 0.2s;
+        }
+
+        .panel-header:hover {
+            background: rgba(91, 111, 237, 0.3);
+        }
+
+        .panel-header-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .panel-chevron {
+            transition: transform 0.3s;
+            color: white;
+        }
+
+        .learning-panel.expanded .panel-chevron {
+            transform: rotate(180deg);
+        }
+
+        .panel-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+
+        .learning-panel.expanded .panel-content {
+            max-height: 500px;
+        }
+
+        .panel-inner {
+            padding: 20px;
+        }
+
+        .reflection-prompt {
+            font-size: 14px;
+            color: var(--warning);
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        .reflection-textarea {
+            width: 100%;
+            min-height: 100px;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid var(--glass-border);
+            border-radius: 8px;
+            padding: 12px;
+            color: white;
+            font-size: 14px;
+            resize: vertical;
+            font-family: inherit;
+            margin-bottom: 15px;
+        }
+
+        .reflection-textarea:focus {
+            outline: none;
+            border-color: var(--warning);
+            background: rgba(245, 158, 11, 0.1);
+        }
+
+        .analyze-btn {
+            width: 100%;
+            padding: 15px;
+            background: var(--success);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: all 0.2s;
+        }
+
+        .analyze-btn:hover {
+            background: #3fb755;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(76, 217, 100, 0.4);
+        }
+
+        .analyze-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
         }
 
         /* ANALYSIS OVERLAY */
@@ -382,7 +460,6 @@
             50% { transform: scale(1.15); opacity: 0.8; }
         }
 
-        /* ERROR STATE */
         .error-state {
             text-align: center;
             padding: 60px 20px;
@@ -508,7 +585,7 @@
         </div>
     </div>
 
-    <!-- ERROR STATE (nascosto di default) -->
+    <!-- ERROR STATE -->
     <div class="profile-container error-state" id="errorState" style="display: none;">
         <i class="fas fa-exclamation-triangle"></i>
         <h2>Profilo Non Disponibile</h2>
@@ -525,7 +602,6 @@
         </button>
     </div>
 
-    <!-- SCRIPTS -->
     <script src="softskill/modules-mapping.js"></script>
     <script src="softskill/webhook-handler.js"></script>
     <script src="sponsor.js"></script>
@@ -534,13 +610,10 @@
         const webhook = new WebhookHandler();
         let profileData = null;
 
-        // 🚀 CARICA ANALISI ALL'APERTURA DELLA PAGINA
         async function loadCompleteAnalysis() {
             try {
-                // 🔥 MOSTRA OVERLAY IMMEDIATAMENTE
                 showAnalysisOverlay();
                 
-                // 🔥 CHIAMA WEBHOOK CON action: "get_analysis"
                 const response = await fetch(webhook.webhookUrl, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -559,20 +632,15 @@
                 const result = await response.json();
                 console.log('✅ Risposta webhook:', result);
 
-                // 🔥 GESTISCI ARRAY O OGGETTO
                 const analysisData = Array.isArray(result) ? result[0] : result;
 
-                // 🔥 VERIFICA CHE L'ANALISI SIA COMPLETA
                 if (!analysisData.success || !analysisData.data) {
                     throw new Error('Profilo non completo');
                 }
 
                 profileData = analysisData.data;
-
-                // 🔥 CHIUDI OVERLAY
                 closeAnalysisOverlay();
 
-                // 🔥 RENDERIZZA IL PROFILO
                 setTimeout(() => {
                     renderProfile(profileData);
                     document.getElementById('mainContent').style.display = 'block';
@@ -588,13 +656,11 @@
             }
         }
 
-        // 🔥 MOSTRA OVERLAY DI ANALISI
         function showAnalysisOverlay() {
             const overlay = document.getElementById('analysisOverlay');
             overlay.classList.remove('hidden');
             document.body.style.overflow = 'hidden';
 
-            // Progress bar animata
             const progressBar = document.getElementById('analysisProgressBar');
             let progress = 0;
             const interval = setInterval(() => {
@@ -605,21 +671,17 @@
 
             overlay.dataset.progressInterval = interval;
 
-            // Inizializza sponsor
             if (window.SponsorManager) {
                 window.SponsorManager.inject('#sponsorCarousel', 'loader');
             }
         }
 
-        // 🔥 CHIUDI OVERLAY
         function closeAnalysisOverlay() {
             const overlay = document.getElementById('analysisOverlay');
             const progressBar = document.getElementById('analysisProgressBar');
             
-            // Completa progress
             if (progressBar) progressBar.style.width = '100%';
             
-            // Ferma animazione
             const intervalId = overlay.dataset.progressInterval;
             if (intervalId) clearInterval(parseInt(intervalId));
             
@@ -629,21 +691,17 @@
             }, 500);
         }
 
-        // 🔥 RENDERIZZA PROFILO COMPLETO
         function renderProfile(data) {
             console.log('🎨 Rendering profilo con dati:', data);
 
-            // Header
             document.getElementById('archetypeBadge').textContent = data.summary?.archetype || 'Profilo Unico';
             document.getElementById('tagline').textContent = data.summary?.tagline || '';
             document.getElementById('description').textContent = data.summary?.description || '';
 
-            // Stats
             document.getElementById('overallScore').textContent = data.stats?.overall_score || '0';
             document.getElementById('modulesCompleted').textContent = `${data.stats?.modules_completed || 0}/4`;
             document.getElementById('timeSpent').textContent = formatTime(data.stats?.total_time_spent || '0 minuti');
 
-            // Strengths
             const strengthsList = document.getElementById('strengthsList');
             if (data.strengths && data.strengths.length > 0) {
                 strengthsList.innerHTML = data.strengths.map(strength => `
@@ -656,7 +714,6 @@
                 strengthsList.innerHTML = '<p style="color: var(--text-muted);">Nessun punto di forza identificato</p>';
             }
 
-            // Areas to Improve
             const areasToImprove = document.getElementById('areasToImprove');
             if (data.areas_to_improve && data.areas_to_improve.length > 0) {
                 areasToImprove.innerHTML = data.areas_to_improve.map(area => `
@@ -677,65 +734,98 @@
                 areasToImprove.innerHTML = '<p style="color: var(--text-muted);">Nessuna area di miglioramento identificata</p>';
             }
 
-            // Recommended Videos
+            // 🔥 VIDEO CARDS CON LEARNING PANEL
             const videosList = document.getElementById('videosList');
             if (data.recommended_videos && data.recommended_videos.length > 0) {
                 videosList.innerHTML = data.recommended_videos.map((item, index) => `
-                    <div class="video-card" data-video-index="${index}">
+                    <div class="video-card">
                         <div class="video-priority">${item.priority}</div>
                         <div class="video-title">${item.video.title}</div>
                         <div class="video-duration">⏱️ ${item.video.duration}</div>
                         <div class="video-why">${item.why_this}</div>
                         <div class="video-improvement">💪 ${item.expected_improvement}</div>
-                        <button class="watch-btn" 
-                                data-video-url="${item.video.url}" 
-                                data-priority="${item.priority}"
-                                data-title="${encodeURIComponent(item.video.title)}"
-                                data-duration="${item.video.duration}"
-                                data-improvement="${encodeURIComponent(item.expected_improvement)}">
-                            <i class="fas fa-play"></i> Guarda Ora
+                        
+                        <button class="watch-btn" onclick="window.open('${item.video.url}', '_blank')">
+                            <i class="fas fa-play"></i> Guarda Video
                         </button>
+
+                        <!-- LEARNING PANEL COLLASSABILE -->
+                        <div class="learning-panel" id="panel_${index}">
+                            <div class="panel-header" onclick="toggleLearningPanel(${index})">
+                                <div class="panel-header-title">
+                                    <i class="fas fa-brain"></i>
+                                    <span>Riflessione Personale</span>
+                                </div>
+                                <i class="fas fa-chevron-down panel-chevron"></i>
+                            </div>
+                            <div class="panel-content">
+                                <div class="panel-inner">
+                                    <div class="reflection-prompt">
+                                        Come puoi applicare ciò che hai imparato per migliorare ${item.expected_improvement}?
+                                    </div>
+                                    <textarea 
+                                        class="reflection-textarea" 
+                                        id="reflection_${index}" 
+                                        placeholder="Scrivi qui la tua riflessione dopo aver guardato il video..."
+                                    ></textarea>
+                                    <button class="analyze-btn" onclick="trackVideoCompletion('${item.video.url}', ${item.priority}, ${index})">
+                                        <i class="fas fa-chart-line"></i> Analizza
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 `).join('');
-
-                // 🔥 EVENT DELEGATION
-                videosList.addEventListener('click', (e) => {
-                    const btn = e.target.closest('.watch-btn');
-                    if (btn) {
-                        const url = btn.dataset.videoUrl;
-                        const priority = btn.dataset.priority;
-                        const title = btn.dataset.title;
-                        const duration = btn.dataset.duration;
-                        const improvement = btn.dataset.improvement;
-                        
-                        openVideoPlayer(url, priority, title, duration, improvement);
-                    }
-                });
             } else {
                 videosList.innerHTML = '<p style="color: var(--text-muted);">Nessun video raccomandato disponibile</p>';
             }
         }
 
-        // 🎥 APRI VIDEO PLAYER INTERNO
-        function openVideoPlayer(url, priority, title, duration, improvement) {
-            const urlParams = new URLSearchParams(window.location.search);
-            const params = new URLSearchParams();
+        function toggleLearningPanel(index) {
+            const panel = document.getElementById(`panel_${index}`);
+            panel.classList.toggle('expanded');
+        }
+
+        async function trackVideoCompletion(videoUrl, priority, index) {
+            const reflection = document.getElementById(`reflection_${index}`).value.trim();
             
-            // Video params
-            params.set('url', url);
-            params.set('priority', priority);
-            params.set('title', title);
-            params.set('duration', duration);
-            params.set('improvement', improvement);
-            
-            // User params
-            if (urlParams.get('vat')) params.set('vat', urlParams.get('vat'));
-            if (urlParams.get('user_id')) params.set('user_id', urlParams.get('user_id'));
-            if (urlParams.get('token')) params.set('token', urlParams.get('token'));
-            if (urlParams.get('owner')) params.set('owner', urlParams.get('owner'));
-            if (urlParams.get('ragione_sociale')) params.set('ragione_sociale', urlParams.get('ragione_sociale'));
-            
-            window.location.href = `softskill/video-player.html?${params.toString()}`;
+            if (!reflection) {
+                alert('✍️ Scrivi una riflessione prima di analizzare!');
+                return;
+            }
+
+            const btn = event.target;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Analisi in corso...';
+
+            try {
+                const response = await fetch(webhook.webhookUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: "track_video_completion",
+                        vat: webhook.vat,
+                        user_id: webhook.userId,
+                        video_url: videoUrl,
+                        priority: priority,
+                        riflessione_personale: reflection,
+                        timestamp: new Date().toISOString()
+                    })
+                });
+
+                if (response.ok) {
+                    alert('✅ Riflessione salvata! Ottimo lavoro.');
+                    btn.innerHTML = '<i class="fas fa-check"></i> Completato';
+                } else {
+                    throw new Error('Tracking failed');
+                }
+
+            } catch (error) {
+                console.error('❌ Errore tracking:', error);
+                alert('Errore nel salvare. Riprova.');
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-chart-line"></i> Analizza';
+            }
         }
 
         function formatTime(timeString) {
@@ -746,7 +836,6 @@
             return timeString;
         }
 
-        // 🔙 TORNA ALLA DASHBOARD
         function goBackToDashboard() {
             const urlParams = new URLSearchParams(window.location.search);
             const params = new URLSearchParams();
@@ -760,7 +849,6 @@
             window.location.href = `softskill/dashboard.html?${params.toString()}`;
         }
 
-        // 🚀 AVVIA AL CARICAMENTO
         window.addEventListener('DOMContentLoaded', loadCompleteAnalysis);
     </script>
 </body>
