@@ -1,10 +1,11 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
+    <base href="../">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Profilo Completo - Soft Skill Analysis</title>
-    <link rel="stylesheet" href="../styles.css">
+    <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
         body {
@@ -525,9 +526,9 @@
     </div>
 
     <!-- SCRIPTS -->
-    <script src="modules-mapping.js"></script>
-    <script src="webhook-handler.js"></script>
-    <script src="../sponsor.js"></script>
+    <script src="softskill/modules-mapping.js"></script>
+    <script src="softskill/webhook-handler.js"></script>
+    <script src="sponsor.js"></script>
     
     <script>
         const webhook = new WebhookHandler();
@@ -739,7 +740,7 @@
             if (urlParams.get('owner')) params.set('owner', urlParams.get('owner'));
             if (urlParams.get('ragione_sociale')) params.set('ragione_sociale', urlParams.get('ragione_sociale'));
             
-            window.location.href = `dashboard.html?${params.toString()}`;
+            window.location.href = `softskill/dashboard.html?${params.toString()}`;
         }
 
         // 🚀 AVVIA AL CARICAMENTO
