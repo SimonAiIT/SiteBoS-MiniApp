@@ -677,51 +677,68 @@
                 areasToImprove.innerHTML = '<p style="color: var(--text-muted);">Nessuna area di miglioramento identificata</p>';
             }
 
-            // Recommended Videos - USO DATA ATTRIBUTES
+            // Recommended Videos
             const videosList = document.getElementById('videosList');
             if (data.recommended_videos && data.recommended_videos.length > 0) {
                 videosList.innerHTML = data.recommended_videos.map((item, index) => `
-                    <div class="video-card">
+                    <div class="video-card" data-video-index="${index}">
                         <div class="video-priority">${item.priority}</div>
                         <div class="video-title">${item.video.title}</div>
                         <div class="video-duration">⏱️ ${item.video.duration}</div>
                         <div class="video-why">${item.why_this}</div>
                         <div class="video-improvement">💪 ${item.expected_improvement}</div>
-                        <button class="watch-btn" data-video-url="${item.video.url}" data-priority="${item.priority}">
+                        <button class="watch-btn" 
+                                data-video-url="${item.video.url}" 
+                                data-priority="${item.priority}"
+                                data-title="${encodeURIComponent(item.video.title)}"
+                                data-duration="${item.video.duration}"
+                                data-improvement="${encodeURIComponent(item.expected_improvement)}">
                             <i class="fas fa-play"></i> Guarda Ora
                         </button>
                     </div>
                 `).join('');
 
-                console.log('🎬 Rendered video buttons:', videosList.querySelectorAll('.watch-btn').length);
-
-                // 🔥 AGGIUNGI EVENT DELEGATION
+                // 🔥 EVENT DELEGATION
                 videosList.addEventListener('click', (e) => {
-                    console.log('👆 Click rilevato su:', e.target);
                     const btn = e.target.closest('.watch-btn');
                     if (btn) {
                         const url = btn.dataset.videoUrl;
                         const priority = btn.dataset.priority;
-                        console.log('✅ Bottone trovato, apertura video...');
-                        watchVideo(url, priority);
-                    } else {
-                        console.log('❌ Nessun bottone trovato');
+                        const title = btn.dataset.title;
+                        const duration = btn.dataset.duration;
+                        const improvement = btn.dataset.improvement;
+                        
+                        openVideoPlayer(url, priority, title, duration, improvement);
                     }
                 });
-
-                console.log('✅ Event listener attaccato a videosList');
             } else {
                 videosList.innerHTML = '<p style="color: var(--text-muted);">Nessun video raccomandato disponibile</p>';
             }
         }
 
-        function watchVideo(url, priority) {
-            console.log(`📹 Opening video: ${url} (priority ${priority})`);
-            window.open(url, '_blank');
+        // 🎥 APRI VIDEO PLAYER INTERNO
+        function openVideoPlayer(url, priority, title, duration, improvement) {
+            const urlParams = new URLSearchParams(window.location.search);
+            const params = new URLSearchParams();
+            
+            // Video params
+            params.set('url', url);
+            params.set('priority', priority);
+            params.set('title', title);
+            params.set('duration', duration);
+            params.set('improvement', improvement);
+            
+            // User params
+            if (urlParams.get('vat')) params.set('vat', urlParams.get('vat'));
+            if (urlParams.get('user_id')) params.set('user_id', urlParams.get('user_id'));
+            if (urlParams.get('token')) params.set('token', urlParams.get('token'));
+            if (urlParams.get('owner')) params.set('owner', urlParams.get('owner'));
+            if (urlParams.get('ragione_sociale')) params.set('ragione_sociale', urlParams.get('ragione_sociale'));
+            
+            window.location.href = `softskill/video-player.html?${params.toString()}`;
         }
 
         function formatTime(timeString) {
-            // "1 ora e 53 minuti" → "1h 53m"
             const match = timeString.match(/(\d+)\s*ora.*?(\d+)\s*minuti/);
             if (match) {
                 return `${match[1]}h ${match[2]}m`;
