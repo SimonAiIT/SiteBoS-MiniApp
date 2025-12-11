@@ -332,6 +332,127 @@
             display: none;
         }
 
+        /* 🆕 HELP OVERLAY STYLES */
+        .help-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+            padding: 20px;
+        }
+
+        .help-overlay.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .help-content {
+            background: var(--card-bg);
+            border: 2px solid var(--primary);
+            border-radius: 16px;
+            max-width: 700px;
+            max-height: 90vh;
+            overflow-y: auto;
+            padding: 30px;
+            position: relative;
+            box-shadow: 0 20px 60px rgba(91, 111, 237, 0.3);
+        }
+
+        .help-close {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: var(--text-main);
+            font-size: 18px;
+        }
+
+        .help-close:hover {
+            background: rgba(255, 59, 48, 0.8);
+            transform: rotate(90deg);
+        }
+
+        .help-content h2 {
+            color: var(--primary);
+            font-size: 24px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .help-content h3 {
+            color: var(--text-main);
+            font-size: 18px;
+            margin-top: 24px;
+            margin-bottom: 12px;
+            border-left: 4px solid var(--primary);
+            padding-left: 12px;
+        }
+
+        .help-content h4 {
+            color: var(--primary);
+            font-size: 16px;
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+
+        .help-content p, .help-content li {
+            color: var(--text-muted);
+            line-height: 1.8;
+            font-size: 14px;
+            text-align: justify;
+        }
+
+        .help-content ul {
+            list-style: none;
+            padding: 0;
+            margin: 12px 0;
+        }
+
+        .help-content li {
+            padding-left: 24px;
+            position: relative;
+            margin-bottom: 10px;
+        }
+
+        .help-content li:before {
+            content: "▸";
+            position: absolute;
+            left: 0;
+            color: var(--primary);
+            font-weight: bold;
+        }
+
+        .help-content strong {
+            color: var(--text-main);
+        }
+
+        .help-subtitle {
+            color: var(--text-muted);
+            font-size: 14px;
+            font-style: italic;
+            margin-bottom: 20px;
+        }
+
         @media (max-width: 600px) {
             .evaluation-grid {
                 grid-template-columns: 1fr;
@@ -353,6 +474,19 @@
                 width: 100%;
                 justify-content: center;
             }
+
+            .help-content {
+                padding: 20px;
+                max-height: 85vh;
+            }
+
+            .help-content h2 {
+                font-size: 20px;
+            }
+
+            .help-content h3 {
+                font-size: 16px;
+            }
         }
     </style>
 </head>
@@ -361,6 +495,16 @@
         <div style="text-align: center;">
             <i class="fas fa-spinner fa-spin" style="font-size: 48px; color: var(--primary);"></i>
             <p style="margin-top: 16px; color: var(--text-muted);">Caricamento dati...</p>
+        </div>
+    </div>
+
+    <!-- 🆕 HELP OVERLAY -->
+    <div class="help-overlay" id="helpOverlay" onclick="closeHelp(event)">
+        <div class="help-content" onclick="event.stopPropagation()">
+            <button class="help-close" onclick="closeHelp()">
+                <i class="fas fa-times"></i>
+            </button>
+            <div id="helpText"></div>
         </div>
     </div>
 
@@ -396,12 +540,175 @@
         <button class="fab-btn fab-secondary" onclick="goBackToTeam()" title="Torna al Team Manager">
             <i class="fas fa-arrow-left"></i>
         </button>
+        <button class="fab-btn fab-primary" onclick="openHelp()" title="Come leggere i punteggi">
+            <i class="fas fa-question"></i>
+        </button>
     </div>
 
     <script src="modules-mapping.js"></script>
     <script src="webhook-handler.js"></script>
     <script>
         const webhook = new WebhookHandler();
+        
+        // 🆕 MULTILINGUAL HELP CONTENT
+        const HELP_TRANSLATIONS = {
+            it: {
+                title: "Guida alla Lettura del Tuo Profilo",
+                subtitle: "La matematica della personalità non è una somma a zero.",
+                intro: "Noterai che la somma dei tuoi punteggi Positivi e Negativi non fa quasi mai 100. Non è un errore, è una scelta precisa del nostro modello di analisi.",
+                intro_label: "Ecco come interpretare i tuoi dati:",
+                section1_title: "1. Il Concetto di \"Incidenza\"",
+                section1_content: "I punteggi non misurano \"quanto sei bravo\" o \"quanto sei scarso\", ma l'<strong>intensità</strong> con cui certi tratti si manifestano nel tuo comportamento.",
+                section1_bullets: [
+                    "<strong>Punteggio Positivo:</strong> Significa che le tue risorse (come resilienza, empatia, leadership) sono attive e guidano le tue decisioni con quella incidenza e sono il tuo motore.",
+                    "<strong>Punteggio Negativo:</strong> Significa che le aree di rischio (come stress, rigidità, disordine) hanno quel peso specifico, nel tuo profilo attuale. Sono il tuo freno o la tua zavorra."
+                ],
+                section2_title: "2. Perché coesistono?",
+                section2_content: "Le persone complesse hanno spesso punteggi alti in entrambi i campi. Un imprenditore visionario può avere un <strong>90% di Visione (Positivo)</strong> ma anche un <strong>80% di Disorganizzazione (Negativo)</strong>. I due aspetti non si annullano: convivono.",
+                section2_bullets: [
+                    "<strong>Punteggi Alti in entrambi:</strong> Personalità forte, dinamica, ma che richiede gestione delle energie per non andare in burnout.",
+                    "<strong>Punteggi Bassi in entrambi:</strong> Profilo moderato, cauto, che rischia però di essere poco incisivo."
+                ]
+            },
+            en: {
+                title: "Guide to Reading Your Profile",
+                subtitle: "The mathematics of personality is not a zero-sum game.",
+                intro: "You'll notice that the sum of your Positive and Negative scores almost never equals 100. This is not an error—it's a deliberate design of our analysis model.",
+                intro_label: "Here's how to interpret your data:",
+                section1_title: "1. The Concept of \"Impact\"",
+                section1_content: "The scores don't measure \"how good\" or \"how bad\" you are, but the <strong>intensity</strong> with which certain traits manifest in your behavior.",
+                section1_bullets: [
+                    "<strong>Positive Score:</strong> Indicates that your strengths (such as resilience, empathy, leadership) are active and drive your decisions with that impact—they are your engine.",
+                    "<strong>Negative Score:</strong> Indicates that risk areas (such as stress, rigidity, disorganization) have that specific weight in your current profile. They are your brake or ballast."
+                ],
+                section2_title: "2. Why do they coexist?",
+                section2_content: "Complex individuals often have high scores in both areas. A visionary entrepreneur might have <strong>90% Vision (Positive)</strong> but also <strong>80% Disorganization (Negative)</strong>. These aspects don't cancel each other out: they coexist.",
+                section2_bullets: [
+                    "<strong>High scores in both:</strong> Strong, dynamic personality that requires energy management to avoid burnout.",
+                    "<strong>Low scores in both:</strong> Moderate, cautious profile that may risk being less impactful."
+                ]
+            },
+            fr: {
+                title: "Guide de Lecture de Votre Profil",
+                subtitle: "Les mathématiques de la personnalité ne sont pas un jeu à somme nulle.",
+                intro: "Vous remarquerez que la somme de vos scores Positifs et Négatifs ne fait presque jamais 100. Ce n'est pas une erreur—c'est un choix délibéré de notre modèle d'analyse.",
+                intro_label: "Voici comment interpréter vos données:",
+                section1_title: "1. Le Concept d'\"Impact\"",
+                section1_content: "Les scores ne mesurent pas \"à quel point vous êtes bon\" ou \"à quel point vous êtes mauvais\", mais l'<strong>intensité</strong> avec laquelle certains traits se manifestent dans votre comportement.",
+                section1_bullets: [
+                    "<strong>Score Positif:</strong> Indique que vos forces (comme la résilience, l'empathie, le leadership) sont actives et guident vos décisions avec cet impact—elles sont votre moteur.",
+                    "<strong>Score Négatif:</strong> Indique que les zones à risque (comme le stress, la rigidité, le désordre) ont ce poids spécifique dans votre profil actuel. Elles sont votre frein ou votre lest."
+                ],
+                section2_title: "2. Pourquoi coexistent-ils?",
+                section2_content: "Les personnes complexes ont souvent des scores élevés dans les deux domaines. Un entrepreneur visionnaire peut avoir <strong>90% de Vision (Positif)</strong> mais aussi <strong>80% de Désorganisation (Négatif)</strong>. Ces aspects ne s'annulent pas: ils coexistent.",
+                section2_bullets: [
+                    "<strong>Scores élevés dans les deux:</strong> Personnalité forte et dynamique qui nécessite une gestion de l'énergie pour éviter l'épuisement.",
+                    "<strong>Scores faibles dans les deux:</strong> Profil modéré et prudent qui risque d'être moins percutant."
+                ]
+            },
+            de: {
+                title: "Leitfaden zum Verständnis Ihres Profils",
+                subtitle: "Die Mathematik der Persönlichkeit ist kein Nullsummenspiel.",
+                intro: "Sie werden feststellen, dass die Summe Ihrer positiven und negativen Scores fast nie 100 ergibt. Das ist kein Fehler—es ist eine bewusste Entscheidung unseres Analysemodells.",
+                intro_label: "So interpretieren Sie Ihre Daten:",
+                section1_title: "1. Das Konzept der \"Auswirkung\"",
+                section1_content: "Die Scores messen nicht \"wie gut\" oder \"wie schlecht\" Sie sind, sondern die <strong>Intensität</strong>, mit der bestimmte Eigenschaften in Ihrem Verhalten zum Ausdruck kommen.",
+                section1_bullets: [
+                    "<strong>Positiver Score:</strong> Zeigt an, dass Ihre Stärken (wie Resilienz, Empathie, Führung) aktiv sind und Ihre Entscheidungen mit dieser Auswirkung leiten—sie sind Ihr Motor.",
+                    "<strong>Negativer Score:</strong> Zeigt an, dass Risikobereiche (wie Stress, Starrheit, Unordnung) dieses spezifische Gewicht in Ihrem aktuellen Profil haben. Sie sind Ihre Bremse oder Ihr Ballast."
+                ],
+                section2_title: "2. Warum koexistieren sie?",
+                section2_content: "Komplexe Persönlichkeiten haben oft hohe Scores in beiden Bereichen. Ein visionärer Unternehmer kann <strong>90% Vision (Positiv)</strong> aber auch <strong>80% Desorganisation (Negativ)</strong> haben. Diese Aspekte heben sich nicht auf: sie koexistieren.",
+                section2_bullets: [
+                    "<strong>Hohe Scores in beiden:</strong> Starke, dynamische Persönlichkeit, die Energiemanagement erfordert, um Burnout zu vermeiden.",
+                    "<strong>Niedrige Scores in beiden:</strong> Moderates, vorsichtiges Profil, das jedoch weniger durchschlagskräftig sein könnte."
+                ]
+            },
+            es: {
+                title: "Guía para Leer Tu Perfil",
+                subtitle: "Las matemáticas de la personalidad no son un juego de suma cero.",
+                intro: "Notarás que la suma de tus puntajes Positivos y Negativos casi nunca es 100. No es un error—es una decisión deliberada de nuestro modelo de análisis.",
+                intro_label: "Así se interpretan tus datos:",
+                section1_title: "1. El Concepto de \"Impacto\"",
+                section1_content: "Los puntajes no miden \"qué tan bueno\" o \"qué tan malo\" eres, sino la <strong>intensidad</strong> con la que ciertos rasgos se manifiestan en tu comportamiento.",
+                section1_bullets: [
+                    "<strong>Puntaje Positivo:</strong> Indica que tus fortalezas (como resiliencia, empatía, liderazgo) están activas y guían tus decisiones con ese impacto—son tu motor.",
+                    "<strong>Puntaje Negativo:</strong> Indica que las áreas de riesgo (como estrés, rigidez, desorden) tienen ese peso específico en tu perfil actual. Son tu freno o tu lastre."
+                ],
+                section2_title: "2. ¿Por qué coexisten?",
+                section2_content: "Las personas complejas a menudo tienen puntajes altos en ambas áreas. Un emprendedor visionario puede tener <strong>90% de Visión (Positivo)</strong> pero también <strong>80% de Desorganización (Negativo)</strong>. Estos aspectos no se cancelan: coexisten.",
+                section2_bullets: [
+                    "<strong>Puntajes altos en ambos:</strong> Personalidad fuerte y dinámica que requiere gestión de energía para evitar el agotamiento.",
+                    "<strong>Puntajes bajos en ambos:</strong> Perfil moderado y cauteloso que puede ser menos contundente."
+                ]
+            },
+            pt: {
+                title: "Guia para Ler Seu Perfil",
+                subtitle: "A matemática da personalidade não é um jogo de soma zero.",
+                intro: "Você notará que a soma de suas pontuações Positivas e Negativas quase nunca é 100. Isso não é um erro—é uma escolha deliberada do nosso modelo de análise.",
+                intro_label: "Veja como interpretar seus dados:",
+                section1_title: "1. O Conceito de \"Impacto\"",
+                section1_content: "As pontuações não medem \"o quão bom\" ou \"o quão ruim\" você é, mas a <strong>intensidade</strong> com que certos traços se manifestam em seu comportamento.",
+                section1_bullets: [
+                    "<strong>Pontuação Positiva:</strong> Indica que seus pontos fortes (como resiliência, empatia, liderança) estão ativos e orientam suas decisões com esse impacto—são seu motor.",
+                    "<strong>Pontuação Negativa:</strong> Indica que as áreas de risco (como estresse, rigidez, desordem) têm esse peso específico em seu perfil atual. São seu freio ou seu lastro."
+                ],
+                section2_title: "2. Por que coexistem?",
+                section2_content: "Pessoas complexas frequentemente têm pontuações altas em ambas as áreas. Um empreendedor visionário pode ter <strong>90% de Visão (Positivo)</strong> mas também <strong>80% de Desorganização (Negativo)</strong>. Esses aspectos não se cancelam: coexistem.",
+                section2_bullets: [
+                    "<strong>Pontuações altas em ambas:</strong> Personalidade forte e dinâmica que requer gestão de energia para evitar esgotamento.",
+                    "<strong>Pontuações baixas em ambas:</strong> Perfil moderado e cauteloso que pode ser menos impactante."
+                ]
+            }
+        };
+
+        function detectLanguage() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const urlLang = urlParams.get('lang');
+            if (urlLang && HELP_TRANSLATIONS[urlLang]) return urlLang;
+            
+            const browserLang = navigator.language.slice(0, 2);
+            return HELP_TRANSLATIONS[browserLang] ? browserLang : 'en';
+        }
+
+        function openHelp() {
+            const lang = detectLanguage();
+            const t = HELP_TRANSLATIONS[lang];
+            
+            document.getElementById('helpText').innerHTML = `
+                <h2><i class="fas fa-chart-line"></i> ${t.title}</h2>
+                <p class="help-subtitle">${t.subtitle}</p>
+                <p>${t.intro}</p>
+                <p style="margin-top: 16px;"><strong>${t.intro_label}</strong></p>
+                
+                <h3>${t.section1_title}</h3>
+                <p>${t.section1_content}</p>
+                <ul>
+                    ${t.section1_bullets.map(b => `<li>${b}</li>`).join('')}
+                </ul>
+                
+                <h3>${t.section2_title}</h3>
+                <p>${t.section2_content}</p>
+                <ul>
+                    ${t.section2_bullets.map(b => `<li>${b}</li>`).join('')}
+                </ul>
+            `;
+            
+            document.getElementById('helpOverlay').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeHelp(event) {
+            if (!event || event.target.id === 'helpOverlay') {
+                document.getElementById('helpOverlay').classList.remove('active');
+                document.body.style.overflow = '';
+            }
+        }
+
+        // ESC key to close overlay
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeHelp();
+        });
         
         function goBackToTeam() {
             const urlParams = new URLSearchParams(window.location.search);
@@ -461,7 +768,6 @@
             card.id = `card-${moduleId}`;
             
             if (isCompleted && data.evaluation) {
-                // 🔥 MODULO COMPLETATO CON EVALUATION (COLLASSABILE)
                 const eval = data.evaluation;
                 const completionDate = new Date(data.completion_date).toLocaleDateString('it-IT');
                 
@@ -479,11 +785,9 @@
                         </div>
                     </div>
                     
-                    <!-- 🔥 COLLAPSIBLE CONTENT -->
                     <div class="module-content">
                         <p class="module-subtitle">${module.description}</p>
                         
-                        <!-- EVALUATION SCORES -->
                         <div class="evaluation-grid">
                             <div class="score-card positive">
                                 <div class="score-label">Punteggio Positivo</div>
@@ -497,7 +801,6 @@
                             </div>
                         </div>
                         
-                        <!-- EVALUATION DETAILS -->
                         <div class="evaluation-details">
                             <h4><i class="fas fa-clock"></i> Valutazione Tempi</h4>
                             <p>${eval.Valutazione_Tempi}</p>
@@ -527,7 +830,6 @@
                 `;
                 
             } else {
-                // MODULO NON COMPLETATO
                 card.innerHTML = `
                     <div class="module-header">
                         <div class="module-title">
@@ -553,7 +855,6 @@
             return card;
         }
         
-        // 🔥 TOGGLE CARD COLLAPSE/EXPAND
         function toggleCard(moduleId) {
             const card = document.getElementById(`card-${moduleId}`);
             if (card) {
