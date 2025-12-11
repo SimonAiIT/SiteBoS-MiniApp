@@ -657,32 +657,39 @@
                 areasToImprove.innerHTML = '<p style="color: var(--text-muted);">Nessuna area di miglioramento identificata</p>';
             }
 
-            // Recommended Videos
+            // Recommended Videos - USO DATA ATTRIBUTES
             const videosList = document.getElementById('videosList');
             if (data.recommended_videos && data.recommended_videos.length > 0) {
-                videosList.innerHTML = data.recommended_videos.map(item => `
+                videosList.innerHTML = data.recommended_videos.map((item, index) => `
                     <div class="video-card">
                         <div class="video-priority">${item.priority}</div>
                         <div class="video-title">${item.video.title}</div>
                         <div class="video-duration">⏱️ ${item.video.duration}</div>
                         <div class="video-why">${item.why_this}</div>
                         <div class="video-improvement">💪 ${item.expected_improvement}</div>
-                        <button class="watch-btn" onclick="watchVideo('${item.video.url}', ${item.priority})">
+                        <button class="watch-btn" data-video-url="${item.video.url}" data-priority="${item.priority}">
                             <i class="fas fa-play"></i> Guarda Ora
                         </button>
                     </div>
                 `).join('');
+
+                // 🔥 AGGIUNGI EVENT DELEGATION
+                videosList.addEventListener('click', (e) => {
+                    const btn = e.target.closest('.watch-btn');
+                    if (btn) {
+                        const url = btn.dataset.videoUrl;
+                        const priority = btn.dataset.priority;
+                        watchVideo(url, priority);
+                    }
+                });
             } else {
                 videosList.innerHTML = '<p style="color: var(--text-muted);">Nessun video raccomandato disponibile</p>';
             }
         }
 
         function watchVideo(url, priority) {
-            // TODO: Apri video player nella miniapp (FASE 2)
+            console.log(`📹 Opening video: ${url} (priority ${priority})`);
             window.open(url, '_blank');
-            
-            // Track event
-            console.log(`📹 User started watching video priority ${priority}`);
         }
 
         function formatTime(timeString) {
