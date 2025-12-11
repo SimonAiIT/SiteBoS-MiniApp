@@ -76,12 +76,55 @@
             flex: 1;
             width: 100%;
             background: #000;
+            position: relative;
         }
 
         .video-player iframe {
             width: 100%;
             height: 100%;
             border: none;
+        }
+
+        .error-screen {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+            text-align: center;
+            color: white;
+        }
+
+        .error-icon {
+            font-size: 64px;
+            color: var(--error);
+            margin-bottom: 20px;
+        }
+
+        .error-title {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+
+        .error-message {
+            font-size: 14px;
+            color: var(--text-muted);
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+
+        .error-url {
+            background: rgba(255,255,255,0.1);
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 12px;
+            word-break: break-all;
+            margin-bottom: 20px;
+            max-width: 600px;
         }
 
         .learning-panel {
@@ -343,7 +386,7 @@
 
         <!-- VIDEO PLAYER -->
         <div class="video-player" id="videoPlayer">
-            <!-- YouTube iframe will be injected here -->
+            <!-- YouTube iframe or error screen will be injected here -->
         </div>
 
         <!-- LEARNING PANEL -->
@@ -420,23 +463,26 @@
         const duration = urlParams.get('duration') || '';
         const improvement = urlParams.get('improvement') || '';
 
-        let videoData = null;
-        let allVideos = [];
-        let currentVideoIndex = 0;
-
         // 🎬 INIZIALIZZA VIDEO PLAYER
         function initPlayer() {
+            console.log('📹 Init video player');
+            console.log('URL ricevuto:', videoUrl);
+            
             if (!videoUrl) {
-                alert('URL video mancante');
-                goBack();
+                showError('URL video mancante', 'Nessun URL fornito per il video.');
                 return;
             }
 
             // Estrai YouTube video ID
             const videoId = extractYouTubeID(videoUrl);
+            console.log('Video ID estratto:', videoId);
+            
             if (!videoId) {
-                alert('URL YouTube non valido');
-                goBack();
+                showError(
+                    'URL YouTube non valido', 
+                    'L\'URL fornito non è un link YouTube valido. Verifica il formato.',
+                    videoUrl
+                );
                 return;
             }
 
@@ -444,17 +490,19 @@
             document.getElementById('videoTitle').textContent = decodeURIComponent(title);
             document.getElementById('videoMeta').textContent = `${duration} • Priorità ${priority}`;
 
-            // Inject YouTube iframe
+            // Inject YouTube iframe con NOCOOKIE per evitare problemi CORS
             const iframe = `
                 <iframe 
-                    src="https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0" 
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                    src="https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&rel=0&modestbranding=1" 
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
                     allowfullscreen
+                    referrerpolicy="strict-origin-when-cross-origin"
                 ></iframe>
             `;
             document.getElementById('videoPlayer').innerHTML = iframe;
+            console.log('✅ Iframe YouTube iniettato');
 
-            // Key takeaways placeholder
+            // Key takeaways
             const takeaways = [
                 "Applica le strategie discusse nel video alla tua routine quotidiana",
                 "Identifica una situazione recente dove avresti potuto usare questa soft skill",
@@ -474,16 +522,49 @@
         }
 
         function extractYouTubeID(url) {
+            if (!url) return null;
+            
+            // Pattern per diversi formati YouTube
             const patterns = [
-                /(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\n?#]+)/,
-                /youtube\.com\/embed\/([^&\n?#]+)/
+                // youtube.com/watch?v=VIDEO_ID
+                /(?:youtube\.com\/watch\?v=)([a-zA-Z0-9_-]{11})/,
+                // youtu.be/VIDEO_ID
+                /(?:youtu\.be\/)([a-zA-Z0-9_-]{11})/,
+                // youtube.com/embed/VIDEO_ID
+                /(?:youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/,
+                // youtube.com/v/VIDEO_ID
+                /(?:youtube\.com\/v\/)([a-zA-Z0-9_-]{11})/,
+                // youtube-nocookie.com/embed/VIDEO_ID
+                /(?:youtube-nocookie\.com\/embed\/)([a-zA-Z0-9_-]{11})/
             ];
             
             for (const pattern of patterns) {
                 const match = url.match(pattern);
-                if (match) return match[1];
+                if (match && match[1]) {
+                    console.log('✅ Match trovato con pattern:', pattern);
+                    return match[1];
+                }
             }
+            
+            console.log('❌ Nessun pattern matched per URL:', url);
             return null;
+        }
+
+        function showError(errorTitle, errorMessage, url = null) {
+            const errorHtml = `
+                <div class="error-screen">
+                    <div class="error-icon">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <div class="error-title">${errorTitle}</div>
+                    <div class="error-message">${errorMessage}</div>
+                    ${url ? `<div class="error-url">URL: ${url}</div>` : ''}
+                    <button class="back-profile-btn" onclick="goBack()">
+                        <i class="fas fa-arrow-left"></i> Torna al Profilo
+                    </button>
+                </div>
+            `;
+            document.getElementById('videoPlayer').innerHTML = errorHtml;
         }
 
         function togglePanel() {
@@ -499,13 +580,11 @@
                 return;
             }
 
-            // Disable button
             const btn = document.getElementById('completeBtn');
             btn.disabled = true;
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Salvataggio...';
 
             try {
-                // 📊 TRACK COMPLETION
                 const response = await fetch(webhook.webhookUrl, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -542,8 +621,7 @@
         function loadNextVideo() {
             const nextPriority = parseInt(priority) + 1;
             if (nextPriority <= 3) {
-                // TODO: Load next video from profile data
-                alert('Prossimo video in arrivo! (Da implementare: carica video successivo)');
+                alert('Prossimo video in arrivo!');
                 backToProfile();
             } else {
                 backToProfile();
