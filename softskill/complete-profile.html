@@ -203,6 +203,7 @@
             width: 200%;
             height: 200%;
             background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            pointer-events: none;
         }
 
         .video-priority {
@@ -219,6 +220,7 @@
             font-weight: 700;
             font-size: 20px;
             color: white;
+            z-index: 1;
         }
 
         .video-title {
@@ -227,12 +229,16 @@
             margin-bottom: 10px;
             color: white;
             padding-right: 50px;
+            position: relative;
+            z-index: 1;
         }
 
         .video-duration {
             font-size: 13px;
             color: rgba(255, 255, 255, 0.8);
             margin-bottom: 15px;
+            position: relative;
+            z-index: 1;
         }
 
         .video-why {
@@ -240,6 +246,8 @@
             line-height: 1.6;
             color: rgba(255, 255, 255, 0.9);
             margin-bottom: 15px;
+            position: relative;
+            z-index: 1;
         }
 
         .video-improvement {
@@ -251,23 +259,34 @@
             color: white;
             display: inline-block;
             margin-bottom: 15px;
+            position: relative;
+            z-index: 1;
         }
 
         .watch-btn {
             width: 100%;
             padding: 15px;
-            background: white;
-            color: var(--primary);
+            background: white !important;
+            color: var(--primary) !important;
             border: none;
             border-radius: 12px;
             font-size: 16px;
             font-weight: 700;
-            cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
+            cursor: pointer !important;
+            transition: transform 0.2s, box-shadow 0.2s, background 0.2s;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 10px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .watch-btn:hover {
+            background: var(--primary) !important;
+            color: white !important;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(91, 111, 237, 0.4);
         }
 
         .watch-btn:active {
@@ -673,15 +692,23 @@
                     </div>
                 `).join('');
 
+                console.log('🎬 Rendered video buttons:', videosList.querySelectorAll('.watch-btn').length);
+
                 // 🔥 AGGIUNGI EVENT DELEGATION
                 videosList.addEventListener('click', (e) => {
+                    console.log('👆 Click rilevato su:', e.target);
                     const btn = e.target.closest('.watch-btn');
                     if (btn) {
                         const url = btn.dataset.videoUrl;
                         const priority = btn.dataset.priority;
+                        console.log('✅ Bottone trovato, apertura video...');
                         watchVideo(url, priority);
+                    } else {
+                        console.log('❌ Nessun bottone trovato');
                     }
                 });
+
+                console.log('✅ Event listener attaccato a videosList');
             } else {
                 videosList.innerHTML = '<p style="color: var(--text-muted);">Nessun video raccomandato disponibile</p>';
             }
