@@ -29,7 +29,7 @@ Le PMI italiane hanno bisogno di:
 ```mermaid
 graph TD
     A[Telegram Client] -->|WebApp SDK| B[SiteBoS Frontend]
-    B -->|Webhook HTTP| C[N8N Orchestrator]
+    B -->|Webhook HTTP| C[Backend Orchestrator]
     C -->|Store| D[MongoDB]
     C -->|AI Calls| E[Google Gemini API]
     C -->|Notifications| F[Telegram Bot API]
@@ -45,7 +45,7 @@ graph TD
 |-------|------------|----------------|
 | **Presentation** | HTML5/CSS3/Vanilla JS | UI/UX, routing client-side |
 | **Integration** | Telegram WebApp SDK | Auth, storage, theme |
-| **Orchestration** | N8N (self-hosted) | Business logic, workflow |
+| **Orchestration** | Backend (proprietario) | Business logic, workflow |
 | **Persistence** | MongoDB Atlas (3 DB) | Dati strutturati |
 | **Intelligence** | Google Gemini API | AI text/vision |
 | **Communication** | Telegram Bot API | Notifiche real-time |
@@ -54,11 +54,13 @@ graph TD
 
 ## 📦 Moduli Principali
 
-### 1. 🏠 **Dashboard**
+### 1. 🏠 **Dashboard + Onboarding**
 Schermata principale con:
+- Onboarding wizard (5 step)
 - Widget KPI (completamento profilo, crediti)
 - Card azioni rapide
 - Gatekeeper progressivo (unlock moduli)
+- Sponsor carousel
 
 ### 2. 🎭 **HoneyPot Editor**
 Knowledge base aziendale + anti-spam:
@@ -178,7 +180,7 @@ Gli utenti possono usare la propria **Google Gemini API Key**:
 | Metrica | Target | Attuale |
 |---------|--------|--------|
 | **Time to Interactive** | < 2s | 1.8s |
-| **API Response Time** | < 500ms | 380ms |
+| **Backend Response Time** | < 500ms | 380ms |
 | **Uptime** | 99.5% | 99.7% |
 | **Credits Consumed/Day** | - | ~15k |
 
@@ -198,6 +200,8 @@ Gli utenti possono usare la propria **Google Gemini API Key**:
 - [x] Team Manager con profili stakeholder
 - [x] Blueprint Workflow Editor
 - [x] Agenda System multi-operatore
+- [x] Onboarding wizard completo
+- [x] Sponsor carousel
 
 ### Q2 2025 🚧
 - [ ] CRM Module (gestione clienti)
@@ -237,11 +241,13 @@ Gli utenti possono usare la propria **Google Gemini API Key**:
 
 ## 📚 Documentazione Correlata
 
-- [02-ARCHITECTURE.md](./02-ARCHITECTURE.md) - Architettura dettagliata
-- [03-MODULES.md](./03-MODULES.md) - Moduli e funzionalità
+- [02-ARCHITECTURE.md](./02-ARCHITECTURE.md) - Architettura dettagliata frontend
+- [03-ONBOARDING.md](./03-ONBOARDING.md) - Sistema onboarding 5-step
 - [04-SOFT-SKILLS.md](./04-SOFT-SKILLS.md) - Sistema valutazione soft skills
-- [05-API.md](./05-API.md) - API Reference
-- [06-DEPLOYMENT.md](./06-DEPLOYMENT.md) - Guida deploy
+- [06-CATALOG.md](./06-CATALOG.md) - Catalog Manager
+- [08-HONEYPOT.md](./08-HONEYPOT.md) - Knowledge Base + Anti-Spam
+- [09-LEGAL-PROCESSOR.md](./09-LEGAL-PROCESSOR.md) - Legal document generator
+- [10-SPONSOR.md](./10-SPONSOR.md) - Sistema sponsor carousel
 
 ---
 
