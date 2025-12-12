@@ -1,6 +1,5 @@
 // ============================================
 // LANDING PAGE HONEYPOT EDITOR - LOGIC
-// Aggiornato per struttura dati reale webhook
 // ============================================
 
 const tg = window.Telegram.WebApp;
@@ -40,62 +39,37 @@ async function init() {
     });
 
     const data = await response.json();
-    console.log('📦 Webhook Response:', data);
+    console.log('📦 Webhook Response OK');
 
-    // ✅ PARSING STRUTTURA REALE (Array con oggetto)
-    if (Array.isArray(data) && data.length > 0) {
-      const payload = data[0];
-      
-      // Estrai i 3 blocchi principali
-      honeypotData = payload.HoneyPot;
-      catalogData = payload.service_catalog_setup;
-      ownerData = payload.owner_data;
+    // ✅ PARSING CORRETTO: Oggetto diretto
+    honeypotData = data.HoneyPot;
+    catalogData = data.service_catalog_setup;
+    ownerData = data.owner_data;
 
-      // Debug Preview con struttura reale
-      document.getElementById('data-preview').style.display = 'block';
-      document.getElementById('data-content').textContent = JSON.stringify({
-        owner: {
-          ragione_sociale: ownerData.ragione_sociale,
-          credits: ownerData.credits_balance,
-          email: ownerData.email,
-          phone: ownerData.phone,
-          site: ownerData.site
-        },
-        honeypot: {
-          company_context: honeypotData.company_context_string?.substring(0, 150) + '...',
-          knowledge_fragments: honeypotData.knowledge_fragments?.length || 0,
-          logo_url: honeypotData.assets?.logo?.url || 'N/A',
-          photo_url: honeypotData.assets?.photo?.url || 'N/A'
-        },
-        catalog: {
-          categories: catalogData.categories?.length || 0,
-          total_services: catalogData.categories?.reduce((sum, cat) => sum + (cat.subcategories?.length || 0), 0) || 0
-        }
-      }, null, 2);
+    // Validazione base
+    if (!honeypotData || !ownerData) {
+      throw new Error('Dati HoneyPot o Owner mancanti');
+    }
 
-      hideLoader();
-      document.getElementById('app-content').classList.remove('hidden');
+    hideLoader();
+    document.getElementById('app-content').classList.remove('hidden');
 
-      // Notifica successo
-      if (tg?.showPopup) {
-        tg.showPopup({
-          title: '✅ Dati Caricati',
-          message: `${ownerData.ragione_sociale}\n\nCrediti: ${ownerData.credits_balance.toLocaleString()}\nKnowledge: ${honeypotData.knowledge_fragments?.length || 0} fragments\nCatalogo: ${catalogData.categories?.length || 0} categorie`,
-          buttons: [{ type: 'ok' }]
-        });
-      }
-
-    } else {
-      throw new Error('Struttura dati non valida o vuota');
+    // Notifica successo (senza dati sensibili)
+    if (tg?.showPopup) {
+      tg.showPopup({
+        title: '✅ Dati Caricati',
+        message: `Business: ${ownerData.ragione_sociale}\n\nKnowledge Fragments: ${honeypotData.knowledge_fragments?.length || 0}\nCategorie Catalogo: ${catalogData?.categories?.length || 0}`,
+        buttons: [{ type: 'ok' }]
+      });
     }
 
   } catch (error) {
     console.error('❌ Errore init:', error);
     hideLoader();
     if (tg?.showAlert) {
-      tg.showAlert('❌ Errore: ' + error.message);
+      tg.showAlert('❌ Errore caricamento dati');
     } else {
-      alert('Errore: ' + error.message);
+      alert('Errore caricamento dati');
     }
   }
 }
@@ -118,7 +92,7 @@ document.getElementById('choice-ai').addEventListener('click', () => {
       buttons: [{ type: 'ok' }]
     });
   } else {
-    alert('🤖 Modalità AI Attivata: verranno generate immagini automatiche.');
+    alert('🤖 Modalità AI Attivata');
   }
 });
 
@@ -250,12 +224,11 @@ async function previewLanding() {
     });
 
     const result = await response.json();
-    console.log('👁️ Preview result:', result);
+    console.log('👁️ Preview result OK');
 
     hideLoader();
 
     if (result.success) {
-      // Apri preview in nuova finestra
       window.open(result.preview_url, '_blank');
       
       if (tg?.showPopup) {
@@ -272,9 +245,9 @@ async function previewLanding() {
     console.error('❌ Errore preview:', error);
     hideLoader();
     if (tg?.showAlert) {
-      tg.showAlert('Errore: ' + error.message);
+      tg.showAlert('Errore generazione anteprima');
     } else {
-      alert('Errore: ' + error.message);
+      alert('Errore generazione anteprima');
     }
   }
 }
@@ -297,10 +270,8 @@ function checkCreditsAndDeploy() {
   const availableCredits = ownerData?.credits_balance || 0;
 
   if (availableCredits >= requiredCredits) {
-    // Mostra overlay conferma
     document.getElementById('confirm-overlay').classList.remove('hidden');
   } else {
-    // Crediti insufficienti
     const deficit = requiredCredits - availableCredits;
     const msg = `❌ Crediti Insufficienti!\n\nDisponibili: ${availableCredits.toLocaleString()}\nRichiesti: ${requiredCredits.toLocaleString()}\nMancanti: ${deficit.toLocaleString()}\n\nVerrai reindirizzato alla pagina di ricarica.`;
     
@@ -334,25 +305,23 @@ async function executeDeploy() {
   showLoader('🚀 Deploy in corso...');
 
   try {
-    const payload = {
-      action: 'deploy_honeyblog_landing',
-      vat_number: VAT,
-      chat_id: OWNER,
-      token: TOKEN,
-      use_ai_images: useAI,
-      uploaded_images: uploadedImages,
-      honeypot: honeypotData,
-      catalog: catalogData
-    };
-
     const response = await fetch(BACKEND_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
+      body: JSON.stringify({
+        action: 'deploy_honeyblog_landing',
+        vat_number: VAT,
+        chat_id: OWNER,
+        token: TOKEN,
+        use_ai_images: useAI,
+        uploaded_images: uploadedImages,
+        honeypot: honeypotData,
+        catalog: catalogData
+      })
     });
 
     const result = await response.json();
-    console.log('🚀 Deploy result:', result);
+    console.log('🚀 Deploy result OK');
 
     hideLoader();
 
@@ -381,8 +350,7 @@ async function executeDeploy() {
       }
 
     } else if (result.error === 'insufficient_credits') {
-      // Controllo server ha rilevato crediti insufficienti
-      const msg = `❌ Crediti Insufficienti (Server Check)\n\nDisponibili: ${result.available.toLocaleString()}\nRichiesti: ${result.required.toLocaleString()}\nMancanti: ${result.deficit.toLocaleString()}`;
+      const msg = `❌ Crediti Insufficienti\n\nDisponibili: ${result.available.toLocaleString()}\nRichiesti: ${result.required.toLocaleString()}\nMancanti: ${result.deficit.toLocaleString()}`;
       
       if (tg?.showAlert) {
         tg.showAlert(msg, () => {
@@ -401,9 +369,9 @@ async function executeDeploy() {
     console.error('❌ Errore deploy:', error);
     hideLoader();
     if (tg?.showAlert) {
-      tg.showAlert('Errore durante il deploy: ' + error.message);
+      tg.showAlert('Errore durante il deploy');
     } else {
-      alert('Errore: ' + error.message);
+      alert('Errore durante il deploy');
     }
   }
 }
