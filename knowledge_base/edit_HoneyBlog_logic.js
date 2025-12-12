@@ -17,11 +17,11 @@ let ownerData = null;
 let honeypotData = null;
 let catalogData = null;
 
-// 🎯 3 NUOVI SLOT (logo e photo già esistenti in assets)
+// 🎯 3 NUOVI SLOT
 const newImageSlots = [
-  { id: 0, name: 'gallery1', label: 'Gallery 1', image: null },
-  { id: 1, name: 'gallery2', label: 'Gallery 2', image: null },
-  { id: 2, name: 'gallery3', label: 'Gallery 3', image: null }
+  { id: 0, name: 'gallery1', label: 'Gallery 1', image: null, method: null },
+  { id: 1, name: 'gallery2', label: 'Gallery 2', image: null, method: null },
+  { id: 2, name: 'gallery3', label: 'Gallery 3', image: null, method: null }
 ];
 
 let currentSlotIndex = null;
@@ -55,7 +55,6 @@ async function init() {
       throw new Error('Dati mancanti');
     }
 
-    // 🖼️ Carica immagini esistenti da assets
     loadExistingAssets();
 
     hideLoader();
@@ -64,7 +63,7 @@ async function init() {
     if (tg?.showPopup) {
       tg.showPopup({
         title: '✅ Dati Caricati',
-        message: `${ownerData.ragione_sociale}\n\nLogo e Photo già disponibili.\nCarica 3 nuove immagini per completare.`,
+        message: `${ownerData.ragione_sociale}\n\nLogo e Photo già disponibili.\nGestisci 3 nuove immagini.`,
         buttons: [{ type: 'ok' }]
       });
     }
@@ -84,13 +83,11 @@ async function init() {
 // CARICA ASSETS ESISTENTI
 // ============================================
 function loadExistingAssets() {
-  // Logo
   const logoUrl = honeypotData.assets?.logo?.url;
   if (logoUrl) {
     document.getElementById('img-logo').src = logoUrl;
   }
 
-  // Photo
   const photoUrl = honeypotData.assets?.photo?.url;
   if (photoUrl) {
     document.getElementById('img-photo').src = photoUrl;
@@ -98,14 +95,34 @@ function loadExistingAssets() {
 }
 
 // ============================================
-// SLOT MANAGEMENT (3 NUOVE IMMAGINI)
+// MENU OPZIONI SLOT
 // ============================================
-window.selectSlot = function(slotIndex) {
+window.openSlotMenu = function(slotIndex) {
   currentSlotIndex = slotIndex;
-  document.getElementById('file-input').click();
+  document.getElementById('slot-menu-overlay').classList.remove('hidden');
 };
 
-document.getElementById('file-input').addEventListener('change', function(e) {
+window.closeSlotMenu = function() {
+  document.getElementById('slot-menu-overlay').classList.add('hidden');
+};
+
+window.selectSlotAction = async function(action) {
+  closeSlotMenu();
+  
+  if (action === 'upload') {
+    document.getElementById('file-input').click();
+  } else if (action === 'generate') {
+    await generateImageWithAI(currentSlotIndex);
+  } else if (action === 'enhance') {
+    document.getElementById('file-input').dataset.enhance = 'true';
+    document.getElementById('file-input').click();
+  }
+};
+
+// ============================================
+// UPLOAD E COMPRESSIONE
+// ============================================
+document.getElementById('file-input').addEventListener('change', async function(e) {
   if (!e.target.files || !e.target.files[0]) return;
   
   const file = e.target.files[0];
@@ -114,26 +131,226 @@ document.getElementById('file-input').addEventListener('change', function(e) {
     return;
   }
 
-  const reader = new FileReader();
-  reader.onload = function(event) {
-    newImageSlots[currentSlotIndex].image = event.target.result;
-    renderSlot(currentSlotIndex);
-    updateProgress();
-  };
-  reader.readAsDataURL(file);
+  const shouldEnhance = e.target.dataset.enhance === 'true';
+  e.target.dataset.enhance = ''; // Reset
+
+  showLoader(shouldEnhance ? '✨ Upload e miglioramento...' : '📋 Compressione immagine...');
+
+  try {
+    // 🗜️ Comprimi immagine (max 800px, quality 0.8)
+    const compressedBase64 = await compressImage(file, 800, 0.8);
+
+    if (shouldEnhance) {
+      // ✨ ENHANCE: Carica + Migliora con AI
+      await enhanceImageWithAI(currentSlotIndex, compressedBase64);
+    } else {
+      // 📷 SAVE: Salva direttamente
+      await saveImage(currentSlotIndex, compressedBase64);
+    }
+  } catch (error) {
+    hideLoader();
+    console.error('❌ Errore processing:', error);
+    alert('Errore durante il caricamento');
+  }
   
   e.target.value = '';
 });
 
+// ============================================
+// COMPRESSIONE IMMAGINE
+// ============================================
+function compressImage(file, maxWidth, quality) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let width = img.width;
+        let height = img.height;
+
+        // Ridimensiona mantenendo aspect ratio
+        if (width > maxWidth) {
+          height = (height * maxWidth) / width;
+          width = maxWidth;
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+
+        // Converti in base64 con qualità ridotta
+        const compressedBase64 = canvas.toDataURL('image/jpeg', quality);
+        resolve(compressedBase64);
+      };
+      img.onerror = reject;
+      img.src = e.target.result;
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+// ============================================
+// ACTION: save_photo (Upload diretto)
+// ============================================
+async function saveImage(slotIndex, base64Data) {
+  try {
+    const response = await fetch(BACKEND_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'save_photo',
+        vat_number: VAT,
+        chat_id: OWNER,
+        token: TOKEN,
+        position: newImageSlots[slotIndex].name,
+        image_data: base64Data
+      })
+    });
+
+    const result = await response.json();
+    console.log('✅ Save photo OK');
+
+    hideLoader();
+
+    if (result.success && result.url) {
+      newImageSlots[slotIndex].image = result.url;
+      newImageSlots[slotIndex].method = 'upload';
+      renderSlot(slotIndex);
+      updateProgress();
+
+      if (tg?.showPopup) {
+        tg.showPopup({
+          title: '✅ Immagine Salvata',
+          message: `${newImageSlots[slotIndex].label} caricata con successo!`,
+          buttons: [{ type: 'ok' }]
+        });
+      }
+    } else {
+      throw new Error(result.message || result.error || 'Errore salvataggio');
+    }
+  } catch (error) {
+    hideLoader();
+    console.error('❌ Errore save:', error);
+    alert('Errore durante il salvataggio');
+  }
+}
+
+// ============================================
+// ACTION: generate_photo (Generazione AI)
+// ============================================
+async function generateImageWithAI(slotIndex) {
+  showLoader('🎨 Generazione immagine AI...');
+
+  try {
+    const response = await fetch(BACKEND_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'generate_photo',
+        vat_number: VAT,
+        chat_id: OWNER,
+        token: TOKEN,
+        position: newImageSlots[slotIndex].name,
+        context: honeypotData.company_context_string || ''
+      })
+    });
+
+    const result = await response.json();
+    console.log('✅ Generate photo OK');
+
+    hideLoader();
+
+    if (result.success && result.url) {
+      newImageSlots[slotIndex].image = result.url;
+      newImageSlots[slotIndex].method = 'generate';
+      renderSlot(slotIndex);
+      updateProgress();
+
+      if (tg?.showPopup) {
+        tg.showPopup({
+          title: '✅ Immagine Generata',
+          message: `${newImageSlots[slotIndex].label} creata con AI!`,
+          buttons: [{ type: 'ok' }]
+        });
+      }
+    } else {
+      throw new Error(result.message || result.error || 'Errore generazione');
+    }
+  } catch (error) {
+    hideLoader();
+    console.error('❌ Errore generate:', error);
+    alert('Errore durante la generazione');
+  }
+}
+
+// ============================================
+// ACTION: enhance_photo (Upload + Migliora)
+// ============================================
+async function enhanceImageWithAI(slotIndex, base64Data) {
+  try {
+    const response = await fetch(BACKEND_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'enhance_photo',
+        vat_number: VAT,
+        chat_id: OWNER,
+        token: TOKEN,
+        position: newImageSlots[slotIndex].name,
+        image_data: base64Data
+      })
+    });
+
+    const result = await response.json();
+    console.log('✅ Enhance photo OK');
+
+    hideLoader();
+
+    if (result.success && result.url) {
+      newImageSlots[slotIndex].image = result.url;
+      newImageSlots[slotIndex].method = 'enhance';
+      renderSlot(slotIndex);
+      updateProgress();
+
+      if (tg?.showPopup) {
+        tg.showPopup({
+          title: '✨ Immagine Migliorata',
+          message: `${newImageSlots[slotIndex].label} migliorata con AI!`,
+          buttons: [{ type: 'ok' }]
+        });
+      }
+    } else {
+      throw new Error(result.message || result.error || 'Errore enhancement');
+    }
+  } catch (error) {
+    hideLoader();
+    console.error('❌ Errore enhance:', error);
+    alert('Errore durante il miglioramento');
+  }
+}
+
+// ============================================
+// RENDERING SLOT
+// ============================================
 function renderSlot(slotIndex) {
   const slot = newImageSlots[slotIndex];
   const slotElement = document.getElementById(`slot-${slotIndex}`);
   
   if (slot.image) {
     slotElement.classList.add('filled');
+    
+    // Badge metodo usato
+    let methodBadge = '';
+    if (slot.method === 'generate') methodBadge = '🎨';
+    else if (slot.method === 'enhance') methodBadge = '✨';
+    else methodBadge = '📷';
+
     slotElement.innerHTML = `
       <img src="${slot.image}" alt="${slot.label}">
-      <span class="slot-label">${slot.label}</span>
+      <span class="slot-label">${methodBadge} ${slot.label}</span>
       <button class="remove-btn" onclick="removeSlot(${slotIndex})">
         <i class="fas fa-times"></i>
       </button>
@@ -148,6 +365,7 @@ function renderSlot(slotIndex) {
         <div class="placeholder-icon">${icon}</div>
         <div class="placeholder-text">${text}</div>
       </div>
+      <button class="ai-menu-btn" onclick="openSlotMenu(${slotIndex})">🤖</button>
       <span class="slot-label">${slot.label}</span>
     `;
   }
@@ -155,6 +373,7 @@ function renderSlot(slotIndex) {
 
 window.removeSlot = function(slotIndex) {
   newImageSlots[slotIndex].image = null;
+  newImageSlots[slotIndex].method = null;
   renderSlot(slotIndex);
   updateProgress();
 };
@@ -168,25 +387,15 @@ function updateProgress() {
   document.getElementById('progress-fill').style.width = `${percent}%`;
 }
 
-function getNewImagesBase64() {
-  return newImageSlots
-    .filter(s => s.image !== null)
-    .map(s => ({
-      position: s.name,
-      data: s.image
-    }));
-}
-
 function validateNewImages() {
   const filled = newImageSlots.filter(s => s.image !== null).length;
-  return filled === 3; // Tutte e 3 obbligatorie
+  return filled === 3;
 }
 
 // ============================================
 // FAB BUTTONS
 // ============================================
 document.getElementById('btn-back').addEventListener('click', () => {
-  // ✅ Torna indietro direttamente senza conferma
   window.location.href = `../dashboard.html?vat=${VAT}&owner=${OWNER}&token=${TOKEN}`;
 });
 
@@ -203,7 +412,7 @@ document.getElementById('btn-deploy').addEventListener('click', () => {
 // ============================================
 async function previewLanding() {
   if (!validateNewImages()) {
-    const msg = '⚠️ Devi caricare tutte e 3 le nuove immagini!';
+    const msg = '⚠️ Devi completare tutte e 3 le immagini!';
     if (tg?.showAlert) {
       tg.showAlert(msg);
     } else {
@@ -215,8 +424,6 @@ async function previewLanding() {
   showLoader('👁️ Generazione anteprima...');
 
   try {
-    const newImages = getNewImagesBase64();
-
     const response = await fetch(BACKEND_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -225,14 +432,13 @@ async function previewLanding() {
         vat_number: VAT,
         chat_id: OWNER,
         token: TOKEN,
-        new_images: newImages,
         honeypot: honeypotData,
         catalog: catalogData
       })
     });
 
     const result = await response.json();
-    console.log('✅ Preview result OK');
+    console.log('✅ Preview OK');
 
     hideLoader();
 
@@ -242,21 +448,17 @@ async function previewLanding() {
       if (tg?.showPopup) {
         tg.showPopup({
           title: '✅ Anteprima Pronta',
-          message: `L'anteprima è stata generata.\n\nValida fino a: ${new Date(result.expires_at).toLocaleString('it-IT')}`,
+          message: `Valida fino a: ${new Date(result.expires_at).toLocaleString('it-IT')}`,
           buttons: [{ type: 'ok' }]
         });
       }
     } else {
-      throw new Error(result.message || result.error || 'Errore anteprima');
+      throw new Error(result.message || result.error);
     }
   } catch (error) {
-    console.error('❌ Errore preview:', error);
     hideLoader();
-    if (tg?.showAlert) {
-      tg.showAlert('Errore generazione anteprima');
-    } else {
-      alert('Errore generazione anteprima');
-    }
+    console.error('❌ Errore preview:', error);
+    alert('Errore generazione anteprima');
   }
 }
 
@@ -265,7 +467,7 @@ async function previewLanding() {
 // ============================================
 function checkCreditsAndDeploy() {
   if (!validateNewImages()) {
-    const msg = '⚠️ Devi caricare tutte e 3 le nuove immagini!';
+    const msg = '⚠️ Devi completare tutte e 3 le immagini!';
     if (tg?.showAlert) {
       tg.showAlert(msg);
     } else {
@@ -314,8 +516,6 @@ async function executeDeploy() {
   showLoader('🚀 Deploy in corso...');
 
   try {
-    const newImages = getNewImagesBase64();
-
     const response = await fetch(BACKEND_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -324,14 +524,13 @@ async function executeDeploy() {
         vat_number: VAT,
         chat_id: OWNER,
         token: TOKEN,
-        new_images: newImages,
         honeypot: honeypotData,
         catalog: catalogData
       })
     });
 
     const result = await response.json();
-    console.log('✅ Deploy result OK');
+    console.log('✅ Deploy OK');
 
     hideLoader();
 
@@ -379,11 +578,7 @@ async function executeDeploy() {
   } catch (error) {
     console.error('❌ Errore deploy:', error);
     hideLoader();
-    if (tg?.showAlert) {
-      tg.showAlert('Errore durante il deploy');
-    } else {
-      alert('Errore durante il deploy');
-    }
+    alert('Errore durante il deploy');
   }
 }
 
