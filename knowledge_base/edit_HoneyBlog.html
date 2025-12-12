@@ -33,7 +33,13 @@
       border-color: var(--success);
       cursor: default;
     }
-    .image-slot.filled:hover {
+    .image-slot.locked {
+      border-style: solid;
+      border-color: var(--info);
+      cursor: default;
+      opacity: 0.9;
+    }
+    .image-slot.filled:hover, .image-slot.locked:hover {
       border-color: var(--success);
     }
     .image-slot img {
@@ -91,6 +97,9 @@
       font-weight: 600;
       z-index: 5;
     }
+    .slot-label.locked-label {
+      background: rgba(23, 162, 184, 0.8);
+    }
     .progress-bar {
       background: var(--input-bg);
       border-radius: var(--radius-full);
@@ -120,7 +129,7 @@
     
     <div class="card" style="text-align:center; margin-bottom:25px;">
       <h1 style="font-size:22px; margin-bottom:8px;">🏺 Landing HoneyPot Generator</h1>
-      <p class="subtitle" style="margin-bottom:0;">Carica 4-5 immagini per la tua landing page</p>
+      <p class="subtitle" style="margin-bottom:0;">Carica 3 immagini aggiuntive per la landing</p>
     </div>
 
     <!-- ISTRUZIONI -->
@@ -128,10 +137,10 @@
       <div style="display: flex; align-items: start; gap: 15px;">
         <div style="font-size: 32px;">📸</div>
         <div style="flex: 1;">
-          <h3 style="font-size: 15px; margin-bottom: 8px; color: var(--primary);">Carica le tue immagini</h3>
+          <h3 style="font-size: 15px; margin-bottom: 8px; color: var(--primary);">Logo e Photo già disponibili</h3>
           <p style="font-size: 13px; color: var(--text-muted); margin: 0; line-height: 1.5;">
-            Clicca su ogni box per caricare le immagini nelle posizioni corrette della landing:
-            <strong style="color: var(--text-primary);">Hero principale, 2-3 gallery, e 1 footer</strong>.
+            <strong style="color: var(--success);">✓ Logo e Photo principale</strong> sono già salvati.<br>
+            Carica <strong style="color: var(--text-primary);">3 nuove immagini</strong> per completare la gallery della landing.
           </p>
         </div>
       </div>
@@ -141,7 +150,7 @@
     <div class="card">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
         <span style="font-size: 13px; font-weight: 600;">Progresso Caricamento</span>
-        <span id="progress-text" style="font-size: 13px; color: var(--primary); font-weight: 600;">0/5</span>
+        <span id="progress-text" style="font-size: 13px; color: var(--primary); font-weight: 600;">0/3</span>
       </div>
       <div class="progress-bar">
         <div id="progress-fill" class="progress-fill" style="width: 0%;"></div>
@@ -150,49 +159,47 @@
 
     <!-- IMAGE SLOTS -->
     <div class="card">
-      <h3 style="font-size: 14px; margin-bottom: 15px; color: var(--primary);">Immagini Landing Page</h3>
+      <h3 style="font-size: 14px; margin-bottom: 15px; color: var(--primary);">Immagini Landing (5 totali)</h3>
       
-      <!-- Hero Image -->
+      <!-- Immagini già disponibili (2) -->
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px;">
+        <div class="image-slot locked" id="slot-logo">
+          <img id="img-logo" src="" alt="Logo">
+          <span class="slot-label locked-label">🔒 Logo (pronto)</span>
+        </div>
+        <div class="image-slot locked" id="slot-photo">
+          <img id="img-photo" src="" alt="Photo">
+          <span class="slot-label locked-label">🔒 Photo (pronto)</span>
+        </div>
+      </div>
+
+      <div style="border-top: 1px solid var(--glass-border); margin: 20px 0; padding-top: 20px;">
+        <h4 style="font-size: 13px; margin-bottom: 10px; color: var(--text-secondary);">Carica 3 nuove immagini:</h4>
+      </div>
+
+      <!-- Nuove immagini da caricare (3) -->
       <div class="image-slot" id="slot-0" onclick="selectSlot(0)">
         <div class="placeholder">
           <div class="placeholder-icon">🖼️</div>
-          <div class="placeholder-text">HERO PRINCIPALE</div>
+          <div class="placeholder-text">GALLERY 1</div>
         </div>
-        <span class="slot-label">Hero</span>
+        <span class="slot-label">Gallery 1</span>
       </div>
 
-      <!-- Gallery Images (2-3) -->
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px;">
         <div class="image-slot" id="slot-1" onclick="selectSlot(1)">
-          <div class="placeholder">
-            <div class="placeholder-icon">📷</div>
-            <div class="placeholder-text">GALLERY 1</div>
-          </div>
-          <span class="slot-label">Gallery 1</span>
-        </div>
-        <div class="image-slot" id="slot-2" onclick="selectSlot(2)">
           <div class="placeholder">
             <div class="placeholder-icon">📷</div>
             <div class="placeholder-text">GALLERY 2</div>
           </div>
           <span class="slot-label">Gallery 2</span>
         </div>
-      </div>
-
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px;">
-        <div class="image-slot" id="slot-3" onclick="selectSlot(3)">
-          <div class="placeholder">
-            <div class="placeholder-icon">📷</div>
-            <div class="placeholder-text">GALLERY 3 (opzionale)</div>
-          </div>
-          <span class="slot-label">Gallery 3</span>
-        </div>
-        <div class="image-slot" id="slot-4" onclick="selectSlot(4)">
+        <div class="image-slot" id="slot-2" onclick="selectSlot(2)">
           <div class="placeholder">
             <div class="placeholder-icon">🎨</div>
-            <div class="placeholder-text">FOOTER (opzionale)</div>
+            <div class="placeholder-text">GALLERY 3</div>
           </div>
-          <span class="slot-label">Footer</span>
+          <span class="slot-label">Gallery 3</span>
         </div>
       </div>
     </div>
@@ -201,7 +208,7 @@
     <div style="height: 100px;"></div>
   </div>
 
-  <!-- FAB BUTTONS (UNIFORMI) -->
+  <!-- FAB BUTTONS -->
   <div class="fab-container">
     <button class="fab-btn fab-secondary" id="btn-back" title="Torna Indietro">
       <i class="fas fa-arrow-left"></i>
