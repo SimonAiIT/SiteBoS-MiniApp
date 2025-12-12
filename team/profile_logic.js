@@ -151,7 +151,7 @@ const UI = {
         UI.renderTags(DOM.digitalToolsTags, prof.digital_tools || [], 'tag-badge');
         UI.renderTags(DOM.challengesTags, prof.current_challenges || [], 'challenge-tag');
 
-        // LEARNING HISTORY
+        // 🔥 LEARNING HISTORY (CARD COLLASSABILI)
         UI.renderLearningHistory(prof.learning_history || []);
 
         // BEHAVIORAL
@@ -200,18 +200,19 @@ const UI = {
         }
 
         const engagementLabels = {
-            'transformative': '🚀 Trasformativo',
+            'transformational': '🚀 Trasformativo',
             'standard': '✅ Standard',
             'resistant': '⚠️ Resistenza'
         };
 
         const engagementClasses = {
-            'transformative': 'impact-transformative',
+            'transformational': 'impact-transformative',
             'standard': 'impact-standard',
             'resistant': 'impact-resistant'
         };
 
-        DOM.learningHistoryContainer.innerHTML = history.map(item => {
+        // 🔥 RENDER CARD COLLASSABILI
+        DOM.learningHistoryContainer.innerHTML = history.map((item, index) => {
             const date = item.completed_at 
                 ? new Date(item.completed_at).toLocaleDateString('it-IT', { day: 'numeric', month: 'short', year: 'numeric' })
                 : 'N/A';
@@ -221,34 +222,48 @@ const UI = {
             const engagementClass = engagementClasses[engagementLevel] || 'impact-standard';
 
             return `
-                <div class="learning-card">
-                    <div class="learning-header">
-                        <div class="learning-title">
-                            <i class="fas fa-play-circle"></i> ${item.video_title || 'Video di Formazione'}
+                <div class="knowledge-card" data-learning-index="${index}">
+                    <div class="card-header" style="cursor: pointer;">
+                        <h3 style="display: flex; align-items: center; gap: 10px; margin: 0; font-size: 15px;">
+                            <i class="fas fa-play-circle" style="color: var(--primary);"></i>
+                            ${item.video_title || 'Video di Formazione'}
+                        </h3>
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <span style="font-size: 12px; color: var(--text-muted);">📅 ${date}</span>
+                            <i class="fas fa-chevron-down chevron"></i>
                         </div>
-                        <div class="learning-date">📅 ${date}</div>
                     </div>
-                    
-                    ${item.personal_reflection ? `
-                        <div class="learning-reflection">
-                            <strong style="color: var(--primary); font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">✍️ Riflessione</strong><br>
-                            ${item.personal_reflection}
-                        </div>
-                    ` : ''}
-
-                    <div class="learning-impact">
-                        <div class="impact-badge ${engagementClass}">
-                            ${engagementLabel}
-                        </div>
-                        ${item.score_impact ? `
-                            <div class="impact-badge impact-standard">
-                                🎯 Impact: ${item.score_impact > 0 ? '+' : ''}${item.score_impact}
+                    <div class="card-content">
+                        ${item.reflection_summary ? `
+                            <div style="background: rgba(91, 111, 237, 0.1); border-left: 3px solid var(--primary); border-radius: 8px; padding: 12px 15px; margin-bottom: 12px; font-size: 13px; line-height: 1.6;">
+                                <strong style="color: var(--primary); font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;">✍️ Riflessione</strong><br>
+                                ${item.reflection_summary}
                             </div>
                         ` : ''}
+
+                        <div style="display: flex; gap: 10px; margin-top: 12px;">
+                            <div class="impact-badge ${engagementClass}" style="flex: 1; text-align: center; padding: 8px; border-radius: 8px; font-size: 11px; font-weight: 700;">
+                                ${engagementLabel}
+                            </div>
+                            ${item.score_impact ? `
+                                <div class="impact-badge impact-standard" style="flex: 1; text-align: center; padding: 8px; border-radius: 8px; font-size: 11px; font-weight: 700;">
+                                    🎯 Impact: ${item.score_impact > 0 ? '+' : ''}${item.score_impact}
+                                </div>
+                            ` : ''}
+                        </div>
                     </div>
                 </div>
             `;
         }).join('');
+
+        // ✨ ATTACH TOGGLE LISTENER
+        DOM.learningHistoryContainer.addEventListener('click', (e) => {
+            const cardHeader = e.target.closest('.card-header');
+            if (cardHeader) {
+                const card = cardHeader.parentElement;
+                card.classList.toggle('open');
+            }
+        });
     },
 
     renderReputation: (reputation) => {
@@ -443,9 +458,9 @@ const App = {
     },
 
     attachEvents: () => {
-        // ACCORDION TOGGLE
+        // ACCORDION TOGGLE (GIA' GESTITO DENTRO renderLearningHistory)
         DOM.app.addEventListener('click', (e) => {
-            if (e.target.closest('.card-header')) {
+            if (e.target.closest('.card-header') && !e.target.closest('#learning-history-container')) {
                 e.target.closest('.card-header').parentElement.classList.toggle('open');
             }
         });
