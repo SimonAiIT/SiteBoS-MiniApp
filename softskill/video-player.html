@@ -11,13 +11,15 @@
         body {
             padding: 0;
             margin: 0;
-            background: var(--bg-primary);
+            background: linear-gradient(135deg, var(--bg-start) 0%, var(--bg-end) 100%);
+            background-attachment: fixed;
             overflow-x: hidden;
         }
 
         .video-container {
             width: 100%;
             min-height: 100vh;
+            background: transparent;
         }
 
         .video-header {
@@ -133,6 +135,7 @@
             margin-bottom: 20px;
             overflow: hidden;
             box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
         }
 
         .card-header {
@@ -180,10 +183,11 @@
 
         .card-body {
             padding: 20px;
+            background: rgba(0, 0, 0, 0.15);
         }
 
         .takeaway-item {
-            background: rgba(91, 111, 237, 0.1);
+            background: rgba(91, 111, 237, 0.15);
             border-left: 3px solid var(--primary);
             padding: 12px 15px;
             margin-bottom: 10px;
@@ -211,7 +215,7 @@
         .reflection-textarea {
             width: 100%;
             min-height: 100px;
-            background: var(--card-bg);
+            background: rgba(0, 0, 0, 0.3);
             border: 1px solid var(--glass-border);
             border-radius: 8px;
             padding: 12px;
@@ -224,7 +228,11 @@
         .reflection-textarea:focus {
             outline: none;
             border-color: var(--warning);
-            background: rgba(245, 158, 11, 0.05);
+            background: rgba(245, 158, 11, 0.08);
+        }
+
+        .reflection-textarea::placeholder {
+            color: var(--text-secondary);
         }
 
         .btn-complete {
@@ -326,7 +334,7 @@
         }
 
         .analysis-progress-bar {
-            background: linear-gradient(90deg, #5b6fed, #4cd964);
+            background: linear-gradient(90deg, var(--primary), var(--success));
             height: 100%;
             width: 0%;
             transition: width 0.3s ease;
@@ -362,6 +370,7 @@
             max-width: 500px;
             width: 100%;
             text-align: center;
+            backdrop-filter: blur(10px);
         }
 
         .completion-icon {
