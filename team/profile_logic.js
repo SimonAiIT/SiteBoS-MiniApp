@@ -54,6 +54,7 @@ const DOM = {
     hardSkillsTags: document.getElementById('hard-skills-tags'),
     digitalToolsTags: document.getElementById('digital-tools-tags'),
     challengesTags: document.getElementById('challenges-tags'),
+    learningHistoryContainer: document.getElementById('learning-history-container'),
     
     // BEHAVIORAL
     expertiseTags: document.getElementById('expertise-tags'),
@@ -150,6 +151,9 @@ const UI = {
         UI.renderTags(DOM.digitalToolsTags, prof.digital_tools || [], 'tag-badge');
         UI.renderTags(DOM.challengesTags, prof.current_challenges || [], 'challenge-tag');
 
+        // LEARNING HISTORY
+        UI.renderLearningHistory(prof.learning_history || []);
+
         // BEHAVIORAL
         UI.renderTags(DOM.expertiseTags, prof.expertise_areas || [], 'skill-tag');
         DOM.communicationStyle.textContent = behavioral.communication_style || 'N/A';
@@ -187,6 +191,64 @@ const UI = {
             span.textContent = tag;
             container.appendChild(span);
         });
+    },
+
+    renderLearningHistory: (history) => {
+        if (!history || history.length === 0) {
+            DOM.learningHistoryContainer.innerHTML = '<div class="no-data-msg"><i class="fas fa-video"></i><br>Nessun video completato ancora</div>';
+            return;
+        }
+
+        const engagementLabels = {
+            'transformative': '🚀 Trasformativo',
+            'standard': '✅ Standard',
+            'resistant': '⚠️ Resistenza'
+        };
+
+        const engagementClasses = {
+            'transformative': 'impact-transformative',
+            'standard': 'impact-standard',
+            'resistant': 'impact-resistant'
+        };
+
+        DOM.learningHistoryContainer.innerHTML = history.map(item => {
+            const date = item.completed_at 
+                ? new Date(item.completed_at).toLocaleDateString('it-IT', { day: 'numeric', month: 'short', year: 'numeric' })
+                : 'N/A';
+            
+            const engagementLevel = item.engagement_level || 'standard';
+            const engagementLabel = engagementLabels[engagementLevel] || '✅ Standard';
+            const engagementClass = engagementClasses[engagementLevel] || 'impact-standard';
+
+            return `
+                <div class="learning-card">
+                    <div class="learning-header">
+                        <div class="learning-title">
+                            <i class="fas fa-play-circle"></i> ${item.video_title || 'Video di Formazione'}
+                        </div>
+                        <div class="learning-date">📅 ${date}</div>
+                    </div>
+                    
+                    ${item.personal_reflection ? `
+                        <div class="learning-reflection">
+                            <strong style="color: var(--primary); font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">✍️ Riflessione</strong><br>
+                            ${item.personal_reflection}
+                        </div>
+                    ` : ''}
+
+                    <div class="learning-impact">
+                        <div class="impact-badge ${engagementClass}">
+                            ${engagementLabel}
+                        </div>
+                        ${item.score_impact ? `
+                            <div class="impact-badge impact-standard">
+                                🎯 Impact: ${item.score_impact > 0 ? '+' : ''}${item.score_impact}
+                            </div>
+                        ` : ''}
+                    </div>
+                </div>
+            `;
+        }).join('');
     },
 
     renderReputation: (reputation) => {
