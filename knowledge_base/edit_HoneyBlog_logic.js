@@ -398,14 +398,19 @@ async function previewLanding() {
     });
 
     const result = await response.json();
-    console.log('✅ Preview OK');
+    console.log('✅ Preview OK', result);
 
     hideLoader();
 
-    if (result.success) {
-      window.open(result.preview_url, '_blank');
+    if (result.success && result.html) {
+      // Salva HTML in sessionStorage
+      sessionStorage.setItem('preview_html', result.html);
+      sessionStorage.setItem('preview_meta', JSON.stringify(result.meta || {}));
+      
+      // Apri visore in nuova finestra
+      window.open('preview_HoneyBlog.html', '_blank');
     } else {
-      throw new Error(result.message || result.error);
+      throw new Error(result.message || result.error || 'HTML non ricevuto');
     }
   } catch (error) {
     hideLoader();
