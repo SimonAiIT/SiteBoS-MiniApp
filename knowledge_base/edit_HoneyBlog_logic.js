@@ -213,15 +213,11 @@ async function saveImage(slotIndex, base64Data) {
     const result = await response.json();
     console.log('✅ Save photo OK', result);
 
-    hideLoader();
-
     if (result.success && result.asset && result.asset.url) {
-      newImageSlots[slotIndex].image = result.asset.url;
-      newImageSlots[slotIndex].method = 'upload';
-      renderSlot(slotIndex);
-      updateProgress();
-      alert(`✅ Immagine Salvata!\n\n${newImageSlots[slotIndex].label} caricata con successo!`);
+      // Ricarica pagina per mostrare nuova immagine
+      window.location.reload();
     } else {
+      hideLoader();
       throw new Error(result.message || result.error || 'Errore salvataggio');
     }
   } catch (error) {
@@ -254,15 +250,11 @@ async function generateImageWithAI(slotIndex) {
     const result = await response.json();
     console.log('✅ Generate photo OK', result);
 
-    hideLoader();
-
     if (result.success && result.asset && result.asset.url) {
-      newImageSlots[slotIndex].image = result.asset.url;
-      newImageSlots[slotIndex].method = 'generate';
-      renderSlot(slotIndex);
-      updateProgress();
-      alert(`✅ Immagine Generata!\n\n${newImageSlots[slotIndex].label} creata con AI!`);
+      // Ricarica pagina per mostrare nuova immagine
+      window.location.reload();
     } else {
+      hideLoader();
       throw new Error(result.message || result.error || 'Errore generazione');
     }
   } catch (error) {
@@ -293,15 +285,11 @@ async function enhanceImageWithAI(slotIndex, base64Data) {
     const result = await response.json();
     console.log('✅ Enhance photo OK', result);
 
-    hideLoader();
-
     if (result.success && result.asset && result.asset.url) {
-      newImageSlots[slotIndex].image = result.asset.url;
-      newImageSlots[slotIndex].method = 'enhance';
-      renderSlot(slotIndex);
-      updateProgress();
-      alert(`✨ Immagine Migliorata!\n\n${newImageSlots[slotIndex].label} migliorata con AI!`);
+      // Ricarica pagina per mostrare nuova immagine
+      window.location.reload();
     } else {
+      hideLoader();
       throw new Error(result.message || result.error || 'Errore enhancement');
     }
   } catch (error) {
@@ -418,7 +406,6 @@ async function previewLanding() {
 
     if (result.success) {
       window.open(result.preview_url, '_blank');
-      alert(`✅ Anteprima Pronta!\n\nValida fino a: ${new Date(result.expires_at).toLocaleString('it-IT')}`);
     } else {
       throw new Error(result.message || result.error);
     }
