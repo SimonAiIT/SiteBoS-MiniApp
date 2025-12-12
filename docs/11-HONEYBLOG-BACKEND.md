@@ -31,88 +31,155 @@ Recupera tutti i dati necessari per popolare l'editor della landing page.
 ```json
 {
   "action": "get_honeyblog_data",
-  "vat_number": "12345678901",
-  "chat_id": "123456789",
-  "token": "user_auth_token"
+  "vat_number": "IT06988830821",
+  "chat_id": "720379727",
+  "token": "sk_jnqd2lce3dtrpxydxzy5gk"
 }
 ```
 
-### Response Success
+### Response Success (Struttura Reale)
+
+**Nota**: La risposta è un **array con un singolo oggetto**.
 
 ```json
-{
-  "success": true,
-  "owner_data": {
-    "credits": 15000,
-    "ragione_sociale": "Azienda Esempio SRL",
-    "logo_url": "https://cdn.example.com/logo.png"
-  },
-  "honeypot": {
-    "profile": {
-      "business_name": "Azienda Esempio",
-      "description": "Descrizione business...",
-      "industry": "Tecnologia",
-      "logo_url": "https://...",
-      "website": "https://example.com",
-      "email": "info@example.com",
-      "phone": "+39 123 456 7890",
-      "social_links": {
-        "facebook": "https://facebook.com/example",
-        "instagram": "https://instagram.com/example",
-        "linkedin": "https://linkedin.com/company/example"
-      }
-    },
-    "messages": [
-      {
-        "id": "msg_1",
-        "data": {
-          "knowledge_fragments": [
-            "Domanda: Quali servizi offrite?\nRisposta: Offriamo...",
-            "Domanda: Orari di apertura?\nRisposta: Siamo aperti..."
+[
+  {
+    "HoneyPot": {
+      "company_context_string": "Garofalo Ai Consulting è una ditta individuale italiana...",
+      "offer_text": "🚀 Sbloccate il Vostro Vantaggio Competitivo con l'AI!<br>...",
+      "knowledge_fragments": [
+        {
+          "fragment_id": "GAROFALO_AI_OVERVIEW_V1",
+          "user_utterances": ["Cos'è Garofalo Ai Consulting?", ...],
+          "answer_fragment": "Garofalo Ai Consulting è una ditta...",
+          "summary": "Siamo il motore nascosto...",
+          "sections": [
+            {
+              "question": "Qual è lo status legale...",
+              "answer": "Garofalo Ai Consulting opera come..."
+            }
           ]
         }
-      }
-    ]
-  },
-  "catalog": {
-    "categories": [
-      {
-        "id": "cat_1",
-        "name": "Servizi",
-        "products": [
-          {
-            "id": "prod_1",
-            "name": "Consulenza Base",
-            "description": "Consulenza iniziale di 1 ora",
-            "price": 99.99,
-            "image_url": "https://...",
-            "featured": true
+      ],
+      "offers": [],
+      "availability_schedule": {
+        "hours": {
+          "monday": { "morning": { "from": "9" }, "afternoon": { "to": "15" } },
+          "tuesday": { "morning": { "from": "9" }, "afternoon": { "to": "18" } }
+        }
+      },
+      "config": {
+        "onboarding_completed": true,
+        "bot_token": "8447762269:AAG...",
+        "bot_linked": true,
+        "completed_at": "2025-12-10T07:11:36.459Z"
+      },
+      "assets": {
+        "logo": {
+          "url": "https://cdn.jsdelivr.net/gh/.../logo-IT06988830821.jpeg",
+          "mime": "image/jpeg",
+          "description": "🤖 ANALISI: Il logo di Garofalo Ai Consulting...",
+          "meta": {
+            "visual_analysis": "Il logo...",
+            "pro_tip": "Per ottimizzare...",
+            "colors": ["#1C2C5A", "#8969C7", "#FFFFFF"]
           },
-          {
-            "id": "prod_2",
-            "name": "Consulenza Premium",
-            "description": "Pacchetto completo",
-            "price": 299.99,
-            "image_url": "https://...",
-            "featured": false
-          }
-        ]
+          "updated_at": "2025-12-10T07:05:54.116Z"
+        },
+        "photo": {
+          "description": "🛠️ ANALISI: L'immagine proietta...",
+          "mime": "image/jpeg",
+          "url": "https://cdn.jsdelivr.net/gh/.../photo-IT06988830821.jpeg",
+          "base64": null
+        }
       }
-    ]
-  },
-  "knowledge_docs": 12
-}
+    },
+    "service_catalog_setup": {
+      "categories": [
+        {
+          "name": "Core IPA & Workflow Automation",
+          "short_name": "⚙️ Core IPA Workflow",
+          "callback_data": "CAT_JU07RTFG",
+          "subcategories": [
+            {
+              "name": "Automazione End-to-End di Processi Inter-Dipartimentali",
+              "short_name": "🤖 Autom. End-to-End",
+              "callback_data": "SVC_DQESH7SA",
+              "blueprint_ready": true
+            }
+          ],
+          "original_slug": "CORE_IPA_WORKFLOW"
+        }
+      ],
+      "metadata": {
+        "last_updated_at": "2025-12-10T13:19:15.591Z",
+        "updated_by": "SYSTEM_AUTO_PROVISIONING"
+      }
+    },
+    "owner_data": {
+      "user_id": "IT06988830821",
+      "chat_id": 720379727,
+      "access_token": "sk_jnqd2lce3dtrpxydxzy5gk",
+      "vat_number": "IT06988830821",
+      "name": "GIUSEPPE",
+      "surname": "GAROFALO",
+      "email": "garofalo.giuseppe77@gmail.com",
+      "phone": "3273569647",
+      "ragione_sociale": "Garofalo Ai Consulting",
+      "indirizzo": "Via Esterna valle Cuba 14/1, 90046 MONREALE (PA)",
+      "fiscal_code": "GRFGPP77M30G273K",
+      "sdi_pec": "KRRH6B9",
+      "site": "https://garofaloai.com/",
+      "linkedin_page": "https://www.linkedin.com/in/giuseppe-garofalo-8bb95880/",
+      "facebook_page": "",
+      "sector": "services_consulting",
+      "business_description": "• Intelligent Process Automation...",
+      "subscription_plan": "Pioneer Trial",
+      "subscription_status": "Pending_Activation",
+      "credits_balance": 10000000,
+      "model_choice": "https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-lite-latest:generateContent",
+      "lenguage": "Italiano",
+      "created_at": "2025-12-10T06:49:05.804Z"
+    }
+  }
+]
 ```
 
-### Response Error
+### Mappatura Campi per Landing Page
 
-```json
-{
-  "success": false,
-  "error": "unauthorized",
-  "message": "Token non valido o scaduto"
-}
-```
+#### Da `HoneyPot`
+
+| Campo Frontend | Path Backend | Note |
+|---|---|---|
+| Logo aziendale | `HoneyPot.assets.logo.url` | URL CDN del logo |
+| Foto hero | `HoneyPot.assets.photo.url` | URL CDN foto principale |
+| Business Name | Derivato da `company_context_string` | Estrazione tramite parsing |
+| Tagline | `HoneyPot.offer_text` | HTML, può richiedere sanitizzazione |
+| FAQ | `HoneyPot.knowledge_fragments[]` | Array di domande/risposte |
+| Orari | `HoneyPot.availability_schedule.hours` | Oggetto con giorni settimana |
+
+#### Da `owner_data`
+
+| Campo Frontend | Path Backend | Note |
+|---|---|---|
+| Ragione Sociale | `owner_data.ragione_sociale` | |
+| Email | `owner_data.email` | |
+| Telefono | `owner_data.phone` | |
+| Sito Web | `owner_data.site` | |
+| LinkedIn | `owner_data.linkedin_page` | |
+| Facebook | `owner_data.facebook_page` | Può essere vuoto |
+| Indirizzo | `owner_data.indirizzo` | |
+| Crediti disponibili | `owner_data.credits_balance` | Per controllo deploy |
+
+#### Da `service_catalog_setup`
+
+| Campo Frontend | Path Backend | Note |
+|---|---|---|
+| Categorie servizi | `service_catalog_setup.categories[]` | Array categorie |
+| Nome categoria | `categories[].name` | Nome completo |
+| Servizi (subcategories) | `categories[].subcategories[]` | Array servizi |
+| Nome servizio | `subcategories[].name` | |
+| Servizio featured | `subcategories[].blueprint_ready` | Boolean per highlight |
 
 ---
 
@@ -126,16 +193,16 @@ Genera un'anteprima temporanea della landing page senza scalare crediti.
 ```json
 {
   "action": "preview_landing",
-  "vat_number": "12345678901",
-  "chat_id": "123456789",
-  "token": "user_auth_token",
+  "vat_number": "IT06988830821",
+  "chat_id": "720379727",
+  "token": "sk_jnqd2lce3dtrpxydxzy5gk",
   "use_ai_images": true,
   "uploaded_images": [
     "data:image/jpeg;base64,/9j/4AAQSkZJRg...",
     "data:image/png;base64,iVBORw0KGgo..."
   ],
-  "honeypot": { /* Dati honeypot ricevuti da get_honeyblog_data */ },
-  "catalog": { /* Dati catalog ricevuti da get_honeyblog_data */ }
+  "honeypot": { /* Oggetto HoneyPot completo ricevuto da get_honeyblog_data */ },
+  "catalog": { /* Oggetto service_catalog_setup completo */ }
 }
 ```
 
@@ -144,19 +211,9 @@ Genera un'anteprima temporanea della landing page senza scalare crediti.
 ```json
 {
   "success": true,
-  "preview_url": "https://preview-12345678901-abc123.pages.dev",
+  "preview_url": "https://preview-IT06988830821-abc123.pages.dev",
   "expires_at": "2025-12-13T12:00:00Z",
   "note": "Anteprima valida per 24 ore"
-}
-```
-
-### Response Error
-
-```json
-{
-  "success": false,
-  "error": "generation_failed",
-  "message": "Impossibile generare anteprima: dati incompleti"
 }
 ```
 
@@ -172,13 +229,13 @@ Genera una singola immagine AI basata su prompt derivato dai dati business.
 ```json
 {
   "action": "generate_image",
-  "vat_number": "12345678901",
-  "chat_id": "123456789",
-  "token": "user_auth_token",
+  "vat_number": "IT06988830821",
+  "chat_id": "720379727",
+  "token": "sk_jnqd2lce3dtrpxydxzy5gk",
   "prompt_context": {
-    "business_name": "Azienda Esempio",
-    "industry": "Tecnologia",
-    "description": "Azienda innovativa..."
+    "business_name": "Garofalo Ai Consulting",
+    "industry": "services_consulting",
+    "description": "Intelligent Process Automation..."
   },
   "image_type": "hero",
   "style": "professional"
@@ -200,16 +257,6 @@ Genera una singola immagine AI basata su prompt derivato dai dati business.
 }
 ```
 
-### Response Error
-
-```json
-{
-  "success": false,
-  "error": "ai_service_unavailable",
-  "message": "Servizio generazione immagini temporaneamente non disponibile"
-}
-```
-
 ---
 
 ## 🚀 Action 4: `deploy_honeyblog_landing`
@@ -222,15 +269,13 @@ Pubblica definitivamente la landing page, scala 10.000 crediti, restituisce URL 
 ```json
 {
   "action": "deploy_honeyblog_landing",
-  "vat_number": "12345678901",
-  "chat_id": "123456789",
-  "token": "user_auth_token",
+  "vat_number": "IT06988830821",
+  "chat_id": "720379727",
+  "token": "sk_jnqd2lce3dtrpxydxzy5gk",
   "use_ai_images": true,
-  "uploaded_images": [
-    "data:image/jpeg;base64,/9j/4AAQSkZJRg..."
-  ],
-  "honeypot": { /* Oggetto completo honeypot */ },
-  "catalog": { /* Oggetto completo catalog */ }
+  "uploaded_images": [],
+  "honeypot": { /* Oggetto HoneyPot completo */ },
+  "catalog": { /* Oggetto service_catalog_setup completo */ }
 }
 ```
 
@@ -239,13 +284,13 @@ Pubblica definitivamente la landing page, scala 10.000 crediti, restituisce URL 
 ```json
 {
   "success": true,
-  "landing_url": "https://honeyblog-12345678901.pages.dev",
+  "landing_url": "https://honeyblog-IT06988830821.pages.dev",
   "credits_deducted": 10000,
-  "credits_remaining": 5000,
+  "credits_remaining": 9990000,
   "deployed_at": "2025-12-12T12:30:00Z",
   "features_enabled": [
     "hero_section",
-    "products_showcase",
+    "services_showcase",
     "faq_section",
     "contact_form"
   ]
@@ -265,17 +310,6 @@ Pubblica definitivamente la landing page, scala 10.000 crediti, restituisce URL 
 }
 ```
 
-### Response Error - Dati Mancanti
-
-```json
-{
-  "success": false,
-  "error": "missing_required_data",
-  "missing_fields": ["honeypot.profile.business_name", "catalog.categories"],
-  "message": "Alcuni dati obbligatori sono mancanti"
-}
-```
-
 ---
 
 ## 📊 Struttura Landing Page Generata
@@ -283,112 +317,111 @@ Pubblica definitivamente la landing page, scala 10.000 crediti, restituisce URL 
 ### Sezioni Incluse
 
 1. **Hero Section**
-   - Logo aziendale (da `honeypot.profile.logo_url`)
-   - Nome business (da `honeypot.profile.business_name`)
-   - Tagline/Descrizione (da `honeypot.profile.description`)
-   - Immagine hero (AI-generated o uploaded)
-   - CTA principale
+   - Logo: `HoneyPot.assets.logo.url`
+   - Business Name: da `owner_data.ragione_sociale`
+   - Tagline: `HoneyPot.offer_text` (sanitizzato)
+   - Foto Hero: `HoneyPot.assets.photo.url` o AI-generated
+   - CTA: Link al chatbot o form contatto
 
-2. **Products/Services Showcase**
-   - Griglia prodotti featured (da `catalog.categories[].products` con `featured: true`)
-   - Card con immagine, nome, descrizione, prezzo
-   - Link a pagina dettaglio (opzionale)
+2. **Services Showcase**
+   - Griglia servizi da `service_catalog_setup.categories[].subcategories[]`
+   - Evidenzia servizi con `blueprint_ready: true`
+   - Card: Nome, Short Name, Icona emoji
 
 3. **FAQ Section**
-   - Domande/Risposte estratte da `honeypot.messages[].data.knowledge_fragments`
-   - Layout accordion o card
+   - Domande da `HoneyPot.knowledge_fragments[].user_utterances[0]`
+   - Risposte da `HoneyPot.knowledge_fragments[].answer_fragment`
+   - Layout accordion
 
 4. **Contact Section**
-   - Email (da `honeypot.profile.email`)
-   - Telefono (da `honeypot.profile.phone`)
-   - Link social (da `honeypot.profile.social_links`)
-   - Form contatto (opzionale)
+   - Email: `owner_data.email`
+   - Telefono: `owner_data.phone`
+   - LinkedIn: `owner_data.linkedin_page`
+   - Facebook: `owner_data.facebook_page` (se presente)
+   - Indirizzo: `owner_data.indirizzo`
 
 5. **Footer**
-   - Copyright
+   - Copyright con `owner_data.ragione_sociale`
    - Link social
-   - Link a sito principale (da `honeypot.profile.website`)
+   - Link sito: `owner_data.site`
 
 ---
 
-## ⚠️ Note Implementative Backend
+## ⚠️ Validazioni Backend
 
-### Validazione Dati
+### Campi Obbligatori per Deploy
 
-**Campi Obbligatori per Deploy**:
-- `honeypot.profile.business_name`
-- `honeypot.profile.description`
-- Almeno 1 prodotto in `catalog.categories[].products` OPPURE almeno 3 `knowledge_fragments`
+```javascript
+// Controlla questi campi prima del deploy
+if (
+  !honeypot.company_context_string ||
+  !owner_data.ragione_sociale ||
+  !owner_data.email ||
+  (honeypot.knowledge_fragments?.length < 3 && 
+   catalog.categories?.length < 1)
+) {
+  return {
+    success: false,
+    error: 'missing_required_data',
+    missing_fields: [...]
+  };
+}
+```
 
-**Campi Opzionali**:
-- `honeypot.profile.logo_url` (usa placeholder se mancante)
-- `honeypot.profile.social_links` (nascondi sezione se vuoto)
-- `uploaded_images` (usa AI se `use_ai_images: true`)
+### Controllo Crediti
 
-### Generazione HTML
+```javascript
+const COST = 10000;
+const available = owner_data.credits_balance;
 
-**Template Consigliato**:
-- HTML5 + CSS inline/embedded
-- Mobile-first responsive
-- Meta tags SEO (title, description da honeypot)
-- Open Graph tags per social sharing
-- Schema.org markup per business info
-
-### Hosting
-
-**Opzioni**:
-1. Cloudflare Pages (raccomandato per velocità)
-2. Vercel
-3. Netlify
-
-**Naming Convention**:
-- `honeyblog-{vat_number}.pages.dev`
-- OPPURE custom subdomain se disponibile
-
-### Caching e Performance
-
-- Cache delle immagini generate AI (evita rigenerazioni)
-- Minify HTML/CSS/JS
-- Lazy loading immagini
-- CDN per asset statici
+if (available < COST) {
+  return {
+    success: false,
+    error: 'insufficient_credits',
+    required: COST,
+    available: available,
+    deficit: COST - available
+  };
+}
+```
 
 ---
 
 ## 🔒 Sicurezza
 
-### Autenticazione
+### Sanitizzazione HTML
 
-**Verifica sempre**:
-1. `token` valido per `vat_number` e `chat_id`
-2. Associazione owner <-> vat_number corretta
-3. Crediti sufficienti PRIMA di generare (per `deploy_honeyblog_landing`)
+**Campi da sanitizzare**:
+- `HoneyPot.offer_text` (contiene HTML)
+- `HoneyPot.knowledge_fragments[].answer_fragment` (può contenere Markdown/HTML)
+
+**Rimuovi**:
+- `<script>` tags
+- `onclick`, `onerror`, altri event handlers
+- `javascript:` URLs
 
 ### Rate Limiting
 
-**Suggerimenti**:
-- `preview_landing`: max 10 chiamate/ora per utente
-- `generate_image`: max 20 chiamate/ora per utente
-- `deploy_honeyblog_landing`: max 5 chiamate/giorno per utente
-
-### Sanitizzazione Input
-
-**Rimuovi/Escape**:
-- Script tags da testi utente
-- SQL injection patterns
-- XSS vectors nei campi testuali
+- `get_honeyblog_data`: max 30 chiamate/ora
+- `preview_landing`: max 10 chiamate/ora
+- `generate_image`: max 20 chiamate/ora
+- `deploy_honeyblog_landing`: max 3 chiamate/giorno
 
 ---
 
-## 📝 Changelog Backend
+## 📝 Changelog
+
+### v1.1 - 12 Dicembre 2025
+- ✅ Aggiunta mappatura campi reali da struttura webhook
+- ✅ Documentazione parsing array response
+- ✅ Aggiornamento path campi per logo, photo, credits
+- ✅ Validazioni specifiche per campi effettivi
 
 ### v1.0 - 12 Dicembre 2025
-- Definizione action `get_honeyblog_data`
-- Definizione action `preview_landing`
-- Definizione action `generate_image`
-- Definizione action `deploy_honeyblog_landing`
-- Specifiche struttura dati honeypot + catalog
+- Definizione iniziale delle 4 action
+- Specifiche request/response
 
 ---
 
-**Ultimo aggiornamento**: 12 Dicembre 2025  
+**Ultimo aggiornamento**: 12 Dicembre 2025, 13:25 CET  
 **Endpoint**: `https://trinai.api.workflow.dcmake.it/webhook/50891655-84c8-4213-90e8-26ebbc3d6c4c`
