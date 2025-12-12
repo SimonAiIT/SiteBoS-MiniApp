@@ -17,13 +17,11 @@ let ownerData = null;
 let honeypotData = null;
 let catalogData = null;
 
-// 🎯 SLOT SYSTEM: 5 posizioni fisse
-const imageSlots = [
-  { id: 0, name: 'hero', label: 'Hero', required: true, image: null },
-  { id: 1, name: 'gallery1', label: 'Gallery 1', required: true, image: null },
-  { id: 2, name: 'gallery2', label: 'Gallery 2', required: true, image: null },
-  { id: 3, name: 'gallery3', label: 'Gallery 3', required: false, image: null },
-  { id: 4, name: 'footer', label: 'Footer', required: false, image: null }
+// 🎯 3 NUOVI SLOT (logo e photo già esistenti in assets)
+const newImageSlots = [
+  { id: 0, name: 'gallery1', label: 'Gallery 1', image: null },
+  { id: 1, name: 'gallery2', label: 'Gallery 2', image: null },
+  { id: 2, name: 'gallery3', label: 'Gallery 3', image: null }
 ];
 
 let currentSlotIndex = null;
@@ -57,13 +55,16 @@ async function init() {
       throw new Error('Dati mancanti');
     }
 
+    // 🖼️ Carica immagini esistenti da assets
+    loadExistingAssets();
+
     hideLoader();
     document.getElementById('app-content').classList.remove('hidden');
 
     if (tg?.showPopup) {
       tg.showPopup({
         title: '✅ Dati Caricati',
-        message: `${ownerData.ragione_sociale}\n\nCarica le immagini per procedere.`,
+        message: `${ownerData.ragione_sociale}\n\nLogo e Photo già disponibili.\nCarica 3 nuove immagini per completare.`,
         buttons: [{ type: 'ok' }]
       });
     }
@@ -80,7 +81,24 @@ async function init() {
 }
 
 // ============================================
-// SLOT MANAGEMENT
+// CARICA ASSETS ESISTENTI
+// ============================================
+function loadExistingAssets() {
+  // Logo
+  const logoUrl = honeypotData.assets?.logo?.url;
+  if (logoUrl) {
+    document.getElementById('img-logo').src = logoUrl;
+  }
+
+  // Photo
+  const photoUrl = honeypotData.assets?.photo?.url;
+  if (photoUrl) {
+    document.getElementById('img-photo').src = photoUrl;
+  }
+}
+
+// ============================================
+// SLOT MANAGEMENT (3 NUOVE IMMAGINI)
 // ============================================
 window.selectSlot = function(slotIndex) {
   currentSlotIndex = slotIndex;
@@ -98,18 +116,17 @@ document.getElementById('file-input').addEventListener('change', function(e) {
 
   const reader = new FileReader();
   reader.onload = function(event) {
-    imageSlots[currentSlotIndex].image = event.target.result;
+    newImageSlots[currentSlotIndex].image = event.target.result;
     renderSlot(currentSlotIndex);
     updateProgress();
   };
   reader.readAsDataURL(file);
   
-  // Reset input per permettere re-upload stesso file
   e.target.value = '';
 });
 
 function renderSlot(slotIndex) {
-  const slot = imageSlots[slotIndex];
+  const slot = newImageSlots[slotIndex];
   const slotElement = document.getElementById(`slot-${slotIndex}`);
   
   if (slot.image) {
@@ -123,10 +140,8 @@ function renderSlot(slotIndex) {
     `;
   } else {
     slotElement.classList.remove('filled');
-    const icon = slotIndex === 0 ? '🖼️' : (slotIndex === 4 ? '🎨' : '📷');
-    const text = slotIndex === 0 ? 'HERO PRINCIPALE' : 
-                 slotIndex === 4 ? 'FOOTER (opzionale)' :
-                 `GALLERY ${slotIndex} ${slotIndex > 2 ? '(opzionale)' : ''}`;
+    const icon = slotIndex === 0 ? '🖼️' : (slotIndex === 2 ? '🎨' : '📷');
+    const text = `GALLERY ${slotIndex + 1}`;
     
     slotElement.innerHTML = `
       <div class="placeholder">
@@ -139,27 +154,32 @@ function renderSlot(slotIndex) {
 }
 
 window.removeSlot = function(slotIndex) {
-  imageSlots[slotIndex].image = null;
+  newImageSlots[slotIndex].image = null;
   renderSlot(slotIndex);
   updateProgress();
 };
 
 function updateProgress() {
-  const filled = imageSlots.filter(s => s.image !== null).length;
-  const total = imageSlots.length;
+  const filled = newImageSlots.filter(s => s.image !== null).length;
+  const total = newImageSlots.length;
   const percent = (filled / total) * 100;
   
   document.getElementById('progress-text').textContent = `${filled}/${total}`;
   document.getElementById('progress-fill').style.width = `${percent}%`;
 }
 
-function getFilledSlots() {
-  return imageSlots.filter(s => s.image !== null);
+function getNewImagesBase64() {
+  return newImageSlots
+    .filter(s => s.image !== null)
+    .map(s => ({
+      position: s.name,
+      data: s.image
+    }));
 }
 
-function validateRequiredSlots() {
-  const missingRequired = imageSlots.filter(s => s.required && !s.image);
-  return missingRequired.length === 0;
+function validateNewImages() {
+  const filled = newImageSlots.filter(s => s.image !== null).length;
+  return filled === 3; // Tutte e 3 obbligatorie
 }
 
 // ============================================
@@ -184,8 +204,8 @@ document.getElementById('btn-deploy').addEventListener('click', () => {
 // ACTION: preview_landing
 // ============================================
 async function previewLanding() {
-  if (!validateRequiredSlots()) {
-    const msg = '⚠️ Devi caricare almeno Hero, Gallery 1 e Gallery 2!';
+  if (!validateNewImages()) {
+    const msg = '⚠️ Devi caricare tutte e 3 le nuove immagini!';
     if (tg?.showAlert) {
       tg.showAlert(msg);
     } else {
@@ -197,11 +217,7 @@ async function previewLanding() {
   showLoader('👁️ Generazione anteprima...');
 
   try {
-    const filledSlots = getFilledSlots();
-    const imagesPayload = filledSlots.map(slot => ({
-      position: slot.name,
-      data: slot.image
-    }));
+    const newImages = getNewImagesBase64();
 
     const response = await fetch(BACKEND_URL, {
       method: 'POST',
@@ -211,7 +227,7 @@ async function previewLanding() {
         vat_number: VAT,
         chat_id: OWNER,
         token: TOKEN,
-        images: imagesPayload,
+        new_images: newImages,
         honeypot: honeypotData,
         catalog: catalogData
       })
@@ -250,8 +266,8 @@ async function previewLanding() {
 // CHECK CREDITI E DEPLOY
 // ============================================
 function checkCreditsAndDeploy() {
-  if (!validateRequiredSlots()) {
-    const msg = '⚠️ Devi caricare almeno Hero, Gallery 1 e Gallery 2!';
+  if (!validateNewImages()) {
+    const msg = '⚠️ Devi caricare tutte e 3 le nuove immagini!';
     if (tg?.showAlert) {
       tg.showAlert(msg);
     } else {
@@ -300,11 +316,7 @@ async function executeDeploy() {
   showLoader('🚀 Deploy in corso...');
 
   try {
-    const filledSlots = getFilledSlots();
-    const imagesPayload = filledSlots.map(slot => ({
-      position: slot.name,
-      data: slot.image
-    }));
+    const newImages = getNewImagesBase64();
 
     const response = await fetch(BACKEND_URL, {
       method: 'POST',
@@ -314,7 +326,7 @@ async function executeDeploy() {
         vat_number: VAT,
         chat_id: OWNER,
         token: TOKEN,
-        images: imagesPayload,
+        new_images: newImages,
         honeypot: honeypotData,
         catalog: catalogData
       })
