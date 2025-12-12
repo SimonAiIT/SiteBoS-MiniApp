@@ -98,49 +98,59 @@
       color: var(--warning);
     }
 
-    /* LEARNING HISTORY */
-    .learning-card {
-      background: linear-gradient(135deg, rgba(91, 111, 237, 0.05), rgba(76, 217, 100, 0.05));
+    /* 🔥 COLLAPSIBLE KNOWLEDGE CARDS (LEARNING HISTORY) */
+    #learning-history-container .knowledge-card {
+      background: var(--card-bg);
       border: 1px solid var(--glass-border);
       border-radius: 12px;
-      padding: 15px;
       margin-bottom: 12px;
+      overflow: hidden;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+      backdrop-filter: blur(10px);
     }
 
-    .learning-header {
+    #learning-history-container .card-header {
+      padding: 15px;
       display: flex;
       justify-content: space-between;
-      align-items: flex-start;
-      margin-bottom: 10px;
+      align-items: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      background: linear-gradient(135deg, rgba(91, 111, 237, 0.05), rgba(76, 217, 100, 0.05));
     }
 
-    .learning-title {
-      font-size: 14px;
+    #learning-history-container .card-header:hover {
+      background: linear-gradient(135deg, rgba(91, 111, 237, 0.1), rgba(76, 217, 100, 0.1));
+    }
+
+    #learning-history-container .card-header h3 {
+      margin: 0;
+      font-size: 15px;
       font-weight: 700;
       color: var(--primary);
-      flex: 1;
     }
 
-    .learning-date {
-      font-size: 11px;
+    #learning-history-container .chevron {
+      transition: transform 0.3s;
       color: var(--text-muted);
+      font-size: 14px;
     }
 
-    .learning-reflection {
-      font-size: 13px;
-      line-height: 1.6;
-      color: var(--text-main);
-      background: rgba(255,255,255,0.05);
-      padding: 10px;
-      border-radius: 8px;
-      margin: 10px 0;
-      border-left: 3px solid var(--primary);
+    #learning-history-container .knowledge-card.open .chevron {
+      transform: rotate(180deg);
     }
 
-    .learning-impact {
-      display: flex;
-      gap: 10px;
-      margin-top: 10px;
+    #learning-history-container .card-content {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease;
+      background: rgba(0, 0, 0, 0.05);
+      padding: 0 15px;
+    }
+
+    #learning-history-container .knowledge-card.open .card-content {
+      max-height: 1000px;
+      padding: 15px;
     }
 
     .impact-badge {
