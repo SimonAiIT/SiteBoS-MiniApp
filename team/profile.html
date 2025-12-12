@@ -98,6 +98,75 @@
       color: var(--warning);
     }
 
+    /* LEARNING HISTORY */
+    .learning-card {
+      background: linear-gradient(135deg, rgba(91, 111, 237, 0.05), rgba(76, 217, 100, 0.05));
+      border: 1px solid var(--glass-border);
+      border-radius: 12px;
+      padding: 15px;
+      margin-bottom: 12px;
+    }
+
+    .learning-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 10px;
+    }
+
+    .learning-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--primary);
+      flex: 1;
+    }
+
+    .learning-date {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .learning-reflection {
+      font-size: 13px;
+      line-height: 1.6;
+      color: var(--text-main);
+      background: rgba(255,255,255,0.05);
+      padding: 10px;
+      border-radius: 8px;
+      margin: 10px 0;
+      border-left: 3px solid var(--primary);
+    }
+
+    .learning-impact {
+      display: flex;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .impact-badge {
+      flex: 1;
+      text-align: center;
+      padding: 8px;
+      border-radius: 8px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .impact-transformative {
+      background: rgba(76, 217, 100, 0.2);
+      color: var(--success);
+    }
+
+    .impact-standard {
+      background: rgba(91, 111, 237, 0.2);
+      color: var(--primary);
+    }
+
+    .impact-resistant {
+      background: rgba(255, 59, 48, 0.2);
+      color: var(--error);
+    }
+
     /* SOFT SKILLS SECTION */
     .module-card {
       background: linear-gradient(135deg, rgba(91, 111, 237, 0.05), rgba(76, 217, 100, 0.05));
@@ -343,7 +412,7 @@
       </div>
     </div>
 
-    <!-- PROFESSIONAL BACKGROUND -->
+    <!-- PROFESSIONAL BACKGROUND + LEARNING HISTORY -->
     <div class="knowledge-card">
       <div class="card-header">
         <h3><i class="fas fa-briefcase"></i> Background Professionale</h3>
@@ -394,6 +463,17 @@
         <div class="info-card" style="margin-top: 15px;">
           <div style="font-size: 12px; font-weight: 700; color: var(--text-muted); margin-bottom: 10px; text-transform: uppercase;">Sfide Attuali</div>
           <div id="challenges-tags"></div>
+        </div>
+
+        <!-- LEARNING HISTORY -->
+        <div style="margin-top: 20px;">
+          <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
+            <i class="fas fa-graduation-cap" style="font-size: 20px; color: var(--primary);"></i>
+            <h4 style="margin: 0; font-size: 16px; font-weight: 700; color: var(--primary);">Learning History</h4>
+          </div>
+          <div id="learning-history-container">
+            <!-- Populated by JS -->
+          </div>
         </div>
       </div>
     </div>
