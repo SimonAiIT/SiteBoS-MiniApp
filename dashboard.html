@@ -166,6 +166,52 @@
     </div>
   </div>
 
+  <!-- ✅ OVERLAY LANDING HONEYPOT -->
+  <div id="landing-overlay" class="modal-overlay hidden">
+    <div class="modal-content" style="max-width: 450px; text-align: center;">
+      <div style="font-size: 50px; margin-bottom: 15px;">🏺</div>
+      
+      <h3 id="landing-title" style="margin-bottom: 10px; color: var(--primary);">
+        Pubblica Landing HoneyPot
+      </h3>
+      
+      <p id="landing-description" style="margin-bottom: 20px; color: var(--text-muted); line-height: 1.6; font-size: 14px;">
+        Crea una landing page professionale con i tuoi contenuti HoneyPot, prodotti dal Catalogo e FAQ dalla Knowledge Base.
+      </p>
+
+      <div style="background: rgba(91, 111, 237, 0.1); border: 1px solid var(--primary); border-radius: 12px; padding: 20px; margin-bottom: 20px;">
+        <div style="font-size: 32px; font-weight: bold; color: var(--primary); margin-bottom: 5px;">
+          10.000
+        </div>
+        <div style="font-size: 12px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;">
+          Crediti Richiesti
+        </div>
+        <div style="font-size: 11px; color: var(--text-secondary); margin-top: 8px; font-style: italic;">
+          Pagherai solo al momento del deploy finale
+        </div>
+      </div>
+
+      <div style="background: rgba(0,0,0,0.2); border-radius: 8px; padding: 15px; margin-bottom: 20px; text-align: left;">
+        <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 8px; font-weight: 600;">✨ Cosa Include:</div>
+        <ul style="margin: 0; padding-left: 20px; font-size: 13px; color: var(--text-muted); line-height: 1.8;">
+          <li>✅ Contenuti dal tuo HoneyPot</li>
+          <li>✅ Catalogo Prodotti integrato</li>
+          <li>✅ FAQ e Contatti automatici</li>
+          <li>✅ Immagini generate con AI o personalizzate</li>
+        </ul>
+      </div>
+
+      <div class="btn-container" style="margin-top: 20px;">
+        <button class="btn btn-secondary" onclick="closeLandingOverlay()" style="flex: 1;">
+          <i class="fas fa-times"></i> Annulla
+        </button>
+        <button class="btn" onclick="proceedToLanding()" style="flex: 1;">
+          <i class="fas fa-arrow-right"></i> Inizia Configurazione
+        </button>
+      </div>
+    </div>
+  </div>
+
   <script src="dashboard_logic.js"></script>
 </body>
 </html>
