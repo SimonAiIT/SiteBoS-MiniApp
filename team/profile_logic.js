@@ -1,5 +1,5 @@
 /**
- * PROFILE LOGIC - Visualizzazione/Modifica STAKEHOLDER_PROFILE
+ * PROFILE LOGIC - Visualizzazione STAKEHOLDER_PROFILE con Card Moderne
  * - Owner: può modificare i propri dati e valutare le proprie soft skills
  * - Operator: visualizzazione READ-ONLY
  */
@@ -25,45 +25,58 @@ const STATE = {
     companyName: urlParams.get('ragione_sociale'),
     currentLang: 'it',
     profileData: {},
-    initialString: '',
-    hasChanges: false,
     isOwner: false
 };
 
 const DOM = {
     loader: document.getElementById('loader'),
     app: document.getElementById('app-content'),
-    pageTitle: document.getElementById('page-title'),
-    pageSubtitle: document.getElementById('page-subtitle'),
-    fullName: document.getElementById('full_name'),
-    stakeholderType: document.getElementById('stakeholder_type'),
+    
+    // HEADER
+    profileName: document.getElementById('profileName'),
+    profileRole: document.getElementById('profileRole'),
+    
+    // IDENTITY
     email: document.getElementById('email'),
     phone: document.getElementById('phone'),
     vatNumber: document.getElementById('vat_number'),
+    stakeholderType: document.getElementById('stakeholder_type'),
+    status: document.getElementById('status'),
+    
+    // PROFESSIONAL
     currentRole: document.getElementById('current_role'),
     teamSize: document.getElementById('team_size'),
     yearsExperience: document.getElementById('years_experience'),
     education: document.getElementById('education'),
-    hardSkillsTags: document.getElementById('hard-skills-tags'),
     specializationLevel: document.getElementById('specialization_level'),
     clientWorkflow: document.getElementById('client_workflow'),
+    mainGoal: document.getElementById('main_goal'),
+    hardSkillsTags: document.getElementById('hard-skills-tags'),
     digitalToolsTags: document.getElementById('digital-tools-tags'),
     challengesTags: document.getElementById('challenges-tags'),
-    mainGoal: document.getElementById('main_goal'),
+    
+    // BEHAVIORAL
     expertiseTags: document.getElementById('expertise-tags'),
     communicationStyle: document.getElementById('communication_style'),
     currentStance: document.getElementById('current_stance'),
     reputationContainer: document.getElementById('reputation-container'),
     notes: document.getElementById('notes'),
-    softskillsContainer: document.getElementById('softskills-container'),
-    noSoftskills: document.getElementById('no-softskills'),
-    softskillsData: document.getElementById('softskills-data'),
+    
+    // SOFT SKILLS
+    assessmentStatus: document.getElementById('assessment-status'),
+    softskillsModules: document.getElementById('softskills-modules'),
     btnAssessSoftskills: document.getElementById('btn-assess-softskills'),
-    commercialTags: document.getElementById('commercial-tags'),
+    
+    // COMMERCIAL
     customerSince: document.getElementById('customer_since'),
     lifetimeValue: document.getElementById('lifetime_value'),
+    totalBookings: document.getElementById('total_bookings'),
+    commercialTags: document.getElementById('commercial-tags'),
+    
+    // SOCIAL
     socialLinks: document.getElementById('social-links'),
-    btnSave: document.getElementById('btn-save'),
+    
+    // BUTTONS
     btnBack: document.getElementById('btn-back')
 };
 
@@ -72,67 +85,7 @@ tg.ready();
 tg.expand();
 
 // ==========================================
-// 2. I18N
-// ==========================================
-const I18n = {
-    dict: {
-        it: {
-            title: "Profilo Stakeholder",
-            subtitle_owner: "Visualizza e modifica il tuo profilo",
-            subtitle_operator: "Visualizzazione profilo collaboratore",
-            section_identity: "Identità",
-            lbl_full_name: "Nome Completo",
-            lbl_stakeholder_type: "Tipo Stakeholder",
-            lbl_email: "Email",
-            lbl_phone: "Telefono",
-            lbl_vat: "Partita IVA",
-            lbl_role: "Ruolo",
-            lbl_team_size: "Team Size",
-            section_professional: "Background Professionale",
-            lbl_experience: "Anni di Esperienza",
-            lbl_education: "Certificazioni",
-            lbl_hard_skills: "Hard Skills",
-            lbl_specialization: "Livello Specializzazione",
-            lbl_client_workflow: "Workflow Cliente",
-            lbl_digital_tools: "Strumenti Digitali",
-            lbl_challenges: "Sfide Attuali",
-            lbl_main_goal: "Obiettivo Principale",
-            section_behavioral: "Profilo Comportamentale",
-            lbl_expertise: "Aree di Competenza",
-            lbl_communication: "Stile di Comunicazione",
-            lbl_current_stance: "Stance Attuale",
-            lbl_public_reputation: "Reputazione Pubblica",
-            lbl_notes: "Note Intelligence",
-            section_softskills: "Soft Skills",
-            no_softskills: "Nessuna valutazione disponibile",
-            btn_assess_skills: "Valuta Soft Skills",
-            section_commercial: "Profilo Commerciale",
-            section_social: "Profili Social",
-            lbl_tags: "Tag",
-            lbl_customer_since: "Cliente Dal",
-            lbl_lifetime_value: "Lifetime Value",
-            access_denied: "Accesso Negato",
-            alert_loading_error: "Errore caricamento",
-            alert_saving_error: "Errore salvataggio",
-            saving_success: "Salvato!"
-        }
-    },
-    init: function() {
-        STATE.currentLang = 'it';
-        this.apply();
-    },
-    get: function(key) {
-        return this.dict.it[key] || key;
-    },
-    apply: function() {
-        document.querySelectorAll('[data-i18n]').forEach(el => {
-            el.innerHTML = this.get(el.getAttribute('data-i18n'));
-        });
-    }
-};
-
-// ==========================================
-// 3. API
+// 2. API
 // ==========================================
 const Api = {
     async getProfile() {
@@ -157,7 +110,7 @@ const Api = {
 };
 
 // ==========================================
-// 4. UI RENDERER
+// 3. UI RENDERER
 // ==========================================
 const UI = {
     renderProfile: () => {
@@ -167,70 +120,71 @@ const UI = {
         const behavioral = data.behavioral_profile || {};
         const commercial = data.commercial_profile || {};
         const social = data.social_profiles || {};
+        const metadata = data.metadata || {};
+        
+        // HEADER
+        DOM.profileName.textContent = data.name || 'N/A';
+        DOM.profileRole.textContent = prof.role || data.role || 'N/A';
         
         // IDENTITY
-        DOM.fullName.value = data.name || '';
-        DOM.stakeholderType.value = identity.stakeholder_type || 'N/A';
-        DOM.email.value = data.email || '';
-        DOM.phone.value = data.phone || '';
-        DOM.vatNumber.value = identity.fiscal_info?.vat_number || 'N/A';
+        DOM.email.textContent = data.email || '-';
+        DOM.phone.textContent = data.phone || '-';
+        DOM.vatNumber.textContent = identity.fiscal_info?.vat_number || '-';
+        DOM.stakeholderType.textContent = identity.stakeholder_type || '-';
+        
+        const statusHtml = metadata.status === 'ACTIVE' 
+            ? '<span class="status-badge status-active">ACTIVE</span>'
+            : '<span class="status-badge status-incomplete">INACTIVE</span>';
+        DOM.status.innerHTML = statusHtml;
 
         // PROFESSIONAL
-        DOM.currentRole.value = prof.role || 'N/A';
-        DOM.teamSize.value = prof.team_size || 'N/A';
-        DOM.yearsExperience.value = prof.years_experience || 'N/A';
-        DOM.education.value = prof.certifications || '';
-        UI.renderTags(DOM.hardSkillsTags, prof.hard_skills || []);
-        DOM.specializationLevel.value = prof.specialization_level || 'N/A';
-        DOM.clientWorkflow.value = prof.client_workflow || 'N/A';
-        UI.renderTags(DOM.digitalToolsTags, prof.digital_tools || []);
-        UI.renderTags(DOM.challengesTags, prof.current_challenges || []);
-        DOM.mainGoal.value = prof.main_goal || 'N/A';
+        DOM.currentRole.textContent = prof.role || '-';
+        DOM.teamSize.textContent = prof.team_size || '-';
+        DOM.yearsExperience.textContent = prof.years_experience || '-';
+        DOM.education.textContent = prof.certifications || '-';
+        DOM.specializationLevel.textContent = prof.specialization_level || '-';
+        DOM.clientWorkflow.textContent = prof.client_workflow || '-';
+        DOM.mainGoal.textContent = prof.main_goal || '-';
+        
+        UI.renderTags(DOM.hardSkillsTags, prof.hard_skills || [], 'skill-tag');
+        UI.renderTags(DOM.digitalToolsTags, prof.digital_tools || [], 'tag-badge');
+        UI.renderTags(DOM.challengesTags, prof.current_challenges || [], 'challenge-tag');
 
         // BEHAVIORAL
-        UI.renderTags(DOM.expertiseTags, prof.expertise_areas || []);
-        DOM.communicationStyle.value = behavioral.communication_style || 'N/A';
-        DOM.currentStance.value = behavioral.current_stance?.stance_id || 'UNKNOWN';
+        UI.renderTags(DOM.expertiseTags, prof.expertise_areas || [], 'skill-tag');
+        DOM.communicationStyle.textContent = behavioral.communication_style || 'N/A';
+        DOM.currentStance.textContent = behavioral.current_stance?.stance_id || 'UNKNOWN';
+        DOM.notes.textContent = behavioral.notes || 'Nessuna nota disponibile.';
         UI.renderReputation(behavioral.public_reputation || {});
-        DOM.notes.value = behavioral.notes || '';
 
         // SOFT SKILLS
         const softSkillsAssessment = data.soft_skills_assessment || {};
         const modulesCompleted = softSkillsAssessment.modules_completed || [];
         const validModules = modulesCompleted.filter(m => m.evaluation);
-
-        if (validModules.length > 0) {
-            DOM.noSoftskills.classList.add('hidden');
-            DOM.softskillsData.classList.remove('hidden');
-            UI.renderSoftSkills(validModules, softSkillsAssessment.completed_count || 0);
-        } else {
-            DOM.noSoftskills.classList.remove('hidden');
-            DOM.softskillsData.classList.add('hidden');
-        }
+        UI.renderSoftSkills(validModules, softSkillsAssessment.completed_count || 0, softSkillsAssessment.total_modules || 4);
 
         // COMMERCIAL
-        UI.renderTags(DOM.commercialTags, commercial.tags || []);
-        if (commercial.customer_since) {
-            DOM.customerSince.value = new Date(commercial.customer_since).toLocaleDateString('it-IT');
-        }
-        DOM.lifetimeValue.value = `€ ${commercial.lifetime_value || 0}`;
+        DOM.customerSince.textContent = commercial.customer_since 
+            ? new Date(commercial.customer_since).toLocaleDateString('it-IT') 
+            : '-';
+        DOM.lifetimeValue.textContent = `€ ${commercial.lifetime_value || 0}`;
+        DOM.totalBookings.textContent = commercial.total_bookings || '0';
+        UI.renderTags(DOM.commercialTags, commercial.tags || [], 'tag-badge');
 
         // SOCIAL
         UI.renderSocialLinks(social);
-
-        DOM.pageSubtitle.innerText = STATE.isOwner ? I18n.get('subtitle_owner') : I18n.get('subtitle_operator');
     },
 
-    renderTags: (container, tags) => {
+    renderTags: (container, tags, className = 'tag-badge') => {
         container.innerHTML = '';
         if (!tags || tags.length === 0) {
-            container.innerHTML = '<span class="text-muted">-</span>';
+            container.innerHTML = '<span class="tag-badge" style="opacity: 0.5;">Nessuno</span>';
             return;
         }
         tags.forEach(tag => {
             const span = document.createElement('span');
-            span.className = 'tag';
-            span.innerText = tag;
+            span.className = className;
+            span.textContent = tag;
             container.appendChild(span);
         });
     },
@@ -239,28 +193,40 @@ const UI = {
         const sentiment = reputation.sentiment || 'neutral';
         const trustScore = reputation.trust_score || 0;
         const mentions = reputation.media_mentions_count || 0;
+        const signals = reputation.credibility_signals || [];
+        
+        let sentimentColor = '#999';
+        if (sentiment === 'positive') sentimentColor = '#4cd964';
+        if (sentiment === 'negative') sentimentColor = '#ff3b30';
         
         DOM.reputationContainer.innerHTML = `
-            <div style="margin-bottom: 8px;">
-                <strong>Sentiment:</strong> <span style="color: ${sentiment === 'positive' ? '#4cd964' : sentiment === 'negative' ? '#ff3b30' : '#999'};">${sentiment}</span>
+            <div style="margin-bottom: 10px;">
+                <strong>Sentiment:</strong> 
+                <span style="color: ${sentimentColor}; font-weight: 700;">● ${sentiment.toUpperCase()}</span>
             </div>
-            <div style="margin-bottom: 8px;">
+            <div style="margin-bottom: 10px;">
                 <strong>Trust Score:</strong> ${trustScore}/100
             </div>
-            <div>
+            <div style="margin-bottom: 10px;">
                 <strong>Media Mentions:</strong> ${mentions}
             </div>
+            ${signals.length > 0 ? `
+                <div style="margin-top: 12px;">
+                    <strong>Credibility Signals:</strong><br>
+                    ${signals.map(s => `<span style="font-size: 12px; color: var(--text-muted);">• ${s}</span>`).join('<br>')}
+                </div>
+            ` : ''}
         `;
     },
 
     renderSocialLinks: (social) => {
         DOM.socialLinks.innerHTML = '';
         const platforms = [
-            { key: 'website', icon: 'fa-globe', label: 'Website' },
-            { key: 'linkedin', icon: 'fa-linkedin', label: 'LinkedIn' },
-            { key: 'facebook', icon: 'fa-facebook', label: 'Facebook' },
-            { key: 'twitter', icon: 'fa-twitter', label: 'Twitter' },
-            { key: 'instagram', icon: 'fa-instagram', label: 'Instagram' }
+            { key: 'website', icon: 'fa-globe', label: 'Website', bgClass: 'website-bg' },
+            { key: 'linkedin', icon: 'fa-linkedin', label: 'LinkedIn', bgClass: 'linkedin-bg' },
+            { key: 'facebook', icon: 'fa-facebook', label: 'Facebook', bgClass: 'linkedin-bg' },
+            { key: 'twitter', icon: 'fa-twitter', label: 'Twitter', bgClass: 'twitter-bg' },
+            { key: 'instagram', icon: 'fa-instagram', label: 'Instagram', bgClass: 'instagram-bg' }
         ];
         
         platforms.forEach(platform => {
@@ -268,86 +234,132 @@ const UI = {
                 const link = document.createElement('a');
                 link.href = social[platform.key];
                 link.target = '_blank';
-                link.style.cssText = 'display: flex; align-items: center; gap: 10px; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 8px; text-decoration: none; color: var(--text-main);';
-                link.innerHTML = `<i class="fab ${platform.icon}" style="font-size: 20px;"></i> <span>${platform.label}</span>`;
+                link.className = 'social-link';
+                link.innerHTML = `
+                    <div class="social-icon ${platform.bgClass}">
+                        <i class="fab ${platform.icon}"></i>
+                    </div>
+                    <div style="flex: 1;">
+                        <div style="font-weight: 600; font-size: 14px;">${platform.label}</div>
+                        <div style="font-size: 12px; color: var(--text-muted); word-break: break-all;">${social[platform.key]}</div>
+                    </div>
+                    <i class="fas fa-external-link-alt" style="color: var(--text-muted);"></i>
+                `;
                 DOM.socialLinks.appendChild(link);
             }
         });
         
         if (DOM.socialLinks.children.length === 0) {
-            DOM.socialLinks.innerHTML = '<span class="text-muted">Nessun profilo social configurato</span>';
+            DOM.socialLinks.innerHTML = '<div class="no-data-msg"><i class="fas fa-unlink"></i><br>Nessun profilo social configurato</div>';
         }
     },
 
-    renderSoftSkills: (validModules, completedCount) => {
+    renderSoftSkills: (validModules, completedCount, totalModules) => {
         const moduleNames = {
-            modulo1: '🧘 L\'Io Interiore',
-            modulo2: '🤝 Sfera Interpersonale',
-            modulo3: '🎯 Leadership e Performance',
-            modulo4: '🚀 Innovazione e Adattamento'
+            modulo1: 'L\'Io Interiore',
+            modulo2: 'Sfera Interpersonale',
+            modulo3: 'Leadership e Performance',
+            modulo4: 'Etica e Responsabilità'
         };
 
-        let html = `
-            <div style="margin-bottom: 15px;">
-                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
-                    <span style="font-size: 14px; color: var(--success); font-weight: 600;">
-                        ✅ ${completedCount}/4 Moduli Completati
-                    </span>
+        const moduleIcons = {
+            modulo1: 'fa-brain',
+            modulo2: 'fa-handshake',
+            modulo3: 'fa-rocket',
+            modulo4: 'fa-shield-alt'
+        };
+
+        // STATUS
+        const percentage = (completedCount / totalModules) * 100;
+        const statusBadge = completedCount === totalModules
+            ? '<span class="status-badge status-active">✅ COMPLETATO</span>'
+            : '<span class="status-badge status-incomplete">⏳ IN CORSO</span>';
+        
+        DOM.assessmentStatus.innerHTML = `
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <div>
+                    <div style="font-size: 18px; font-weight: 700; margin-bottom: 5px;">${completedCount}/${totalModules} Moduli</div>
+                    <div style="font-size: 13px; color: var(--text-muted);">Completati</div>
                 </div>
-                <div style="background: rgba(255,255,255,0.1); height: 8px; border-radius: 4px; overflow: hidden;">
-                    <div style="background: linear-gradient(90deg, #5b6fed, #4cd964); height: 100%; width: ${(completedCount / 4) * 100}%; transition: width 0.5s ease;"></div>
-                </div>
+                ${statusBadge}
+            </div>
+            <div style="background: rgba(255,255,255,0.1); height: 10px; border-radius: 5px; overflow: hidden;">
+                <div style="background: linear-gradient(90deg, #5b6fed, #4cd964); height: 100%; width: ${percentage}%; transition: width 0.5s ease; border-radius: 5px;"></div>
             </div>
         `;
 
-        validModules.forEach(item => {
+        // MODULES
+        if (validModules.length === 0) {
+            DOM.softskillsModules.innerHTML = '<div class="no-data-msg"><i class="fas fa-chart-line"></i><br>Nessun modulo completato ancora</div>';
+            return;
+        }
+
+        DOM.softskillsModules.innerHTML = validModules.map(item => {
             const moduleId = item.module;
             const evaluation = item.evaluation;
-            const completionDate = item.completion_date ? new Date(item.completion_date).toLocaleDateString('it-IT') : 'N/A';
+            const completionDate = item.completion_date 
+                ? new Date(item.completion_date).toLocaleDateString('it-IT', { day: 'numeric', month: 'short', year: 'numeric' })
+                : 'N/A';
 
-            html += `
-                <div style="background: rgba(0,0,0,0.2); border-radius: 10px; padding: 16px; margin-bottom: 12px; border-left: 4px solid var(--success);">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                        <h4 style="margin: 0; font-size: 16px;">${moduleNames[moduleId] || moduleId}</h4>
-                        <span style="font-size: 12px; color: var(--text-muted);">${completionDate}</span>
+            return `
+                <div class="module-card">
+                    <div class="module-header">
+                        <div class="module-title">
+                            <i class="fas ${moduleIcons[moduleId] || 'fa-star'}"></i> ${moduleNames[moduleId] || moduleId}
+                        </div>
+                        <div class="module-date">📅 ${completionDate}</div>
                     </div>
                     
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
-                        <div style="text-align: center; background: rgba(76, 217, 100, 0.1); padding: 12px; border-radius: 8px; border: 1px solid rgba(76, 217, 100, 0.3);">
-                            <div style="font-size: 24px; font-weight: bold; color: #4cd964;">${evaluation.PP}%</div>
-                            <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">POSITIVO</div>
-                            <div style="font-size: 12px; margin-top: 6px; line-height: 1.3;">${evaluation.CP}</div>
+                    <div class="score-row">
+                        <div class="score-box">
+                            <div class="score-label">Positivo (PP)</div>
+                            <div class="score-value positive">${evaluation.PP || 0}</div>
+                            <div class="score-desc">${evaluation.CP || '-'}</div>
                         </div>
-                        <div style="text-align: center; background: rgba(255, 59, 48, 0.1); padding: 12px; border-radius: 8px; border: 1px solid rgba(255, 59, 48, 0.3);">
-                            <div style="font-size: 24px; font-weight: bold; color: #ff3b30;">${evaluation.PN}%</div>
-                            <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">NEGATIVO</div>
-                            <div style="font-size: 12px; margin-top: 6px; line-height: 1.3;">${evaluation.CN}</div>
+                        <div class="score-box">
+                            <div class="score-label">Negativo (PN)</div>
+                            <div class="score-value negative">${evaluation.PN || 0}</div>
+                            <div class="score-desc">${evaluation.CN || '-'}</div>
                         </div>
                     </div>
-                    
-                    <div style="font-size: 12px; color: var(--text-muted); line-height: 1.5;">
-                        <strong style="color: var(--primary);">⏱ Valutazione:</strong> ${evaluation.Valutazione_Tempi}
-                    </div>
+
+                    ${evaluation.Analisi_Strategica ? `
+                        <div class="analysis-block">
+                            <div class="analysis-title"><i class="fas fa-lightbulb"></i> Analisi Strategica</div>
+                            <div class="analysis-text">${evaluation.Analisi_Strategica}</div>
+                        </div>
+                    ` : ''}
+
+                    ${evaluation.Impatto_Business ? `
+                        <div class="analysis-block" style="border-left-color: var(--warning);">
+                            <div class="analysis-title" style="color: var(--warning);"><i class="fas fa-chart-line"></i> Impatto Business</div>
+                            <div class="analysis-text">${evaluation.Impatto_Business}</div>
+                        </div>
+                    ` : ''}
+
+                    ${evaluation.Consigli_Operativi && evaluation.Consigli_Operativi.length > 0 ? `
+                        <div style="margin-top: 15px;">
+                            <div class="analysis-title" style="color: var(--warning); margin-bottom: 10px;"><i class="fas fa-tasks"></i> Consigli Operativi</div>
+                            ${evaluation.Consigli_Operativi.map(c => `<div class="recommendation-item">• ${c}</div>`).join('')}
+                        </div>
+                    ` : ''}
                 </div>
             `;
-        });
-
-        DOM.softskillsData.innerHTML = html;
+        }).join('');
     }
 };
 
 // ==========================================
-// 5. APP LOGIC
+// 4. APP LOGIC
 // ==========================================
 const App = {
     init: async () => {
         if (!STATE.vatNumber || !STATE.accessToken || !STATE.role) {
-            document.body.innerHTML = `<h2 style="color:white;text-align:center;margin-top:50px;">${I18n.get('access_denied')}</h2>`;
+            document.body.innerHTML = `<h2 style="color:white;text-align:center;margin-top:50px;">Accesso Negato</h2>`;
             return;
         }
 
         STATE.isOwner = (STATE.role === 'owner');
-        I18n.init();
 
         try {
             const response = await Api.getProfile();
@@ -362,19 +374,21 @@ const App = {
             DOM.app.classList.remove('hidden');
         } catch (e) {
             console.error("Error:", e);
-            tg.showAlert(I18n.get('alert_loading_error'));
+            tg.showAlert('Errore caricamento profilo');
         }
 
         App.attachEvents();
     },
 
     attachEvents: () => {
+        // ACCORDION TOGGLE
         DOM.app.addEventListener('click', (e) => {
             if (e.target.closest('.card-header')) {
                 e.target.closest('.card-header').parentElement.classList.toggle('open');
             }
         });
 
+        // SOFT SKILLS ASSESSMENT
         DOM.btnAssessSoftskills.addEventListener('click', () => {
             if (!STATE.isOwner) {
                 tg.showAlert('Solo l\'owner può valutare le soft skills');
@@ -388,6 +402,7 @@ const App = {
             window.location.href = `${CONFIG.SOFTSKILL_PATH}?${params.toString()}`;
         });
 
+        // BACK BUTTON
         DOM.btnBack.addEventListener('click', () => {
             const params = new URLSearchParams();
             if (STATE.vatNumber) params.set('vat', STATE.vatNumber);
