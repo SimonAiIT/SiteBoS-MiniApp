@@ -407,8 +407,8 @@ async function previewLanding() {
       sessionStorage.setItem('preview_html', result.html);
       sessionStorage.setItem('preview_meta', JSON.stringify(result.meta || {}));
       
-      // Apri visore in nuova finestra
-      window.open('preview_HoneyBlog.html', '_blank');
+      // Apri visore in nuova finestra (percorso relativo corretto)
+      window.open('./preview_HoneyBlog.html', '_blank');
     } else {
       throw new Error(result.message || result.error || 'HTML non ricevuto');
     }
