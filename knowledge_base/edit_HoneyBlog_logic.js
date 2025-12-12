@@ -60,22 +60,10 @@ async function init() {
     hideLoader();
     document.getElementById('app-content').classList.remove('hidden');
 
-    if (tg?.showPopup) {
-      tg.showPopup({
-        title: '✅ Dati Caricati',
-        message: `${ownerData.ragione_sociale}\n\nLogo e Photo già disponibili.\nGestisci 3 nuove immagini.`,
-        buttons: [{ type: 'ok' }]
-      });
-    }
-
   } catch (error) {
     console.error('❌ Errore init:', error);
     hideLoader();
-    if (tg?.showAlert) {
-      tg.showAlert('❌ Errore caricamento dati');
-    } else {
-      alert('Errore caricamento dati');
-    }
+    alert('Errore caricamento dati');
   }
 }
 
@@ -232,14 +220,7 @@ async function saveImage(slotIndex, base64Data) {
       newImageSlots[slotIndex].method = 'upload';
       renderSlot(slotIndex);
       updateProgress();
-
-      if (tg?.showPopup) {
-        tg.showPopup({
-          title: '✅ Immagine Salvata',
-          message: `${newImageSlots[slotIndex].label} caricata con successo!`,
-          buttons: [{ type: 'ok' }]
-        });
-      }
+      alert(`✅ Immagine Salvata!\n\n${newImageSlots[slotIndex].label} caricata con successo!`);
     } else {
       throw new Error(result.message || result.error || 'Errore salvataggio');
     }
@@ -280,14 +261,7 @@ async function generateImageWithAI(slotIndex) {
       newImageSlots[slotIndex].method = 'generate';
       renderSlot(slotIndex);
       updateProgress();
-
-      if (tg?.showPopup) {
-        tg.showPopup({
-          title: '✅ Immagine Generata',
-          message: `${newImageSlots[slotIndex].label} creata con AI!`,
-          buttons: [{ type: 'ok' }]
-        });
-      }
+      alert(`✅ Immagine Generata!\n\n${newImageSlots[slotIndex].label} creata con AI!`);
     } else {
       throw new Error(result.message || result.error || 'Errore generazione');
     }
@@ -326,14 +300,7 @@ async function enhanceImageWithAI(slotIndex, base64Data) {
       newImageSlots[slotIndex].method = 'enhance';
       renderSlot(slotIndex);
       updateProgress();
-
-      if (tg?.showPopup) {
-        tg.showPopup({
-          title: '✨ Immagine Migliorata',
-          message: `${newImageSlots[slotIndex].label} migliorata con AI!`,
-          buttons: [{ type: 'ok' }]
-        });
-      }
+      alert(`✨ Immagine Migliorata!\n\n${newImageSlots[slotIndex].label} migliorata con AI!`);
     } else {
       throw new Error(result.message || result.error || 'Errore enhancement');
     }
@@ -424,12 +391,7 @@ document.getElementById('btn-deploy').addEventListener('click', () => {
 // ============================================
 async function previewLanding() {
   if (!validateNewImages()) {
-    const msg = '⚠️ Devi completare tutte e 3 le immagini!';
-    if (tg?.showAlert) {
-      tg.showAlert(msg);
-    } else {
-      alert(msg);
-    }
+    alert('⚠️ Devi completare tutte e 3 le immagini!');
     return;
   }
 
@@ -456,14 +418,7 @@ async function previewLanding() {
 
     if (result.success) {
       window.open(result.preview_url, '_blank');
-      
-      if (tg?.showPopup) {
-        tg.showPopup({
-          title: '✅ Anteprima Pronta',
-          message: `Valida fino a: ${new Date(result.expires_at).toLocaleString('it-IT')}`,
-          buttons: [{ type: 'ok' }]
-        });
-      }
+      alert(`✅ Anteprima Pronta!\n\nValida fino a: ${new Date(result.expires_at).toLocaleString('it-IT')}`);
     } else {
       throw new Error(result.message || result.error);
     }
@@ -479,12 +434,7 @@ async function previewLanding() {
 // ============================================
 function checkCreditsAndDeploy() {
   if (!validateNewImages()) {
-    const msg = '⚠️ Devi completare tutte e 3 le immagini!';
-    if (tg?.showAlert) {
-      tg.showAlert(msg);
-    } else {
-      alert(msg);
-    }
+    alert('⚠️ Devi completare tutte e 3 le immagini!');
     return;
   }
 
@@ -496,15 +446,8 @@ function checkCreditsAndDeploy() {
   } else {
     const deficit = requiredCredits - availableCredits;
     const msg = `❌ Crediti Insufficienti!\n\nDisponibili: ${availableCredits.toLocaleString()}\nRichiesti: ${requiredCredits.toLocaleString()}\nMancanti: ${deficit.toLocaleString()}`;
-    
-    if (tg?.showAlert) {
-      tg.showAlert(msg, () => {
-        window.location.href = `https://dashboard.trinai.it/ricarica?vat=${VAT}&owner=${OWNER}&token=${TOKEN}`;
-      });
-    } else {
-      if (confirm(msg + '\n\nVuoi ricaricare?')) {
-        window.location.href = `https://dashboard.trinai.it/ricarica?vat=${VAT}&owner=${OWNER}&token=${TOKEN}`;
-      }
+    if (confirm(msg + '\n\nVuoi ricaricare?')) {
+      window.location.href = `https://dashboard.trinai.it/ricarica?vat=${VAT}&owner=${OWNER}&token=${TOKEN}`;
     }
   }
 }
@@ -548,45 +491,17 @@ async function executeDeploy() {
 
     if (result.success) {
       const msg = `✅ Landing Pubblicata!\n\nURL: ${result.landing_url}\n\nCrediti scalati: 10,000\nCrediti residui: ${result.credits_remaining.toLocaleString()}`;
-      
-      if (tg?.showPopup) {
-        tg.showPopup({
-          title: '🎉 Successo!',
-          message: msg,
-          buttons: [
-            { id: 'view', type: 'default', text: 'Apri Landing' },
-            { id: 'dashboard', type: 'default', text: 'Dashboard' }
-          ]
-        }, (buttonId) => {
-          if (buttonId === 'view') {
-            window.open(result.landing_url, '_blank');
-          } else if (buttonId === 'dashboard') {
-            window.location.href = `../dashboard.html?vat=${VAT}&owner=${OWNER}&token=${TOKEN}`;
-          }
-        });
-      } else {
-        alert(msg);
-        const openNow = confirm('Vuoi aprire la landing ora?');
-        if (openNow) window.open(result.landing_url, '_blank');
-      }
-
+      alert(msg);
+      const openNow = confirm('Vuoi aprire la landing ora?');
+      if (openNow) window.open(result.landing_url, '_blank');
     } else if (result.error === 'insufficient_credits') {
       const msg = `❌ Crediti Insufficienti\n\nDisponibili: ${result.available.toLocaleString()}\nRichiesti: ${result.required.toLocaleString()}\nMancanti: ${result.deficit.toLocaleString()}`;
-      
-      if (tg?.showAlert) {
-        tg.showAlert(msg, () => {
-          window.location.href = `https://dashboard.trinai.it/ricarica?vat=${VAT}&owner=${OWNER}&token=${TOKEN}`;
-        });
-      } else {
-        if (confirm(msg + '\n\nVuoi ricaricare?')) {
-          window.location.href = `https://dashboard.trinai.it/ricarica?vat=${VAT}&owner=${OWNER}&token=${TOKEN}`;
-        }
+      if (confirm(msg + '\n\nVuoi ricaricare?')) {
+        window.location.href = `https://dashboard.trinai.it/ricarica?vat=${VAT}&owner=${OWNER}&token=${TOKEN}`;
       }
-
     } else {
       throw new Error(result.message || result.error || 'Errore sconosciuto');
     }
-
   } catch (error) {
     console.error('❌ Errore deploy:', error);
     hideLoader();
