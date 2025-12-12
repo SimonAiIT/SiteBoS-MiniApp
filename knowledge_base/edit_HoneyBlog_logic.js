@@ -211,12 +211,12 @@ async function saveImage(slotIndex, base64Data) {
     });
 
     const result = await response.json();
-    console.log('✅ Save photo OK');
+    console.log('✅ Save photo OK', result);
 
     hideLoader();
 
-    if (result.success && result.url) {
-      newImageSlots[slotIndex].image = result.url;
+    if (result.success && result.asset && result.asset.url) {
+      newImageSlots[slotIndex].image = result.asset.url;
       newImageSlots[slotIndex].method = 'upload';
       renderSlot(slotIndex);
       updateProgress();
@@ -259,12 +259,12 @@ async function generateImageWithAI(slotIndex) {
     });
 
     const result = await response.json();
-    console.log('✅ Generate photo OK');
+    console.log('✅ Generate photo OK', result);
 
     hideLoader();
 
-    if (result.success && result.url) {
-      newImageSlots[slotIndex].image = result.url;
+    if (result.success && result.asset && result.asset.url) {
+      newImageSlots[slotIndex].image = result.asset.url;
       newImageSlots[slotIndex].method = 'generate';
       renderSlot(slotIndex);
       updateProgress();
@@ -305,12 +305,12 @@ async function enhanceImageWithAI(slotIndex, base64Data) {
     });
 
     const result = await response.json();
-    console.log('✅ Enhance photo OK');
+    console.log('✅ Enhance photo OK', result);
 
     hideLoader();
 
-    if (result.success && result.url) {
-      newImageSlots[slotIndex].image = result.url;
+    if (result.success && result.asset && result.asset.url) {
+      newImageSlots[slotIndex].image = result.asset.url;
       newImageSlots[slotIndex].method = 'enhance';
       renderSlot(slotIndex);
       updateProgress();
