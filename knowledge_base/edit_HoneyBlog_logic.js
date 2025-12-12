@@ -92,6 +92,18 @@ function loadExistingAssets() {
   if (photoUrl) {
     document.getElementById('img-photo').src = photoUrl;
   }
+
+  // ✅ CARICA ANCHE LE GALLERY ESISTENTI
+  newImageSlots.forEach((slot, index) => {
+    const existingGallery = honeypotData.assets?.[slot.name];
+    if (existingGallery && existingGallery.url) {
+      slot.image = existingGallery.url;
+      slot.method = existingGallery.method || 'unknown';
+      renderSlot(index);
+    }
+  });
+  
+  updateProgress();
 }
 
 // ============================================
