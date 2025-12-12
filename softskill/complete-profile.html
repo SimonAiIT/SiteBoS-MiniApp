@@ -262,10 +262,10 @@
             box-shadow: 0 6px 20px rgba(91, 111, 237, 0.4);
         }
 
-        /* 🔥 CARD COLLASSABILI SOTTO VIDEO */
+        /* 🔥 CARD COLLASSABILI KEY TAKEAWAYS */
         .video-knowledge-card {
-            background: rgba(255,255,255,0.1);
-            border: 1px solid rgba(255,255,255,0.2);
+            background: var(--card-bg);
+            border: 1px solid var(--glass-border);
             border-radius: 12px;
             margin-bottom: 12px;
             overflow: hidden;
@@ -281,14 +281,14 @@
         }
 
         .video-card-header:hover {
-            background: rgba(255,255,255,0.05);
+            background: var(--hover-bg);
         }
 
         .video-card-header h4 {
             margin: 0;
             font-size: 15px;
             font-weight: 700;
-            color: white;
+            color: var(--primary);
             display: flex;
             align-items: center;
             gap: 8px;
@@ -296,7 +296,7 @@
 
         .video-chevron {
             transition: transform 0.3s;
-            color: rgba(255,255,255,0.7);
+            color: var(--text-muted);
         }
 
         .video-knowledge-card.open .video-chevron {
@@ -318,52 +318,14 @@
         }
 
         .video-takeaway-item {
-            background: rgba(255,255,255,0.15);
-            border-left: 3px solid white;
+            background: rgba(91, 111, 237, 0.1);
+            border-left: 3px solid var(--primary);
             padding: 10px 12px;
             margin-bottom: 8px;
             border-radius: 6px;
             font-size: 13px;
             line-height: 1.5;
-            color: white;
-        }
-
-        .video-reflection-prompt {
-            background: rgba(245, 158, 11, 0.2);
-            border-left: 3px solid var(--warning);
-            padding: 12px;
-            border-radius: 8px;
-            margin-bottom: 12px;
-        }
-
-        .video-prompt-question {
-            font-size: 13px;
-            font-weight: 600;
-            color: white;
-            margin-bottom: 8px;
-        }
-
-        .video-reflection-textarea {
-            width: 100%;
-            min-height: 80px;
-            background: rgba(0,0,0,0.3);
-            border: 1px solid rgba(255,255,255,0.3);
-            border-radius: 8px;
-            padding: 10px;
-            color: white;
-            font-size: 13px;
-            resize: vertical;
-            font-family: inherit;
-        }
-
-        .video-reflection-textarea:focus {
-            outline: none;
-            border-color: var(--warning);
-            background: rgba(0,0,0,0.4);
-        }
-
-        .video-reflection-textarea::placeholder {
-            color: rgba(255,255,255,0.5);
+            color: var(--text-main);
         }
 
         /* 📚 LEARNING HISTORY */
@@ -554,7 +516,7 @@
         }
 
         .analysis-progress-bar {
-            background: linear-gradient(90deg, #5b6fed, #4cd964);
+            background: linear-gradient(90deg, var(--primary), var(--success));
             height: 100%;
             width: 0%;
             transition: width 0.3s ease;
@@ -708,7 +670,7 @@
                 <i class="fas fa-play-circle"></i>
                 I Tuoi Prossimi 3 Video
             </h2>
-            <p class="subtitle">∼27 minuti totali per sbloccare il tuo potenziale</p>
+            <p class="subtitle">∼27 minuti totali per sbloccare il tuo potenziale. <strong>La riflessione personale si trova nel video player.</strong></p>
             <div id="videosList" class="videos-grid"></div>
         </div>
     </div>
@@ -854,7 +816,7 @@
                 areasToImprove.innerHTML = '<p style="color: var(--text-muted);">Nessuna area di miglioramento identificata</p>';
             }
 
-            // VIDEOS WITH COLLAPSIBLE CARDS
+            // VIDEOS WITH KEY TAKEAWAYS ONLY
             const videosList = document.getElementById('videosList');
             if (data.recommended_videos && data.recommended_videos.length > 0) {
                 videosList.innerHTML = data.recommended_videos.map((item, index) => `
@@ -885,22 +847,6 @@
                                     <div class="video-takeaway-item">Applica le strategie del video nella tua routine quotidiana</div>
                                     <div class="video-takeaway-item">Identifica situazioni recenti dove avresti potuto usare questa soft skill</div>
                                     <div class="video-takeaway-item">Pratica costantemente per trasformare conoscenza in competenza</div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- RIFLESSIONE PERSONALE CARD -->
-                        <div class="video-knowledge-card open">
-                            <div class="video-card-header">
-                                <h4><i class="fas fa-brain"></i> Riflessione Personale</h4>
-                                <i class="fas fa-chevron-down video-chevron"></i>
-                            </div>
-                            <div class="video-card-content">
-                                <div class="video-card-body">
-                                    <div class="video-reflection-prompt">
-                                        <div class="video-prompt-question">Come applicherai ciò che hai imparato per migliorare: ${item.expected_improvement}?</div>
-                                        <textarea class="video-reflection-textarea" placeholder="Scrivi qui la tua riflessione personale..."></textarea>
-                                    </div>
                                 </div>
                             </div>
                         </div>
