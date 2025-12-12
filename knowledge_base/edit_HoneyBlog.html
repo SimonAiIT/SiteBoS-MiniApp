@@ -100,28 +100,6 @@
     .slot-label.locked-label {
       background: rgba(23, 162, 184, 0.8);
     }
-    .ai-menu-btn {
-      position: absolute;
-      top: 8px;
-      right: 8px;
-      background: rgba(91, 111, 237, 0.9);
-      color: white;
-      border: none;
-      border-radius: 50%;
-      width: 36px;
-      height: 36px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      z-index: 10;
-      font-size: 18px;
-      transition: all 0.2s;
-    }
-    .ai-menu-btn:hover {
-      background: var(--primary);
-      transform: scale(1.1);
-    }
     .progress-bar {
       background: var(--input-bg);
       border-radius: var(--radius-full);
@@ -161,7 +139,7 @@
         <div style="flex: 1;">
           <h3 style="font-size: 15px; margin-bottom: 8px; color: var(--primary);">Logo e Photo già disponibili</h3>
           <p style="font-size: 13px; color: var(--text-muted); margin: 0; line-height: 1.5;">
-            Clicca sul <strong style="color: var(--primary);">🤖 pulsante robot</strong> per scegliere:<br>
+            Clicca su ogni <strong style="color: var(--primary);">slot vuoto</strong> per scegliere:<br>
             📷 Carica | 🎨 Genera con AI | ✨ Carica e Migliora
           </p>
         </div>
@@ -200,30 +178,27 @@
       </div>
 
       <!-- Nuove immagini da gestire (3) -->
-      <div class="image-slot" id="slot-0">
+      <div class="image-slot" id="slot-0" onclick="openSlotMenu(0)">
         <div class="placeholder">
           <div class="placeholder-icon">🖼️</div>
           <div class="placeholder-text">GALLERY 1</div>
         </div>
-        <button class="ai-menu-btn" onclick="openSlotMenu(0)">🤖</button>
         <span class="slot-label">Gallery 1</span>
       </div>
 
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px;">
-        <div class="image-slot" id="slot-1">
+        <div class="image-slot" id="slot-1" onclick="openSlotMenu(1)">
           <div class="placeholder">
             <div class="placeholder-icon">📷</div>
             <div class="placeholder-text">GALLERY 2</div>
           </div>
-          <button class="ai-menu-btn" onclick="openSlotMenu(1)">🤖</button>
           <span class="slot-label">Gallery 2</span>
         </div>
-        <div class="image-slot" id="slot-2">
+        <div class="image-slot" id="slot-2" onclick="openSlotMenu(2)">
           <div class="placeholder">
             <div class="placeholder-icon">🎨</div>
             <div class="placeholder-text">GALLERY 3</div>
           </div>
-          <button class="ai-menu-btn" onclick="openSlotMenu(2)">🤖</button>
           <span class="slot-label">Gallery 3</span>
         </div>
       </div>
@@ -260,7 +235,7 @@
           </div>
         </button>
         
-        <button class="btn" onclick="selectSlotAction('generate')" style="justify-content: flex-start; gap: 15px; background: linear-gradient(135deg, var(--primary), var(--accent));">
+        <button class="btn" onclick="selectSlotAction('generate')" style="justify-content: flex-start; gap: 15px;">
           <i class="fas fa-wand-magic-sparkles"></i>
           <div style="text-align: left;">
             <div style="font-weight: 600;">Genera con AI</div>
@@ -268,7 +243,7 @@
           </div>
         </button>
         
-        <button class="btn" onclick="selectSlotAction('enhance')" style="justify-content: flex-start; gap: 15px; background: linear-gradient(135deg, #667eea, #764ba2);">
+        <button class="btn" onclick="selectSlotAction('enhance')" style="justify-content: flex-start; gap: 15px;">
           <i class="fas fa-sparkles"></i>
           <div style="text-align: left;">
             <div style="font-weight: 600;">Carica e Migliora</div>
