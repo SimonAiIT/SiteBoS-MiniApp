@@ -49,35 +49,6 @@
             box-shadow: 0 4px 15px rgba(91, 111, 237, 0.3);
         }
 
-        .stats-card {
-            background: var(--card-bg);
-            border-radius: 16px;
-            border: 1px solid var(--glass-border);
-            padding: 25px;
-            margin-bottom: 30px;
-            display: flex;
-            justify-content: space-around;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-        }
-
-        .stat-item {
-            text-align: center;
-        }
-
-        .stat-value {
-            font-size: 32px;
-            font-weight: 700;
-            color: var(--primary);
-            margin-bottom: 8px;
-        }
-
-        .stat-label {
-            font-size: 11px;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
         .section-card {
             background: var(--card-bg);
             border-radius: 16px;
@@ -93,12 +64,41 @@
             margin-bottom: 20px;
             display: flex;
             align-items: center;
-            gap: 12px;
+            justify-content: space-between;
             color: var(--primary);
         }
 
-        .section-title i {
+        .section-title-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .section-title-left i {
             font-size: 28px;
+        }
+
+        /* 🔥 SCORE BADGE IN TOP RIGHT */
+        .score-badge {
+            background: linear-gradient(135deg, var(--primary), var(--success));
+            color: white;
+            padding: 12px 24px;
+            border-radius: 50px;
+            font-size: 28px;
+            font-weight: 700;
+            box-shadow: 0 4px 15px rgba(91, 111, 237, 0.4);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border: 3px solid rgba(255,255,255,0.3);
+        }
+
+        .score-badge-label {
+            font-size: 12px;
+            font-weight: 600;
+            opacity: 0.9;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         .strengths-grid {
@@ -577,6 +577,14 @@
 
             .section-title {
                 font-size: 18px;
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+
+            .score-badge {
+                font-size: 24px;
+                padding: 10px 20px;
             }
 
             .strengths-grid {
@@ -625,50 +633,47 @@
             <p class="subtitle" id="description">Analisi comportamentale basata su 150 domande e 4 moduli</p>
         </div>
 
-        <div class="stats-card">
-            <div class="stat-item">
-                <div class="stat-value" id="overallScore">62.5</div>
-                <div class="stat-label">Punteggio Globale</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-value" id="modulesCompleted">4/4</div>
-                <div class="stat-label">Moduli Completati</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-value" id="timeSpent">1h 53m</div>
-                <div class="stat-label">Tempo Dedicato</div>
-            </div>
-        </div>
-
         <!-- LEARNING HISTORY SECTION -->
         <div class="section-card" id="learningHistorySection" style="display: none;">
             <h2 class="section-title">
-                <i class="fas fa-graduation-cap"></i>
-                Il Tuo Percorso di Crescita
+                <div class="section-title-left">
+                    <i class="fas fa-graduation-cap"></i>
+                    Il Tuo Percorso di Crescita
+                </div>
             </h2>
             <div id="learningHistoryList" class="history-grid"></div>
         </div>
 
+        <!-- 🌟 SUPER POTERI CON PUNTEGGIO -->
         <div class="section-card">
             <h2 class="section-title">
-                <i class="fas fa-star"></i>
-                I Tuoi Super Poteri
+                <div class="section-title-left">
+                    <i class="fas fa-star"></i>
+                    I Tuoi Super Poteri
+                </div>
+                <div class="score-badge" id="scoreBadge">
+                    <span id="overallScore">0</span>
+                </div>
             </h2>
             <div id="strengthsList" class="strengths-grid"></div>
         </div>
 
         <div class="section-card">
             <h2 class="section-title">
-                <i class="fas fa-bullseye"></i>
-                Dove Puoi Crescere
+                <div class="section-title-left">
+                    <i class="fas fa-bullseye"></i>
+                    Dove Puoi Crescere
+                </div>
             </h2>
             <div id="areasToImprove" class="areas-grid"></div>
         </div>
 
         <div class="section-card">
             <h2 class="section-title">
-                <i class="fas fa-play-circle"></i>
-                I Tuoi Prossimi 3 Video
+                <div class="section-title-left">
+                    <i class="fas fa-play-circle"></i>
+                    I Tuoi Prossimi 3 Video
+                </div>
             </h2>
             <p class="subtitle">∼27 minuti totali per sbloccare il tuo potenziale. <strong>La riflessione personale si trova nel video player.</strong></p>
             <div id="videosList" class="videos-grid"></div>
@@ -779,9 +784,8 @@
             document.getElementById('tagline').textContent = data.summary?.tagline || '';
             document.getElementById('description').textContent = data.summary?.description || '';
 
+            // 🌟 PUNTEGGIO NEL BADGE
             document.getElementById('overallScore').textContent = data.stats?.overall_score || '0';
-            document.getElementById('modulesCompleted').textContent = `${data.stats?.modules_completed || 0}/4`;
-            document.getElementById('timeSpent').textContent = formatTime(data.stats?.total_time_spent || '0 minuti');
 
             // 📚 LEARNING HISTORY
             renderLearningHistory(data.learning_history);
@@ -955,12 +959,6 @@
             if (urlParams.get('ragione_sociale')) params.set('ragione_sociale', urlParams.get('ragione_sociale'));
             
             window.location.href = `softskill/video-player.html?${params.toString()}`;
-        }
-
-        function formatTime(timeString) {
-            const match = timeString.match(/(\d+)\s*ora.*?(\d+)\s*minuti/);
-            if (match) return `${match[1]}h ${match[2]}m`;
-            return timeString;
         }
 
         function goBackToDashboard() {
