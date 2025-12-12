@@ -1,5 +1,6 @@
 // ============================================
 // LANDING PAGE HONEYPOT EDITOR - LOGIC
+// Aggiornato per struttura dati reale webhook
 // ============================================
 
 const tg = window.Telegram.WebApp;
@@ -39,28 +40,57 @@ async function init() {
     });
 
     const data = await response.json();
+    console.log('📦 Webhook Response:', data);
 
-    if (data.success) {
-      ownerData = data.owner_data;
-      honeypotData = data.honeypot;
-      catalogData = data.catalog;
+    // ✅ PARSING STRUTTURA REALE (Array con oggetto)
+    if (Array.isArray(data) && data.length > 0) {
+      const payload = data[0];
+      
+      // Estrai i 3 blocchi principali
+      honeypotData = payload.HoneyPot;
+      catalogData = payload.service_catalog_setup;
+      ownerData = payload.owner_data;
 
-      // Debug Preview
+      // Debug Preview con struttura reale
       document.getElementById('data-preview').style.display = 'block';
       document.getElementById('data-content').textContent = JSON.stringify({
-        owner_credits: ownerData?.credits || 0,
-        honeypot_profile: honeypotData?.profile?.business_name || 'N/A',
-        honeypot_messages: honeypotData?.messages?.length || 0,
-        catalog_categories: catalogData?.categories?.length || 0,
-        knowledge_docs: data.knowledge_docs || 0
+        owner: {
+          ragione_sociale: ownerData.ragione_sociale,
+          credits: ownerData.credits_balance,
+          email: ownerData.email,
+          phone: ownerData.phone,
+          site: ownerData.site
+        },
+        honeypot: {
+          company_context: honeypotData.company_context_string?.substring(0, 150) + '...',
+          knowledge_fragments: honeypotData.knowledge_fragments?.length || 0,
+          logo_url: honeypotData.assets?.logo?.url || 'N/A',
+          photo_url: honeypotData.assets?.photo?.url || 'N/A'
+        },
+        catalog: {
+          categories: catalogData.categories?.length || 0,
+          total_services: catalogData.categories?.reduce((sum, cat) => sum + (cat.subcategories?.length || 0), 0) || 0
+        }
       }, null, 2);
 
       hideLoader();
       document.getElementById('app-content').classList.remove('hidden');
+
+      // Notifica successo
+      if (tg?.showPopup) {
+        tg.showPopup({
+          title: '✅ Dati Caricati',
+          message: `${ownerData.ragione_sociale}\n\nCrediti: ${ownerData.credits_balance.toLocaleString()}\nKnowledge: ${honeypotData.knowledge_fragments?.length || 0} fragments\nCatalogo: ${catalogData.categories?.length || 0} categorie`,
+          buttons: [{ type: 'ok' }]
+        });
+      }
+
     } else {
-      throw new Error(data.error || 'Errore caricamento dati');
+      throw new Error('Struttura dati non valida o vuota');
     }
+
   } catch (error) {
+    console.error('❌ Errore init:', error);
     hideLoader();
     if (tg?.showAlert) {
       tg.showAlert('❌ Errore: ' + error.message);
@@ -173,7 +203,6 @@ window.removeImage = function(idx) {
 // FAB BUTTONS
 // ============================================
 document.getElementById('btn-back').addEventListener('click', () => {
-  // ✅ FIX: Usa conferma browser standard con fallback
   const confirmed = confirm('Tornare indietro? Le modifiche non salvate andranno perse.');
   if (confirmed) {
     window.location.href = `../dashboard.html?vat=${VAT}&owner=${OWNER}&token=${TOKEN}`;
@@ -192,6 +221,16 @@ document.getElementById('btn-deploy').addEventListener('click', () => {
 // ACTION: preview_landing
 // ============================================
 async function previewLanding() {
+  if (!useAI && uploadedImages.length === 0) {
+    const msg = '⚠️ Seleziona "Genera con AI" o carica almeno 1 immagine!';
+    if (tg?.showAlert) {
+      tg.showAlert(msg);
+    } else {
+      alert(msg);
+    }
+    return;
+  }
+
   showLoader('👁️ Generazione anteprima...');
 
   try {
@@ -211,20 +250,26 @@ async function previewLanding() {
     });
 
     const result = await response.json();
+    console.log('👁️ Preview result:', result);
 
     hideLoader();
 
     if (result.success) {
       // Apri preview in nuova finestra
       window.open(result.preview_url, '_blank');
-    } else {
-      if (tg?.showAlert) {
-        tg.showAlert('❌ Errore anteprima: ' + result.error);
-      } else {
-        alert('Errore anteprima: ' + result.error);
+      
+      if (tg?.showPopup) {
+        tg.showPopup({
+          title: '✅ Anteprima Pronta',
+          message: `L'anteprima è stata generata.\n\nValida fino a: ${new Date(result.expires_at).toLocaleString('it-IT')}`,
+          buttons: [{ type: 'ok' }]
+        });
       }
+    } else {
+      throw new Error(result.message || result.error || 'Errore anteprima');
     }
   } catch (error) {
+    console.error('❌ Errore preview:', error);
     hideLoader();
     if (tg?.showAlert) {
       tg.showAlert('Errore: ' + error.message);
@@ -238,8 +283,18 @@ async function previewLanding() {
 // CHECK CREDITI E DEPLOY
 // ============================================
 function checkCreditsAndDeploy() {
+  if (!useAI && uploadedImages.length === 0) {
+    const msg = '⚠️ Seleziona "Genera con AI" o carica almeno 1 immagine!';
+    if (tg?.showAlert) {
+      tg.showAlert(msg);
+    } else {
+      alert(msg);
+    }
+    return;
+  }
+
   const requiredCredits = 10000;
-  const availableCredits = ownerData?.credits || 0;
+  const availableCredits = ownerData?.credits_balance || 0;
 
   if (availableCredits >= requiredCredits) {
     // Mostra overlay conferma
@@ -297,6 +352,7 @@ async function executeDeploy() {
     });
 
     const result = await response.json();
+    console.log('🚀 Deploy result:', result);
 
     hideLoader();
 
@@ -305,15 +361,17 @@ async function executeDeploy() {
       
       if (tg?.showPopup) {
         tg.showPopup({
-          title: '✅ Landing Pubblicata!',
+          title: '🎉 Successo!',
           message: msg,
           buttons: [
-            { id: 'view', type: 'default', text: 'Visualizza' },
-            { id: 'ok', type: 'ok' }
+            { id: 'view', type: 'default', text: 'Apri Landing' },
+            { id: 'dashboard', type: 'default', text: 'Dashboard' }
           ]
         }, (buttonId) => {
           if (buttonId === 'view') {
             window.open(result.landing_url, '_blank');
+          } else if (buttonId === 'dashboard') {
+            window.location.href = `../dashboard.html?vat=${VAT}&owner=${OWNER}&token=${TOKEN}`;
           }
         });
       } else {
@@ -321,15 +379,26 @@ async function executeDeploy() {
         const openNow = confirm('Vuoi aprire la landing ora?');
         if (openNow) window.open(result.landing_url, '_blank');
       }
-    } else {
+
+    } else if (result.error === 'insufficient_credits') {
+      // Controllo server ha rilevato crediti insufficienti
+      const msg = `❌ Crediti Insufficienti (Server Check)\n\nDisponibili: ${result.available.toLocaleString()}\nRichiesti: ${result.required.toLocaleString()}\nMancanti: ${result.deficit.toLocaleString()}`;
+      
       if (tg?.showAlert) {
-        tg.showAlert('❌ Errore: ' + result.error);
+        tg.showAlert(msg, () => {
+          window.location.href = `https://dashboard.trinai.it/ricarica?vat=${VAT}&owner=${OWNER}&token=${TOKEN}`;
+        });
       } else {
-        alert('Errore: ' + result.error);
+        alert(msg);
+        window.location.href = `https://dashboard.trinai.it/ricarica?vat=${VAT}&owner=${OWNER}&token=${TOKEN}`;
       }
+
+    } else {
+      throw new Error(result.message || result.error || 'Errore sconosciuto');
     }
 
   } catch (error) {
+    console.error('❌ Errore deploy:', error);
     hideLoader();
     if (tg?.showAlert) {
       tg.showAlert('Errore durante il deploy: ' + error.message);
