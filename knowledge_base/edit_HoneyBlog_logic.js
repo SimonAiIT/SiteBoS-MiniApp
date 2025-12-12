@@ -11,17 +11,25 @@ const VAT = urlParams.get('vat');
 const OWNER = urlParams.get('owner');
 const TOKEN = urlParams.get('token');
 
-// 🔗 Endpoint Backend HoneyBlog
 const BACKEND_URL = 'https://trinai.api.workflow.dcmake.it/webhook/50891655-84c8-4213-90e8-26ebbc3d6c4c';
 
 let ownerData = null;
 let honeypotData = null;
 let catalogData = null;
-let uploadedImages = [];
-let useAI = false;
+
+// 🎯 SLOT SYSTEM: 5 posizioni fisse
+const imageSlots = [
+  { id: 0, name: 'hero', label: 'Hero', required: true, image: null },
+  { id: 1, name: 'gallery1', label: 'Gallery 1', required: true, image: null },
+  { id: 2, name: 'gallery2', label: 'Gallery 2', required: true, image: null },
+  { id: 3, name: 'gallery3', label: 'Gallery 3', required: false, image: null },
+  { id: 4, name: 'footer', label: 'Footer', required: false, image: null }
+];
+
+let currentSlotIndex = null;
 
 // ============================================
-// INIT - ACTION: get_honeyblog_data
+// INIT
 // ============================================
 async function init() {
   showLoader('Recupero dati HoneyPot...');
@@ -39,26 +47,23 @@ async function init() {
     });
 
     const data = await response.json();
-    console.log('📦 Webhook Response OK');
+    console.log('✅ Webhook Response OK');
 
-    // ✅ PARSING CORRETTO: Oggetto diretto
     honeypotData = data.HoneyPot;
     catalogData = data.service_catalog_setup;
     ownerData = data.owner_data;
 
-    // Validazione base
     if (!honeypotData || !ownerData) {
-      throw new Error('Dati HoneyPot o Owner mancanti');
+      throw new Error('Dati mancanti');
     }
 
     hideLoader();
     document.getElementById('app-content').classList.remove('hidden');
 
-    // Notifica successo (senza dati sensibili)
     if (tg?.showPopup) {
       tg.showPopup({
         title: '✅ Dati Caricati',
-        message: `Business: ${ownerData.ragione_sociale}\n\nKnowledge Fragments: ${honeypotData.knowledge_fragments?.length || 0}\nCategorie Catalogo: ${catalogData?.categories?.length || 0}`,
+        message: `${ownerData.ragione_sociale}\n\nCarica le immagini per procedere.`,
         buttons: [{ type: 'ok' }]
       });
     }
@@ -75,109 +80,93 @@ async function init() {
 }
 
 // ============================================
-// SCELTA MODALITÀ IMMAGINI
+// SLOT MANAGEMENT
 // ============================================
-document.getElementById('choice-ai').addEventListener('click', () => {
-  useAI = true;
-  document.getElementById('choice-ai').style.borderColor = 'var(--primary)';
-  document.getElementById('choice-ai').style.background = 'rgba(91, 111, 237, 0.15)';
-  document.getElementById('choice-upload').style.borderColor = 'var(--glass-border)';
-  document.getElementById('choice-upload').style.background = 'transparent';
-  document.getElementById('upload-area').style.display = 'none';
+window.selectSlot = function(slotIndex) {
+  currentSlotIndex = slotIndex;
+  document.getElementById('file-input').click();
+};
+
+document.getElementById('file-input').addEventListener('change', function(e) {
+  if (!e.target.files || !e.target.files[0]) return;
   
-  if (tg?.showPopup) {
-    tg.showPopup({
-      title: '🤖 Modalità AI Attivata',
-      message: 'Al momento del deploy verranno generate immagini automatiche per la tua landing page.',
-      buttons: [{ type: 'ok' }]
-    });
-  } else {
-    alert('🤖 Modalità AI Attivata');
-  }
-});
-
-document.getElementById('choice-upload').addEventListener('click', () => {
-  useAI = false;
-  document.getElementById('choice-upload').style.borderColor = 'var(--primary)';
-  document.getElementById('choice-upload').style.background = 'rgba(91, 111, 237, 0.15)';
-  document.getElementById('choice-ai').style.borderColor = 'var(--glass-border)';
-  document.getElementById('choice-ai').style.background = 'transparent';
-  document.getElementById('upload-area').style.display = 'block';
-});
-
-// ============================================
-// UPLOAD IMMAGINI
-// ============================================
-const uploadArea = document.getElementById('upload-area');
-const fileInput = document.getElementById('file-input');
-
-uploadArea.addEventListener('click', (e) => {
-  if (e.target !== fileInput) fileInput.click();
-});
-
-fileInput.addEventListener('change', (e) => {
-  handleFiles(e.target.files);
-});
-
-uploadArea.addEventListener('dragover', (e) => {
-  e.preventDefault();
-  uploadArea.style.background = 'rgba(91, 111, 237, 0.2)';
-});
-
-uploadArea.addEventListener('dragleave', () => {
-  uploadArea.style.background = '';
-});
-
-uploadArea.addEventListener('drop', (e) => {
-  e.preventDefault();
-  uploadArea.style.background = '';
-  handleFiles(e.dataTransfer.files);
-});
-
-function handleFiles(files) {
-  if (uploadedImages.length + files.length > 5) {
-    if (tg?.showAlert) {
-      tg.showAlert('Puoi caricare massimo 5 immagini');
-    } else {
-      alert('Puoi caricare massimo 5 immagini');
-    }
+  const file = e.target.files[0];
+  if (!file.type.startsWith('image/')) {
+    alert('⚠️ Seleziona un file immagine valido');
     return;
   }
 
-  Array.from(files).forEach(file => {
-    if (file.type.startsWith('image/')) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        uploadedImages.push(e.target.result);
-        renderImagePreview();
-      };
-      reader.readAsDataURL(file);
-    }
-  });
-}
+  const reader = new FileReader();
+  reader.onload = function(event) {
+    imageSlots[currentSlotIndex].image = event.target.result;
+    renderSlot(currentSlotIndex);
+    updateProgress();
+  };
+  reader.readAsDataURL(file);
+  
+  // Reset input per permettere re-upload stesso file
+  e.target.value = '';
+});
 
-function renderImagePreview() {
-  const preview = document.getElementById('images-preview');
-  preview.innerHTML = uploadedImages.map((img, idx) => `
-    <div style="position:relative; aspect-ratio:1; border-radius:8px; overflow:hidden; border:1px solid var(--glass-border);">
-      <img src="${img}" alt="Image ${idx + 1}" style="width:100%; height:100%; object-fit:cover;">
-      <button onclick="removeImage(${idx})" style="position:absolute; top:5px; right:5px; background:var(--error); color:white; border:none; border-radius:50%; width:25px; height:25px; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:12px;">
+function renderSlot(slotIndex) {
+  const slot = imageSlots[slotIndex];
+  const slotElement = document.getElementById(`slot-${slotIndex}`);
+  
+  if (slot.image) {
+    slotElement.classList.add('filled');
+    slotElement.innerHTML = `
+      <img src="${slot.image}" alt="${slot.label}">
+      <span class="slot-label">${slot.label}</span>
+      <button class="remove-btn" onclick="removeSlot(${slotIndex})">
         <i class="fas fa-times"></i>
       </button>
-    </div>
-  `).join('');
+    `;
+  } else {
+    slotElement.classList.remove('filled');
+    const icon = slotIndex === 0 ? '🖼️' : (slotIndex === 4 ? '🎨' : '📷');
+    const text = slotIndex === 0 ? 'HERO PRINCIPALE' : 
+                 slotIndex === 4 ? 'FOOTER (opzionale)' :
+                 `GALLERY ${slotIndex} ${slotIndex > 2 ? '(opzionale)' : ''}`;
+    
+    slotElement.innerHTML = `
+      <div class="placeholder">
+        <div class="placeholder-icon">${icon}</div>
+        <div class="placeholder-text">${text}</div>
+      </div>
+      <span class="slot-label">${slot.label}</span>
+    `;
+  }
 }
 
-window.removeImage = function(idx) {
-  uploadedImages.splice(idx, 1);
-  renderImagePreview();
+window.removeSlot = function(slotIndex) {
+  imageSlots[slotIndex].image = null;
+  renderSlot(slotIndex);
+  updateProgress();
 };
+
+function updateProgress() {
+  const filled = imageSlots.filter(s => s.image !== null).length;
+  const total = imageSlots.length;
+  const percent = (filled / total) * 100;
+  
+  document.getElementById('progress-text').textContent = `${filled}/${total}`;
+  document.getElementById('progress-fill').style.width = `${percent}%`;
+}
+
+function getFilledSlots() {
+  return imageSlots.filter(s => s.image !== null);
+}
+
+function validateRequiredSlots() {
+  const missingRequired = imageSlots.filter(s => s.required && !s.image);
+  return missingRequired.length === 0;
+}
 
 // ============================================
 // FAB BUTTONS
 // ============================================
 document.getElementById('btn-back').addEventListener('click', () => {
-  const confirmed = confirm('Tornare indietro? Le modifiche non salvate andranno perse.');
+  const confirmed = confirm('Tornare indietro? Le immagini caricate andranno perse.');
   if (confirmed) {
     window.location.href = `../dashboard.html?vat=${VAT}&owner=${OWNER}&token=${TOKEN}`;
   }
@@ -195,8 +184,8 @@ document.getElementById('btn-deploy').addEventListener('click', () => {
 // ACTION: preview_landing
 // ============================================
 async function previewLanding() {
-  if (!useAI && uploadedImages.length === 0) {
-    const msg = '⚠️ Seleziona "Genera con AI" o carica almeno 1 immagine!';
+  if (!validateRequiredSlots()) {
+    const msg = '⚠️ Devi caricare almeno Hero, Gallery 1 e Gallery 2!';
     if (tg?.showAlert) {
       tg.showAlert(msg);
     } else {
@@ -208,6 +197,12 @@ async function previewLanding() {
   showLoader('👁️ Generazione anteprima...');
 
   try {
+    const filledSlots = getFilledSlots();
+    const imagesPayload = filledSlots.map(slot => ({
+      position: slot.name,
+      data: slot.image
+    }));
+
     const response = await fetch(BACKEND_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -216,15 +211,14 @@ async function previewLanding() {
         vat_number: VAT,
         chat_id: OWNER,
         token: TOKEN,
-        use_ai_images: useAI,
-        uploaded_images: uploadedImages,
+        images: imagesPayload,
         honeypot: honeypotData,
         catalog: catalogData
       })
     });
 
     const result = await response.json();
-    console.log('👁️ Preview result OK');
+    console.log('✅ Preview result OK');
 
     hideLoader();
 
@@ -256,8 +250,8 @@ async function previewLanding() {
 // CHECK CREDITI E DEPLOY
 // ============================================
 function checkCreditsAndDeploy() {
-  if (!useAI && uploadedImages.length === 0) {
-    const msg = '⚠️ Seleziona "Genera con AI" o carica almeno 1 immagine!';
+  if (!validateRequiredSlots()) {
+    const msg = '⚠️ Devi caricare almeno Hero, Gallery 1 e Gallery 2!';
     if (tg?.showAlert) {
       tg.showAlert(msg);
     } else {
@@ -273,15 +267,16 @@ function checkCreditsAndDeploy() {
     document.getElementById('confirm-overlay').classList.remove('hidden');
   } else {
     const deficit = requiredCredits - availableCredits;
-    const msg = `❌ Crediti Insufficienti!\n\nDisponibili: ${availableCredits.toLocaleString()}\nRichiesti: ${requiredCredits.toLocaleString()}\nMancanti: ${deficit.toLocaleString()}\n\nVerrai reindirizzato alla pagina di ricarica.`;
+    const msg = `❌ Crediti Insufficienti!\n\nDisponibili: ${availableCredits.toLocaleString()}\nRichiesti: ${requiredCredits.toLocaleString()}\nMancanti: ${deficit.toLocaleString()}`;
     
     if (tg?.showAlert) {
       tg.showAlert(msg, () => {
         window.location.href = `https://dashboard.trinai.it/ricarica?vat=${VAT}&owner=${OWNER}&token=${TOKEN}`;
       });
     } else {
-      alert(msg);
-      window.location.href = `https://dashboard.trinai.it/ricarica?vat=${VAT}&owner=${OWNER}&token=${TOKEN}`;
+      if (confirm(msg + '\n\nVuoi ricaricare?')) {
+        window.location.href = `https://dashboard.trinai.it/ricarica?vat=${VAT}&owner=${OWNER}&token=${TOKEN}`;
+      }
     }
   }
 }
@@ -305,6 +300,12 @@ async function executeDeploy() {
   showLoader('🚀 Deploy in corso...');
 
   try {
+    const filledSlots = getFilledSlots();
+    const imagesPayload = filledSlots.map(slot => ({
+      position: slot.name,
+      data: slot.image
+    }));
+
     const response = await fetch(BACKEND_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -313,15 +314,14 @@ async function executeDeploy() {
         vat_number: VAT,
         chat_id: OWNER,
         token: TOKEN,
-        use_ai_images: useAI,
-        uploaded_images: uploadedImages,
+        images: imagesPayload,
         honeypot: honeypotData,
         catalog: catalogData
       })
     });
 
     const result = await response.json();
-    console.log('🚀 Deploy result OK');
+    console.log('✅ Deploy result OK');
 
     hideLoader();
 
@@ -357,8 +357,9 @@ async function executeDeploy() {
           window.location.href = `https://dashboard.trinai.it/ricarica?vat=${VAT}&owner=${OWNER}&token=${TOKEN}`;
         });
       } else {
-        alert(msg);
-        window.location.href = `https://dashboard.trinai.it/ricarica?vat=${VAT}&owner=${OWNER}&token=${TOKEN}`;
+        if (confirm(msg + '\n\nVuoi ricaricare?')) {
+          window.location.href = `https://dashboard.trinai.it/ricarica?vat=${VAT}&owner=${OWNER}&token=${TOKEN}`;
+        }
       }
 
     } else {
@@ -388,5 +389,4 @@ function hideLoader() {
   document.getElementById('loader').style.display = 'none';
 }
 
-// Init al caricamento pagina
 window.addEventListener('DOMContentLoaded', init);
