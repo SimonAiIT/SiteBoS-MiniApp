@@ -46,8 +46,8 @@ const i18n = {
         card_warehouse: "Analisi Magazzino", sub_warehouse: "50.000 crediti",
         card_functions: "Funzioni Aggiuntive", sub_functions: "Espandi TrinAi",
         err_title: "⛔ Errore Parametri", err_msg: "Apri dal Bot Telegram.", 
-        popup_site_title: "🏺 Pubblica Landing HoneyPot",
-        popup_site_msg: "Crea una landing page professionale con i tuoi contenuti HoneyPot, prodotti dal Catalogo e FAQ dalla Knowledge Base.<br><br><strong>Costo:</strong> 10,000 crediti<br><em>Pagherai solo al momento del deploy finale</em>",
+        landing_title: "🏺 Pubblica Landing HoneyPot",
+        landing_description: "Crea una landing page professionale con i tuoi contenuti HoneyPot, prodotti dal Catalogo e FAQ dalla Knowledge Base.",
         game_title: "🎮 GAME OVER!", game_msg: "Hai guadagnato {points} Crediti AI!",
         status_hp_lock: "⛔ DA CONFIGURARE", status_hp_ok: "✅ Attivo",
         status_no_op: "Owner", status_active: "Membri", status_req: "⚠️ Richiesto",
@@ -67,8 +67,8 @@ const i18n = {
         card_warehouse: "Warehouse Analysis", sub_warehouse: "50,000 credits",
         card_functions: "Additional Functions", sub_functions: "Expand TrinAi",
         err_title: "⛔ Param Error", err_msg: "Open from Telegram Bot.", 
-        popup_site_title: "🏺 Publish HoneyPot Landing",
-        popup_site_msg: "Create a professional landing page with your HoneyPot content, Catalog products and Knowledge Base FAQ.<br><br><strong>Cost:</strong> 10,000 credits<br><em>You'll pay only at final deployment</em>",
+        landing_title: "🏺 Publish HoneyPot Landing",
+        landing_description: "Create a professional landing page with your HoneyPot content, Catalog products and Knowledge Base FAQ.",
         game_title: "🎮 GAME OVER!", game_msg: "You earned {points} AI Credits!",
         status_hp_lock: "⛔ SETUP REQUIRED", status_hp_ok: "✅ Active",
         status_no_op: "Owner", status_active: "Members", status_req: "⚠️ Required",
@@ -88,8 +88,8 @@ const i18n = {
         card_warehouse: "Analyse Entrepôt", sub_warehouse: "50 000 crédits",
         card_functions: "Fonctions Supplémentaires", sub_functions: "Étendre TrinAi",
         err_title: "⛔ Erreur Param", err_msg: "Ouvrir via Bot Telegram.", 
-        popup_site_title: "🏺 Publier Landing HoneyPot",
-        popup_site_msg: "Créez une page d'atterrissage professionnelle avec votre contenu HoneyPot, produits du Catalogue et FAQ de la Base de Connaissances.<br><br><strong>Coût :</strong> 10 000 crédits<br><em>Vous paierez uniquement au déploiement final</em>",
+        landing_title: "🏺 Publier Landing HoneyPot",
+        landing_description: "Créez une page d'atterrissage professionnelle avec votre contenu HoneyPot, produits du Catalogue et FAQ de la Base de Connaissances.",
         game_title: "🎮 GAME OVER !", game_msg: "Vous avez gagné {points} Crédits IA !",
         status_hp_lock: "⛔ À CONFIGURER", status_hp_ok: "✅ Actif",
         status_no_op: "Propriétaire", status_active: "Membres", status_req: "⚠️ Requis",
@@ -109,8 +109,8 @@ const i18n = {
         card_warehouse: "Lageranalyse", sub_warehouse: "50.000 Credits",
         card_functions: "Zusätzliche Funktionen", sub_functions: "TrinAi erweitern",
         err_title: "⛔ Parameterfehler", err_msg: "Über Telegram Bot öffnen.", 
-        popup_site_title: "🏺 HoneyPot Landing Veröffentlichen",
-        popup_site_msg: "Erstellen Sie eine professionelle Landing Page mit Ihrem HoneyPot-Inhalt, Katalogprodukten und FAQ aus der Wissensdatenbank.<br><br><strong>Kosten:</strong> 10.000 Credits<br><em>Sie zahlen nur bei der endgültigen Bereitstellung</em>",
+        landing_title: "🏺 HoneyPot Landing Veröffentlichen",
+        landing_description: "Erstellen Sie eine professionelle Landing Page mit Ihrem HoneyPot-Inhalt, Katalogprodukten und FAQ aus der Wissensdatenbank.",
         game_title: "🎮 GAME OVER!", game_msg: "Du hast {points} KI-Credits verdient!",
         status_hp_lock: "⛔ SETUP NÖTIG", status_hp_ok: "✅ Aktiv",
         status_no_op: "Besitzer", status_active: "Mitglieder", status_req: "⚠️ Erforderlich",
@@ -130,8 +130,8 @@ const i18n = {
         card_warehouse: "Análisis Almacén", sub_warehouse: "50.000 créditos",
         card_functions: "Funciones Adicionales", sub_functions: "Expandir TrinAi",
         err_title: "⛔ Error Param", err_msg: "Abrir desde Bot Telegram.", 
-        popup_site_title: "🏺 Publicar Landing HoneyPot",
-        popup_site_msg: "Cree una página de destino profesional con su contenido HoneyPot, productos del Catálogo y FAQ de la Base de Conocimientos.<br><br><strong>Costo:</strong> 10,000 créditos<br><em>Pagará solo en el despliegue final</em>",
+        landing_title: "🏺 Publicar Landing HoneyPot",
+        landing_description: "Cree una página de destino profesional con su contenido HoneyPot, productos del Catálogo y FAQ de la Base de Conocimientos.",
         game_title: "🎮 ¡JUEGO TERMINADO!", game_msg: "¡Has ganado {points} Créditos IA!",
         status_hp_lock: "⛔ A CONFIGURAR", status_hp_ok: "✅ Activo",
         status_no_op: "Propietario", status_active: "Miembros", status_req: "⚠️ Requerido",
@@ -151,8 +151,8 @@ const i18n = {
         card_warehouse: "Análise Armazém", sub_warehouse: "50.000 créditos",
         card_functions: "Funções Adicionais", sub_functions: "Expandir TrinAi",
         err_title: "⛔ Erro Param", err_msg: "Abrir via Bot Telegram.", 
-        popup_site_title: "🏺 Publicar Landing HoneyPot",
-        popup_site_msg: "Crie uma landing page profissional com seu conteúdo HoneyPot, produtos do Catálogo e FAQ da Base de Conhecimento.<br><br><strong>Custo:</strong> 10.000 créditos<br><em>Você pagará apenas na implantação final</em>",
+        landing_title: "🏺 Publicar Landing HoneyPot",
+        landing_description: "Crie uma landing page profissional com seu conteúdo HoneyPot, produtos do Catálogo e FAQ da Base de Conhecimento.",
         game_title: "🎮 FIM DE JOGO!", game_msg: "Ganhou {points} Créditos de IA!",
         status_hp_lock: "⛔ CONFIGURAR", status_hp_ok: "✅ Ativo",
         status_no_op: "Proprietário", status_active: "Membros", status_req: "⚠️ Obrigatório",
@@ -183,7 +183,7 @@ function applyTranslations() {
 window.navTo = function(routeKey) {
     // ✅ Intercetta il click su 'blog' per mostrare modal
     if (routeKey === 'blog') {
-        showLandingModal();
+        openLandingOverlay();
         return;
     }
     
@@ -193,34 +193,32 @@ window.navTo = function(routeKey) {
     window.location.href = `${targetPath}?${p.toString()}`;
 }
 
-// ✅ MODAL LANDING HONEYPOT
-function showLandingModal() {
+// ✅ LANDING HONEYPOT OVERLAY FUNCTIONS
+window.openLandingOverlay = function() {
     if (tg?.HapticFeedback) tg.HapticFeedback.impactOccurred('medium');
     
-    if (tg?.showPopup) {
-        tg.showPopup({
-            title: t('popup_site_title'),
-            message: t('popup_site_msg'),
-            buttons: [
-                { id: 'cancel', type: 'cancel', text: 'Annulla' },
-                { id: 'proceed', type: 'default', text: 'Inizia Configurazione' }
-            ]
-        }, (buttonId) => {
-            if (buttonId === 'proceed') {
-                const p = new URLSearchParams(window.location.search);
-                p.delete('bonus_credits');
-                window.location.href = `${ROUTES['blog']}?${p.toString()}`;
-            }
-        });
-    } else {
-        // Fallback per browser
-        const proceed = confirm(t('popup_site_msg').replace(/<[^>]*>/g, ''));
-        if (proceed) {
-            const p = new URLSearchParams(window.location.search);
-            p.delete('bonus_credits');
-            window.location.href = `${ROUTES['blog']}?${p.toString()}`;
-        }
-    }
+    // Applica traduzioni al modal
+    const titleEl = document.getElementById('landing-title');
+    const descEl = document.getElementById('landing-description');
+    
+    if (titleEl) titleEl.textContent = t('landing_title');
+    if (descEl) descEl.textContent = t('landing_description');
+    
+    document.getElementById('landing-overlay').classList.remove('hidden');
+}
+
+window.closeLandingOverlay = function() {
+    if (tg?.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
+    document.getElementById('landing-overlay').classList.add('hidden');
+}
+
+window.proceedToLanding = function() {
+    if (tg?.HapticFeedback) tg.HapticFeedback.impactOccurred('heavy');
+    closeLandingOverlay();
+    
+    const p = new URLSearchParams(window.location.search);
+    p.delete('bonus_credits');
+    window.location.href = `${ROUTES['blog']}?${p.toString()}`;
 }
 
 // ✨ FUNZIONE REDIRECT RICARICA (Click sul banner)
