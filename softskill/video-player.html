@@ -11,34 +11,27 @@
         body {
             padding: 0;
             margin: 0;
-            background: #000;
-            overflow: hidden;
+            background: var(--bg-primary);
+            overflow-x: hidden;
         }
 
         .video-container {
-            position: relative;
             width: 100%;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
+            min-height: 100vh;
         }
 
         .video-header {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            z-index: 100;
-            background: linear-gradient(180deg, rgba(0,0,0,0.8) 0%, transparent 100%);
+            background: linear-gradient(135deg, var(--primary), var(--success));
             padding: 15px 20px;
             display: flex;
             align-items: center;
             gap: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
         }
 
         .back-btn {
-            background: rgba(255,255,255,0.1);
-            border: 1px solid rgba(255,255,255,0.2);
+            background: rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.3);
             color: white;
             width: 40px;
             height: 40px;
@@ -51,7 +44,7 @@
         }
 
         .back-btn:hover {
-            background: rgba(255,255,255,0.2);
+            background: rgba(255,255,255,0.3);
             transform: scale(1.05);
         }
 
@@ -68,13 +61,13 @@
 
         .video-meta {
             font-size: 12px;
-            color: rgba(255,255,255,0.7);
+            color: rgba(255,255,255,0.8);
             margin-top: 4px;
         }
 
         .video-player {
-            flex: 1;
             width: 100%;
+            aspect-ratio: 16/9;
             background: #000;
             position: relative;
         }
@@ -127,67 +120,66 @@
             max-width: 600px;
         }
 
-        .learning-panel {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: linear-gradient(0deg, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.8) 100%);
+        .content-section {
+            max-width: 1000px;
+            margin: 0 auto;
             padding: 20px;
-            transform: translateY(100%);
-            transition: transform 0.3s ease;
-            max-height: 40vh;
-            overflow-y: auto;
-            z-index: 100;
         }
 
-        .learning-panel.visible {
-            transform: translateY(0);
+        .knowledge-card {
+            background: var(--card-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            margin-bottom: 20px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
         }
 
-        .panel-toggle {
-            position: absolute;
-            top: -50px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: var(--primary);
-            color: white;
-            padding: 12px 25px;
-            border-radius: 25px 25px 0 0;
+        .card-header {
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             cursor: pointer;
-            font-size: 13px;
-            font-weight: 600;
+            transition: all 0.2s;
+            background: linear-gradient(135deg, rgba(91, 111, 237, 0.1), rgba(76, 217, 100, 0.1));
+        }
+
+        .card-header:hover {
+            background: linear-gradient(135deg, rgba(91, 111, 237, 0.15), rgba(76, 217, 100, 0.15));
+        }
+
+        .card-header h3 {
+            margin: 0;
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--primary);
             display: flex;
             align-items: center;
-            gap: 8px;
-            box-shadow: 0 -4px 15px rgba(91, 111, 237, 0.4);
-            transition: all 0.2s;
+            gap: 10px;
         }
 
-        .panel-toggle:hover {
-            transform: translateX(-50%) translateY(-3px);
-        }
-
-        .panel-toggle i {
+        .chevron {
             transition: transform 0.3s;
+            color: var(--text-muted);
         }
 
-        .learning-panel.visible .panel-toggle i {
+        .knowledge-card.open .chevron {
             transform: rotate(180deg);
         }
 
-        .learning-section {
-            margin-bottom: 25px;
+        .card-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
         }
 
-        .section-title {
-            font-size: 15px;
-            font-weight: 700;
-            color: var(--primary);
-            margin-bottom: 12px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
+        .knowledge-card.open .card-content {
+            max-height: 2000px;
+        }
+
+        .card-body {
+            padding: 20px;
         }
 
         .takeaway-item {
@@ -218,12 +210,12 @@
 
         .reflection-textarea {
             width: 100%;
-            min-height: 80px;
-            background: rgba(0,0,0,0.3);
+            min-height: 100px;
+            background: var(--card-bg);
             border: 1px solid var(--glass-border);
             border-radius: 8px;
             padding: 12px;
-            color: white;
+            color: var(--text-main);
             font-size: 14px;
             resize: vertical;
             font-family: inherit;
@@ -232,17 +224,11 @@
         .reflection-textarea:focus {
             outline: none;
             border-color: var(--warning);
-            background: rgba(245, 158, 11, 0.1);
-        }
-
-        .action-buttons {
-            display: flex;
-            gap: 10px;
-            margin-top: 20px;
+            background: rgba(245, 158, 11, 0.05);
         }
 
         .btn-complete {
-            flex: 1;
+            width: 100%;
             background: var(--success);
             color: white;
             padding: 15px;
@@ -256,6 +242,7 @@
             justify-content: center;
             gap: 8px;
             transition: all 0.2s;
+            margin-top: 15px;
         }
 
         .btn-complete:hover {
@@ -404,17 +391,20 @@
             margin-bottom: 25px;
         }
 
-        .next-video-btn {
-            background: var(--primary);
-            color: white;
+        .next-video-btn, .back-profile-btn {
             padding: 15px 30px;
-            border: none;
             border-radius: 12px;
             font-size: 16px;
             font-weight: 700;
             cursor: pointer;
-            margin-right: 10px;
             transition: all 0.2s;
+            border: none;
+            margin: 5px;
+        }
+
+        .next-video-btn {
+            background: var(--primary);
+            color: white;
         }
 
         .next-video-btn:hover {
@@ -426,20 +416,29 @@
             background: rgba(255,255,255,0.1);
             border: 1px solid var(--glass-border);
             color: white;
-            padding: 15px 30px;
-            border-radius: 12px;
-            font-size: 16px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.2s;
         }
 
         .back-profile-btn:hover {
             background: rgba(255,255,255,0.15);
         }
+
+        @media (max-width: 768px) {
+            .video-header {
+                padding: 12px 15px;
+            }
+
+            .video-title {
+                font-size: 14px;
+            }
+
+            .content-section {
+                padding: 15px;
+            }
+        }
     </style>
 </head>
 <body>
+
     <div class="video-container">
         <!-- HEADER -->
         <div class="video-header">
@@ -457,47 +456,49 @@
             <!-- YouTube iframe or error screen will be injected here -->
         </div>
 
-        <!-- LEARNING PANEL -->
-        <div class="learning-panel" id="learningPanel">
-            <div class="panel-toggle" onclick="togglePanel()">
-                <i class="fas fa-chevron-up"></i>
-                <span>Approfondisci</span>
-            </div>
-
-            <div class="learning-section">
-                <div class="section-title">
-                    <i class="fas fa-lightbulb"></i>
-                    Key Takeaways
+        <!-- CONTENT SECTION -->
+        <div class="content-section">
+            <!-- KEY TAKEAWAYS -->
+            <div class="knowledge-card open">
+                <div class="card-header">
+                    <h3><i class="fas fa-lightbulb"></i> Key Takeaways</h3>
+                    <i class="fas fa-chevron-down chevron"></i>
                 </div>
-                <div id="takeawaysList">
-                    <!-- Populated by JS -->
-                </div>
-            </div>
-
-            <div class="learning-section">
-                <div class="section-title">
-                    <i class="fas fa-brain"></i>
-                    Riflessione Personale
-                </div>
-                <div class="reflection-prompt">
-                    <div class="prompt-question" id="reflectionQuestion">Caricamento...</div>
-                    <textarea 
-                        class="reflection-textarea" 
-                        id="reflectionText" 
-                        placeholder="Scrivi qui la tua riflessione..."
-                    ></textarea>
+                <div class="card-content">
+                    <div class="card-body">
+                        <div id="takeawaysList">
+                            <!-- Populated by JS -->
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <div class="action-buttons">
-                <button class="btn-complete" onclick="completeVideo()" id="completeBtn">
-                    <i class="fas fa-check-circle"></i>
-                    Ho Completato il Video
-                </button>
-            </div>
+            <!-- RIFLESSIONE PERSONALE -->
+            <div class="knowledge-card open">
+                <div class="card-header">
+                    <h3><i class="fas fa-brain"></i> Riflessione Personale</h3>
+                    <i class="fas fa-chevron-down chevron"></i>
+                </div>
+                <div class="card-content">
+                    <div class="card-body">
+                        <div class="reflection-prompt">
+                            <div class="prompt-question" id="reflectionQuestion">Caricamento...</div>
+                            <textarea 
+                                class="reflection-textarea" 
+                                id="reflectionText" 
+                                placeholder="Scrivi qui la tua riflessione personale..."
+                            ></textarea>
+                        </div>
 
-            <div class="progress-info">
-                <div class="progress-text" id="progressText">Video 1 di 3 completato</div>
+                        <button class="btn-complete" onclick="completeVideo()" id="completeBtn">
+                            <i class="fas fa-check-circle"></i> Ho Completato il Video
+                        </button>
+
+                        <div class="progress-info">
+                            <div class="progress-text" id="progressText">Video 1 di 3</div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -558,7 +559,6 @@
                 return;
             }
 
-            // Estrai YouTube video ID
             const videoId = extractYouTubeID(videoUrl);
             console.log('Video ID estratto:', videoId);
             
@@ -575,7 +575,7 @@
             document.getElementById('videoTitle').textContent = decodeURIComponent(title);
             document.getElementById('videoMeta').textContent = `${duration} • Priorità ${priority}`;
 
-            // Inject YouTube iframe con NOCOOKIE per evitare problemi CORS
+            // Inject YouTube iframe
             const iframe = `
                 <iframe 
                     src="https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&rel=0&modestbranding=1" 
@@ -600,7 +600,7 @@
 
             // Reflection question
             document.getElementById('reflectionQuestion').textContent = 
-                `Come puoi applicare ciò che hai imparato per migliorare ${decodeURIComponent(improvement)}?`;
+                `Come puoi applicare ciò che hai imparato per migliorare: ${decodeURIComponent(improvement)}?`;
 
             // Progress
             document.getElementById('progressText').textContent = `Video ${priority} di 3 • Continua così!`;
@@ -609,17 +609,11 @@
         function extractYouTubeID(url) {
             if (!url) return null;
             
-            // Pattern per diversi formati YouTube
             const patterns = [
-                // youtube.com/watch?v=VIDEO_ID
                 /(?:youtube\.com\/watch\?v=)([a-zA-Z0-9_-]{11})/,
-                // youtu.be/VIDEO_ID
                 /(?:youtu\.be\/)([a-zA-Z0-9_-]{11})/,
-                // youtube.com/embed/VIDEO_ID
                 /(?:youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/,
-                // youtube.com/v/VIDEO_ID
                 /(?:youtube\.com\/v\/)([a-zA-Z0-9_-]{11})/,
-                // youtube-nocookie.com/embed/VIDEO_ID
                 /(?:youtube-nocookie\.com\/embed\/)([a-zA-Z0-9_-]{11})/
             ];
             
@@ -650,11 +644,6 @@
                 </div>
             `;
             document.getElementById('videoPlayer').innerHTML = errorHtml;
-        }
-
-        function togglePanel() {
-            const panel = document.getElementById('learningPanel');
-            panel.classList.toggle('visible');
         }
 
         async function completeVideo() {
@@ -736,13 +725,7 @@
         }
 
         function loadNextVideo() {
-            const nextPriority = parseInt(priority) + 1;
-            if (nextPriority <= 3) {
-                alert('Prossimo video in arrivo!');
-                backToProfile();
-            } else {
-                backToProfile();
-            }
+            backToProfile();
         }
 
         function backToProfile() {
@@ -759,6 +742,13 @@
         function goBack() {
             backToProfile();
         }
+
+        // ACCORDION TOGGLE
+        document.addEventListener('click', (e) => {
+            if (e.target.closest('.card-header')) {
+                e.target.closest('.card-header').parentElement.classList.toggle('open');
+            }
+        });
 
         // 🚀 INIT
         window.addEventListener('DOMContentLoaded', initPlayer);
