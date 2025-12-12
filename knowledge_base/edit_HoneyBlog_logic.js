@@ -393,9 +393,7 @@ async function previewLanding() {
         action: 'preview_landing',
         vat_number: VAT,
         chat_id: OWNER,
-        token: TOKEN,
-        honeypot: honeypotData,
-        catalog: catalogData
+        token: TOKEN
       })
     });
 
@@ -465,9 +463,7 @@ async function executeDeploy() {
         action: 'deploy_honeyblog_landing',
         vat_number: VAT,
         chat_id: OWNER,
-        token: TOKEN,
-        honeypot: honeypotData,
-        catalog: catalogData
+        token: TOKEN
       })
     });
 
