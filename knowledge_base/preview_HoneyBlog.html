@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anteprima Landing HoneyBlog</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #0a0a0a;
+            overflow: hidden;
+            height: 100vh;
+            width: 100vw;
+        }
+
+        /* HEADER VIEWER */
+        .viewer-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+            border-bottom: 2px solid #333;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 25px;
+            z-index: 10000;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+        }
+
+        .viewer-title {
+            color: #fff;
+            font-size: 1.1rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .viewer-title .icon {
+            font-size: 1.5rem;
+        }
+
+        .viewer-actions {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .viewer-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-close {
+            background: #ff4757;
+            color: white;
+        }
+
+        .btn-close:hover {
+            background: #ff3838;
+            transform: scale(1.05);
+        }
+
+        .btn-download {
+            background: #5f27cd;
+            color: white;
+        }
+
+        .btn-download:hover {
+            background: #4b1fa3;
+            transform: scale(1.05);
+        }
+
+        /* IFRAME CONTAINER */
+        .iframe-container {
+            position: fixed;
+            top: 60px;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: #0a0a0a;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .device-frame {
+            width: 100%;
+            height: 100%;
+            max-width: 1400px;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.8);
+            position: relative;
+        }
+
+        #preview-iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            background: white;
+        }
+
+        /* LOADER */
+        .loader {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            color: white;
+            z-index: 9999;
+        }
+
+        .loader-spinner {
+            width: 60px;
+            height: 60px;
+            border: 5px solid rgba(255,255,255,0.2);
+            border-top-color: #5f27cd;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loader-text {
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        /* ERROR MESSAGE */
+        .error-message {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #ff4757;
+            color: white;
+            padding: 30px 40px;
+            border-radius: 12px;
+            text-align: center;
+            max-width: 500px;
+            box-shadow: 0 10px 40px rgba(255, 71, 87, 0.3);
+        }
+
+        .error-message h2 {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+        }
+
+        .error-message p {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- HEADER VIEWER -->
+    <div class="viewer-header">
+        <div class="viewer-title">
+            <span class="icon">👁️</span>
+            <span>Anteprima Landing HoneyBlog</span>
+        </div>
+        <div class="viewer-actions">
+            <button class="viewer-btn btn-download" onclick="downloadHTML()">
+                <span>📥</span>
+                <span>Scarica HTML</span>
+            </button>
+            <button class="viewer-btn btn-close" onclick="window.close()">
+                <span>✖️</span>
+                <span>Chiudi</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- LOADER -->
+    <div id="loader" class="loader">
+        <div class="loader-spinner"></div>
+        <div class="loader-text">Caricamento anteprima...</div>
+    </div>
+
+    <!-- ERROR MESSAGE -->
+    <div id="error-message" class="error-message hidden">
+        <h2>⚠️ Errore</h2>
+        <p>Impossibile caricare l'anteprima. Riprova dalla pagina di editing.</p>
+    </div>
+
+    <!-- IFRAME CONTAINER -->
+    <div class="iframe-container hidden" id="iframe-container">
+        <div class="device-frame">
+            <iframe id="preview-iframe"></iframe>
+        </div>
+    </div>
+
+    <script>
+        let htmlContent = '';
+        let metaData = {};
+
+        // ============================================
+        // INIT
+        // ============================================
+        window.addEventListener('DOMContentLoaded', () => {
+            // Recupera HTML da sessionStorage
+            htmlContent = sessionStorage.getItem('preview_html');
+            const metaString = sessionStorage.getItem('preview_meta');
+            
+            if (metaString) {
+                try {
+                    metaData = JSON.parse(metaString);
+                } catch (e) {
+                    console.error('❌ Errore parsing meta:', e);
+                }
+            }
+
+            if (!htmlContent) {
+                showError();
+                return;
+            }
+
+            loadPreview();
+        });
+
+        // ============================================
+        // LOAD PREVIEW
+        // ============================================
+        function loadPreview() {
+            const iframe = document.getElementById('preview-iframe');
+            
+            // Scrivi HTML nell'iframe
+            iframe.onload = () => {
+                hideLoader();
+                document.getElementById('iframe-container').classList.remove('hidden');
+            };
+
+            // Scrivi contenuto HTML
+            iframe.contentDocument.open();
+            iframe.contentDocument.write(htmlContent);
+            iframe.contentDocument.close();
+        }
+
+        // ============================================
+        // DOWNLOAD HTML
+        // ============================================
+        function downloadHTML() {
+            const filename = metaData.title ? `${sanitizeFilename(metaData.title)}.html` : 'honeyblog_landing.html';
+            
+            const blob = new Blob([htmlContent], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function sanitizeFilename(name) {
+            return name.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+        }
+
+        // ============================================
+        // UTILITIES
+        // ============================================
+        function hideLoader() {
+            document.getElementById('loader').classList.add('hidden');
+        }
+
+        function showError() {
+            document.getElementById('loader').classList.add('hidden');
+            document.getElementById('error-message').classList.remove('hidden');
+        }
+    </script>
+
+</body>
+</html>
