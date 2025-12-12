@@ -11,7 +11,8 @@ const VAT = urlParams.get('vat');
 const OWNER = urlParams.get('owner');
 const TOKEN = urlParams.get('token');
 
-const BACKEND_URL = 'https://www.simonaiit.workers.dev';
+// 🔗 Endpoint Backend HoneyBlog
+const BACKEND_URL = 'https://trinai.api.workflow.dcmake.it/webhook/50891655-84c8-4213-90e8-26ebbc3d6c4c';
 
 let ownerData = null;
 let honeypotData = null;
@@ -20,13 +21,23 @@ let uploadedImages = [];
 let useAI = false;
 
 // ============================================
-// INIT
+// INIT - ACTION: get_honeyblog_data
 // ============================================
 async function init() {
   showLoader('Recupero dati HoneyPot...');
 
   try {
-    const response = await fetch(`${BACKEND_URL}/landing_honeypot_data?vat=${VAT}&owner=${OWNER}&token=${TOKEN}`);
+    const response = await fetch(BACKEND_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'get_honeyblog_data',
+        vat_number: VAT,
+        chat_id: OWNER,
+        token: TOKEN
+      })
+    });
+
     const data = await response.json();
 
     if (data.success) {
@@ -34,12 +45,14 @@ async function init() {
       honeypotData = data.honeypot;
       catalogData = data.catalog;
 
-      // Debug
+      // Debug Preview
       document.getElementById('data-preview').style.display = 'block';
       document.getElementById('data-content').textContent = JSON.stringify({
-        owner_credits: ownerData.credits,
-        honeypot_fragments: honeypotData?.messages?.[0]?.data?.knowledge_fragments?.length || 0,
-        catalog_items: catalogData?.categories?.length || 0
+        owner_credits: ownerData?.credits || 0,
+        honeypot_profile: honeypotData?.profile?.business_name || 'N/A',
+        honeypot_messages: honeypotData?.messages?.length || 0,
+        catalog_categories: catalogData?.categories?.length || 0,
+        knowledge_docs: data.knowledge_docs || 0
       }, null, 2);
 
       hideLoader();
@@ -49,7 +62,11 @@ async function init() {
     }
   } catch (error) {
     hideLoader();
-    tg.showAlert('Errore: ' + error.message);
+    if (tg?.showAlert) {
+      tg.showAlert('❌ Errore: ' + error.message);
+    } else {
+      alert('Errore: ' + error.message);
+    }
   }
 }
 
@@ -63,11 +80,16 @@ document.getElementById('choice-ai').addEventListener('click', () => {
   document.getElementById('choice-upload').style.borderColor = 'var(--glass-border)';
   document.getElementById('choice-upload').style.background = 'transparent';
   document.getElementById('upload-area').style.display = 'none';
-  tg.showPopup({
-    title: '🤖 Modalità AI Attivata',
-    message: 'Al momento del deploy verranno generate immagini automatiche per la tua landing page.',
-    buttons: [{ type: 'ok' }]
-  });
+  
+  if (tg?.showPopup) {
+    tg.showPopup({
+      title: '🤖 Modalità AI Attivata',
+      message: 'Al momento del deploy verranno generate immagini automatiche per la tua landing page.',
+      buttons: [{ type: 'ok' }]
+    });
+  } else {
+    alert('🤖 Modalità AI Attivata: verranno generate immagini automatiche.');
+  }
 });
 
 document.getElementById('choice-upload').addEventListener('click', () => {
@@ -110,7 +132,11 @@ uploadArea.addEventListener('drop', (e) => {
 
 function handleFiles(files) {
   if (uploadedImages.length + files.length > 5) {
-    tg.showAlert('Puoi caricare massimo 5 immagini');
+    if (tg?.showAlert) {
+      tg.showAlert('Puoi caricare massimo 5 immagini');
+    } else {
+      alert('Puoi caricare massimo 5 immagini');
+    }
     return;
   }
 
@@ -147,20 +173,66 @@ window.removeImage = function(idx) {
 // FAB BUTTONS
 // ============================================
 document.getElementById('btn-back').addEventListener('click', () => {
-  tg.showConfirm('Tornare indietro? Le modifiche non salvate andranno perse.', (confirmed) => {
-    if (confirmed) {
-      window.location.href = `../dashboard.html?vat=${VAT}&owner=${OWNER}&token=${TOKEN}`;
-    }
-  });
+  // ✅ FIX: Usa conferma browser standard con fallback
+  const confirmed = confirm('Tornare indietro? Le modifiche non salvate andranno perse.');
+  if (confirmed) {
+    window.location.href = `../dashboard.html?vat=${VAT}&owner=${OWNER}&token=${TOKEN}`;
+  }
 });
 
-document.getElementById('btn-preview').addEventListener('click', () => {
-  tg.showAlert('👁️ Anteprima in sviluppo. Qui verrà mostrata la landing generata.');
+document.getElementById('btn-preview').addEventListener('click', async () => {
+  await previewLanding();
 });
 
 document.getElementById('btn-deploy').addEventListener('click', () => {
   checkCreditsAndDeploy();
 });
+
+// ============================================
+// ACTION: preview_landing
+// ============================================
+async function previewLanding() {
+  showLoader('👁️ Generazione anteprima...');
+
+  try {
+    const response = await fetch(BACKEND_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'preview_landing',
+        vat_number: VAT,
+        chat_id: OWNER,
+        token: TOKEN,
+        use_ai_images: useAI,
+        uploaded_images: uploadedImages,
+        honeypot: honeypotData,
+        catalog: catalogData
+      })
+    });
+
+    const result = await response.json();
+
+    hideLoader();
+
+    if (result.success) {
+      // Apri preview in nuova finestra
+      window.open(result.preview_url, '_blank');
+    } else {
+      if (tg?.showAlert) {
+        tg.showAlert('❌ Errore anteprima: ' + result.error);
+      } else {
+        alert('Errore anteprima: ' + result.error);
+      }
+    }
+  } catch (error) {
+    hideLoader();
+    if (tg?.showAlert) {
+      tg.showAlert('Errore: ' + error.message);
+    } else {
+      alert('Errore: ' + error.message);
+    }
+  }
+}
 
 // ============================================
 // CHECK CREDITI E DEPLOY
@@ -175,9 +247,16 @@ function checkCreditsAndDeploy() {
   } else {
     // Crediti insufficienti
     const deficit = requiredCredits - availableCredits;
-    tg.showAlert(`❌ Crediti Insufficienti!\n\nDisponibili: ${availableCredits.toLocaleString()}\nRichiesti: ${requiredCredits.toLocaleString()}\nMancanti: ${deficit.toLocaleString()}\n\nVerrai reindirizzato alla pagina di ricarica.`, () => {
+    const msg = `❌ Crediti Insufficienti!\n\nDisponibili: ${availableCredits.toLocaleString()}\nRichiesti: ${requiredCredits.toLocaleString()}\nMancanti: ${deficit.toLocaleString()}\n\nVerrai reindirizzato alla pagina di ricarica.`;
+    
+    if (tg?.showAlert) {
+      tg.showAlert(msg, () => {
+        window.location.href = `https://dashboard.trinai.it/ricarica?vat=${VAT}&owner=${OWNER}&token=${TOKEN}`;
+      });
+    } else {
+      alert(msg);
       window.location.href = `https://dashboard.trinai.it/ricarica?vat=${VAT}&owner=${OWNER}&token=${TOKEN}`;
-    });
+    }
   }
 }
 
@@ -193,13 +272,17 @@ document.getElementById('btn-confirm-deploy').addEventListener('click', async ()
   await executeDeploy();
 });
 
+// ============================================
+// ACTION: deploy_honeyblog_landing
+// ============================================
 async function executeDeploy() {
   showLoader('🚀 Deploy in corso...');
 
   try {
     const payload = {
-      vat: VAT,
-      owner: OWNER,
+      action: 'deploy_honeyblog_landing',
+      vat_number: VAT,
+      chat_id: OWNER,
       token: TOKEN,
       use_ai_images: useAI,
       uploaded_images: uploadedImages,
@@ -207,7 +290,7 @@ async function executeDeploy() {
       catalog: catalogData
     };
 
-    const response = await fetch(`${BACKEND_URL}/deploy_honeypot_landing`, {
+    const response = await fetch(BACKEND_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
@@ -218,25 +301,41 @@ async function executeDeploy() {
     hideLoader();
 
     if (result.success) {
-      tg.showPopup({
-        title: '✅ Landing Pubblicata!',
-        message: `URL: ${result.landing_url}\n\nCrediti scalati: 10,000\nCrediti residui: ${result.credits_remaining.toLocaleString()}`,
-        buttons: [
-          { id: 'view', type: 'default', text: 'Visualizza' },
-          { id: 'ok', type: 'ok' }
-        ]
-      }, (buttonId) => {
-        if (buttonId === 'view') {
-          tg.openLink(result.landing_url);
-        }
-      });
+      const msg = `✅ Landing Pubblicata!\n\nURL: ${result.landing_url}\n\nCrediti scalati: 10,000\nCrediti residui: ${result.credits_remaining.toLocaleString()}`;
+      
+      if (tg?.showPopup) {
+        tg.showPopup({
+          title: '✅ Landing Pubblicata!',
+          message: msg,
+          buttons: [
+            { id: 'view', type: 'default', text: 'Visualizza' },
+            { id: 'ok', type: 'ok' }
+          ]
+        }, (buttonId) => {
+          if (buttonId === 'view') {
+            window.open(result.landing_url, '_blank');
+          }
+        });
+      } else {
+        alert(msg);
+        const openNow = confirm('Vuoi aprire la landing ora?');
+        if (openNow) window.open(result.landing_url, '_blank');
+      }
     } else {
-      tg.showAlert('❌ Errore: ' + result.error);
+      if (tg?.showAlert) {
+        tg.showAlert('❌ Errore: ' + result.error);
+      } else {
+        alert('Errore: ' + result.error);
+      }
     }
 
   } catch (error) {
     hideLoader();
-    tg.showAlert('Errore durante il deploy: ' + error.message);
+    if (tg?.showAlert) {
+      tg.showAlert('Errore durante il deploy: ' + error.message);
+    } else {
+      alert('Errore: ' + error.message);
+    }
   }
 }
 
