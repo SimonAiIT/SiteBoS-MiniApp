@@ -186,10 +186,8 @@ function validateNewImages() {
 // FAB BUTTONS
 // ============================================
 document.getElementById('btn-back').addEventListener('click', () => {
-  const confirmed = confirm('Tornare indietro? Le immagini caricate andranno perse.');
-  if (confirmed) {
-    window.location.href = `../dashboard.html?vat=${VAT}&owner=${OWNER}&token=${TOKEN}`;
-  }
+  // ✅ Torna indietro direttamente senza conferma
+  window.location.href = `../dashboard.html?vat=${VAT}&owner=${OWNER}&token=${TOKEN}`;
 });
 
 document.getElementById('btn-preview').addEventListener('click', async () => {
