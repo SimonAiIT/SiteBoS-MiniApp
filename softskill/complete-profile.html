@@ -816,7 +816,7 @@
                 areasToImprove.innerHTML = '<p style="color: var(--text-muted);">Nessuna area di miglioramento identificata</p>';
             }
 
-            // VIDEOS WITH KEY TAKEAWAYS ONLY
+            // VIDEOS WITH KEY TAKEAWAYS (CHIUSA)
             const videosList = document.getElementById('videosList');
             if (data.recommended_videos && data.recommended_videos.length > 0) {
                 videosList.innerHTML = data.recommended_videos.map((item, index) => `
@@ -836,8 +836,8 @@
                             <i class="fas fa-play"></i> Guarda Ora
                         </button>
 
-                        <!-- KEY TAKEAWAYS CARD -->
-                        <div class="video-knowledge-card open">
+                        <!-- KEY TAKEAWAYS CARD (CHIUSA) -->
+                        <div class="video-knowledge-card">
                             <div class="video-card-header">
                                 <h4><i class="fas fa-lightbulb"></i> Key Takeaways</h4>
                                 <i class="fas fa-chevron-down video-chevron"></i>
