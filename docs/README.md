@@ -7,19 +7,20 @@
 
 ## 🗂️ Indice Documenti
 
-### 🟢 Getting Started
+### 🟢 Getting Started & Core
 
 1. **[01-OVERVIEW.md](./01-OVERVIEW.md)** ✅  
    📝 Panoramica generale, architettura, modelli economici, roadmap  
    🎯 **Inizia da qui** se è la prima volta che leggi il progetto
 
 2. **[02-ARCHITECTURE.md](./02-ARCHITECTURE.md)** 📋  
-   🏛️ Architettura dettagliata: frontend, backend, database schema, API flows
+   🏛️ Architettura dettagliata: frontend, backend, database schema, flussi dati
 
-3. **[03-MODULES.md](./03-MODULES.md)** 📋  
-   📦 Descrizione approfondita di tutti i moduli (panoramica generale)
+3. **[03-ONBOARDING.md](./03-ONBOARDING.md)** ✅  
+   🚀 **Sistema Onboarding 5-step** - Welcome flow, GDPR consent, credit setup  
+   ✅ **COMPLETO** - Progress bar, autosave, metriche drop-off
 
-### 🔵 Moduli Core
+### 🔵 Moduli Applicativi
 
 4. **[04-SOFT-SKILLS.md](./04-SOFT-SKILLS.md)** ✅  
    🧠 **Sistema Soft Skills Assessment** - Questionario 150 domande, profilo AI, video formativi, learning history  
@@ -30,7 +31,7 @@
 
 6. **[06-CATALOG.md](./06-CATALOG.md)** ✅  
    📦 **Catalog Manager** - Categorie, prodotti, AI descriptions, blueprint operativi  
-   ✅ **COMPLETO** - Schema MongoDB, AI Vision, form builder
+   ✅ **COMPLETO** - Schema MongoDB, AI Vision, pricing & SKU
 
 7. **[07-AGENDA.md](./07-AGENDA.md)** 📋  
    📅 Sistema calendario: booking, conflict detection, export iCal
@@ -39,37 +40,42 @@
    🎭 **Knowledge Base + Anti-Spam** - Asset library, form builder, honeypot security  
    ✅ **COMPLETO** - Upload flow, spam detection, multi-lingua
 
-### 🟡 Backend & API
+9. **[09-LEGAL-PROCESSOR.md](./09-LEGAL-PROCESSOR.md)** ✅  
+   🧾 **Legal Document Generator** - Privacy Policy, T&C, DPA, nomina processore  
+   ✅ **COMPLETO** - GDPR compliance, AI template engine, PDF export
 
-9. **[09-API-REFERENCE.md](./09-API-REFERENCE.md)** 📋  
-   🔌 Documentazione completa webhook N8N (endpoint, payload, response)
+10. **[10-SPONSOR.md](./10-SPONSOR.md)** ✅  
+    🎁 **Sponsor Carousel** - Pacchetti crediti, partner, analytics  
+    ✅ **COMPLETO** - Auto-scroll, A/B testing, conversion tracking
 
-10. **[10-DATABASE-SCHEMA.md](./10-DATABASE-SCHEMA.md)** 📋  
+### 🟡 Backend & Infrastructure
+
+11. **[11-DATABASE-SCHEMA.md](./11-DATABASE-SCHEMA.md)** 📋  
     🗄️ Schema MongoDB (OWNERS, HONEYPOTS, CATALOG)
 
-11. **[11-AI-INTEGRATION.md](./11-AI-INTEGRATION.md)** 📋  
+12. **[12-AI-INTEGRATION.md](./12-AI-INTEGRATION.md)** 📋  
     🤖 Google Gemini API: prompt engineering, rate limits, fallback strategies
 
 ### 🟪 Deploy & Operations
 
-12. **[12-DEPLOYMENT.md](./12-DEPLOYMENT.md)** 📋  
-    🚀 Guida deploy: N8N setup, MongoDB config, Telegram Bot registration
+13. **[13-DEPLOYMENT.md](./13-DEPLOYMENT.md)** 📋  
+    🚀 Guida deploy: Frontend setup, MongoDB config, Telegram Bot registration
 
-13. **[13-SECURITY.md](./13-SECURITY.md)** 📋  
+14. **[14-SECURITY.md](./14-SECURITY.md)** 📋  
     🔐 Best practices sicurezza: GDPR, auth, rate limiting, encryption
 
-14. **[14-MONITORING.md](./14-MONITORING.md)** 📋  
+15. **[15-MONITORING.md](./15-MONITORING.md)** 📋  
     📈 Metriche, logging, alerting, troubleshooting
 
 ### 🟣 Advanced Topics
 
-15. **[15-CUSTOMIZATION.md](./15-CUSTOMIZATION.md)** 📋  
+16. **[16-CUSTOMIZATION.md](./16-CUSTOMIZATION.md)** 📋  
     🎨 White-label, theming, traduzioni custom
 
-16. **[16-EXTENSIONS.md](./16-EXTENSIONS.md)** 📋  
-    🧩 Webhook marketplace, plugin system, integrations
+17. **[17-EXTENSIONS.md](./17-EXTENSIONS.md)** 📋  
+    🧩 Plugin system, integrations esterne
 
-17. **[17-CHANGELOG.md](./17-CHANGELOG.md)** 📋  
+18. **[18-CHANGELOG.md](./18-CHANGELOG.md)** 📋  
     📝 Storia modifiche, versioning, breaking changes
 
 ---
@@ -78,47 +84,46 @@
 
 ### Per AI che leggono il progetto per la prima volta:
 
-1. Leggi **[01-OVERVIEW.md](./01-OVERVIEW.md)** (5 min) → capisci cosa fa SiteBoS  
-2. Leggi **[04-SOFT-SKILLS.md](./04-SOFT-SKILLS.md)** (10 min) → vedi il modulo soft skills completo  
-3. Leggi **[06-CATALOG.md](./06-CATALOG.md)** (8 min) → sistema catalog con AI  
-4. Leggi **[08-HONEYPOT.md](./08-HONEYPOT.md)** (8 min) → knowledge base + anti-spam  
-5. Esplora il codice nei folder corrispondenti → vedi l'implementazione reale  
+1. **[01-OVERVIEW.md](./01-OVERVIEW.md)** (5 min) → capisci cosa fa SiteBoS  
+2. **[03-ONBOARDING.md](./03-ONBOARDING.md)** (3 min) → come si inizia  
+3. **[04-SOFT-SKILLS.md](./04-SOFT-SKILLS.md)** (10 min) → modulo soft skills completo  
+4. **[06-CATALOG.md](./06-CATALOG.md)** (8 min) → sistema catalog con AI  
+5. **[08-HONEYPOT.md](./08-HONEYPOT.md)** (8 min) → knowledge base + anti-spam  
+6. Esplora il codice nei folder corrispondenti → vedi l'implementazione reale  
 
 ### Per Developer:
 
-1. **Setup veloce**: [12-DEPLOYMENT.md](./12-DEPLOYMENT.md) 📋  
-2. **API Reference**: [09-API-REFERENCE.md](./09-API-REFERENCE.md) 📋  
-3. **Database Schema**: [10-DATABASE-SCHEMA.md](./10-DATABASE-SCHEMA.md) 📋  
-4. **Moduli Completi**: [04-SOFT-SKILLS.md](./04-SOFT-SKILLS.md), [06-CATALOG.md](./06-CATALOG.md), [08-HONEYPOT.md](./08-HONEYPOT.md) ✅  
+1. **Setup Frontend**: [13-DEPLOYMENT.md](./13-DEPLOYMENT.md) 📋  
+2. **Database Schema**: [11-DATABASE-SCHEMA.md](./11-DATABASE-SCHEMA.md) 📋  
+3. **Moduli Completi**: [04](./04-SOFT-SKILLS.md), [06](./06-CATALOG.md), [08](./08-HONEYPOT.md), [09](./09-LEGAL-PROCESSOR.md), [10](./10-SPONSOR.md) ✅  
+4. **AI Integration**: [12-AI-INTEGRATION.md](./12-AI-INTEGRATION.md) 📋  
 
 ### Per Product Owner:
 
 1. **Roadmap**: Vedi sezione in [01-OVERVIEW.md](./01-OVERVIEW.md#roadmap)  
-2. **Metriche**: [14-MONITORING.md](./14-MONITORING.md) 📋  
-3. **Customization**: [15-CUSTOMIZATION.md](./15-CUSTOMIZATION.md) 📋  
+2. **Metriche**: [15-MONITORING.md](./15-MONITORING.md) 📋  
+3. **Customization**: [16-CUSTOMIZATION.md](./16-CUSTOMIZATION.md) 📋  
 
 ---
 
 ## 📝 Convenzioni Documentazione
 
-### Struttura File
-
-Ogni documento segue questo template:
+### Struttura File Standard
 
 ```markdown
 # 📌 Titolo Modulo
 
 > **Ultima revisione**: GG Mese AAAA  
 > **Path**: `percorso/del/modulo`  
-> **Responsabile**: Team/Persona
+> **Status**: Production ✅ / Beta 🚧 / Planned 📋
 
 ---
 
 ## 🎯 Obiettivo
 [Cosa fa questo modulo/sistema]
 
-## 📚 Struttura
-[Architettura/Flow]
+## 📊 Flow / Architettura
+[Diagrammi Mermaid, schemi]
 
 ## 🔧 Implementazione
 [Codice chiave + esempi]
@@ -129,11 +134,11 @@ Ogni documento segue questo template:
 ## 🛠️ Troubleshooting
 [Errori comuni + fix]
 
-## 📚 Documenti Correlati
-[Link ad altre MD]
-
 ## 🚀 Roadmap
 [Feature future]
+
+## 📚 Documentazione Correlata
+[Link ad altre MD]
 ```
 
 ### Emoji Standard
@@ -141,13 +146,13 @@ Ogni documento segue questo template:
 | Emoji | Significato |
 |-------|-------------|
 | 🎯 | Obiettivo / Scopo |
-| 📚 | Struttura / Architettura |
+| 📊 | Flow / Architettura |
 | 🔧 | Implementazione / Codice |
 | 📊 | Metriche / Analytics |
 | 🛠️ | Troubleshooting / Fix |
 | 🚀 | Roadmap / Future |
 | ✅ | Completo / Done |
-| 🚧 | In Progress |
+| 🚧 | Beta / In Progress |
 | 📋 | Planned |
 | ❌ | Deprecato / Rimosso |
 
@@ -157,11 +162,13 @@ Ogni documento segue questo template:
 
 | Data | Documento | Modifica |
 |------|-----------|----------|
+| 12 Dic 2025 | 10-SPONSOR.md | ✅ Creato: sponsor carousel completo |
+| 12 Dic 2025 | 09-LEGAL-PROCESSOR.md | ✅ Creato: legal document generator |
+| 12 Dic 2025 | 03-ONBOARDING.md | ✅ Creato: onboarding 5-step wizard |
 | 12 Dic 2025 | 08-HONEYPOT.md | ✅ Creato: knowledge base + anti-spam completo |
 | 12 Dic 2025 | 06-CATALOG.md | ✅ Creato: catalog manager con AI vision |
-| 12 Dic 2025 | 04-SOFT-SKILLS.md | ✅ Aggiunto: card collassabili learning history |
-| 12 Dic 2025 | 04-SOFT-SKILLS.md | ✅ Aggiunto: score badge in complete-profile |
-| 12 Dic 2025 | 01-OVERVIEW.md | ✅ Creato: overview progetto |
+| 12 Dic 2025 | 04-SOFT-SKILLS.md | ✅ Creato: soft skills + card collassabili |
+| 12 Dic 2025 | 01-OVERVIEW.md | ✅ Creato: overview progetto + rimosso riferimenti API |
 | 12 Dic 2025 | README.md | ✅ Creato: index documentazione |
 
 ---
@@ -170,34 +177,40 @@ Ogni documento segue questo template:
 
 ### Copertura Moduli
 
-| Modulo | Documentato | Completezza |
-|--------|-------------|-------------|
-| Soft Skills | ✅ | 100% |
-| Catalog | ✅ | 100% |
-| HoneyPot | ✅ | 100% |
-| Team Manager | 📋 | 0% |
-| Agenda | 📋 | 0% |
-| Marketing | 📋 | 0% |
-| Legal | 📋 | 0% |
-| Dashboard | 📋 | 0% |
+| Modulo | File | Stato | Completezza |
+|--------|------|-------|-------------|
+| Overview | 01-OVERVIEW.md | ✅ | 100% |
+| Onboarding | 03-ONBOARDING.md | ✅ | 100% |
+| Soft Skills | 04-SOFT-SKILLS.md | ✅ | 100% |
+| Catalog | 06-CATALOG.md | ✅ | 100% |
+| HoneyPot | 08-HONEYPOT.md | ✅ | 100% |
+| Legal Processor | 09-LEGAL-PROCESSOR.md | ✅ | 100% |
+| Sponsor | 10-SPONSOR.md | ✅ | 100% |
+| Team Manager | 05-TEAM-MANAGER.md | 📋 | 0% |
+| Agenda | 07-AGENDA.md | 📋 | 0% |
+| Marketing | - | 📋 | 0% |
+| Dashboard | - | 📋 | 0% |
 
-**Totale**: 3/8 moduli documentati (37.5%)
+**Totale Moduli**: 7/11 documentati (63.6%)
 
 ### Linee di Documentazione
 
-- **01-OVERVIEW.md**: ~350 righe
+- **01-OVERVIEW.md**: ~370 righe
+- **03-ONBOARDING.md**: ~180 righe
 - **04-SOFT-SKILLS.md**: ~520 righe
 - **06-CATALOG.md**: ~480 righe
 - **08-HONEYPOT.md**: ~600 righe
+- **09-LEGAL-PROCESSOR.md**: ~210 righe
+- **10-SPONSOR.md**: ~240 righe
 
-**Totale**: ~1,950 righe di documentazione tecnica
+**Totale**: ~2,600 righe di documentazione tecnica 📚
 
 ---
 
 ## ❓ FAQ Documentazione
 
-### **Q: Perché la documentazione è in una cartella separata?**
-A: Per mantenere il root del progetto pulito e facilitare la navigazione AI.
+### **Q: Perché non c'è documentazione API/Backend?**
+A: Il backend è proprietario. Il frontend è open per trasparenza, ma l'orchestrazione resta privata. Chi clona il frontend deve costruirsi il backend da sé. 😉
 
 ### **Q: Come posso contribuire alla documentazione?**
 A: Crea una PR con modifiche ai file `.md` rispettando il template standard.
@@ -208,12 +221,30 @@ A: Ogni documento ha sezione "Implementazione" con snippet. Per codice completo,
 ### **Q: La documentazione è sincronizzata con il codice?**
 A: Sì. Ogni modifica al codice richiede update alla MD corrispondente (vedi Update Log).
 
-### **Q: Quali moduli sono prioritari per la documentazione?**
+### **Q: Quali moduli sono prioritari per la prossima documentazione?**
 A: Nell'ordine:
-1. Team Manager (profili stakeholder)
-2. Agenda System (calendario booking)
-3. API Reference (webhook N8N)
-4. Database Schema (MongoDB collections)
+1. **Team Manager** (profili stakeholder, CRUD operatori)
+2. **Agenda System** (calendario booking multi-operatore)
+3. **Marketing Hub** (AI content generation)
+4. **Dashboard** (KPI widgets, gatekeeper)
+
+---
+
+## 🔒 Note Importanti
+
+### ⚠️ Backend Proprietario
+
+Il codice frontend di SiteBoS è **pubblico per trasparenza**. Il backend (orchestratore, webhook, logica AI) è **proprietario di TrinAI**.
+
+**Cosa significa**:
+- ✅ Puoi studiare il frontend
+- ✅ Puoi contribuire con PR (UI/UX fixes)
+- ❌ Non puoi clonare e deployare in produzione
+- ❌ Non riceverai accesso agli endpoint backend
+
+**Se vuoi usare SiteBoS**:
+- Contatta **info@trinai.it** per licenza commerciale
+- Richiedi demo gratuita: [@TrinAiTecSupportbot](https://t.me/TrinAiTecSupportbot)
 
 ---
 
@@ -239,16 +270,19 @@ A: Nell'ordine:
 ### 📊 Progress Tracker
 
 ```
-████████░░░░░░░░░░░░ 37.5% Complete
+████████████░░░░░░░░ 63.6% Complete
 
 ✅ Overview
+✅ Onboarding
 ✅ Soft Skills
 ✅ Catalog
 ✅ HoneyPot
+✅ Legal Processor
+✅ Sponsor Carousel
 📋 Team Manager (Next)
 📋 Agenda System
-📋 API Reference
-📋 Database Schema
+📋 Marketing Hub
+📋 Dashboard
 ```
 
 ---
