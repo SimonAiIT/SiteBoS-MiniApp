@@ -8,6 +8,102 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="../styles.css">
+  
+  <style>
+    .image-slot {
+      position: relative;
+      aspect-ratio: 16/9;
+      border: 2px dashed var(--glass-border);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      background: var(--input-bg);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    .image-slot:hover {
+      border-color: var(--primary);
+      background: rgba(91, 111, 237, 0.05);
+    }
+    .image-slot.filled {
+      border-style: solid;
+      border-color: var(--success);
+      cursor: default;
+    }
+    .image-slot.filled:hover {
+      border-color: var(--success);
+    }
+    .image-slot img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+    .image-slot .placeholder {
+      text-align: center;
+      color: var(--text-muted);
+      pointer-events: none;
+    }
+    .image-slot .placeholder-icon {
+      font-size: 32px;
+      margin-bottom: 8px;
+      opacity: 0.5;
+    }
+    .image-slot .placeholder-text {
+      font-size: 12px;
+      font-weight: 500;
+    }
+    .image-slot .remove-btn {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      background: rgba(0, 0, 0, 0.8);
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s;
+      z-index: 10;
+    }
+    .image-slot.filled:hover .remove-btn {
+      opacity: 1;
+    }
+    .slot-label {
+      position: absolute;
+      bottom: 8px;
+      left: 8px;
+      background: rgba(0, 0, 0, 0.7);
+      color: white;
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 600;
+      z-index: 5;
+    }
+    .progress-bar {
+      background: var(--input-bg);
+      border-radius: var(--radius-full);
+      height: 8px;
+      overflow: hidden;
+      margin: 15px 0;
+    }
+    .progress-fill {
+      background: linear-gradient(90deg, var(--primary), var(--accent));
+      height: 100%;
+      transition: width 0.3s;
+    }
+  </style>
 </head>
 <body>
 
@@ -24,62 +120,96 @@
     
     <div class="card" style="text-align:center; margin-bottom:25px;">
       <h1 style="font-size:22px; margin-bottom:8px;">🏺 Landing HoneyPot Generator</h1>
-      <p class="subtitle" style="margin-bottom:0;">Crea la tua landing page professionale</p>
+      <p class="subtitle" style="margin-bottom:0;">Carica 4-5 immagini per la tua landing page</p>
     </div>
 
-    <!-- BOX SCELTA MODALITÀ -->
+    <!-- ISTRUZIONI -->
+    <div class="card" style="background: rgba(91, 111, 237, 0.1); border: 1px solid var(--primary);">
+      <div style="display: flex; align-items: start; gap: 15px;">
+        <div style="font-size: 32px;">📸</div>
+        <div style="flex: 1;">
+          <h3 style="font-size: 15px; margin-bottom: 8px; color: var(--primary);">Carica le tue immagini</h3>
+          <p style="font-size: 13px; color: var(--text-muted); margin: 0; line-height: 1.5;">
+            Clicca su ogni box per caricare le immagini nelle posizioni corrette della landing:
+            <strong style="color: var(--text-primary);">Hero principale, 2-3 gallery, e 1 footer</strong>.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- PROGRESS -->
     <div class="card">
-      <h3 style="font-size:14px; margin-bottom:15px; color:var(--primary);">📸 Immagini per la Landing</h3>
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+        <span style="font-size: 13px; font-weight: 600;">Progresso Caricamento</span>
+        <span id="progress-text" style="font-size: 13px; color: var(--primary); font-weight: 600;">0/5</span>
+      </div>
+      <div class="progress-bar">
+        <div id="progress-fill" class="progress-fill" style="width: 0%;"></div>
+      </div>
+    </div>
+
+    <!-- IMAGE SLOTS -->
+    <div class="card">
+      <h3 style="font-size: 14px; margin-bottom: 15px; color: var(--primary);">Immagini Landing Page</h3>
       
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px; margin-bottom:20px;">
-        
-        <!-- Opzione AI -->
-        <div id="choice-ai" class="upload-box" style="cursor:pointer; transition:all 0.3s; padding:25px;">
-          <div class="upload-icon" style="font-size:40px;">🤖</div>
-          <h4 style="font-size:14px; margin:10px 0 5px;">Genera con AI</h4>
-          <p style="font-size:11px; color:var(--text-muted); margin:0;">Immagini generate automaticamente</p>
+      <!-- Hero Image -->
+      <div class="image-slot" id="slot-0" onclick="selectSlot(0)">
+        <div class="placeholder">
+          <div class="placeholder-icon">🖼️</div>
+          <div class="placeholder-text">HERO PRINCIPALE</div>
         </div>
-
-        <!-- Opzione Upload -->
-        <div id="choice-upload" class="upload-box" style="cursor:pointer; transition:all 0.3s; padding:25px;">
-          <div class="upload-icon" style="font-size:40px;">📤</div>
-          <h4 style="font-size:14px; margin:10px 0 5px;">Carica le Tue</h4>
-          <p style="font-size:11px; color:var(--text-muted); margin:0;">4-5 immagini consigliate</p>
-        </div>
-
+        <span class="slot-label">Hero</span>
       </div>
 
-      <!-- AREA UPLOAD (nascosta inizialmente) -->
-      <div id="upload-area" class="upload-box" style="display:none; margin-top:20px; padding:40px; text-align:center;">
-        <div class="upload-icon" style="font-size:50px; margin-bottom:15px;">📁</div>
-        <h4 style="font-size:15px; margin-bottom:8px;">Trascina qui le immagini</h4>
-        <p style="font-size:12px; color:var(--text-muted);">o clicca per selezionarle (max 5)</p>
-        <input type="file" id="file-input" multiple accept="image/*" style="display:none;">
+      <!-- Gallery Images (2-3) -->
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px;">
+        <div class="image-slot" id="slot-1" onclick="selectSlot(1)">
+          <div class="placeholder">
+            <div class="placeholder-icon">📷</div>
+            <div class="placeholder-text">GALLERY 1</div>
+          </div>
+          <span class="slot-label">Gallery 1</span>
+        </div>
+        <div class="image-slot" id="slot-2" onclick="selectSlot(2)">
+          <div class="placeholder">
+            <div class="placeholder-icon">📷</div>
+            <div class="placeholder-text">GALLERY 2</div>
+          </div>
+          <span class="slot-label">Gallery 2</span>
+        </div>
       </div>
 
-      <!-- PREVIEW IMMAGINI CARICATE -->
-      <div id="images-preview" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(120px, 1fr)); gap:10px; margin-top:20px;"></div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px;">
+        <div class="image-slot" id="slot-3" onclick="selectSlot(3)">
+          <div class="placeholder">
+            <div class="placeholder-icon">📷</div>
+            <div class="placeholder-text">GALLERY 3 (opzionale)</div>
+          </div>
+          <span class="slot-label">Gallery 3</span>
+        </div>
+        <div class="image-slot" id="slot-4" onclick="selectSlot(4)">
+          <div class="placeholder">
+            <div class="placeholder-icon">🎨</div>
+            <div class="placeholder-text">FOOTER (opzionale)</div>
+          </div>
+          <span class="slot-label">Footer</span>
+        </div>
+      </div>
     </div>
 
-    <!-- PREVIEW DATI (DEBUG) -->
-    <div id="data-preview" class="card" style="display:none;">
-      <h3 style="font-size:13px; color:var(--primary); margin-bottom:10px;">📊 Dati Recuperati</h3>
-      <div style="background:rgba(0,0,0,0.3); padding:15px; border-radius:8px; max-height:300px; overflow-y:auto;">
-        <pre id="data-content" style="font-family:monospace; font-size:11px; color:var(--text-muted); margin:0; white-space:pre-wrap;"></pre>
-      </div>
-    </div>
-
+    <!-- Spazio per FAB -->
+    <div style="height: 100px;"></div>
   </div>
 
-  <!-- FAB BUTTONS -->
+  <!-- FAB BUTTONS (UNIFORMI) -->
   <div class="fab-container">
     <button class="fab-btn fab-secondary" id="btn-back" title="Torna Indietro">
       <i class="fas fa-arrow-left"></i>
     </button>
-    <button class="fab-btn" id="btn-preview" title="Anteprima" style="background:var(--info);">
+    <button class="fab-btn fab-secondary" id="btn-preview" title="Anteprima">
       <i class="fas fa-eye"></i>
     </button>
-    <button class="fab-btn" id="btn-deploy" title="Deploy Landing" style="width:70px; height:70px; font-size:24px;">
+    <button class="fab-btn" id="btn-deploy" title="Deploy Landing">
       <i class="fas fa-rocket"></i>
     </button>
   </div>
@@ -106,6 +236,9 @@
       </div>
     </div>
   </div>
+
+  <!-- Hidden File Input -->
+  <input type="file" id="file-input" accept="image/*" style="display:none;">
 
   <script src="edit_HoneyBlog_logic.js"></script>
 </body>
