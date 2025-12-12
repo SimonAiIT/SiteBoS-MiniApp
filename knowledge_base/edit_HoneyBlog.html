@@ -100,6 +100,28 @@
     .slot-label.locked-label {
       background: rgba(23, 162, 184, 0.8);
     }
+    .ai-menu-btn {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      background: rgba(91, 111, 237, 0.9);
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 10;
+      font-size: 18px;
+      transition: all 0.2s;
+    }
+    .ai-menu-btn:hover {
+      background: var(--primary);
+      transform: scale(1.1);
+    }
     .progress-bar {
       background: var(--input-bg);
       border-radius: var(--radius-full);
@@ -129,18 +151,18 @@
     
     <div class="card" style="text-align:center; margin-bottom:25px;">
       <h1 style="font-size:22px; margin-bottom:8px;">🏺 Landing HoneyPot Generator</h1>
-      <p class="subtitle" style="margin-bottom:0;">Carica 3 immagini aggiuntive per la landing</p>
+      <p class="subtitle" style="margin-bottom:0;">Carica, genera o migliora 3 immagini</p>
     </div>
 
     <!-- ISTRUZIONI -->
     <div class="card" style="background: rgba(91, 111, 237, 0.1); border: 1px solid var(--primary);">
       <div style="display: flex; align-items: start; gap: 15px;">
-        <div style="font-size: 32px;">📸</div>
+        <div style="font-size: 32px;">🤖</div>
         <div style="flex: 1;">
           <h3 style="font-size: 15px; margin-bottom: 8px; color: var(--primary);">Logo e Photo già disponibili</h3>
           <p style="font-size: 13px; color: var(--text-muted); margin: 0; line-height: 1.5;">
-            <strong style="color: var(--success);">✓ Logo e Photo principale</strong> sono già salvati.<br>
-            Carica <strong style="color: var(--text-primary);">3 nuove immagini</strong> per completare la gallery della landing.
+            Clicca sul <strong style="color: var(--primary);">🤖 pulsante robot</strong> per scegliere:<br>
+            📷 Carica | 🎨 Genera con AI | ✨ Carica e Migliora
           </p>
         </div>
       </div>
@@ -174,31 +196,34 @@
       </div>
 
       <div style="border-top: 1px solid var(--glass-border); margin: 20px 0; padding-top: 20px;">
-        <h4 style="font-size: 13px; margin-bottom: 10px; color: var(--text-secondary);">Carica 3 nuove immagini:</h4>
+        <h4 style="font-size: 13px; margin-bottom: 10px; color: var(--text-secondary);">Gestisci 3 nuove immagini:</h4>
       </div>
 
-      <!-- Nuove immagini da caricare (3) -->
-      <div class="image-slot" id="slot-0" onclick="selectSlot(0)">
+      <!-- Nuove immagini da gestire (3) -->
+      <div class="image-slot" id="slot-0">
         <div class="placeholder">
           <div class="placeholder-icon">🖼️</div>
           <div class="placeholder-text">GALLERY 1</div>
         </div>
+        <button class="ai-menu-btn" onclick="openSlotMenu(0)">🤖</button>
         <span class="slot-label">Gallery 1</span>
       </div>
 
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px;">
-        <div class="image-slot" id="slot-1" onclick="selectSlot(1)">
+        <div class="image-slot" id="slot-1">
           <div class="placeholder">
             <div class="placeholder-icon">📷</div>
             <div class="placeholder-text">GALLERY 2</div>
           </div>
+          <button class="ai-menu-btn" onclick="openSlotMenu(1)">🤖</button>
           <span class="slot-label">Gallery 2</span>
         </div>
-        <div class="image-slot" id="slot-2" onclick="selectSlot(2)">
+        <div class="image-slot" id="slot-2">
           <div class="placeholder">
             <div class="placeholder-icon">🎨</div>
             <div class="placeholder-text">GALLERY 3</div>
           </div>
+          <button class="ai-menu-btn" onclick="openSlotMenu(2)">🤖</button>
           <span class="slot-label">Gallery 3</span>
         </div>
       </div>
@@ -219,6 +244,43 @@
     <button class="fab-btn" id="btn-deploy" title="Deploy Landing">
       <i class="fas fa-rocket"></i>
     </button>
+  </div>
+
+  <!-- MENU OPZIONI SLOT -->
+  <div id="slot-menu-overlay" class="modal-overlay hidden">
+    <div class="modal-content" style="max-width:400px;">
+      <h2 style="font-size:18px; margin-bottom:20px; text-align:center; color:var(--primary);">🤖 Scegli Azione</h2>
+      
+      <div style="display: flex; flex-direction: column; gap: 12px;">
+        <button class="btn" onclick="selectSlotAction('upload')" style="justify-content: flex-start; gap: 15px;">
+          <i class="fas fa-upload"></i>
+          <div style="text-align: left;">
+            <div style="font-weight: 600;">Carica Immagine</div>
+            <div style="font-size: 11px; opacity: 0.8;">Seleziona dal tuo dispositivo</div>
+          </div>
+        </button>
+        
+        <button class="btn" onclick="selectSlotAction('generate')" style="justify-content: flex-start; gap: 15px; background: linear-gradient(135deg, var(--primary), var(--accent));">
+          <i class="fas fa-wand-magic-sparkles"></i>
+          <div style="text-align: left;">
+            <div style="font-weight: 600;">Genera con AI</div>
+            <div style="font-size: 11px; opacity: 0.8;">Crea immagine automatica</div>
+          </div>
+        </button>
+        
+        <button class="btn" onclick="selectSlotAction('enhance')" style="justify-content: flex-start; gap: 15px; background: linear-gradient(135deg, #667eea, #764ba2);">
+          <i class="fas fa-sparkles"></i>
+          <div style="text-align: left;">
+            <div style="font-weight: 600;">Carica e Migliora</div>
+            <div style="font-size: 11px; opacity: 0.8;">Upload + enhancement AI</div>
+          </div>
+        </button>
+      </div>
+      
+      <button class="btn btn-secondary" onclick="closeSlotMenu()" style="margin-top: 20px; width: 100%;">
+        Annulla
+      </button>
+    </div>
   </div>
 
   <!-- OVERLAY CONFERMA DEPLOY -->
