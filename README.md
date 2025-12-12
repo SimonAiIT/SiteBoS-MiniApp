@@ -5,6 +5,7 @@
 [![Telegram](https://img.shields.io/badge/Telegram-2CA5E0?style=flat&logo=telegram&logoColor=white)](https://t.me/TrinAi_SiteBoS_bot)
 [![Version](https://img.shields.io/badge/version-5.0.0-blue.svg)](https://github.com/SimonAiIT/SiteBoS-MiniApp/releases)
 [![Company](https://img.shields.io/badge/by-TrinAI-blueviolet.svg)](https://www.trinai.it)
+[![Docs](https://img.shields.io/badge/docs-complete-brightgreen.svg)](./docs)
 
 > **Enterprise-grade business management platform living entirely inside Telegram.** 
 > Zero app installs. Zero complexity. 100% operational control.
@@ -13,25 +14,30 @@
 
 ---
 
-## 📖 Table of Contents
+## 📚 **DOCUMENTAZIONE COMPLETA → [/docs](./docs)**
 
-- [Overview](#-overview)
-- [Key Features](#-key-features)
-- [Architecture](#-architecture)
-- [Tech Stack](#-tech-stack)
-- [Getting Started](#-getting-started)
-- [Module Documentation](#-module-documentation)
-- [API Reference](#-api-reference)
-- [Security & Compliance](#-security--compliance)
-- [Roadmap](#-roadmap)
-- [License](#-license)
-- [Support](#-support)
+⚡ **Per AI e developer**: Inizia da **[docs/01-OVERVIEW.md](./docs/01-OVERVIEW.md)**  
+🧠 **Sistema Soft Skills**: Vedi **[docs/04-SOFT-SKILLS.md](./docs/04-SOFT-SKILLS.md)**  
+📝 **Index completo**: **[docs/README.md](./docs/README.md)**  
+
+---
+
+## 📌 Quick Links
+
+- 📄 **[Documentazione Tecnica Completa](./docs)** - 17 guide dettagliate
+- 🎭 **[HoneyPot Editor](./honeypot)** - Knowledge base + anti-spam
+- 📦 **[Catalog Manager](./catalog)** - AI-powered product catalog
+- 📅 **[Agenda System](./agenda)** - Multi-operator booking
+- 👥 **[Team Manager](./team)** - Operator profiles & skills
+- 🧠 **[Soft Skills Assessment](./softskill)** - 150-question behavioral analysis
+- 🎨 **[Marketing Hub](./marketing)** - AI content generation
+- 🧾 **[Legal Generator](./legal)** - GDPR compliance docs
 
 ---
 
 ## 🎯 Overview
 
-**SiteBoS** (Site Business Operating System) transforms Telegram into a complete business management suite for SMEs, freelancers, and professional services. 
+**SiteBoS** transforms Telegram into a complete business management suite for SMEs, freelancers, and professional services.
 
 ### What Makes SiteBoS Unique?
 
@@ -71,7 +77,16 @@ Week-view appointment scheduler
 Operator roles and skill assignment
 - Role-based access control
 - Skill tags for smart assignment
+- Stakeholder behavioral profiles
 - Availability scheduling
+
+### 🧠 **Soft Skills Assessment**
+150-question behavioral analysis
+- 4 thematic modules (Io Interiore, Interpersonale, Leadership, Etica)
+- AI-generated personality archetypes
+- Personalized training video recommendations
+- Learning history tracking with engagement levels
+- **NEW (Dec 2025)**: Collapsible learning history cards
 
 ### 📊 **Dashboard**
 Real-time business metrics
@@ -87,7 +102,7 @@ Auto-generated compliance documents
 - Data Processing Agreement (DPA)
 - Processor appointment letters
 
-### 🎨 **Marketing Hub** (Knowledge Base)
+### 🎨 **Marketing Hub**
 Content generation for social media
 - AI blog post drafting (1000 credits)
 - Knowledge fragment management
@@ -95,15 +110,13 @@ Content generation for social media
 
 ---
 
-## 🏗️ Architecture
-
-### System Overview
+## 🏛️ Architecture
 
 ```
 ┌─────────────────────────────────────────────────────┐
 │                  TELEGRAM CLIENT                     │
 │         (iOS/Android/Desktop/Web)                    │
-└──────────────────┬──────────────────────────────────┘
+└──────────────────┴──────────────────────────────────┘
                    │ Telegram WebApp SDK
                    ▼
 ┌─────────────────────────────────────────────────────┐
@@ -111,7 +124,7 @@ Content generation for social media
 │  • HTML5/CSS3/Vanilla JS                             │
 │  • Client-side routing                               │
 │  • sessionStorage state management                   │
-└──────────────────┬──────────────────────────────────┘
+└──────────────────┴──────────────────────────────────┘
                    │ HTTPS POST (Webhooks)
                    ▼
 ┌─────────────────────────────────────────────────────┐
@@ -119,7 +132,7 @@ Content generation for social media
 │  • Self-hosted N8N instance                          │
 │  • 6+ dedicated webhooks                             │
 │  • Async workflow orchestration                      │
-└──────────────────┬──────────────────────────────────┘
+└──────────────────┴──────────────────────────────────┘
                    │
          ┌─────────┴─────────┐
          ▼                   ▼
@@ -140,6 +153,8 @@ Content generation for social media
 │   • Inline keyboards                          │
 └──────────────────────────────────────────────┘
 ```
+
+📚 **Per dettagli approfonditi**: [docs/02-ARCHITECTURE.md](./docs/02-ARCHITECTURE.md)
 
 ---
 
@@ -204,47 +219,7 @@ The source code is publicly visible for **transparency and evaluation purposes o
 4. **MongoDB Atlas** (Free tier M0 cluster)  
    👉 https://www.mongodb.com/cloud/atlas/register
 
----
-
-## 📚 Module Documentation
-
-### 🎭 HoneyPot Editor
-
-AI-powered knowledge base + anti-spam form configuration.
-
-**Key Features**:
-- Company identity management
-- Multi-language content
-- Asset library (logo, photos, documents)
-- Honeypot security fields
-
-### 📦 Catalog Manager
-
-Hierarchical product/service catalog with AI-generated descriptions.
-
-**Structure**:
-```
-Category (Level 1)
-└── Products/Services (Level 2)
-    ├── AI-generated description
-    ├── Pricing & SKU
-    └── Operational blueprint
-```
-
-### 📅 Agenda System
-
-Week-view scheduler with:
-- Multi-operator booking
-- 30-min time slots (09:00-19:00)
-- Conflict detection
-- Calendar export (Google/iCal)
-
-### 🎨 Marketing Hub
-
-AI content generation:
-- Blog post drafting (1000 credits/post)
-- SEO optimization
-- Multi-channel export
+📚 **Guida completa**: [docs/12-DEPLOYMENT.md](./docs/12-DEPLOYMENT.md)
 
 ---
 
@@ -273,44 +248,79 @@ Users control their own Google Gemini API keys:
 - Rate limiting (15 req/min)
 - MongoDB encryption at rest
 
+📚 **Approfondimenti**: [docs/13-SECURITY.md](./docs/13-SECURITY.md)
+
 ---
 
 ## 🗺️ Roadmap
 
-### Q1 2025
+### Q1 2025 ✅
 - [x] HoneyPot Editor v2.0
 - [x] AI Catalog Generator
 - [x] Blueprint Workflow Editor
 - [x] Agenda System
-- [ ] Payment Gateway Integration
+- [x] Soft Skills Assessment (4 moduli)
+- [x] Team Manager con profili stakeholder
 
-### Q2 2025
+### Q2 2025 🚧
 - [ ] CRM Module
 - [ ] Invoice Generator
 - [ ] Analytics Dashboard
-- [ ] Mobile App Wrapper
+- [ ] Payment Gateway Integration
 
-### Q3 2025
+### Q3 2025 📋
 - [ ] Multi-user Roles
 - [ ] Webhook Marketplace
 - [ ] White-label Licensing
 
+📚 **Roadmap dettagliata**: [docs/01-OVERVIEW.md#roadmap](./docs/01-OVERVIEW.md#roadmap)
+
 ---
 
-## 📄 License
+## 📝 Recent Updates (December 2025)
 
-**Proprietary Software** © 2025 Trinacria Artificial Intelligence S.r.l.
+### Soft Skills Module
+- ✅ **Learning History**: Card collassabili con chevron animato
+- ✅ **Complete Profile**: Score badge spostato in alto a destra (rimossa stats card)
+- ✅ **Video Player**: Sistema di riflessione con engagement tracking
+- ✅ **Team Profile**: Profili stakeholder con learning history integrata
 
-All rights reserved. See [LICENSE](LICENSE) for full terms.
+### Documentation
+- ✅ **New `/docs` folder**: 17 guide tecniche strutturate
+- ✅ **01-OVERVIEW.md**: Panoramica progetto completa
+- ✅ **04-SOFT-SKILLS.md**: Sistema soft skills documentato al 100%
+- ✅ **README.md**: Index documentazione con quick links
 
-**Summary**:
-- ❌ No commercial use without written authorization
-- ❌ No redistribution or modification
-- ✅ Source code visible for evaluation/transparency
-- ✅ Bug reports and suggestions welcome
+📚 **Changelog completo**: [docs/17-CHANGELOG.md](./docs/17-CHANGELOG.md)
 
-**For licensing inquiries:**  
-📧 info@trinai.it | 🌐 [www.trinai.it](https://www.trinai.it)
+---
+
+## 📚 Documentation Structure
+
+```
+docs/
+├── README.md              # Index documentazione
+├── 01-OVERVIEW.md         # ✅ Panoramica generale
+├── 02-ARCHITECTURE.md     # 📋 Architettura dettagliata
+├── 03-MODULES.md          # 📋 Tutti i moduli
+├── 04-SOFT-SKILLS.md      # ✅ Sistema soft skills
+├── 05-TEAM-MANAGER.md     # 📋 Team & stakeholder
+├── 06-CATALOG.md          # 📋 Catalog manager
+├── 07-AGENDA.md           # 📋 Sistema calendario
+├── 08-HONEYPOT.md         # 📋 Knowledge base
+├── 09-API-REFERENCE.md    # 📋 Webhook N8N
+├── 10-DATABASE-SCHEMA.md  # 📋 Schema MongoDB
+├── 11-AI-INTEGRATION.md   # 📋 Google Gemini
+├── 12-DEPLOYMENT.md       # 📋 Deploy guide
+├── 13-SECURITY.md         # 📋 Security best practices
+├── 14-MONITORING.md       # 📋 Metriche & logging
+├── 15-CUSTOMIZATION.md    # 📋 White-label
+├── 16-EXTENSIONS.md       # 📋 Plugin system
+└── 17-CHANGELOG.md        # 📋 Version history
+
+Legenda:
+✅ Completo  │  🚧 In Progress  │  📋 Planned
+```
 
 ---
 
@@ -332,6 +342,23 @@ Sede: Sicilia, Italia
 
 ---
 
+## 📄 License
+
+**Proprietary Software** © 2025 Trinacria Artificial Intelligence S.r.l.
+
+All rights reserved. See [LICENSE](LICENSE) for full terms.
+
+**Summary**:
+- ❌ No commercial use without written authorization
+- ❌ No redistribution or modification
+- ✅ Source code visible for evaluation/transparency
+- ✅ Bug reports and suggestions welcome
+
+**For licensing inquiries:**  
+📧 info@trinai.it | 🌐 [www.trinai.it](https://www.trinai.it)
+
+---
+
 ## 🙏 Acknowledgments
 
 - **Google Gemini Team** - AI API platform
@@ -346,6 +373,19 @@ Sede: Sicilia, Italia
 **Developed with ❤️ in Sicily by [TrinAI](https://www.trinai.it)**
 
 *Transforming SMEs with Conversational AI*
+
+---
+
+### 📚 Quick Start for AI
+
+**Reading this for the first time?**
+
+1. Start with **[docs/01-OVERVIEW.md](./docs/01-OVERVIEW.md)** (5 min)
+2. Deep dive into **[docs/04-SOFT-SKILLS.md](./docs/04-SOFT-SKILLS.md)** (10 min)
+3. Explore `/softskill/` source code
+4. Check **[docs/README.md](./docs/README.md)** for complete index
+
+---
 
 [⬆ Back to Top](#-sitebos-miniapp)
 
