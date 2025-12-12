@@ -252,6 +252,7 @@
             align-items: center;
             justify-content: center;
             gap: 10px;
+            margin-bottom: 15px;
         }
 
         .watch-btn:hover {
@@ -259,6 +260,110 @@
             color: white;
             transform: translateY(-2px);
             box-shadow: 0 6px 20px rgba(91, 111, 237, 0.4);
+        }
+
+        /* 🔥 CARD COLLASSABILI SOTTO VIDEO */
+        .video-knowledge-card {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 12px;
+            margin-bottom: 12px;
+            overflow: hidden;
+        }
+
+        .video-card-header {
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .video-card-header:hover {
+            background: rgba(255,255,255,0.05);
+        }
+
+        .video-card-header h4 {
+            margin: 0;
+            font-size: 15px;
+            font-weight: 700;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .video-chevron {
+            transition: transform 0.3s;
+            color: rgba(255,255,255,0.7);
+        }
+
+        .video-knowledge-card.open .video-chevron {
+            transform: rotate(180deg);
+        }
+
+        .video-card-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+
+        .video-knowledge-card.open .video-card-content {
+            max-height: 1000px;
+        }
+
+        .video-card-body {
+            padding: 15px;
+        }
+
+        .video-takeaway-item {
+            background: rgba(255,255,255,0.15);
+            border-left: 3px solid white;
+            padding: 10px 12px;
+            margin-bottom: 8px;
+            border-radius: 6px;
+            font-size: 13px;
+            line-height: 1.5;
+            color: white;
+        }
+
+        .video-reflection-prompt {
+            background: rgba(245, 158, 11, 0.2);
+            border-left: 3px solid var(--warning);
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+        }
+
+        .video-prompt-question {
+            font-size: 13px;
+            font-weight: 600;
+            color: white;
+            margin-bottom: 8px;
+        }
+
+        .video-reflection-textarea {
+            width: 100%;
+            min-height: 80px;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 8px;
+            padding: 10px;
+            color: white;
+            font-size: 13px;
+            resize: vertical;
+            font-family: inherit;
+        }
+
+        .video-reflection-textarea:focus {
+            outline: none;
+            border-color: var(--warning);
+            background: rgba(0,0,0,0.4);
+        }
+
+        .video-reflection-textarea::placeholder {
+            color: rgba(255,255,255,0.5);
         }
 
         /* 📚 LEARNING HISTORY */
@@ -749,7 +854,7 @@
                 areasToImprove.innerHTML = '<p style="color: var(--text-muted);">Nessuna area di miglioramento identificata</p>';
             }
 
-            // VIDEOS
+            // VIDEOS WITH COLLAPSIBLE CARDS
             const videosList = document.getElementById('videosList');
             if (data.recommended_videos && data.recommended_videos.length > 0) {
                 videosList.innerHTML = data.recommended_videos.map((item, index) => `
@@ -759,6 +864,7 @@
                         <div class="video-duration">⏱️ ${item.video.duration}</div>
                         <div class="video-why">${item.why_this}</div>
                         <div class="video-improvement">💪 ${item.expected_improvement}</div>
+                        
                         <button class="watch-btn" 
                                 data-video-url="${item.video.url}" 
                                 data-priority="${item.priority}"
@@ -767,9 +873,41 @@
                                 data-improvement="${encodeURIComponent(item.expected_improvement)}">
                             <i class="fas fa-play"></i> Guarda Ora
                         </button>
+
+                        <!-- KEY TAKEAWAYS CARD -->
+                        <div class="video-knowledge-card open">
+                            <div class="video-card-header">
+                                <h4><i class="fas fa-lightbulb"></i> Key Takeaways</h4>
+                                <i class="fas fa-chevron-down video-chevron"></i>
+                            </div>
+                            <div class="video-card-content">
+                                <div class="video-card-body">
+                                    <div class="video-takeaway-item">Applica le strategie del video nella tua routine quotidiana</div>
+                                    <div class="video-takeaway-item">Identifica situazioni recenti dove avresti potuto usare questa soft skill</div>
+                                    <div class="video-takeaway-item">Pratica costantemente per trasformare conoscenza in competenza</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- RIFLESSIONE PERSONALE CARD -->
+                        <div class="video-knowledge-card open">
+                            <div class="video-card-header">
+                                <h4><i class="fas fa-brain"></i> Riflessione Personale</h4>
+                                <i class="fas fa-chevron-down video-chevron"></i>
+                            </div>
+                            <div class="video-card-content">
+                                <div class="video-card-body">
+                                    <div class="video-reflection-prompt">
+                                        <div class="video-prompt-question">Come applicherai ciò che hai imparato per migliorare: ${item.expected_improvement}?</div>
+                                        <textarea class="video-reflection-textarea" placeholder="Scrivi qui la tua riflessione personale..."></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 `).join('');
 
+                // GESTIONE CLICK WATCH BTN
                 videosList.addEventListener('click', (e) => {
                     const btn = e.target.closest('.watch-btn');
                     if (btn) {
@@ -780,6 +918,12 @@
                             btn.dataset.duration,
                             btn.dataset.improvement
                         );
+                    }
+
+                    // ACCORDION TOGGLE
+                    const cardHeader = e.target.closest('.video-card-header');
+                    if (cardHeader) {
+                        cardHeader.parentElement.classList.toggle('open');
                     }
                 });
             } else {
