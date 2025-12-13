@@ -21,8 +21,22 @@
     .skill-item input[type="checkbox"] { margin: 0; }
     .skill-item.selected { background: rgba(91, 111, 237, 0.2); border: 1px solid var(--primary); }
     
-    .level-selector { display: flex; gap: 6px; margin-top: 8px; }
-    .level-btn { flex: 1; padding: 6px; font-size: 11px; border-radius: 6px; border: 1px solid var(--glass-border); background: rgba(0,0,0,0.3); color: var(--text-muted); cursor: pointer; transition: all 0.2s; }
+    .level-selector { display: flex; gap: 6px; margin-top: 8px; pointer-events: auto !important; }
+    .level-btn { 
+      flex: 1; 
+      padding: 6px; 
+      font-size: 11px; 
+      border-radius: 6px; 
+      border: 1px solid var(--glass-border); 
+      background: rgba(0,0,0,0.3); 
+      color: var(--text-muted); 
+      cursor: pointer !important; 
+      transition: all 0.2s;
+      pointer-events: auto !important;
+      position: relative;
+      z-index: 10;
+    }
+    .level-btn:hover { background: rgba(91, 111, 237, 0.3); }
     .level-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
     
     .cert-input-group { display: flex; gap: 8px; margin-bottom: 8px; }
