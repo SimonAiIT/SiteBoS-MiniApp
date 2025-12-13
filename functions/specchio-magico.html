@@ -22,7 +22,6 @@
     #video-preview {
       width: 100%;
       display: block;
-      transform: scaleX(-1);
     }
     
     #canvas-preview {
@@ -35,6 +34,9 @@
       left: 50%;
       transform: translateX(-50%);
       z-index: 10;
+      display: flex;
+      gap: 15px;
+      align-items: center;
     }
     
     .capture-btn {
@@ -52,6 +54,24 @@
     }
     
     .capture-btn:active {
+      transform: scale(0.95);
+    }
+    
+    .camera-toggle {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background: rgba(0,0,0,0.6);
+      border: 2px solid white;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+    }
+    
+    .camera-toggle:active {
       transform: scale(0.95);
     }
     
@@ -161,7 +181,6 @@
         </div>
     </div>
 
-    <!-- UNLOCK CHECK -->
     <div id="unlock-check" class="card">
         <div style="text-align: center; padding: 40px 20px;">
             <div style="font-size: 64px; color: var(--warning); margin-bottom: 20px;">
@@ -187,7 +206,6 @@
         </div>
     </div>
 
-    <!-- CAMERA CAPTURE -->
     <div id="camera-section" class="hidden">
         <div class="note" style="margin-bottom: 20px;">
             <i class="fas fa-info-circle"></i> <strong>Consigli:</strong> Viso frontale, buona illuminazione, sfondo neutro
@@ -199,6 +217,10 @@
                 <canvas id="canvas-preview"></canvas>
                 
                 <div class="camera-controls">
+                    <button class="camera-toggle" onclick="toggleCamera()" title="Cambia Camera">
+                        <i class="fas fa-sync-alt" style="font-size: 20px;"></i>
+                    </button>
+                    
                     <button class="capture-btn" onclick="capturePhoto()" title="Scatta Foto">
                         <i class="fas fa-camera" style="font-size: 28px; color: var(--primary);"></i>
                     </button>
@@ -211,7 +233,6 @@
         </button>
     </div>
 
-    <!-- PHOTO PREVIEW -->
     <div id="preview-section" class="hidden">
         <div class="card">
             <img id="photo-preview" style="width: 100%; border-radius: 12px; margin-bottom: 20px;">
@@ -227,7 +248,6 @@
         </div>
     </div>
 
-    <!-- RESULTS -->
     <div id="results-section" class="hidden">
         <div class="card">
             <canvas id="before-after-canvas" style="display: none;"></canvas>
@@ -305,7 +325,6 @@
 
   </div>
 
-  <!-- SHARE MODAL -->
   <div id="share-overlay" class="modal-overlay hidden">
     <div class="modal-content" style="max-width: 450px;">
       <h3 style="margin-bottom: 20px; text-align: center;">
@@ -364,6 +383,7 @@
     let currentStream = null;
     let capturedBlob = null;
     let analysisResult = null;
+    let facingMode = 'environment';
 
     function unlockFeature() {
       showLoader('Elaborazione pagamento...');
@@ -378,13 +398,32 @@
       document.getElementById('camera-section').classList.remove('hidden');
       try {
         currentStream = await navigator.mediaDevices.getUserMedia({ 
-          video: { facingMode: 'user', width: { ideal: 1280 }, height: { ideal: 720 } } 
+          video: { 
+            facingMode: facingMode,
+            width: { ideal: 1920 },
+            height: { ideal: 1080 }
+          } 
         });
-        document.getElementById('video-preview').srcObject = currentStream;
+        const video = document.getElementById('video-preview');
+        video.srcObject = currentStream;
+        
+        if (facingMode === 'user') {
+          video.style.transform = 'scaleX(-1)';
+        } else {
+          video.style.transform = 'scaleX(1)';
+        }
       } catch (err) {
         console.error('Camera error:', err);
         showToast('Errore accesso camera');
       }
+    }
+
+    async function toggleCamera() {
+      if (tg?.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
+      
+      stopCamera();
+      facingMode = facingMode === 'environment' ? 'user' : 'environment';
+      await startCamera();
     }
 
     function capturePhoto() {
@@ -394,8 +433,12 @@
       canvas.width = video.videoWidth;
       canvas.height = video.videoHeight;
       const ctx = canvas.getContext('2d');
-      ctx.translate(canvas.width, 0);
-      ctx.scale(-1, 1);
+      
+      if (facingMode === 'user') {
+        ctx.translate(canvas.width, 0);
+        ctx.scale(-1, 1);
+      }
+      
       ctx.drawImage(video, 0, 0);
       
       canvas.toBlob((blob) => {
