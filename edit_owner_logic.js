@@ -3,7 +3,7 @@
 
 // CONFIG
 const WEBHOOK_URL = "https://trinai.api.workflow.dcmake.it/webhook/83acc670-15ae-4da0-ae0e-3587c85bd5f4";
-const BOT_USERNAME = "TrinAi_SiteBoS_bot";
+const BOT_USERNAME = "TrinAi_Site_bot"; // ✅ Bot per operatori (non SiteBoS)
 
 // 📊 PRICING SCAGLIONI OPERATORI
 function getOperatorCost() {
@@ -370,12 +370,15 @@ window.generateInvitation = async () => {
     btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i>';
     btn.disabled = true;
 
-    const rnd = Math.random().toString(36).substring(7);
-    const code = `INV-${rnd}`; 
+    // ✅ GENERA CODICE FORMATO: INV-{VAT}-{OWNER}-{RANDOM}
+    const vat = ownerData.vat_number || 'NOVAT';
+    const ownerChatId = ownerData.owner_chat_id || urlParams.get('owner') || 'NOOWNER';
+    const randomCode = Math.random().toString(36).substring(2, 8).toUpperCase(); // 6 caratteri
+    const invitationCode = `INV-${vat}-${ownerChatId}-${randomCode}`;
     
     operators.push({ 
         OperatorName: name, 
-        invitation_code: code, 
+        invitation_code: invitationCode,
         OperatorChatID: null, 
         Role: 'Operator', 
         OperatorLenguage: ownerData.lenguage || 'it',
