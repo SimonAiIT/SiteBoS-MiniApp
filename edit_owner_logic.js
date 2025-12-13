@@ -129,6 +129,16 @@ async function loadData() {
         const data = await res.json();
         ownerData = data.owner_data || data;
 
+        // ✅ FIX: Usa credits_balance come campo primario
+        if (!ownerData.credits_balance && ownerData.credits) {
+            ownerData.credits_balance = ownerData.credits;
+        }
+        if (!ownerData.credits_balance) {
+            ownerData.credits_balance = 0;
+        }
+
+        console.log('Crediti caricati:', ownerData.credits_balance); // DEBUG
+
         // POPULATE FIELDS
         dom.name.value = ownerData.name || '';
         dom.surname.value = ownerData.surname || '';
@@ -220,7 +230,8 @@ function getDataObj() {
         gemini_key: dom.geminiKey.value,
         owner_unavailable_time: `${dom.tO_from.value}-${dom.tO_to.value}`,
         operator_unavailable_time: `${dom.tP_from.value}-${dom.tP_to.value}`,
-        operators: operators
+        operators: operators,
+        credits_balance: ownerData.credits_balance // ✅ Aggiungi il saldo crediti
     };
 }
 
@@ -243,11 +254,15 @@ window.closeOperatorInfo = () => {
 
 // REQUEST NEW OPERATOR WITH CREDIT CHECK
 window.requestNewOperator = async () => {
+    console.log('Crediti disponibili:', ownerData.credits_balance); // DEBUG
+    
     // Verifica crediti disponibili
-    if (!ownerData.credits || ownerData.credits < OPERATOR_COST) {
+    const currentCredits = ownerData.credits_balance || 0;
+    
+    if (currentCredits < OPERATOR_COST) {
         const msg = t.alert_no_credits
             .replace('{cost}', OPERATOR_COST.toLocaleString('it-IT'))
-            .replace('{available}', (ownerData.credits || 0).toLocaleString('it-IT'));
+            .replace('{available}', currentCredits.toLocaleString('it-IT'));
         alert(msg);
         return;
     }
@@ -267,8 +282,10 @@ window.generateInvitation = async () => {
     const name = dom.opName.value.trim();
     if(!name) return;
     
+    const currentCredits = ownerData.credits_balance || 0;
+    
     // Double-check credits
-    if (!ownerData.credits || ownerData.credits < OPERATOR_COST) {
+    if (currentCredits < OPERATOR_COST) {
         alert(`Crediti insufficienti per aggiungere operatore.`);
         closeModal();
         return;
@@ -296,7 +313,7 @@ window.generateInvitation = async () => {
         closeModal();
         
         // Scala crediti localmente
-        ownerData.credits -= OPERATOR_COST;
+        ownerData.credits_balance -= OPERATOR_COST;
         
         renderOperators(); 
         await saveData(true); // Silent Save with credit deduction
@@ -307,7 +324,7 @@ window.generateInvitation = async () => {
     } catch (e) {
         alert(t.alert_err);
         operators.pop(); // Rollback
-        ownerData.credits += OPERATOR_COST; // Restore credits
+        ownerData.credits_balance += OPERATOR_COST; // Restore credits
         renderOperators();
     } finally {
         btn.innerHTML = originalText;
