@@ -147,7 +147,7 @@
       display: flex;
       align-items: center;
       gap: 10px;
-      font-size: 13px;
+      font-size: 12px;
     }
 
     .reflect-btn:hover {
@@ -165,6 +165,10 @@
 
     .reflect-btn.cold {
       border-left: 3px solid var(--info);
+    }
+
+    .reflect-btn.neutral {
+      border-left: 3px solid var(--text-secondary);
     }
 
     .swatch {
@@ -231,6 +235,30 @@
       border-color: var(--primary);
       border-width: 3px;
     }
+
+    .temp-indicator {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+      margin-top: 5px;
+    }
+
+    .temp-warm {
+      background: rgba(245, 158, 11, 0.2);
+      color: var(--warning);
+    }
+
+    .temp-cold {
+      background: rgba(59, 130, 246, 0.2);
+      color: var(--info);
+    }
+
+    .temp-neutral {
+      background: rgba(156, 163, 175, 0.2);
+      color: var(--text-secondary);
+    }
   </style>
 </head>
 <body>
@@ -252,7 +280,6 @@
         </div>
     </div>
 
-    <!-- UNLOCK -->
     <div id="unlock-check" class="card">
         <div style="text-align: center; padding: 40px 20px;">
             <div style="font-size: 64px; color: var(--warning); margin-bottom: 20px;">
@@ -278,7 +305,6 @@
         </div>
     </div>
 
-    <!-- GENDER SELECTION -->
     <div id="gender-section" class="hidden">
         <div class="card">
             <h3 style="margin: 0 0 15px 0;">👤 Seleziona Genere Cliente</h3>
@@ -309,7 +335,6 @@
         </button>
     </div>
 
-    <!-- CAMERA -->
     <div id="camera-section" class="hidden">
         <div class="note" style="margin-bottom: 20px;">
             <i class="fas fa-info-circle"></i> <strong>Consigli:</strong> Viso frontale, buona illuminazione, sfondo neutro
@@ -337,7 +362,6 @@
         </button>
     </div>
 
-    <!-- CONFIGURATION DASHBOARD -->
     <div id="config-section" class="hidden">
         <div class="card">
             <img id="client-photo" style="width: 100%; border-radius: 12px;">
@@ -349,7 +373,6 @@
                 Genere: <strong id="selected-gender-label">-</strong>
             </p>
 
-            <!-- CAPELLI -->
             <div class="section-header">
                 <i class="fas fa-cut" style="color: var(--warning); font-size: 20px;"></i>
                 <h4>Capelli</h4>
@@ -372,9 +395,9 @@
                 <option value="10">10 - Platino</option>
             </select>
 
-            <label style="font-size: 13px; color: var(--text-secondary); text-transform: uppercase; font-weight: 600; display: block; margin-top: 15px;">Riflesso</label>
+            <label style="font-size: 13px; color: var(--text-secondary); text-transform: uppercase; font-weight: 600; display: block; margin-top: 15px;">Riflesso Primario</label>
             <div class="reflect-grid">
-                <div class="reflect-btn active" onclick="selectReflect('0')" data-reflect="0">
+                <div class="reflect-btn neutral active" onclick="selectReflect('0')" data-reflect="0">
                     <div class="swatch" style="background: linear-gradient(135deg, #8b7355 0%, #6b5645 100%);"></div>
                     <span>.0 Naturale</span>
                 </div>
@@ -386,7 +409,7 @@
                 
                 <div class="reflect-btn cold" onclick="selectReflect('2')" data-reflect="2">
                     <div class="swatch" style="background: #b8a8c8;"></div>
-                    <span>.2 Perlato ❄️</span>
+                    <span>.2 Iridé ❄️</span>
                 </div>
                 
                 <div class="reflect-btn warm" onclick="selectReflect('3')" data-reflect="3">
@@ -413,6 +436,16 @@
                     <div class="swatch" style="background: #8a9a5b;"></div>
                     <span>.7 Mat ❄️</span>
                 </div>
+
+                <div class="reflect-btn neutral" onclick="selectReflect('8')" data-reflect="8">
+                    <div class="swatch" style="background: #967969;"></div>
+                    <span>.8 Moka</span>
+                </div>
+
+                <div class="reflect-btn cold" onclick="selectReflect('9')" data-reflect="9">
+                    <div class="swatch" style="background: #c9b7a3;"></div>
+                    <span>.9 Beige ❄️</span>
+                </div>
             </div>
 
             <label style="display: flex; align-items: center; gap: 8px; margin-top: 15px; cursor: pointer;">
@@ -421,12 +454,13 @@
             </label>
 
             <div class="color-preview">
-                <div style="font-size: 12px; color: var(--text-secondary); margin-bottom: 5px;">CODICE COLORE</div>
+                <div style="font-size: 12px; color: var(--text-secondary); margin-bottom: 5px;">CODICE COLORE PROFESSIONALE</div>
                 <div style="font-size: 28px; font-weight: bold; color: var(--primary);" id="color-code">6.0</div>
+                <span class="temp-indicator temp-neutral" id="temp-indicator">NEUTRO</span>
                 <div class="swatch-large" id="color-swatch"></div>
+                <div style="font-size: 11px; color: var(--text-muted); margin-top: 8px;" id="reflect-name">Naturale</div>
             </div>
 
-            <!-- TRUCCO (Donna/Fluid) -->
             <div id="makeup-section" class="hidden">
                 <div class="section-header">
                     <i class="fas fa-paint-brush" style="color: var(--warning); font-size: 20px;"></i>
@@ -436,26 +470,38 @@
                 <label style="font-size: 13px; color: var(--text-secondary); text-transform: uppercase; font-weight: 600;">Occhi</label>
                 <select id="eye-makeup" class="input">
                     <option value="none">Nessuno</option>
-                    <option value="natural">Naturale</option>
+                    <option value="natural">Naturale Nude</option>
+                    <option value="soft-glam">Soft Glam</option>
                     <option value="smokey">Smokey Eyes</option>
                     <option value="cat">Cat Eye</option>
-                    <option value="glam">Glam</option>
+                    <option value="graphic">Graphic Liner</option>
+                    <option value="glitter">Glitter</option>
+                    <option value="cut-crease">Cut Crease</option>
+                    <option value="halo">Halo Eyes</option>
+                    <option value="editorial">Editorial</option>
                 </select>
 
                 <label style="font-size: 13px; color: var(--text-secondary); text-transform: uppercase; font-weight: 600; display: block; margin-top: 15px;">Labbra</label>
                 <div class="makeup-grid">
-                    <div class="makeup-swatch active" style="background: transparent; border: 2px dashed var(--glass-border);" onclick="selectLipColor('none')" data-lip="none"></div>
-                    <div class="makeup-swatch" style="background: #d4a5a5;" onclick="selectLipColor('#d4a5a5')" data-lip="nude"></div>
-                    <div class="makeup-swatch" style="background: #ff6b9d;" onclick="selectLipColor('#ff6b9d')" data-lip="pink"></div>
-                    <div class="makeup-swatch" style="background: #c41e3a;" onclick="selectLipColor('#c41e3a')" data-lip="red"></div>
-                    <div class="makeup-swatch" style="background: #8b0000;" onclick="selectLipColor('#8b0000')" data-lip="dark"></div>
-                    <div class="makeup-swatch" style="background: #ff4500;" onclick="selectLipColor('#ff4500')" data-lip="orange"></div>
-                    <div class="makeup-swatch" style="background: #b565a7;" onclick="selectLipColor('#b565a7')" data-lip="mauve"></div>
-                    <div class="makeup-swatch" style="background: #704241;" onclick="selectLipColor('#704241')" data-lip="brown"></div>
+                    <div class="makeup-swatch active" style="background: transparent; border: 2px dashed var(--glass-border);" onclick="selectLipColor('none')" data-lip="none" title="Nessuno"></div>
+                    <div class="makeup-swatch" style="background: #f5d5cb;" onclick="selectLipColor('#f5d5cb')" data-lip="nude-light" title="Nude Chiaro"></div>
+                    <div class="makeup-swatch" style="background: #d4a5a5;" onclick="selectLipColor('#d4a5a5')" data-lip="nude" title="Nude"></div>
+                    <div class="makeup-swatch" style="background: #c98b8b;" onclick="selectLipColor('#c98b8b')" data-lip="nude-dark" title="Nude Scuro"></div>
+                    <div class="makeup-swatch" style="background: #ffb6d9;" onclick="selectLipColor('#ffb6d9')" data-lip="pink-light" title="Rosa Chiaro"></div>
+                    <div class="makeup-swatch" style="background: #ff6b9d;" onclick="selectLipColor('#ff6b9d')" data-lip="pink" title="Rosa"></div>
+                    <div class="makeup-swatch" style="background: #ff1493;" onclick="selectLipColor('#ff1493')" data-lip="magenta" title="Magenta"></div>
+                    <div class="makeup-swatch" style="background: #c41e3a;" onclick="selectLipColor('#c41e3a')" data-lip="red" title="Rosso"></div>
+                    <div class="makeup-swatch" style="background: #8b0000;" onclick="selectLipColor('#8b0000')" data-lip="red-dark" title="Rosso Scuro"></div>
+                    <div class="makeup-swatch" style="background: #ff4500;" onclick="selectLipColor('#ff4500')" data-lip="orange" title="Arancio"></div>
+                    <div class="makeup-swatch" style="background: #ff8c69;" onclick="selectLipColor('#ff8c69')" data-lip="coral" title="Corallo"></div>
+                    <div class="makeup-swatch" style="background: #b565a7;" onclick="selectLipColor('#b565a7')" data-lip="mauve" title="Malva"></div>
+                    <div class="makeup-swatch" style="background: #9b59b6;" onclick="selectLipColor('#9b59b6')" data-lip="purple" title="Viola"></div>
+                    <div class="makeup-swatch" style="background: #704241;" onclick="selectLipColor('#704241')" data-lip="brown" title="Marrone"></div>
+                    <div class="makeup-swatch" style="background: #d4af37;" onclick="selectLipColor('#d4af37')" data-lip="gold" title="Oro"></div>
+                    <div class="makeup-swatch" style="background: #000000;" onclick="selectLipColor('#000000')" data-lip="black" title="Nero"></div>
                 </div>
             </div>
 
-            <!-- BARBA (Uomo/Fluid) -->
             <div id="beard-section" class="hidden">
                 <div class="section-header">
                     <i class="fas fa-user-tie" style="color: var(--primary); font-size: 20px;"></i>
@@ -465,23 +511,30 @@
                 <label style="font-size: 13px; color: var(--text-secondary); text-transform: uppercase; font-weight: 600;">Stile</label>
                 <select id="beard-style" class="input">
                     <option value="none">Rasato</option>
-                    <option value="stubble">Barba Incolta (3 giorni)</option>
-                    <option value="short">Barba Corta</option>
-                    <option value="medium">Barba Media</option>
-                    <option value="full">Barba Piena</option>
+                    <option value="stubble-1">Barba Incolta 1-2 giorni</option>
+                    <option value="stubble-3">Barba Incolta 3-5 giorni</option>
+                    <option value="short">Barba Corta (5-15mm)</option>
+                    <option value="medium">Barba Media (15-25mm)</option>
+                    <option value="full">Barba Piena (25mm+)</option>
                     <option value="goatee">Pizzetto</option>
+                    <option value="van-dyke">Van Dyke</option>
+                    <option value="circle">Circle Beard</option>
+                    <option value="anchor">Anchor</option>
+                    <option value="soul-patch">Soul Patch</option>
                 </select>
 
                 <label style="font-size: 13px; color: var(--text-secondary); text-transform: uppercase; font-weight: 600; display: block; margin-top: 15px;">Colore Barba</label>
                 <div class="makeup-grid">
-                    <div class="makeup-swatch active" style="background: #1a1a1a;" onclick="selectBeardColor('#1a1a1a')" data-beard="black"></div>
-                    <div class="makeup-swatch" style="background: #3d2314;" onclick="selectBeardColor('#3d2314')" data-beard="dark-brown"></div>
-                    <div class="makeup-swatch" style="background: #6b5645;" onclick="selectBeardColor('#6b5645')" data-beard="brown"></div>
-                    <div class="makeup-swatch" style="background: #b87333;" onclick="selectBeardColor('#b87333')" data-beard="red"></div>
-                    <div class="makeup-swatch" style="background: #d4af37;" onclick="selectBeardColor('#d4af37')" data-beard="blonde"></div>
-                    <div class="makeup-swatch" style="background: #c0c0c0;" onclick="selectBeardColor('#c0c0c0')" data-beard="grey"></div>
-                    <div class="makeup-swatch" style="background: #f5f5f5;" onclick="selectBeardColor('#f5f5f5')" data-beard="white"></div>
-                    <div class="makeup-swatch" style="background: linear-gradient(135deg, #6b5645 0%, #c0c0c0 100%);" onclick="selectBeardColor('salt-pepper')" data-beard="salt-pepper"></div>
+                    <div class="makeup-swatch active" style="background: #1a1a1a;" onclick="selectBeardColor('#1a1a1a')" data-beard="black" title="Nero"></div>
+                    <div class="makeup-swatch" style="background: #3d2314;" onclick="selectBeardColor('#3d2314')" data-beard="dark-brown" title="Marrone Scuro"></div>
+                    <div class="makeup-swatch" style="background: #6b5645;" onclick="selectBeardColor('#6b5645')" data-beard="brown" title="Marrone"></div>
+                    <div class="makeup-swatch" style="background: #8b6f47;" onclick="selectBeardColor('#8b6f47')" data-beard="light-brown" title="Marrone Chiaro"></div>
+                    <div class="makeup-swatch" style="background: #b87333;" onclick="selectBeardColor('#b87333')" data-beard="red" title="Ramato"></div>
+                    <div class="makeup-swatch" style="background: #d4af37;" onclick="selectBeardColor('#d4af37')" data-beard="blonde" title="Biondo"></div>
+                    <div class="makeup-swatch" style="background: #a0a0a0;" onclick="selectBeardColor('#a0a0a0')" data-beard="grey" title="Grigio"></div>
+                    <div class="makeup-swatch" style="background: #f5f5f5;" onclick="selectBeardColor('#f5f5f5')" data-beard="white" title="Bianco"></div>
+                    <div class="makeup-swatch" style="background: linear-gradient(135deg, #6b5645 0%, #a0a0a0 50%, #f5f5f5 100%);" onclick="selectBeardColor('salt-pepper')" data-beard="salt-pepper" title="Sale e Pepe"></div>
+                    <div class="makeup-swatch" style="background: linear-gradient(135deg, #1a1a1a 0%, #a0a0a0 100%);" onclick="selectBeardColor('black-grey')" data-beard="black-grey" title="Nero-Grigio"></div>
                 </div>
             </div>
 
@@ -491,7 +544,6 @@
         </div>
     </div>
 
-    <!-- RESULTS -->
     <div id="results-section" class="hidden">
         <div class="card">
             <h3 style="margin: 0 0 15px 0;">🎨 Anteprima Look</h3>
@@ -510,7 +562,7 @@
         </div>
 
         <div class="card" style="margin-top: 15px;">
-            <h3 style="margin: 0 0 15px 0;">📋 Riepilogo Look</h3>
+            <h3 style="margin: 0 0 15px 0;">📋 Riepilogo Look Professionale</h3>
             <div id="summary-content"></div>
         </div>
 
@@ -550,20 +602,22 @@
     let lookConfig = {};
 
     const HAIRCUTS = {
-      F: ['Bob', 'Long Bob', 'Pixie', 'Shag', 'Layers', 'Blunt Cut', 'Mullet', 'Wolf Cut'],
-      M: ['Buzz Cut', 'Crew Cut', 'Undercut', 'Fade', 'Pompadour', 'Quiff', 'Side Part', 'Textured Crop'],
-      X: ['Bob', 'Long Bob', 'Pixie', 'Shag', 'Undercut', 'Fade', 'Mullet', 'Wolf Cut']
+      F: ['Bob', 'Long Bob (Lob)', 'Pixie Cut', 'Shag', 'Layered Cut', 'Blunt Cut', 'Mullet Moderno', 'Wolf Cut', 'Buzz Cut Femminile', 'Undercut Laterale', 'Carré', 'French Bob', 'Shaggy Bob', 'Bixie (Bob+Pixie)', 'Textured Lob'],
+      M: ['Buzz Cut', 'Crew Cut', 'Undercut', 'Fade (Low/Mid/High)', 'Taper Fade', 'Pompadour', 'Quiff', 'Side Part', 'Textured Crop', 'French Crop', 'Slick Back', 'Faux Hawk', 'Spiky Hair', 'Caesar Cut', 'Ivy League'],
+      X: ['Bob', 'Long Bob', 'Pixie', 'Shag', 'Undercut', 'Fade', 'Mullet', 'Wolf Cut', 'Buzz Cut', 'Crew Cut', 'Textured Crop', 'French Crop', 'Bixie', 'Pompadour', 'Quiff']
     };
 
-    const REFLECT_COLORS = {
-      '0': ['#8b7355', '#6b5645'],
-      '1': ['#a8a8a8', '#888888'],
-      '2': ['#b8a8c8', '#9888a8'],
-      '3': ['#d4af37', '#b48f27'],
-      '4': ['#b87333', '#986323'],
-      '5': ['#c04000', '#a03000'],
-      '6': ['#c41e3a', '#a40e2a'],
-      '7': ['#8a9a5b', '#6a7a4b']
+    const REFLECT_DATA = {
+      '0': { name: 'Naturale', colors: ['#8b7355', '#6b5645'], temp: 'neutral' },
+      '1': { name: 'Cenere (Ash)', colors: ['#a8a8a8', '#888888'], temp: 'cold' },
+      '2': { name: 'Iridé (Iridescent)', colors: ['#b8a8c8', '#9888a8'], temp: 'cold' },
+      '3': { name: 'Dorato (Golden)', colors: ['#d4af37', '#b48f27'], temp: 'warm' },
+      '4': { name: 'Ramato (Copper)', colors: ['#b87333', '#986323'], temp: 'warm' },
+      '5': { name: 'Mogano (Mahogany)', colors: ['#c04000', '#a03000'], temp: 'warm' },
+      '6': { name: 'Rosso (Red)', colors: ['#c41e3a', '#a40e2a'], temp: 'warm' },
+      '7': { name: 'Mat (Verde)', colors: ['#8a9a5b', '#6a7a4b'], temp: 'cold' },
+      '8': { name: 'Moka (Marrone)', colors: ['#967969', '#765948'], temp: 'neutral' },
+      '9': { name: 'Beige', colors: ['#c9b7a3', '#a99783'], temp: 'cold' }
     };
 
     function unlockFeature() {
@@ -686,10 +740,15 @@
       const reflectSuffix = isDouble ? selectedReflect + selectedReflect : selectedReflect;
       const code = `${baseTone}.${reflectSuffix}`;
       
+      const reflectData = REFLECT_DATA[selectedReflect];
       document.getElementById('color-code').textContent = code;
+      document.getElementById('reflect-name').textContent = reflectData.name;
       
-      const colors = REFLECT_COLORS[selectedReflect];
-      const gradient = `linear-gradient(135deg, ${colors[0]} 0%, ${colors[1]} 100%)`;
+      const tempIndicator = document.getElementById('temp-indicator');
+      tempIndicator.className = `temp-indicator temp-${reflectData.temp}`;
+      tempIndicator.textContent = reflectData.temp === 'warm' ? 'CALDO 🔥' : reflectData.temp === 'cold' ? 'FREDDO ❄️' : 'NEUTRO';
+      
+      const gradient = `linear-gradient(135deg, ${reflectData.colors[0]} 0%, ${reflectData.colors[1]} 100%)`;
       document.getElementById('color-swatch').style.background = gradient;
     }
 
@@ -714,7 +773,8 @@
         haircut: document.getElementById('haircut').value,
         colorCode: document.getElementById('color-code').textContent,
         baseTone: document.getElementById('base-tone').value,
-        reflect: selectedReflect
+        reflect: selectedReflect,
+        reflectName: REFLECT_DATA[selectedReflect].name
       };
       
       if (selectedGender === 'F' || selectedGender === 'X') {
@@ -739,8 +799,8 @@
       let summary = `
         <div style="padding: 12px; background: rgba(0,0,0,0.2); border-radius: 8px; margin-bottom: 10px;">
           <strong style="color: var(--warning);">✂️ Capelli</strong><br>
-          <span style="font-size: 13px;">Taglio: ${lookConfig.haircut}</span><br>
-          <span style="font-size: 13px;">Colore: ${lookConfig.colorCode}</span>
+          <span style="font-size: 13px;">Taglio: <strong>${lookConfig.haircut}</strong></span><br>
+          <span style="font-size: 13px;">Colore: <strong>${lookConfig.colorCode}</strong> (${lookConfig.reflectName})</span>
         </div>
       `;
       
@@ -748,18 +808,18 @@
         summary += `
           <div style="padding: 12px; background: rgba(0,0,0,0.2); border-radius: 8px; margin-bottom: 10px;">
             <strong style="color: var(--warning);">💄 Trucco</strong><br>
-            <span style="font-size: 13px;">Occhi: ${lookConfig.eyeMakeup}</span><br>
-            <span style="font-size: 13px;">Labbra: ${lookConfig.lipColor}</span>
+            <span style="font-size: 13px;">Occhi: <strong>${lookConfig.eyeMakeup}</strong></span><br>
+            <span style="font-size: 13px;">Labbra: <strong>${lookConfig.lipColor}</strong></span>
           </div>
         `;
       }
       
-      if (lookConfig.beardStyle) {
+      if (lookConfig.beardStyle && lookConfig.beardStyle !== 'none') {
         summary += `
           <div style="padding: 12px; background: rgba(0,0,0,0.2); border-radius: 8px;">
             <strong style="color: var(--primary);">🧔 Barba</strong><br>
-            <span style="font-size: 13px;">Stile: ${lookConfig.beardStyle}</span><br>
-            <span style="font-size: 13px;">Colore: ${lookConfig.beardColor}</span>
+            <span style="font-size: 13px;">Stile: <strong>${lookConfig.beardStyle}</strong></span><br>
+            <span style="font-size: 13px;">Colore: <strong>${lookConfig.beardColor}</strong></span>
           </div>
         `;
       }
@@ -778,7 +838,7 @@
 
     function saveLook() {
       if (tg?.HapticFeedback) tg.HapticFeedback.impactOccurred('medium');
-      showToast('Look salvato!');
+      showToast('Look salvato nel profilo cliente!');
     }
 
     function shareLook() {
