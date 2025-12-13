@@ -3,8 +3,20 @@
 
 // CONFIG
 const WEBHOOK_URL = "https://trinai.api.workflow.dcmake.it/webhook/83acc670-15ae-4da0-ae0e-3587c85bd5f4";
-const BOT_USERNAME = "TrinAi_SiteBoS_bot"; // Tuo bot username
-const OPERATOR_COST = 10000; // Costo in crediti per operatore
+const BOT_USERNAME = "TrinAi_SiteBoS_bot";
+
+// 📊 PRICING SCAGLIONI OPERATORI
+function getOperatorCost() {
+    const currentCount = operators.length;
+    
+    if (currentCount < 3) {
+        return 10000; // Primi 3: 10k
+    } else if (currentCount < 10) {
+        return 20000; // Da 4 a 10: 20k
+    } else {
+        return 30000; // 11+: 30k
+    }
+}
 
 // INIT TELEGRAM
 const tg = window.Telegram.WebApp; 
@@ -129,15 +141,13 @@ async function loadData() {
         const data = await res.json();
         ownerData = data.owner_data || data;
 
-        // ✅ FIX: Usa credits_balance come campo primario
+        // Normalizza credits_balance
         if (!ownerData.credits_balance && ownerData.credits) {
             ownerData.credits_balance = ownerData.credits;
         }
         if (!ownerData.credits_balance) {
             ownerData.credits_balance = 0;
         }
-
-        console.log('Crediti caricati:', ownerData.credits_balance); // DEBUG
 
         // POPULATE FIELDS
         dom.name.value = ownerData.name || '';
@@ -176,6 +186,7 @@ function renderOperators() {
     operators.forEach((op, idx) => {
         const isPending = !op.OperatorChatID; 
         const inviteLink = `https://t.me/${BOT_USERNAME}?start=${op.invitation_code}`;
+        const opCost = op.cost || 10000; // Usa costo memorizzato o default
         
         let html = `
         <div class="card" style="padding:12px; margin-bottom:10px; background:#252525; border-radius:10px; border-left:4px solid ${isPending ? 'var(--warning)' : 'var(--success)'};">            <div style="display:flex; justify-content:space-between; align-items:center;">
@@ -185,7 +196,7 @@ function renderOperators() {
                         ${isPending ? `<span class="badge badge-warning">In attesa</span>` : `<span class="badge badge-success">Attivo</span>`}
                     </div>
                     <div style="font-size:11px; color:var(--text-secondary);">
-                        <i class="fas fa-coins"></i> ${OPERATOR_COST.toLocaleString('it-IT')} crediti
+                        <i class="fas fa-coins"></i> ${opCost.toLocaleString('it-IT')} crediti
                     </div>
                 </div>
                 <button onclick="deleteOp(${idx})" style="background:none; border:none; color:var(--danger); cursor:pointer; font-size:18px;" title="Elimina operatore">
@@ -216,7 +227,41 @@ function renderOperators() {
         dom.operatorCount.innerText = operators.length;
     }
     
+    // ✅ AGGIORNA LABEL COSTO SUL BOTTONE
+    updateAddButtonCost();
+    
     checkDirty();
+}
+
+// 💰 AGGIORNA LABEL COSTO DINAMICO
+function updateAddButtonCost() {
+    const nextCost = getOperatorCost();
+    const addBtn = dom.addOpBtn;
+    
+    if (addBtn) {
+        // Trova o crea il <small> per il costo
+        let costLabel = addBtn.querySelector('small');
+        if (!costLabel) {
+            costLabel = document.createElement('small');
+            costLabel.style.display = 'block';
+            costLabel.style.fontSize = '10px';
+            costLabel.style.opacity = '0.7';
+            costLabel.style.marginTop = '4px';
+            addBtn.appendChild(costLabel);
+        }
+        costLabel.innerText = `${nextCost.toLocaleString('it-IT')} crediti`;
+        
+        // Aggiungi badge tier
+        let tierBadge = '';
+        if (operators.length < 3) {
+            tierBadge = ' ⭐ Starter';
+        } else if (operators.length < 10) {
+            tierBadge = ' 📈 Growth';
+        } else {
+            tierBadge = ' 🚀 Enterprise';
+        }
+        costLabel.innerText += tierBadge;
+    }
 }
 
 // DATA OBJECT HELPER
@@ -231,7 +276,7 @@ function getDataObj() {
         owner_unavailable_time: `${dom.tO_from.value}-${dom.tO_to.value}`,
         operator_unavailable_time: `${dom.tP_from.value}-${dom.tP_to.value}`,
         operators: operators,
-        credits_balance: ownerData.credits_balance // ✅ Aggiungi il saldo crediti
+        credits_balance: ownerData.credits_balance
     };
 }
 
@@ -254,20 +299,17 @@ window.closeOperatorInfo = () => {
 
 // REQUEST NEW OPERATOR WITH CREDIT CHECK
 window.requestNewOperator = async () => {
-    console.log('Crediti disponibili:', ownerData.credits_balance); // DEBUG
-    
-    // Verifica crediti disponibili
+    const operatorCost = getOperatorCost(); // ✅ Costo dinamico
     const currentCredits = ownerData.credits_balance || 0;
     
-    if (currentCredits < OPERATOR_COST) {
+    if (currentCredits < operatorCost) {
         const msg = t.alert_no_credits
-            .replace('{cost}', OPERATOR_COST.toLocaleString('it-IT'))
+            .replace('{cost}', operatorCost.toLocaleString('it-IT'))
             .replace('{available}', currentCredits.toLocaleString('it-IT'));
         alert(msg);
         return;
     }
     
-    // Mostra modal inserimento nome
     openModal();
 }
 
@@ -282,10 +324,10 @@ window.generateInvitation = async () => {
     const name = dom.opName.value.trim();
     if(!name) return;
     
+    const operatorCost = getOperatorCost(); // ✅ Calcola costo attuale
     const currentCredits = ownerData.credits_balance || 0;
     
-    // Double-check credits
-    if (currentCredits < OPERATOR_COST) {
+    if (currentCredits < operatorCost) {
         alert(`Crediti insufficienti per aggiungere operatore.`);
         closeModal();
         return;
@@ -305,7 +347,7 @@ window.generateInvitation = async () => {
         OperatorChatID: null, 
         Role: 'Operator', 
         OperatorLenguage: ownerData.lenguage || 'it',
-        cost: OPERATOR_COST,
+        cost: operatorCost, // ✅ Memorizza costo specifico
         created_at: new Date().toISOString()
     });
 
@@ -313,10 +355,10 @@ window.generateInvitation = async () => {
         closeModal();
         
         // Scala crediti localmente
-        ownerData.credits_balance -= OPERATOR_COST;
+        ownerData.credits_balance -= operatorCost; // ✅ Usa costo dinamico
         
         renderOperators(); 
-        await saveData(true); // Silent Save with credit deduction
+        await saveData(true); // Silent Save
         
         // Success feedback
         tg.HapticFeedback.notificationOccurred('success');
@@ -324,7 +366,7 @@ window.generateInvitation = async () => {
     } catch (e) {
         alert(t.alert_err);
         operators.pop(); // Rollback
-        ownerData.credits_balance += OPERATOR_COST; // Restore credits
+        ownerData.credits_balance += operatorCost; // Restore credits
         renderOperators();
     } finally {
         btn.innerHTML = originalText;
