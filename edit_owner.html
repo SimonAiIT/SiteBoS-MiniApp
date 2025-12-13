@@ -191,53 +191,50 @@
 
   <!-- MODAL INFO OPERATORI -->
   <div id="operator-info-modal" class="modal-overlay hidden">
-    <div class="modal-content" style="max-width: 550px;">
+    <div class="modal-content" style="max-width: 500px;">
       <h3 style="display:flex; align-items:center; gap:10px; margin-bottom:15px;">
         <i class="fas fa-user-plus" style="color:var(--primary);"></i>
         Sistema Operatori Premium
       </h3>
       
-      <!-- TABELLA PRICING SCAGLIONI -->
+      <!-- TABELLA PRICING SCAGLIONI (COMPATTA) -->
       <div style="background:rgba(0,0,0,0.3); border-radius:12px; padding:15px; margin-bottom:20px;">
-        <div style="font-size:12px; color:var(--text-muted); margin-bottom:10px; text-align:center; text-transform:uppercase; letter-spacing:1px; font-weight:700;">
+        <div style="font-size:12px; color:var(--text-muted); margin-bottom:12px; text-align:center; text-transform:uppercase; letter-spacing:1px; font-weight:700;">
           💰 Pricing a Scaglioni
         </div>
         
-        <div style="display:flex; flex-direction:column; gap:10px;">
+        <div style="display:flex; flex-direction:column; gap:8px;">
           <!-- TIER 1: STARTER -->
-          <div id="tier-starter" style="background:rgba(255,255,255,0.05); padding:12px; border-radius:8px; border-left:3px solid var(--success);">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+          <div id="tier-starter" style="background:rgba(255,255,255,0.05); padding:10px 12px; border-radius:8px; border-left:3px solid var(--success);">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
               <div>
-                <span style="font-size:13px; font-weight:600; color:#fff;">⭐ Starter</span>
+                <span style="font-size:14px; font-weight:600; color:#fff;">⭐ Starter</span>
                 <span style="font-size:11px; color:var(--text-muted); margin-left:8px;">1-3 operatori</span>
               </div>
-              <div style="font-size:18px; font-weight:bold; color:var(--success);">10.000</div>
+              <div style="font-size:20px; font-weight:bold; color:var(--success);">10.000</div>
             </div>
-            <div style="font-size:10px; color:var(--text-secondary);">Ideale per piccoli team in fase di avvio</div>
           </div>
           
           <!-- TIER 2: GROWTH -->
-          <div id="tier-growth" style="background:rgba(255,255,255,0.05); padding:12px; border-radius:8px; border-left:3px solid var(--primary);">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+          <div id="tier-growth" style="background:rgba(255,255,255,0.05); padding:10px 12px; border-radius:8px; border-left:3px solid var(--primary);">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
               <div>
-                <span style="font-size:13px; font-weight:600; color:#fff;">📈 Growth</span>
+                <span style="font-size:14px; font-weight:600; color:#fff;">📈 Growth</span>
                 <span style="font-size:11px; color:var(--text-muted); margin-left:8px;">4-10 operatori</span>
               </div>
-              <div style="font-size:18px; font-weight:bold; color:var(--primary);">20.000</div>
+              <div style="font-size:20px; font-weight:bold; color:var(--primary);">20.000</div>
             </div>
-            <div style="font-size:10px; color:var(--text-secondary);">Per team in espansione con workflow strutturati</div>
           </div>
           
           <!-- TIER 3: ENTERPRISE -->
-          <div id="tier-enterprise" style="background:rgba(255,255,255,0.05); padding:12px; border-radius:8px; border-left:3px solid var(--warning);">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+          <div id="tier-enterprise" style="background:rgba(255,255,255,0.05); padding:10px 12px; border-radius:8px; border-left:3px solid var(--warning);">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
               <div>
-                <span style="font-size:13px; font-weight:600; color:#fff;">🚀 Enterprise</span>
+                <span style="font-size:14px; font-weight:600; color:#fff;">🚀 Enterprise</span>
                 <span style="font-size:11px; color:var(--text-muted); margin-left:8px;">11+ operatori</span>
               </div>
-              <div style="font-size:18px; font-weight:bold; color:var(--warning);">30.000</div>
+              <div style="font-size:20px; font-weight:bold; color:var(--warning);">30.000</div>
             </div>
-            <div style="font-size:10px; color:var(--text-secondary);">Grandi organizzazioni con gestione avanzata</div>
           </div>
         </div>
         
@@ -246,41 +243,29 @@
         </div>
       </div>
       
-      <!-- COSA INCLUDE -->
+      <!-- COSA INCLUDE (COMPATTO) -->
       <div style="font-size:13px; line-height:1.6; color:var(--text-muted);">
-        <p style="margin-bottom:15px; font-weight:600; color:#fff;">✨ Ogni operatore include:</p>
+        <p style="margin-bottom:12px; font-weight:600; color:#fff;">✨ Ogni operatore include:</p>
         
-        <div style="display:flex; flex-direction:column; gap:12px; margin-bottom:20px;">
-          <div style="display:flex; align-items:start; gap:10px;">
-            <i class="fas fa-chart-line" style="color:var(--success); margin-top:3px;"></i>
-            <div>
-              <strong style="color:#fff;">Analisi Comportamento</strong><br>
-              Monitoraggio attività e performance in tempo reale
-            </div>
+        <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:18px;">
+          <div style="display:flex; align-items:center; gap:10px;">
+            <i class="fas fa-chart-line" style="color:var(--success);"></i>
+            <span>Analisi Comportamento & Performance</span>
           </div>
           
-          <div style="display:flex; align-items:start; gap:10px;">
-            <i class="fas fa-brain" style="color:var(--primary); margin-top:3px;"></i>
-            <div>
-              <strong style="color:#fff;">Soft Skills Assessment</strong><br>
-              Profilo completo con 150 domande e valutazione AI
-            </div>
+          <div style="display:flex; align-items:center; gap:10px;">
+            <i class="fas fa-brain" style="color:var(--primary);"></i>
+            <span>Soft Skills Assessment (150 domande)</span>
           </div>
           
-          <div style="display:flex; align-items:start; gap:10px;">
-            <i class="fas fa-graduation-cap" style="color:var(--info); margin-top:3px;"></i>
-            <div>
-              <strong style="color:#fff;">Sviluppo Capacità</strong><br>
-              Video formativi e percorsi di crescita personalizzati
-            </div>
+          <div style="display:flex; align-items:center; gap:10px;">
+            <i class="fas fa-graduation-cap" style="color:var(--info);"></i>
+            <span>Video formativi e sviluppo</span>
           </div>
           
-          <div style="display:flex; align-items:start; gap:10px;">
-            <i class="fas fa-tasks" style="color:var(--warning); margin-top:3px;"></i>
-            <div>
-              <strong style="color:#fff;">Task Operativi</strong><br>
-              Gestione completa workflow e assegnazioni
-            </div>
+          <div style="display:flex; align-items:center; gap:10px;">
+            <i class="fas fa-tasks" style="color:var(--warning);"></i>
+            <span>Gestione workflow operativi</span>
           </div>
         </div>
       </div>
