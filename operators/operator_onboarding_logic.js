@@ -184,122 +184,6 @@ window.updateCertification = function(index, value) {
     certifications[index] = value;
 }
 
-// TOGGLE PRIMA ESPERIENZA & OWNER WORK DETAILS
-document.addEventListener('DOMContentLoaded', function() {
-    // Toggle prima esperienza
-    const firstJobCheckbox = document.getElementById('is_first_job');
-    if (firstJobCheckbox) {
-        firstJobCheckbox.addEventListener('change', function() {
-            const experienceFields = document.getElementById('experience-fields');
-            const experienceYears = document.getElementById('experience_years');
-            const firstJobYear = document.getElementById('first_job_year');
-            
-            if (this.checked) {
-                experienceFields.style.opacity = '0.5';
-                experienceFields.style.pointerEvents = 'none';
-                experienceYears.disabled = true;
-                firstJobYear.disabled = true;
-                experienceYears.value = '';
-                firstJobYear.value = '';
-            } else {
-                experienceFields.style.opacity = '1';
-                experienceFields.style.pointerEvents = 'auto';
-                experienceYears.disabled = false;
-                firstJobYear.disabled = false;
-            }
-        });
-    }
-    
-    // Toggle owner work details
-    const worksCheckbox = document.getElementById('works_for_owner');
-    if (worksCheckbox) {
-        worksCheckbox.addEventListener('change', function() {
-            const details = document.getElementById('owner-work-details');
-            if (this.checked) {
-                details.classList.remove('hidden');
-            } else {
-                details.classList.add('hidden');
-                document.getElementById('years_with_owner').value = '';
-                document.getElementById('collaboration_type').value = '';
-            }
-        });
-    }
-});
-
-// CV UPLOAD & PARSING
-document.getElementById('cv_upload').addEventListener('change', async function(e) {
-    const file = e.target.files[0];
-    if (!file) return;
-    
-    const cvStatus = document.getElementById('cv-status');
-    const cvStatusText = document.getElementById('cv-status-text');
-    
-    cvStatus.classList.remove('hidden');
-    cvStatusText.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Analisi CV in corso...';
-    
-    const reader = new FileReader();
-    reader.onload = async function(event) {
-        const base64 = event.target.result;
-        
-        try {
-            const res = await fetch(ONBOARDING_API, {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({
-                    action: 'parse_cv',
-                    chat_id: chatId,
-                    cv_base64: base64,
-                    gemini_key: document.getElementById('gemini_key').value
-                })
-            });
-            
-            const data = await res.json();
-            
-            if (res.ok && data.profile) {
-                const p = data.profile;
-                
-                // Formazione
-                if (p.education_level) document.getElementById('education_level').value = p.education_level;
-                if (p.education_field) document.getElementById('education_field').value = p.education_field;
-                
-                // Esperienza
-                if (p.job_title) document.getElementById('job_title').value = p.job_title;
-                if (p.experience_years) document.getElementById('experience_years').value = p.experience_years;
-                if (p.first_job_year) document.getElementById('first_job_year').value = p.first_job_year;
-                
-                // Descrizione
-                if (p.work_description) document.getElementById('work_description').value = p.work_description;
-                
-                // Skills
-                if (p.hard_skills && p.hard_skills.length > 0) {
-                    selectedSkills = {};
-                    p.hard_skills.forEach(skill => {
-                        selectedSkills[skill.skill] = skill.level || 'intermediate';
-                    });
-                    document.getElementById('skills-result').classList.remove('hidden');
-                    renderSkillsGrid();
-                }
-                
-                // Certificazioni
-                if (p.certifications && p.certifications.length > 0) {
-                    certifications = p.certifications;
-                    renderCertifications();
-                }
-                
-                cvStatusText.innerHTML = '<i class="fas fa-check" style="color:var(--success);"></i> CV analizzato! Verifica e modifica se necessario.';
-                tg.HapticFeedback.notificationOccurred('success');
-            } else {
-                throw new Error('Parsing failed');
-            }
-        } catch (e) {
-            console.error(e);
-            cvStatusText.innerHTML = '<i class="fas fa-exclamation-triangle" style="color:#ffc107;"></i> Impossibile analizzare CV. Compila manualmente.';
-        }
-    };
-    
-    reader.readAsDataURL(file);
-});
-
 // VALIDATE INVITATION
 async function validateInvitation() {
     if (!invitationCode || !chatId) {
@@ -373,66 +257,6 @@ function checkStep1() {
     document.getElementById('btn-step1').disabled = !validateStep1();
 }
 
-// DOCUMENT UPLOAD & OCR
-document.getElementById('id_document').addEventListener('change', async function(e) {
-    const file = e.target.files[0];
-    if (!file) return;
-    
-    document.getElementById('upload-text').innerHTML = '<i class="fas fa-spinner fa-spin"></i> Analisi in corso...';
-    
-    const reader = new FileReader();
-    reader.onload = async function(event) {
-        const base64 = event.target.result;
-        
-        try {
-            const res = await fetch(ONBOARDING_API, {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({
-                    action: 'parse_document',
-                    chat_id: chatId,
-                    document_base64: base64,
-                    gemini_key: document.getElementById('gemini_key').value
-                })
-            });
-            
-            const data = await res.json();
-            
-            if (res.ok && data.extracted) {
-                document.getElementById('name').value = data.extracted.name || '';
-                document.getElementById('surname').value = data.extracted.surname || '';
-                document.getElementById('fiscal_code').value = data.extracted.fiscal_code || '';
-                
-                document.getElementById('upload-text').innerHTML = '<i class="fas fa-check"></i> Documento verificato';
-                document.getElementById('upload-icon').innerHTML = '<i class="fas fa-check-circle" style="color:var(--success);"></i>';
-            } else {
-                throw new Error('Parsing failed');
-            }
-        } catch (e) {
-            console.error(e);
-            document.getElementById('upload-text').innerHTML = '<i class="fas fa-exclamation-triangle"></i> Errore analisi, compila manualmente';
-        }
-        
-        checkStep1();
-    };
-    
-    reader.readAsDataURL(file);
-});
-
-// LISTENERS
-document.querySelectorAll('#step-1 input, #step-1 select').forEach(el => {
-    el.addEventListener('input', checkStep1);
-    el.addEventListener('change', checkStep1);
-});
-
-document.getElementById('btn-step1').addEventListener('click', () => {
-    if (validateStep1()) {
-        goToStep(2);
-    }
-});
-
-document.getElementById('btn-back-s2').addEventListener('click', () => goToStep(1));
-
 // ANALYZE SKILLS WITH AI
 window.analyzeSkills = async function() {
     const workDescription = document.getElementById('work_description').value.trim();
@@ -486,101 +310,294 @@ window.analyzeSkills = async function() {
     }
 }
 
-// SUBMIT FINALE
-document.getElementById('submitBtn').addEventListener('click', async () => {
-    const btn = document.getElementById('submitBtn');
-    const originalHtml = btn.innerHTML;
-    btn.disabled = true;
-    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Salvataggio...';
+// === DOM CONTENT LOADED ===
+document.addEventListener('DOMContentLoaded', function() {
     
-    // Raccogli certificazioni finali
-    document.querySelectorAll('[data-cert-index]').forEach(input => {
-        const idx = parseInt(input.getAttribute('data-cert-index'));
-        certifications[idx] = input.value.trim();
+    // Toggle prima esperienza
+    const firstJobCheckbox = document.getElementById('is_first_job');
+    if (firstJobCheckbox) {
+        firstJobCheckbox.addEventListener('change', function() {
+            const experienceFields = document.getElementById('experience-fields');
+            const experienceYears = document.getElementById('experience_years');
+            const firstJobYear = document.getElementById('first_job_year');
+            
+            if (this.checked) {
+                experienceFields.style.opacity = '0.5';
+                experienceFields.style.pointerEvents = 'none';
+                experienceYears.disabled = true;
+                firstJobYear.disabled = true;
+                experienceYears.value = '';
+                firstJobYear.value = '';
+            } else {
+                experienceFields.style.opacity = '1';
+                experienceFields.style.pointerEvents = 'auto';
+                experienceYears.disabled = false;
+                firstJobYear.disabled = false;
+            }
+        });
+    }
+    
+    // Toggle owner work details
+    const worksCheckbox = document.getElementById('works_for_owner');
+    if (worksCheckbox) {
+        worksCheckbox.addEventListener('change', function() {
+            const details = document.getElementById('owner-work-details');
+            if (this.checked) {
+                details.classList.remove('hidden');
+            } else {
+                details.classList.add('hidden');
+                document.getElementById('years_with_owner').value = '';
+                document.getElementById('collaboration_type').value = '';
+            }
+        });
+    }
+    
+    // CV UPLOAD & PARSING
+    const cvUpload = document.getElementById('cv_upload');
+    if (cvUpload) {
+        cvUpload.addEventListener('change', async function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            const cvStatus = document.getElementById('cv-status');
+            const cvStatusText = document.getElementById('cv-status-text');
+            
+            cvStatus.classList.remove('hidden');
+            cvStatusText.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Analisi CV in corso...';
+            
+            const reader = new FileReader();
+            reader.onload = async function(event) {
+                const base64 = event.target.result;
+                
+                try {
+                    const res = await fetch(ONBOARDING_API, {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({
+                            action: 'parse_cv',
+                            chat_id: chatId,
+                            cv_base64: base64,
+                            gemini_key: document.getElementById('gemini_key').value
+                        })
+                    });
+                    
+                    const data = await res.json();
+                    
+                    if (res.ok && data.profile) {
+                        const p = data.profile;
+                        
+                        // Formazione
+                        if (p.education_level) document.getElementById('education_level').value = p.education_level;
+                        if (p.education_field) document.getElementById('education_field').value = p.education_field;
+                        
+                        // Esperienza
+                        if (p.job_title) document.getElementById('job_title').value = p.job_title;
+                        if (p.experience_years) document.getElementById('experience_years').value = p.experience_years;
+                        if (p.first_job_year) document.getElementById('first_job_year').value = p.first_job_year;
+                        
+                        // Descrizione
+                        if (p.work_description) document.getElementById('work_description').value = p.work_description;
+                        
+                        // Skills
+                        if (p.hard_skills && p.hard_skills.length > 0) {
+                            selectedSkills = {};
+                            p.hard_skills.forEach(skill => {
+                                selectedSkills[skill.skill] = skill.level || 'intermediate';
+                            });
+                            document.getElementById('skills-result').classList.remove('hidden');
+                            renderSkillsGrid();
+                        }
+                        
+                        // Certificazioni
+                        if (p.certifications && p.certifications.length > 0) {
+                            certifications = p.certifications;
+                            renderCertifications();
+                        }
+                        
+                        cvStatusText.innerHTML = '<i class="fas fa-check" style="color:var(--success);"></i> CV analizzato! Verifica e modifica se necessario.';
+                        tg.HapticFeedback.notificationOccurred('success');
+                    } else {
+                        throw new Error('Parsing failed');
+                    }
+                } catch (e) {
+                    console.error(e);
+                    cvStatusText.innerHTML = '<i class="fas fa-exclamation-triangle" style="color:#ffc107;"></i> Impossibile analizzare CV. Compila manualmente.';
+                }
+            };
+            
+            reader.readAsDataURL(file);
+        });
+    }
+    
+    // DOCUMENT UPLOAD & OCR
+    const idDocument = document.getElementById('id_document');
+    if (idDocument) {
+        idDocument.addEventListener('change', async function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            document.getElementById('upload-text').innerHTML = '<i class="fas fa-spinner fa-spin"></i> Analisi in corso...';
+            
+            const reader = new FileReader();
+            reader.onload = async function(event) {
+                const base64 = event.target.result;
+                
+                try {
+                    const res = await fetch(ONBOARDING_API, {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({
+                            action: 'parse_document',
+                            chat_id: chatId,
+                            document_base64: base64,
+                            gemini_key: document.getElementById('gemini_key').value
+                        })
+                    });
+                    
+                    const data = await res.json();
+                    
+                    if (res.ok && data.extracted) {
+                        document.getElementById('name').value = data.extracted.name || '';
+                        document.getElementById('surname').value = data.extracted.surname || '';
+                        document.getElementById('fiscal_code').value = data.extracted.fiscal_code || '';
+                        
+                        document.getElementById('upload-text').innerHTML = '<i class="fas fa-check"></i> Documento verificato';
+                        document.getElementById('upload-icon').innerHTML = '<i class="fas fa-check-circle" style="color:var(--success);"></i>';
+                        
+                        tg.HapticFeedback.notificationOccurred('success');
+                    } else {
+                        throw new Error('Parsing failed');
+                    }
+                } catch (e) {
+                    console.error(e);
+                    document.getElementById('upload-text').innerHTML = '<i class="fas fa-exclamation-triangle"></i> Errore analisi, compila manualmente';
+                }
+                
+                checkStep1();
+            };
+            
+            reader.readAsDataURL(file);
+        });
+    }
+    
+    // LISTENERS STEP 1
+    document.querySelectorAll('#step-1 input, #step-1 select').forEach(el => {
+        el.addEventListener('input', checkStep1);
+        el.addEventListener('change', checkStep1);
     });
     
-    const isFirstJob = document.getElementById('is_first_job').checked;
-    
-    const operatorData = {
-        // Anagrafica
-        name: document.getElementById('name').value,
-        surname: document.getElementById('surname').value,
-        fiscal_code: document.getElementById('fiscal_code').value,
-        email: document.getElementById('email').value,
-        phone: document.getElementById('phone').value,
-        
-        // Indirizzo
-        address: {
-            route: document.getElementById('addr_route').value,
-            number: document.getElementById('addr_num').value,
-            zip: document.getElementById('addr_zip').value,
-            city: document.getElementById('addr_city').value,
-            province: document.getElementById('addr_prov').value
-        },
-        
-        // Config
-        gemini_key: document.getElementById('gemini_key').value,
-        lenguage: langParam,
-        
-        // Formazione
-        education_level: document.getElementById('education_level').value,
-        education_field: document.getElementById('education_field').value,
-        
-        // Professionale
-        job_title: document.getElementById('job_title').value,
-        is_first_job: isFirstJob,
-        experience_years: isFirstJob ? null : document.getElementById('experience_years').value,
-        first_job_year: isFirstJob ? null : document.getElementById('first_job_year').value,
-        
-        // Rapporto Owner
-        works_for_owner: document.getElementById('works_for_owner').checked,
-        years_with_owner: document.getElementById('years_with_owner').value,
-        collaboration_type: document.getElementById('collaboration_type').value,
-        
-        certifications: certifications.filter(c => c),
-        
-        // Skills
-        work_description: document.getElementById('work_description').value,
-        hard_skills: Object.keys(selectedSkills).map(skill => ({
-            skill: skill,
-            level: selectedSkills[skill]
-        })),
-        other_skills: document.getElementById('other_skills').value,
-        
-        // Sistema
-        operator_chat_id: chatId,
-        invitation_code: invitationCode
-    };
-    
-    try {
-        const res = await fetch(ONBOARDING_API, {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({
-                action: 'complete_onboarding',
-                chat_id: chatId,
-                operator_data: operatorData
-            })
-        });
-        
-        if (res.ok) {
-            tg.HapticFeedback.notificationOccurred('success');
-            alert('✅ Attivazione completata con successo!');
-            
-            const redirectUrl = res.headers.get('X-Redirect-Url');
-            if (redirectUrl) {
-                window.location.href = redirectUrl;
-            } else {
-                tg.close();
+    const btnStep1 = document.getElementById('btn-step1');
+    if (btnStep1) {
+        btnStep1.addEventListener('click', () => {
+            if (validateStep1()) {
+                goToStep(2);
             }
-        } else {
-            throw new Error('Save failed');
-        }
-    } catch (e) {
-        console.error(e);
-        alert('❌ Errore durante il salvataggio. Riprova.');
-        btn.disabled = false;
-        btn.innerHTML = originalHtml;
+        });
+    }
+    
+    const btnBackS2 = document.getElementById('btn-back-s2');
+    if (btnBackS2) {
+        btnBackS2.addEventListener('click', () => goToStep(1));
+    }
+    
+    // SUBMIT FINALE
+    const submitBtn = document.getElementById('submitBtn');
+    if (submitBtn) {
+        submitBtn.addEventListener('click', async () => {
+            const originalHtml = submitBtn.innerHTML;
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Salvataggio...';
+            
+            // Raccogli certificazioni finali
+            document.querySelectorAll('[data-cert-index]').forEach(input => {
+                const idx = parseInt(input.getAttribute('data-cert-index'));
+                certifications[idx] = input.value.trim();
+            });
+            
+            const isFirstJob = document.getElementById('is_first_job').checked;
+            
+            const operatorData = {
+                // Anagrafica
+                name: document.getElementById('name').value,
+                surname: document.getElementById('surname').value,
+                fiscal_code: document.getElementById('fiscal_code').value,
+                email: document.getElementById('email').value,
+                phone: document.getElementById('phone').value,
+                
+                // Indirizzo
+                address: {
+                    route: document.getElementById('addr_route').value,
+                    number: document.getElementById('addr_num').value,
+                    zip: document.getElementById('addr_zip').value,
+                    city: document.getElementById('addr_city').value,
+                    province: document.getElementById('addr_prov').value
+                },
+                
+                // Config
+                gemini_key: document.getElementById('gemini_key').value,
+                lenguage: langParam,
+                
+                // Formazione
+                education_level: document.getElementById('education_level').value,
+                education_field: document.getElementById('education_field').value,
+                
+                // Professionale
+                job_title: document.getElementById('job_title').value,
+                is_first_job: isFirstJob,
+                experience_years: isFirstJob ? null : document.getElementById('experience_years').value,
+                first_job_year: isFirstJob ? null : document.getElementById('first_job_year').value,
+                
+                // Rapporto Owner
+                works_for_owner: document.getElementById('works_for_owner').checked,
+                years_with_owner: document.getElementById('years_with_owner').value,
+                collaboration_type: document.getElementById('collaboration_type').value,
+                
+                certifications: certifications.filter(c => c),
+                
+                // Skills
+                work_description: document.getElementById('work_description').value,
+                hard_skills: Object.keys(selectedSkills).map(skill => ({
+                    skill: skill,
+                    level: selectedSkills[skill]
+                })),
+                other_skills: document.getElementById('other_skills').value,
+                
+                // Sistema
+                operator_chat_id: chatId,
+                invitation_code: invitationCode
+            };
+            
+            try {
+                const res = await fetch(ONBOARDING_API, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        action: 'complete_onboarding',
+                        chat_id: chatId,
+                        operator_data: operatorData
+                    })
+                });
+                
+                if (res.ok) {
+                    tg.HapticFeedback.notificationOccurred('success');
+                    alert('✅ Attivazione completata con successo!');
+                    
+                    const redirectUrl = res.headers.get('X-Redirect-Url');
+                    if (redirectUrl) {
+                        window.location.href = redirectUrl;
+                    } else {
+                        tg.close();
+                    }
+                } else {
+                    throw new Error('Save failed');
+                }
+            } catch (e) {
+                console.error(e);
+                alert('❌ Errore durante il salvataggio. Riprova.');
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalHtml;
+            }
+        });
     }
 });
 
