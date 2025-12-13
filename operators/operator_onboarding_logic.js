@@ -18,7 +18,7 @@ const langParam = urlParams.get('lang') || 'it';
 // STATE
 let currentStep = 1;
 let ownerCompanyName = "";
-let selectedSkills = {}; // { skillName: level }
+let selectedSkills = []; // Array di skill names
 let certifications = [];
 
 // I18N
@@ -38,14 +38,13 @@ const i18n = {
         lbl_works_owner: "Lavoro già per questa azienda", lbl_years_with_owner: "Da quanti anni lavori qui?", lbl_collaboration: "Tipo di collaborazione",
         lbl_certifications: "Certificazioni / Patentini", btn_add_cert: "Aggiungi Certificazione",
         lbl_work_desc: "Descrivi la tua esperienza lavorativa", btn_analyze: "Analizza Competenze con AI",
-        hint_skills_ai: "✅ Competenze estratte! Seleziona il livello per ognuna o rimuovila.",
+        hint_skills_ai: "✅ Competenze estratte! Rimuovi quelle non pertinenti.",
         lbl_other_skills: "Altre competenze (manuale)",
         btn_next: "Avanti", btn_back: "Indietro", btn_complete: "Completa Attivazione",
         access_denied_title: "Accesso Riservato", access_denied_desc: "Attivazione disponibile solo tramite invito.",
         open_bot: "Contatta Owner",
         cv_magic_title: "⚡ Risparmia tempo!", cv_magic_desc: "Carica il tuo CV e compileremo tutto automaticamente",
-        btn_upload_cv: "Carica CV (PDF)",
-        level_beginner: "Base", level_intermediate: "Intermedio", level_expert: "Esperto"
+        btn_upload_cv: "Carica CV (PDF)"
     },
     en: {
         step_identity: "Identity", step_profile: "Profile",
@@ -62,14 +61,13 @@ const i18n = {
         lbl_works_owner: "I already work for this company", lbl_years_with_owner: "How many years?", lbl_collaboration: "Collaboration type",
         lbl_certifications: "Certifications", btn_add_cert: "Add Certification",
         lbl_work_desc: "Describe your work experience", btn_analyze: "Analyze Skills with AI",
-        hint_skills_ai: "✅ Skills extracted! Select level for each or remove it.",
+        hint_skills_ai: "✅ Skills extracted! Remove non-relevant ones.",
         lbl_other_skills: "Other skills (manual)",
         btn_next: "Next", btn_back: "Back", btn_complete: "Complete Activation",
         access_denied_title: "Access Restricted", access_denied_desc: "Activation available only via invitation.",
         open_bot: "Contact Owner",
         cv_magic_title: "⚡ Save time!", cv_magic_desc: "Upload your CV and we'll fill everything automatically",
-        btn_upload_cv: "Upload CV (PDF)",
-        level_beginner: "Beginner", level_intermediate: "Intermediate", level_expert: "Expert"
+        btn_upload_cv: "Upload CV (PDF)"
     }
 };
 
@@ -83,57 +81,39 @@ function applyTranslations() {
 }
 applyTranslations();
 
-// RENDER SKILLS GRID
+// RENDER SKILLS GRID (SENZA LIVELLI)
 function renderSkillsGrid() {
     const grid = document.getElementById('skills-grid');
     grid.innerHTML = '';
     
-    Object.keys(selectedSkills).forEach(skill => {
-        const level = selectedSkills[skill];
-        const skillId = 'skill_' + Math.random().toString(36).substr(2, 9);
-        
+    selectedSkills.forEach(skill => {
         const div = document.createElement('div');
         div.className = 'card';
-        div.style.padding = '10px';
+        div.style.padding = '10px 12px';
         div.style.background = 'rgba(91, 111, 237, 0.2)';
         div.style.border = '1px solid var(--primary)';
+        div.style.display = 'flex';
+        div.style.justifyContent = 'space-between';
+        div.style.alignItems = 'center';
         div.dataset.skillName = skill;
         
         div.innerHTML = `
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-                <div style="font-size: 13px; font-weight: 500;">${escapeHtml(skill)}</div>
-                <button type="button" class="btn-remove-skill" style="background:none; border:none; color:var(--danger); cursor:pointer;">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            <div class="level-selector">
-                <button type="button" class="level-btn ${level === 'beginner' ? 'active' : ''}" data-level="beginner">${t.level_beginner}</button>
-                <button type="button" class="level-btn ${level === 'intermediate' ? 'active' : ''}" data-level="intermediate">${t.level_intermediate}</button>
-                <button type="button" class="level-btn ${level === 'expert' ? 'active' : ''}" data-level="expert">${t.level_expert}</button>
-            </div>
+            <div style="font-size: 13px; font-weight: 500;">${escapeHtml(skill)}</div>
+            <button type="button" class="btn-remove-skill" style="background:none; border:none; color:var(--danger); cursor:pointer; padding:4px 8px;">
+                <i class="fas fa-times"></i>
+            </button>
         `;
         
         grid.appendChild(div);
     });
     
-    // Event delegation per level buttons e remove buttons
-    grid.querySelectorAll('.level-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const skillCard = this.closest('[data-skill-name]');
-            const skillName = skillCard.dataset.skillName;
-            const level = this.dataset.level;
-            
-            selectedSkills[skillName] = level;
-            renderSkillsGrid();
-        });
-    });
-    
+    // Event delegation per remove buttons
     grid.querySelectorAll('.btn-remove-skill').forEach(btn => {
         btn.addEventListener('click', function() {
             const skillCard = this.closest('[data-skill-name]');
             const skillName = skillCard.dataset.skillName;
             
-            delete selectedSkills[skillName];
+            selectedSkills = selectedSkills.filter(s => s !== skillName);
             renderSkillsGrid();
         });
     });
@@ -288,10 +268,7 @@ window.analyzeSkills = async function() {
         const data = await res.json();
         
         if (res.ok && data.skills) {
-            selectedSkills = {};
-            data.skills.forEach(skill => {
-                selectedSkills[skill.name] = skill.level || 'intermediate';
-            });
+            selectedSkills = data.skills.map(s => s.name || s.skill);
             
             document.getElementById('skills-result').classList.remove('hidden');
             renderSkillsGrid();
@@ -398,12 +375,9 @@ document.addEventListener('DOMContentLoaded', function() {
                         // Descrizione
                         if (p.work_description) document.getElementById('work_description').value = p.work_description;
                         
-                        // Skills
+                        // Skills (estrai solo nomi)
                         if (p.hard_skills && p.hard_skills.length > 0) {
-                            selectedSkills = {};
-                            p.hard_skills.forEach(skill => {
-                                selectedSkills[skill.skill] = skill.level || 'intermediate';
-                            });
+                            selectedSkills = p.hard_skills.map(s => s.skill || s.name);
                             document.getElementById('skills-result').classList.remove('hidden');
                             renderSkillsGrid();
                         }
@@ -554,11 +528,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 certifications: certifications.filter(c => c),
                 
-                // Skills
+                // Skills (tutte con livello intermediate)
                 work_description: document.getElementById('work_description').value,
-                hard_skills: Object.keys(selectedSkills).map(skill => ({
+                hard_skills: selectedSkills.map(skill => ({
                     skill: skill,
-                    level: selectedSkills[skill]
+                    level: 'intermediate'
                 })),
                 other_skills: document.getElementById('other_skills').value,
                 
