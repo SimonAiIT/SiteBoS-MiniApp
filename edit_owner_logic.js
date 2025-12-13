@@ -18,6 +18,15 @@ function getOperatorCost() {
     }
 }
 
+// 🎯 GET CURRENT TIER
+function getCurrentTier() {
+    const currentCount = operators.length;
+    
+    if (currentCount < 3) return 'starter';
+    if (currentCount < 10) return 'growth';
+    return 'enterprise';
+}
+
 // INIT TELEGRAM
 const tg = window.Telegram.WebApp; 
 tg.ready(); 
@@ -186,7 +195,7 @@ function renderOperators() {
     operators.forEach((op, idx) => {
         const isPending = !op.OperatorChatID; 
         const inviteLink = `https://t.me/${BOT_USERNAME}?start=${op.invitation_code}`;
-        const opCost = op.cost || 10000; // Usa costo memorizzato o default
+        const opCost = op.cost || 10000;
         
         let html = `
         <div class="card" style="padding:12px; margin-bottom:10px; background:#252525; border-radius:10px; border-left:4px solid ${isPending ? 'var(--warning)' : 'var(--success)'};">            <div style="display:flex; justify-content:space-between; align-items:center;">
@@ -227,9 +236,7 @@ function renderOperators() {
         dom.operatorCount.innerText = operators.length;
     }
     
-    // ✅ AGGIORNA LABEL COSTO SUL BOTTONE
     updateAddButtonCost();
-    
     checkDirty();
 }
 
@@ -239,7 +246,6 @@ function updateAddButtonCost() {
     const addBtn = dom.addOpBtn;
     
     if (addBtn) {
-        // Trova o crea il <small> per il costo
         let costLabel = addBtn.querySelector('small');
         if (!costLabel) {
             costLabel = document.createElement('small');
@@ -251,7 +257,6 @@ function updateAddButtonCost() {
         }
         costLabel.innerText = `${nextCost.toLocaleString('it-IT')} crediti`;
         
-        // Aggiungi badge tier
         let tierBadge = '';
         if (operators.length < 3) {
             tierBadge = ' ⭐ Starter';
@@ -290,16 +295,55 @@ document.querySelectorAll('input, select').forEach(el => el.addEventListener('in
 
 // OPERATOR INFO MODAL
 window.showOperatorInfo = () => {
-    if(dom.opInfoModal) dom.opInfoModal.classList.remove('hidden');
+    if(dom.opInfoModal) {
+        // ✅ EVIDENZIA TIER CORRENTE
+        highlightCurrentTier();
+        dom.opInfoModal.classList.remove('hidden');
+    }
 }
 
 window.closeOperatorInfo = () => {
     if(dom.opInfoModal) dom.opInfoModal.classList.add('hidden');
 }
 
+// 🎯 EVIDENZIA TIER CORRENTE
+function highlightCurrentTier() {
+    const currentTier = getCurrentTier();
+    const tiers = ['starter', 'growth', 'enterprise'];
+    
+    tiers.forEach(tier => {
+        const el = document.getElementById(`tier-${tier}`);
+        if (!el) return;
+        
+        // Rimuovi badge esistenti
+        const existingBadge = el.querySelector('.tier-badge');
+        if (existingBadge) existingBadge.remove();
+        
+        if (tier === currentTier) {
+            // Evidenzia tier corrente
+            el.style.background = 'rgba(91, 111, 237, 0.2)';
+            el.style.boxShadow = '0 0 20px rgba(91, 111, 237, 0.3)';
+            el.style.animation = 'pulse 2s ease-in-out infinite';
+            
+            // Aggiungi badge "SEI QUI"
+            const badge = document.createElement('div');
+            badge.className = 'tier-badge';
+            badge.style.cssText = 'position:absolute; top:8px; right:8px; background:var(--primary); color:white; padding:2px 8px; border-radius:4px; font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px;';
+            badge.innerText = '🎯 Sei qui';
+            el.style.position = 'relative';
+            el.appendChild(badge);
+        } else {
+            // Reset altri tier
+            el.style.background = 'rgba(255,255,255,0.05)';
+            el.style.boxShadow = 'none';
+            el.style.animation = 'none';
+        }
+    });
+}
+
 // REQUEST NEW OPERATOR WITH CREDIT CHECK
 window.requestNewOperator = async () => {
-    const operatorCost = getOperatorCost(); // ✅ Costo dinamico
+    const operatorCost = getOperatorCost();
     const currentCredits = ownerData.credits_balance || 0;
     
     if (currentCredits < operatorCost) {
@@ -324,7 +368,7 @@ window.generateInvitation = async () => {
     const name = dom.opName.value.trim();
     if(!name) return;
     
-    const operatorCost = getOperatorCost(); // ✅ Calcola costo attuale
+    const operatorCost = getOperatorCost();
     const currentCredits = ownerData.credits_balance || 0;
     
     if (currentCredits < operatorCost) {
@@ -347,26 +391,20 @@ window.generateInvitation = async () => {
         OperatorChatID: null, 
         Role: 'Operator', 
         OperatorLenguage: ownerData.lenguage || 'it',
-        cost: operatorCost, // ✅ Memorizza costo specifico
+        cost: operatorCost,
         created_at: new Date().toISOString()
     });
 
     try {
         closeModal();
-        
-        // Scala crediti localmente
-        ownerData.credits_balance -= operatorCost; // ✅ Usa costo dinamico
-        
+        ownerData.credits_balance -= operatorCost;
         renderOperators(); 
-        await saveData(true); // Silent Save
-        
-        // Success feedback
+        await saveData(true);
         tg.HapticFeedback.notificationOccurred('success');
-        
     } catch (e) {
         alert(t.alert_err);
-        operators.pop(); // Rollback
-        ownerData.credits_balance += operatorCost; // Restore credits
+        operators.pop();
+        ownerData.credits_balance += operatorCost;
         renderOperators();
     } finally {
         btn.innerHTML = originalText;
@@ -382,10 +420,10 @@ window.deleteOp = async (idx) => {
         renderOperators(); 
         
         try {
-            await saveData(true); // Silent Save
+            await saveData(true);
         } catch(e) {
             alert(t.alert_err);
-            operators.splice(idx, 0, removed); // Rollback
+            operators.splice(idx, 0, removed);
             renderOperators();
         }
     } 
