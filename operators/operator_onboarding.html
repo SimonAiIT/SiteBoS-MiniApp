@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Attivazione Operatore</title>
+  
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- CSS CONDIVISO ROOT -->
+  <link rel="stylesheet" href="../styles.css">
+  
+  <style>
+    .skills-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px; }
+    @media (max-width: 600px) { .skills-grid { grid-template-columns: 1fr; } }
+    
+    .skill-item { display: flex; align-items: center; gap: 8px; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 8px; cursor: pointer; transition: all 0.2s; }
+    .skill-item:hover { background: rgba(255,255,255,0.08); }
+    .skill-item input[type="checkbox"] { margin: 0; }
+    .skill-item.selected { background: rgba(91, 111, 237, 0.2); border: 1px solid var(--primary); }
+    
+    .level-selector { display: flex; gap: 6px; margin-top: 8px; }
+    .level-btn { flex: 1; padding: 6px; font-size: 11px; border-radius: 6px; border: 1px solid var(--glass-border); background: rgba(0,0,0,0.3); color: var(--text-muted); cursor: pointer; transition: all 0.2s; }
+    .level-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+    
+    .cert-input-group { display: flex; gap: 8px; margin-bottom: 8px; }
+    .cert-input-group input { flex: 1; }
+    .cert-input-group button { padding: 8px 12px; background: var(--danger); border: none; color: white; border-radius: 6px; cursor: pointer; }
+  </style>
+</head>
+<body>
+
+  <!-- LOADER -->
+  <div id="loader">
+    <div class="spinner"></div>
+    <div style="margin-top:10px; font-size:12px;">SECURE HANDSHAKE</div>
+  </div>
+
+  <!-- ACCESS DENIED -->
+  <div id="access-denied" class="hidden container text-center" style="padding-top:50px;">
+    <div style="font-size:50px; margin-bottom:20px;">🔒</div>
+    <h2 data-i18n="access_denied_title">Accesso Riservato</h2>
+    <p class="subtitle" data-i18n="access_denied_desc">Attivazione disponibile solo tramite invito.</p>
+    <a href="https://t.me/TrinAi_Site_bot" class="btn btn-primary btn-block" data-i18n="open_bot">Contatta Owner</a>
+  </div>
+
+  <!-- APP CONTENT -->
+  <div id="app-content" class="container hidden">
+    <!-- Lang Selector -->
+    <div style="display:flex; justify-content:flex-end; margin-bottom:10px;">
+      <select id="lang-selector" class="lang-select">
+        <option value="it">🇮🇹 IT</option>
+        <option value="en">🇬🇧 EN</option>
+        <option value="fr">🇫🇷 FR</option>
+        <option value="de">🇩🇪 DE</option>
+        <option value="es">🇪🇸 ES</option>
+        <option value="pt">🇵🇹 PT</option>
+      </select>
+    </div>
+
+    <!-- Progress Bar -->
+    <div class="progress-bar">
+      <div class="progress-line"></div>
+      <div class="progress-fill" id="progress-fill"></div>
+      
+      <div class="step-item active" id="si-1">
+        <div class="step-circle">1</div>
+        <div class="step-label" data-i18n="step_identity">Identità</div>
+      </div>
+      <div class="step-item" id="si-2">
+        <div class="step-circle">2</div>
+        <div class="step-label" data-i18n="step_profile">Profilo</div>
+      </div>
+    </div>
+
+    <form id="wizardForm" onsubmit="return false;">
+      
+      <!-- STEP 1: IDENTITÀ & SICUREZZA -->
+      <div class="step-content fade-in" id="step-1">
+        <h2 data-i18n="h_identity">Setup & Sicurezza</h2>
+        <p class="subtitle" data-i18n="sub_identity">Consensi, Chiave API e Verifica Identità.</p>
+
+        <!-- Welcome Message -->
+        <div class="card" style="background: linear-gradient(135deg, rgba(91, 111, 237, 0.2) 0%, rgba(91, 111, 237, 0.05) 100%); border-left: 3px solid var(--primary); margin-bottom: 20px;">
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <i class="fas fa-user-plus" style="font-size: 32px; color: var(--primary);"></i>
+            <div>
+              <div style="font-weight: 600; font-size: 16px; margin-bottom: 4px;">👋 Benvenuto nel Team!</div>
+              <div style="font-size: 13px; color: var(--text-secondary);">
+                Sei stato invitato da <strong id="company-name-display">...</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- GDPR -->
+        <div class="legal-box form-section">
+            <div class="checkbox-group"><input type="checkbox" id="chk_privacy"><label for="chk_privacy" data-i18n="legal_privacy">Accetto Privacy Policy</label></div>
+            <div class="checkbox-group"><input type="checkbox" id="chk_terms"><label for="chk_terms" data-i18n="legal_terms">Accetto Termini di Servizio</label></div>
+            <div class="checkbox-group"><input type="checkbox" id="chk_ai"><label for="chk_ai" data-i18n="legal_ai">Accetto uso AI (Gemini)</label></div>
+        </div>
+
+        <!-- BYOK GEMINI -->
+        <div class="api-key-card form-section">
+            <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+                <div style="color:var(--primary); font-weight:bold;"><i class="fas fa-brain"></i> Gemini API Key</div>
+                <a href="https://aistudio.google.com/api-keys" target="_blank" class="btn btn-sm btn-secondary" style="text-decoration:none;" data-i18n="btn_get_key">Ottieni Gratis</a>
+            </div>
+            <input type="text" id="gemini_key" placeholder="Incolla qui: AIzaSy..." disabled required>
+            <div class="hint" data-i18n="byok_note">La tua chiave personale, nessuno la vedrà.</div>
+        </div>
+
+        <!-- UPLOAD DOCUMENTO -->
+        <div class="input-group">
+          <label data-i18n="lbl_id_card">Documento Identità</label>
+          <div class="upload-box" id="upload-box">
+            <input type="file" id="id_document" accept="image/*,application/pdf">
+            <div class="upload-icon" id="upload-icon"><i class="fas fa-id-card"></i></div>
+            <div class="upload-text" id="upload-text" data-i18n="upload_lock">Carica documento per procedere</div>
+          </div>
+        </div>
+
+        <!-- DATI ESTRATTI -->
+        <div class="row">
+          <div class="col"><label data-i18n="lbl_name">Nome</label><input type="text" id="name" readonly placeholder="..."></div>
+          <div class="col"><label data-i18n="lbl_surname">Cognome</label><input type="text" id="surname" readonly placeholder="..."></div>
+        </div>
+        <div class="input-group"><label data-i18n="lbl_fiscal">Codice Fiscale</label><input type="text" id="fiscal_code" readonly placeholder="..."></div>
+        <div class="input-group"><label class="required" data-i18n="lbl_email">Email</label><input type="email" id="email" required></div>
+        <div class="input-group"><label class="required" data-i18n="lbl_phone">Telefono</label><input type="tel" id="phone" required></div>
+
+        <div class="btn-container">
+          <button type="button" class="btn btn-primary btn-block" id="btn-step1" disabled>
+            <span data-i18n="btn_next">Avanti</span> <i class="fas fa-arrow-right"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- STEP 2: PROFILO PROFESSIONALE -->
+      <div class="step-content hidden fade-in" id="step-2">
+        <h2 data-i18n="h_profile">Profilo Professionale</h2>
+        <p class="subtitle" data-i18n="sub_profile">Competenze e esperienza lavorativa.</p>
+
+        <!-- INDIRIZZO -->
+        <div class="form-section">
+          <div class="section-title"><i class="fas fa-map-marker-alt"></i> <span data-i18n="section_address">Indirizzo</span></div>
+          <div class="row">
+            <div class="col-2"><input type="text" id="addr_route" placeholder="Via/Piazza" required></div>
+            <div class="col"><input type="text" id="addr_num" placeholder="N°" required></div>
+          </div>
+          <div class="row">
+            <div class="col"><input type="text" id="addr_zip" placeholder="CAP" required></div>
+            <div class="col-2"><input type="text" id="addr_city" placeholder="Città" required></div>
+            <div class="col"><input type="text" id="addr_prov" placeholder="PR" maxlength="2" required></div>
+          </div>
+        </div>
+
+        <!-- PROFILO LAVORATIVO -->
+        <div class="form-section">
+          <div class="section-title"><i class="fas fa-briefcase"></i> <span data-i18n="section_work">Esperienza Lavorativa</span></div>
+          
+          <div class="input-group">
+            <label class="required" data-i18n="lbl_job_title">Ruolo / Mansione</label>
+            <input type="text" id="job_title" placeholder="Es: Elettricista, Idraulico, Tecnico..." required>
+          </div>
+          
+          <div class="input-group">
+            <label class="required" data-i18n="lbl_experience">Anni di Esperienza</label>
+            <select id="experience_years" required>
+              <option value="">-- Seleziona --</option>
+              <option value="0-1">Meno di 1 anno</option>
+              <option value="1-3">1-3 anni</option>
+              <option value="3-5">3-5 anni</option>
+              <option value="5-10">5-10 anni</option>
+              <option value="10-15">10-15 anni</option>
+              <option value="15+">Oltre 15 anni</option>
+            </select>
+          </div>
+          
+          <!-- CERTIFICAZIONI -->
+          <div class="input-group">
+            <label data-i18n="lbl_certifications">Certificazioni / Patentini</label>
+            <div id="certifications-list"></div>
+            <button type="button" class="btn btn-sm btn-secondary" onclick="addCertification()">
+              <i class="fas fa-plus"></i> <span data-i18n="btn_add_cert">Aggiungi Certificazione</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- HARD SKILLS -->
+        <div class="form-section">
+          <div class="section-title"><i class="fas fa-tools"></i> <span data-i18n="section_skills">Competenze Tecniche</span></div>
+          <p class="hint" data-i18n="hint_skills">Seleziona le tue competenze principali e indica il livello.</p>
+          
+          <div class="skills-grid" id="skills-grid">
+            <!-- Popolato dinamicamente -->
+          </div>
+          
+          <div class="input-group mt-2">
+            <label data-i18n="lbl_other_skills">Altre competenze (campo libero)</label>
+            <textarea id="other_skills" rows="2" placeholder="Competenze non presenti nella lista..."></textarea>
+          </div>
+        </div>
+
+        <div class="btn-container">
+          <button type="button" class="btn btn-secondary" id="btn-back-s2"><i class="fas fa-arrow-left"></i> <span data-i18n="btn_back">Indietro</span></button>
+          <button type="button" class="btn btn-primary" id="submitBtn">
+            <i class="fas fa-check"></i> <span data-i18n="btn_complete">Completa Attivazione</span>
+          </button>
+        </div>
+      </div>
+
+    </form>
+  </div>
+  
+  <script src="operator_onboarding_logic.js"></script>
+</body>
+</html>
