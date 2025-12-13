@@ -4,6 +4,7 @@
 // CONFIG
 const WEBHOOK_URL = "https://trinai.api.workflow.dcmake.it/webhook/83acc670-15ae-4da0-ae0e-3587c85bd5f4";
 const BOT_USERNAME = "TrinAi_SiteBoS_bot"; // Tuo bot username
+const OPERATOR_COST = 10000; // Costo in crediti per operatore
 
 // INIT TELEGRAM
 const tg = window.Telegram.WebApp; 
@@ -36,10 +37,11 @@ const dom = {
     tP_from: document.getElementById('operator_unav_from'), tP_to: document.getElementById('operator_unav_to'),
     opList: document.getElementById('operators-list'),
     slotCount: document.getElementById('slot-counter'),
+    operatorCount: document.getElementById('operator-count'),
     addOpBtn: document.getElementById('add-operator-btn'),
-    upgPrompt: document.getElementById('upgrade-prompt'),
     modal: document.getElementById('operator-modal'),
-    opName: document.getElementById('op-name')
+    opName: document.getElementById('op-name'),
+    opInfoModal: document.getElementById('operator-info-modal')
 };
 
 // I18N TRANSLATIONS
@@ -55,7 +57,8 @@ const i18n = {
       modal_title: "Invita Operatore", modal_subtitle: "Inserisci il nome per generare il link.", modal_lbl_name: "Nome Operatore",
       btn_cancel: "Annulla", btn_generate: "Genera Invito", btn_save: "Salva Modifiche", hint_close: "Puoi chiudere questa finestra dopo aver salvato.",
       error_token_title: "Link Scaduto", error_token_desc: "Il token di accesso non è valido o è scaduto.",
-      alert_del: "Eliminare operatore?", alert_revoke: "Revocare invito?", alert_saved: "Dati salvati con successo!", alert_err: "Errore durante il salvataggio."
+      alert_del: "Eliminare operatore?", alert_revoke: "Revocare invito?", alert_saved: "Dati salvati con successo!", alert_err: "Errore durante il salvataggio.",
+      alert_no_credits: "Crediti insufficienti. Necessari {cost} crediti.\nCrediti disponibili: {available}"
     },
     en: {
       title: "Company Data Management", subtitle: "Edit your account information.",
@@ -68,7 +71,8 @@ const i18n = {
       modal_title: "Invite Operator", modal_subtitle: "Enter name to generate link.", modal_lbl_name: "Operator Name",
       btn_cancel: "Cancel", btn_generate: "Generate Invite", btn_save: "Save Changes", hint_close: "Close after saving.",
       error_token_title: "Link Expired", error_token_desc: "Access token is invalid or expired.",
-      alert_del: "Delete operator?", alert_revoke: "Revoke invite?", alert_saved: "Data saved successfully!", alert_err: "Error saving data."
+      alert_del: "Delete operator?", alert_revoke: "Revoke invite?", alert_saved: "Data saved successfully!", alert_err: "Error saving data.",
+      alert_no_credits: "Insufficient credits. Required {cost} credits.\nAvailable: {available}"
     }
 };
 
@@ -164,39 +168,44 @@ function renderOperators() {
         const inviteLink = `https://t.me/${BOT_USERNAME}?start=${op.invitation_code}`;
         
         let html = `
-        <div class="card" style="padding:10px; margin-bottom:10px; background:#252525; border-radius:8px; border-left:3px solid ${isPending ? 'var(--warning)' : 'var(--success)'};">
-            <div style="display:flex; justify-content:space-between; align-items:center;">
-                <div>
-                    <strong style="color:#fff; font-size:14px;">${op.OperatorName}</strong>
+        <div class="card" style="padding:12px; margin-bottom:10px; background:#252525; border-radius:10px; border-left:4px solid ${isPending ? 'var(--warning)' : 'var(--success)'};">            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <div style="flex:1;">
+                    <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+                        <strong style="color:#fff; font-size:15px;">${op.OperatorName}</strong>
+                        ${isPending ? `<span class="badge badge-warning">In attesa</span>` : `<span class="badge badge-success">Attivo</span>`}
+                    </div>
                     <div style="font-size:11px; color:var(--text-secondary);">
-                        ${isPending ? `<i class="fas fa-clock"></i> ${t.op_status_pending}` : `<i class="fas fa-check"></i> Attivo`}
+                        <i class="fas fa-coins"></i> ${OPERATOR_COST.toLocaleString('it-IT')} crediti
                     </div>
                 </div>
-                <button onclick="deleteOp(${idx})" style="background:none; border:none; color:var(--danger); cursor:pointer;"><i class="fas fa-trash"></i></button>
+                <button onclick="deleteOp(${idx})" style="background:none; border:none; color:var(--danger); cursor:pointer; font-size:18px;" title="Elimina operatore">
+                    <i class="fas fa-trash"></i>
+                </button>
             </div>`;
         
         if(isPending) {
             html += `
-            <div style="background:rgba(0,0,0,0.2); padding:8px; border-radius:6px; margin-top:8px;">
-                <small style="color:var(--text-secondary);">${t.op_invite_text}</small>
-                <div style="display:flex; gap:5px; margin-top:4px;">
-                    <input type="text" value="${inviteLink}" readonly style="font-size:10px; padding:4px; flex:1; background:#111; border:none; color:#ccc; border-radius:4px;">
-                    <button onclick="copyLink('${inviteLink}', this)" style="padding:4px 8px; font-size:10px; background:var(--primary); border:none; color:white; border-radius:4px; cursor:pointer;">${t.op_btn_copy}</button>
+            <div style="background:rgba(0,0,0,0.3); padding:10px; border-radius:8px; margin-top:10px;">
+                <small style="color:var(--text-secondary); display:block; margin-bottom:6px;">
+                    <i class="fas fa-link"></i> Link di invito:
+                </small>
+                <div style="display:flex; gap:6px;">
+                    <input type="text" value="${inviteLink}" readonly style="font-size:11px; padding:6px 10px; flex:1; background:#111; border:1px solid var(--glass-border); color:#ccc; border-radius:6px;">
+                    <button onclick="copyLink('${inviteLink}', this)" style="padding:6px 12px; font-size:11px; background:var(--primary); border:none; color:white; border-radius:6px; cursor:pointer; white-space:nowrap;">
+                        <i class="fas fa-copy"></i> Copia
+                    </button>
                 </div>
             </div>`;
         }
         html += `</div>`;
         dom.opList.innerHTML += html;
     });
-    dom.slotCount.innerText = `${operators.length} / 3`;
     
-    if(operators.length >= 3) {
-        dom.addOpBtn.classList.add('hidden');
-        dom.upgPrompt.classList.remove('hidden');
-    } else {
-        dom.addOpBtn.classList.remove('hidden');
-        dom.upgPrompt.classList.add('hidden');
+    // Aggiorna contatore
+    if(dom.operatorCount) {
+        dom.operatorCount.innerText = operators.length;
     }
+    
     checkDirty();
 }
 
@@ -223,6 +232,30 @@ function checkDirty() {
 
 document.querySelectorAll('input, select').forEach(el => el.addEventListener('input', checkDirty));
 
+// OPERATOR INFO MODAL
+window.showOperatorInfo = () => {
+    if(dom.opInfoModal) dom.opInfoModal.classList.remove('hidden');
+}
+
+window.closeOperatorInfo = () => {
+    if(dom.opInfoModal) dom.opInfoModal.classList.add('hidden');
+}
+
+// REQUEST NEW OPERATOR WITH CREDIT CHECK
+window.requestNewOperator = async () => {
+    // Verifica crediti disponibili
+    if (!ownerData.credits || ownerData.credits < OPERATOR_COST) {
+        const msg = t.alert_no_credits
+            .replace('{cost}', OPERATOR_COST.toLocaleString('it-IT'))
+            .replace('{available}', (ownerData.credits || 0).toLocaleString('it-IT'));
+        alert(msg);
+        return;
+    }
+    
+    // Mostra modal inserimento nome
+    openModal();
+}
+
 // MODAL
 window.openModal = () => { dom.opName.value = ''; dom.modal.classList.remove('hidden'); }
 window.closeModal = () => dom.modal.classList.add('hidden');
@@ -233,6 +266,13 @@ window.closeModal = () => dom.modal.classList.add('hidden');
 window.generateInvitation = async () => {
     const name = dom.opName.value.trim();
     if(!name) return;
+    
+    // Double-check credits
+    if (!ownerData.credits || ownerData.credits < OPERATOR_COST) {
+        alert(`Crediti insufficienti per aggiungere operatore.`);
+        closeModal();
+        return;
+    }
     
     const btn = document.querySelector('#operator-modal .btn-primary');
     const originalText = btn.innerHTML;
@@ -247,16 +287,27 @@ window.generateInvitation = async () => {
         invitation_code: code, 
         OperatorChatID: null, 
         Role: 'Operator', 
-        OperatorLenguage: ownerData.lenguage || 'it' 
+        OperatorLenguage: ownerData.lenguage || 'it',
+        cost: OPERATOR_COST,
+        created_at: new Date().toISOString()
     });
 
     try {
         closeModal();
+        
+        // Scala crediti localmente
+        ownerData.credits -= OPERATOR_COST;
+        
         renderOperators(); 
-        await saveData(true); // Silent Save
+        await saveData(true); // Silent Save with credit deduction
+        
+        // Success feedback
+        tg.HapticFeedback.notificationOccurred('success');
+        
     } catch (e) {
         alert(t.alert_err);
         operators.pop(); // Rollback
+        ownerData.credits += OPERATOR_COST; // Restore credits
         renderOperators();
     } finally {
         btn.innerHTML = originalText;
