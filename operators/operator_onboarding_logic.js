@@ -31,10 +31,14 @@ const i18n = {
         btn_get_key: "Ottieni Gratis", byok_note: "La tua chiave personale, nessuno la vedrà.",
         lbl_id_card: "Documento Identità", upload_lock: "Carica documento per procedere",
         lbl_name: "Nome", lbl_surname: "Cognome", lbl_fiscal: "Codice Fiscale", lbl_email: "Email", lbl_phone: "Telefono",
-        section_address: "Indirizzo", section_work: "Esperienza Lavorativa", section_skills: "Competenze Tecniche",
-        lbl_job_title: "Ruolo / Mansione", lbl_experience: "Anni di Esperienza", lbl_certifications: "Certificazioni / Patentini",
-        btn_add_cert: "Aggiungi Certificazione", lbl_other_skills: "Altre competenze (campo libero)",
-        hint_skills: "Seleziona le tue competenze principali e indica il livello.",
+        section_address: "Indirizzo", section_education: "Formazione", section_work: "Esperienza Lavorativa", section_skills: "Competenze Tecniche",
+        lbl_education: "Titolo di Studio", lbl_education_field: "Specializzazione / Indirizzo",
+        lbl_job_title: "Ruolo / Mansione Principale", lbl_experience: "Anni di Esperienza Totali", lbl_first_job: "Prima Esperienza",
+        lbl_works_owner: "Lavoro già per questa azienda", lbl_years_with_owner: "Da quanti anni lavori qui?", lbl_collaboration: "Tipo di collaborazione",
+        lbl_certifications: "Certificazioni / Patentini", btn_add_cert: "Aggiungi Certificazione",
+        lbl_work_desc: "Descrivi la tua esperienza lavorativa", btn_analyze: "Analizza Competenze con AI",
+        hint_skills_ai: "✅ Competenze estratte! Seleziona il livello per ognuna o rimuovila.",
+        lbl_other_skills: "Altre competenze (manuale)",
         btn_next: "Avanti", btn_back: "Indietro", btn_complete: "Completa Attivazione",
         access_denied_title: "Accesso Riservato", access_denied_desc: "Attivazione disponibile solo tramite invito.",
         open_bot: "Contatta Owner",
@@ -48,10 +52,14 @@ const i18n = {
         btn_get_key: "Get Free", byok_note: "Your personal key, nobody will see it.",
         lbl_id_card: "ID Document", upload_lock: "Upload document to proceed",
         lbl_name: "Name", lbl_surname: "Surname", lbl_fiscal: "Fiscal Code", lbl_email: "Email", lbl_phone: "Phone",
-        section_address: "Address", section_work: "Work Experience", section_skills: "Technical Skills",
-        lbl_job_title: "Role / Position", lbl_experience: "Years of Experience", lbl_certifications: "Certifications",
-        btn_add_cert: "Add Certification", lbl_other_skills: "Other skills (free text)",
-        hint_skills: "Select your main skills and indicate the level.",
+        section_address: "Address", section_education: "Education", section_work: "Work Experience", section_skills: "Technical Skills",
+        lbl_education: "Education Level", lbl_education_field: "Specialization / Field",
+        lbl_job_title: "Role / Position", lbl_experience: "Years of Experience", lbl_first_job: "First Job",
+        lbl_works_owner: "I already work for this company", lbl_years_with_owner: "How many years?", lbl_collaboration: "Collaboration type",
+        lbl_certifications: "Certifications", btn_add_cert: "Add Certification",
+        lbl_work_desc: "Describe your work experience", btn_analyze: "Analyze Skills with AI",
+        hint_skills_ai: "✅ Skills extracted! Select level for each or remove it.",
+        lbl_other_skills: "Other skills (manual)",
         btn_next: "Next", btn_back: "Back", btn_complete: "Complete Activation",
         access_denied_title: "Access Restricted", access_denied_desc: "Activation available only via invitation.",
         open_bot: "Contact Owner",
@@ -69,60 +77,40 @@ function applyTranslations() {
 }
 applyTranslations();
 
-// HARD SKILLS PREDEFINITE (popolamento dinamico)
-const HARD_SKILLS_DB = [
-    "Impianti elettrici", "Fotovoltaico", "Domotica", "Quadri elettrici",
-    "Impianti idraulici", "Termoidraulica", "Condizionamento", "Riscaldamento",
-    "Falegnameria", "Muratura", "Intonacatura", "Piastrellista",
-    "Carpenteria", "Saldatura TIG", "Saldatura MIG", "Tornitura",
-    "Meccanica auto", "Diagnosi elettronica", "Carrozzeria", "Gommista",
-    "Programmazione PLC", "Manutenzione macchinari", "Pneumatica", "Oleodinamica",
-    "Giardinaggio", "Potatura", "Irrigazione", "Manutenzione verde",
-    "Grafica", "Web design", "SEO", "Social media marketing",
-    "Contabilità", "Buste paga", "Fatturazione", "Amministrazione"
-];
-
 // RENDER SKILLS GRID
 function renderSkillsGrid() {
     const grid = document.getElementById('skills-grid');
     grid.innerHTML = '';
     
-    HARD_SKILLS_DB.forEach(skill => {
-        const isSelected = selectedSkills[skill] !== undefined;
+    Object.keys(selectedSkills).forEach(skill => {
+        const level = selectedSkills[skill];
         
         const div = document.createElement('div');
         div.className = 'card';
         div.style.padding = '10px';
-        div.style.cursor = 'pointer';
-        div.style.background = isSelected ? 'rgba(91, 111, 237, 0.2)' : 'rgba(255,255,255,0.05)';
-        div.style.border = isSelected ? '1px solid var(--primary)' : '1px solid transparent';
+        div.style.background = 'rgba(91, 111, 237, 0.2)';
+        div.style.border = '1px solid var(--primary)';
         
         div.innerHTML = `
-            <div style="font-size: 13px; font-weight: 500; margin-bottom: ${isSelected ? '8px' : '0'};">${skill}</div>
-            ${isSelected ? `
-                <div class="level-selector">
-                    <button type="button" class="level-btn ${selectedSkills[skill] === 'beginner' ? 'active' : ''}" onclick="setSkillLevel('${skill}', 'beginner')">${t.level_beginner}</button>
-                    <button type="button" class="level-btn ${selectedSkills[skill] === 'intermediate' ? 'active' : ''}" onclick="setSkillLevel('${skill}', 'intermediate')">${t.level_intermediate}</button>
-                    <button type="button" class="level-btn ${selectedSkills[skill] === 'expert' ? 'active' : ''}" onclick="setSkillLevel('${skill}', 'expert')">${t.level_expert}</button>
-                </div>
-            ` : ''}
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                <div style="font-size: 13px; font-weight: 500;">${skill}</div>
+                <button type="button" onclick="removeSkill('${skill}')" style="background:none; border:none; color:var(--danger); cursor:pointer;">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="level-selector">
+                <button type="button" class="level-btn ${level === 'beginner' ? 'active' : ''}" onclick="setSkillLevel('${skill}', 'beginner')">${t.level_beginner}</button>
+                <button type="button" class="level-btn ${level === 'intermediate' ? 'active' : ''}" onclick="setSkillLevel('${skill}', 'intermediate')">${t.level_intermediate}</button>
+                <button type="button" class="level-btn ${level === 'expert' ? 'active' : ''}" onclick="setSkillLevel('${skill}', 'expert')">${t.level_expert}</button>
+            </div>
         `;
-        
-        div.addEventListener('click', (e) => {
-            if (e.target.classList.contains('level-btn')) return; // Ignora click su bottoni livello
-            toggleSkill(skill);
-        });
         
         grid.appendChild(div);
     });
 }
 
-window.toggleSkill = function(skill) {
-    if (selectedSkills[skill]) {
-        delete selectedSkills[skill];
-    } else {
-        selectedSkills[skill] = 'intermediate'; // Default
-    }
+window.removeSkill = function(skill) {
+    delete selectedSkills[skill];
     renderSkillsGrid();
 }
 
@@ -169,6 +157,23 @@ function renderCertifications() {
 window.updateCertification = function(index, value) {
     certifications[index] = value;
 }
+
+// TOGGLE OWNER WORK DETAILS
+document.addEventListener('DOMContentLoaded', function() {
+    const worksCheckbox = document.getElementById('works_for_owner');
+    if (worksCheckbox) {
+        worksCheckbox.addEventListener('change', function() {
+            const details = document.getElementById('owner-work-details');
+            if (this.checked) {
+                details.classList.remove('hidden');
+            } else {
+                details.classList.add('hidden');
+                document.getElementById('years_with_owner').value = '';
+                document.getElementById('collaboration_type').value = '';
+            }
+        });
+    }
+});
 
 // VALIDATE INVITATION
 async function validateInvitation() {
@@ -249,7 +254,6 @@ document.getElementById('id_document').addEventListener('change', async function
     if (!file) return;
     
     document.getElementById('upload-text').innerHTML = '<i class="fas fa-spinner fa-spin"></i> Analisi in corso...';
-    document.getElementById('gemini_key').disabled = false;
     
     const reader = new FileReader();
     reader.onload = async function(event) {
@@ -299,11 +303,63 @@ document.querySelectorAll('#step-1 input, #step-1 select').forEach(el => {
 document.getElementById('btn-step1').addEventListener('click', () => {
     if (validateStep1()) {
         goToStep(2);
-        renderSkillsGrid();
     }
 });
 
 document.getElementById('btn-back-s2').addEventListener('click', () => goToStep(1));
+
+// ANALYZE SKILLS WITH AI
+window.analyzeSkills = async function() {
+    const workDescription = document.getElementById('work_description').value.trim();
+    
+    if (!workDescription) {
+        alert('Inserisci una descrizione della tua esperienza lavorativa');
+        return;
+    }
+    
+    const btn = document.getElementById('analyze-skills-btn');
+    const originalHtml = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Analisi in corso...';
+    
+    try {
+        const res = await fetch(ONBOARDING_API, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                action: 'analyze_skills',
+                chat_id: chatId,
+                gemini_key: document.getElementById('gemini_key').value,
+                work_description: workDescription,
+                job_title: document.getElementById('job_title').value,
+                experience_years: document.getElementById('experience_years').value
+            })
+        });
+        
+        const data = await res.json();
+        
+        if (res.ok && data.skills) {
+            selectedSkills = {};
+            data.skills.forEach(skill => {
+                selectedSkills[skill.name] = skill.level || 'intermediate';
+            });
+            
+            document.getElementById('skills-result').classList.remove('hidden');
+            renderSkillsGrid();
+            
+            tg.HapticFeedback.notificationOccurred('success');
+        } else {
+            throw new Error('Analysis failed');
+        }
+        
+    } catch (e) {
+        console.error(e);
+        alert('❌ Errore durante l\'analisi. Riprova o inserisci competenze manualmente.');
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = originalHtml;
+    }
+}
 
 // SUBMIT FINALE
 document.getElementById('submitBtn').addEventListener('click', async () => {
@@ -339,12 +395,24 @@ document.getElementById('submitBtn').addEventListener('click', async () => {
         gemini_key: document.getElementById('gemini_key').value,
         lenguage: langParam,
         
+        // Formazione
+        education_level: document.getElementById('education_level').value,
+        education_field: document.getElementById('education_field').value,
+        
         // Professionale
         job_title: document.getElementById('job_title').value,
         experience_years: document.getElementById('experience_years').value,
+        first_job_year: document.getElementById('first_job_year').value,
+        
+        // Rapporto Owner
+        works_for_owner: document.getElementById('works_for_owner').checked,
+        years_with_owner: document.getElementById('years_with_owner').value,
+        collaboration_type: document.getElementById('collaboration_type').value,
+        
         certifications: certifications.filter(c => c),
         
         // Skills
+        work_description: document.getElementById('work_description').value,
         hard_skills: Object.keys(selectedSkills).map(skill => ({
             skill: skill,
             level: selectedSkills[skill]
@@ -371,7 +439,6 @@ document.getElementById('submitBtn').addEventListener('click', async () => {
             tg.HapticFeedback.notificationOccurred('success');
             alert('✅ Attivazione completata con successo!');
             
-            // Redirect a dashboard operatore
             const redirectUrl = res.headers.get('X-Redirect-Url');
             if (redirectUrl) {
                 window.location.href = redirectUrl;
