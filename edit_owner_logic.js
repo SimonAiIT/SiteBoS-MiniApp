@@ -5,9 +5,9 @@
 const WEBHOOK_URL = "https://trinai.api.workflow.dcmake.it/webhook/83acc670-15ae-4da0-ae0e-3587c85bd5f4";
 const BOT_USERNAME = "TrinAi_Site_bot"; // ✅ Bot per operatori (non SiteBoS)
 
-// 📊 PRICING SCAGLIONI OPERATORI
+// 📊 PRICING SCAGLIONI OPERATORI (SOLO operatori veri, escluso owner)
 function getOperatorCost() {
-    const currentCount = operators.length;
+    const currentCount = operators.length; // operators è già filtrato senza Owner
     
     if (currentCount < 3) {
         return 10000; // Primi 3: 10k
@@ -39,7 +39,8 @@ const langParam = urlParams.get('lang') || 'it';
 
 // STATE
 let ownerData = null; 
-let operators = [];   
+let operators = [];    // ⚠️ SOLO operatori veri (senza Owner)
+let ownerOperator = null; // 💾 Manteniamo Owner separato
 let initialHash = ""; 
 
 // DOM ELEMENTS
@@ -176,7 +177,11 @@ async function loadData() {
         const opTime = (ownerData.operator_unavailable_time || "19-9").split('-');
         dom.tP_from.value = opTime[0]; dom.tP_to.value = opTime[1];
 
-        operators = (ownerData.operators || []).filter(op => op.Role !== 'Owner');
+        // ✅ SEPARA OWNER DA OPERATORI
+        const allOperators = ownerData.operators || [];
+        ownerOperator = allOperators.find(op => op.Role === 'Owner') || null;
+        operators = allOperators.filter(op => op.Role !== 'Owner');
+        
         renderOperators();
 
         initialHash = JSON.stringify(getDataObj());
@@ -271,6 +276,9 @@ function updateAddButtonCost() {
 
 // DATA OBJECT HELPER
 function getDataObj() {
+    // ✅ RICOSTRUISCE ARRAY COMPLETO: [Owner, ...Operatori]
+    const fullOperators = ownerOperator ? [ownerOperator, ...operators] : operators;
+    
     return {
         name: dom.name.value, surname: dom.surname.value,
         email: dom.email.value, phone: dom.phone.value,
@@ -280,7 +288,7 @@ function getDataObj() {
         gemini_key: dom.geminiKey.value,
         owner_unavailable_time: `${dom.tO_from.value}-${dom.tO_to.value}`,
         operator_unavailable_time: `${dom.tP_from.value}-${dom.tP_to.value}`,
-        operators: operators,
+        operators: fullOperators, // ✅ Owner sempre in posizione [0]
         credits_balance: ownerData.credits_balance
     };
 }
@@ -296,7 +304,6 @@ document.querySelectorAll('input, select').forEach(el => el.addEventListener('in
 // OPERATOR INFO MODAL
 window.showOperatorInfo = () => {
     if(dom.opInfoModal) {
-        // ✅ EVIDENZIA TIER CORRENTE (solo luce pulsante)
         highlightCurrentTier();
         dom.opInfoModal.classList.remove('hidden');
     }
@@ -316,12 +323,10 @@ function highlightCurrentTier() {
         if (!el) return;
         
         if (tier === currentTier) {
-            // ✅ Solo effetto luminoso pulsante
             el.style.background = 'rgba(91, 111, 237, 0.2)';
             el.style.boxShadow = '0 0 20px rgba(91, 111, 237, 0.4)';
             el.style.animation = 'pulse 2s ease-in-out infinite';
         } else {
-            // Reset altri tier
             el.style.background = 'rgba(255,255,255,0.05)';
             el.style.boxShadow = 'none';
             el.style.animation = 'none';
@@ -372,8 +377,8 @@ window.generateInvitation = async () => {
 
     // ✅ GENERA CODICE FORMATO: INV-{VAT}-{OWNER}-{RANDOM}
     const vat = ownerData.vat_number || 'NOVAT';
-    const ownerChatId = ownerData.owner_chat_id || urlParams.get('owner') || 'NOOWNER';
-    const randomCode = Math.random().toString(36).substring(2, 8).toUpperCase(); // 6 caratteri
+    const ownerChatId = ownerData.chat_id || ownerData.owner_chat_id || 'NOOWNER';
+    const randomCode = Math.random().toString(36).substring(2, 8).toUpperCase();
     const invitationCode = `INV-${vat}-${ownerChatId}-${randomCode}`;
     
     operators.push({ 
