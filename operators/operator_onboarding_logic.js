@@ -43,6 +43,8 @@ const i18n = {
         btn_next: "Avanti", btn_back: "Indietro", btn_complete: "Completa Attivazione",
         access_denied_title: "Accesso Riservato", access_denied_desc: "Attivazione disponibile solo tramite invito.",
         open_bot: "Contatta Owner",
+        cv_magic_title: "⚡ Risparmia tempo!", cv_magic_desc: "Carica il tuo CV e compileremo tutto automaticamente",
+        btn_upload_cv: "Carica CV (PDF)",
         level_beginner: "Base", level_intermediate: "Intermedio", level_expert: "Esperto"
     },
     en: {
@@ -65,6 +67,8 @@ const i18n = {
         btn_next: "Next", btn_back: "Back", btn_complete: "Complete Activation",
         access_denied_title: "Access Restricted", access_denied_desc: "Activation available only via invitation.",
         open_bot: "Contact Owner",
+        cv_magic_title: "⚡ Save time!", cv_magic_desc: "Upload your CV and we'll fill everything automatically",
+        btn_upload_cv: "Upload CV (PDF)",
         level_beginner: "Beginner", level_intermediate: "Intermediate", level_expert: "Expert"
     }
 };
@@ -171,7 +175,6 @@ document.addEventListener('DOMContentLoaded', function() {
             const firstJobYear = document.getElementById('first_job_year');
             
             if (this.checked) {
-                // È prima esperienza: disabilita campi
                 experienceFields.style.opacity = '0.5';
                 experienceFields.style.pointerEvents = 'none';
                 experienceYears.disabled = true;
@@ -179,7 +182,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 experienceYears.value = '';
                 firstJobYear.value = '';
             } else {
-                // Ha esperienza: abilita campi
                 experienceFields.style.opacity = '1';
                 experienceFields.style.pointerEvents = 'auto';
                 experienceYears.disabled = false;
@@ -202,6 +204,90 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
+});
+
+// CV UPLOAD & PARSING
+document.getElementById('cv_upload').addEventListener('change', async function(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    const cvStatus = document.getElementById('cv-status');
+    const cvStatusText = document.getElementById('cv-status-text');
+    
+    cvStatus.classList.remove('hidden');
+    cvStatusText.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Analisi CV in corso...';
+    
+    const reader = new FileReader();
+    reader.onload = async function(event) {
+        const base64 = event.target.result;
+        
+        try {
+            const res = await fetch(ONBOARDING_API, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    action: 'parse_cv',
+                    chat_id: chatId,
+                    cv_base64: base64,
+                    gemini_key: document.getElementById('gemini_key').value
+                })
+            });
+            
+            const data = await res.json();
+            
+            if (res.ok && data.profile) {
+                // Auto-fill tutti i campi
+                const p = data.profile;
+                
+                // Indirizzo
+                if (p.address) {
+                    document.getElementById('addr_route').value = p.address.route || '';
+                    document.getElementById('addr_num').value = p.address.number || '';
+                    document.getElementById('addr_zip').value = p.address.zip || '';
+                    document.getElementById('addr_city').value = p.address.city || '';
+                    document.getElementById('addr_prov').value = p.address.province || '';
+                }
+                
+                // Formazione
+                if (p.education_level) document.getElementById('education_level').value = p.education_level;
+                if (p.education_field) document.getElementById('education_field').value = p.education_field;
+                
+                // Esperienza
+                if (p.job_title) document.getElementById('job_title').value = p.job_title;
+                if (p.experience_years) document.getElementById('experience_years').value = p.experience_years;
+                if (p.first_job_year) document.getElementById('first_job_year').value = p.first_job_year;
+                
+                // Descrizione
+                if (p.work_description) document.getElementById('work_description').value = p.work_description;
+                
+                // Skills
+                if (p.hard_skills && p.hard_skills.length > 0) {
+                    selectedSkills = {};
+                    p.hard_skills.forEach(skill => {
+                        selectedSkills[skill.skill] = skill.level || 'intermediate';
+                    });
+                    document.getElementById('skills-result').classList.remove('hidden');
+                    renderSkillsGrid();
+                }
+                
+                // Certificazioni
+                if (p.certifications && p.certifications.length > 0) {
+                    certifications = p.certifications;
+                    renderCertifications();
+                }
+                
+                cvStatusText.innerHTML = '<i class="fas fa-check" style="color:var(--success);"></i> CV analizzato! Tutti i campi sono stati compilati.';
+                tg.HapticFeedback.notificationOccurred('success');
+            } else {
+                throw new Error('Parsing failed');
+            }
+        } catch (e) {
+            console.error(e);
+            cvStatusText.innerHTML = '<i class="fas fa-exclamation-triangle" style="color:var(--danger);"></i> Errore analisi CV. Compila manualmente.';
+        }
+    };
+    
+    reader.readAsDataURL(file);
 });
 
 // VALIDATE INVITATION
