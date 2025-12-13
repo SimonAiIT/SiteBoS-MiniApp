@@ -34,6 +34,7 @@ const i18n = {
         section_address: "Indirizzo", section_education: "Formazione", section_work: "Esperienza Lavorativa", section_skills: "Competenze Tecniche",
         lbl_education: "Titolo di Studio", lbl_education_field: "Specializzazione / Indirizzo",
         lbl_job_title: "Ruolo / Mansione Principale", lbl_experience: "Anni di Esperienza Totali", lbl_first_job: "Prima Esperienza",
+        lbl_first_job_ever: "È la mia prima esperienza lavorativa",
         lbl_works_owner: "Lavoro già per questa azienda", lbl_years_with_owner: "Da quanti anni lavori qui?", lbl_collaboration: "Tipo di collaborazione",
         lbl_certifications: "Certificazioni / Patentini", btn_add_cert: "Aggiungi Certificazione",
         lbl_work_desc: "Descrivi la tua esperienza lavorativa", btn_analyze: "Analizza Competenze con AI",
@@ -55,6 +56,7 @@ const i18n = {
         section_address: "Address", section_education: "Education", section_work: "Work Experience", section_skills: "Technical Skills",
         lbl_education: "Education Level", lbl_education_field: "Specialization / Field",
         lbl_job_title: "Role / Position", lbl_experience: "Years of Experience", lbl_first_job: "First Job",
+        lbl_first_job_ever: "This is my first job",
         lbl_works_owner: "I already work for this company", lbl_years_with_owner: "How many years?", lbl_collaboration: "Collaboration type",
         lbl_certifications: "Certifications", btn_add_cert: "Add Certification",
         lbl_work_desc: "Describe your work experience", btn_analyze: "Analyze Skills with AI",
@@ -158,8 +160,35 @@ window.updateCertification = function(index, value) {
     certifications[index] = value;
 }
 
-// TOGGLE OWNER WORK DETAILS
+// TOGGLE PRIMA ESPERIENZA & OWNER WORK DETAILS
 document.addEventListener('DOMContentLoaded', function() {
+    // Toggle prima esperienza
+    const firstJobCheckbox = document.getElementById('is_first_job');
+    if (firstJobCheckbox) {
+        firstJobCheckbox.addEventListener('change', function() {
+            const experienceFields = document.getElementById('experience-fields');
+            const experienceYears = document.getElementById('experience_years');
+            const firstJobYear = document.getElementById('first_job_year');
+            
+            if (this.checked) {
+                // È prima esperienza: disabilita campi
+                experienceFields.style.opacity = '0.5';
+                experienceFields.style.pointerEvents = 'none';
+                experienceYears.disabled = true;
+                firstJobYear.disabled = true;
+                experienceYears.value = '';
+                firstJobYear.value = '';
+            } else {
+                // Ha esperienza: abilita campi
+                experienceFields.style.opacity = '1';
+                experienceFields.style.pointerEvents = 'auto';
+                experienceYears.disabled = false;
+                firstJobYear.disabled = false;
+            }
+        });
+    }
+    
+    // Toggle owner work details
     const worksCheckbox = document.getElementById('works_for_owner');
     if (worksCheckbox) {
         worksCheckbox.addEventListener('change', function() {
@@ -374,6 +403,8 @@ document.getElementById('submitBtn').addEventListener('click', async () => {
         certifications[idx] = input.value.trim();
     });
     
+    const isFirstJob = document.getElementById('is_first_job').checked;
+    
     const operatorData = {
         // Anagrafica
         name: document.getElementById('name').value,
@@ -401,8 +432,9 @@ document.getElementById('submitBtn').addEventListener('click', async () => {
         
         // Professionale
         job_title: document.getElementById('job_title').value,
-        experience_years: document.getElementById('experience_years').value,
-        first_job_year: document.getElementById('first_job_year').value,
+        is_first_job: isFirstJob,
+        experience_years: isFirstJob ? null : document.getElementById('experience_years').value,
+        first_job_year: isFirstJob ? null : document.getElementById('first_job_year').value,
         
         // Rapporto Owner
         works_for_owner: document.getElementById('works_for_owner').checked,
