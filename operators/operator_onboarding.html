@@ -157,30 +157,98 @@
           </div>
         </div>
 
+        <!-- FORMAZIONE -->
+        <div class="form-section">
+          <div class="section-title"><i class="fas fa-graduation-cap"></i> <span data-i18n="section_education">Formazione</span></div>
+          
+          <div class="input-group">
+            <label class="required" data-i18n="lbl_education">Titolo di Studio</label>
+            <select id="education_level" required>
+              <option value="">-- Seleziona --</option>
+              <option value="middle_school">Licenza Media</option>
+              <option value="high_school">Diploma Superiore</option>
+              <option value="professional_diploma">Diploma Professionale</option>
+              <option value="bachelor">Laurea Triennale</option>
+              <option value="master">Laurea Magistrale</option>
+              <option value="phd">Dottorato</option>
+              <option value="other">Altro</option>
+            </select>
+          </div>
+          
+          <div class="input-group">
+            <label data-i18n="lbl_education_field">Specializzazione / Indirizzo</label>
+            <input type="text" id="education_field" placeholder="Es: Elettrotecnica, Meccanica, Informatica...">
+          </div>
+        </div>
+
         <!-- PROFILO LAVORATIVO -->
         <div class="form-section">
           <div class="section-title"><i class="fas fa-briefcase"></i> <span data-i18n="section_work">Esperienza Lavorativa</span></div>
           
           <div class="input-group">
-            <label class="required" data-i18n="lbl_job_title">Ruolo / Mansione</label>
+            <label class="required" data-i18n="lbl_job_title">Ruolo / Mansione Principale</label>
             <input type="text" id="job_title" placeholder="Es: Elettricista, Idraulico, Tecnico..." required>
           </div>
           
-          <div class="input-group">
-            <label class="required" data-i18n="lbl_experience">Anni di Esperienza</label>
-            <select id="experience_years" required>
-              <option value="">-- Seleziona --</option>
-              <option value="0-1">Meno di 1 anno</option>
-              <option value="1-3">1-3 anni</option>
-              <option value="3-5">3-5 anni</option>
-              <option value="5-10">5-10 anni</option>
-              <option value="10-15">10-15 anni</option>
-              <option value="15+">Oltre 15 anni</option>
-            </select>
+          <div class="row">
+            <div class="col">
+              <label class="required" data-i18n="lbl_experience">Anni di Esperienza Totali</label>
+              <select id="experience_years" required>
+                <option value="">-- Seleziona --</option>
+                <option value="0-1">Meno di 1 anno</option>
+                <option value="1-3">1-3 anni</option>
+                <option value="3-5">3-5 anni</option>
+                <option value="5-10">5-10 anni</option>
+                <option value="10-15">10-15 anni</option>
+                <option value="15+">Oltre 15 anni</option>
+              </select>
+            </div>
+            
+            <div class="col">
+              <label class="required" data-i18n="lbl_first_job">Prima Esperienza</label>
+              <input type="number" id="first_job_year" placeholder="Anno (es: 2015)" min="1970" max="2025" required>
+            </div>
+          </div>
+          
+          <!-- RAPPORTO CON OWNER -->
+          <div class="card" style="background: rgba(91, 111, 237, 0.1); border-left: 3px solid var(--primary); margin-top: 15px;">
+            <div class="checkbox-group">
+              <input type="checkbox" id="works_for_owner">
+              <label for="works_for_owner">
+                <strong data-i18n="lbl_works_owner">Lavoro già per questa azienda</strong>
+              </label>
+            </div>
+            
+            <div id="owner-work-details" class="hidden" style="margin-top: 12px;">
+              <div class="input-group">
+                <label data-i18n="lbl_years_with_owner">Da quanti anni lavori qui?</label>
+                <select id="years_with_owner">
+                  <option value="">-- Seleziona --</option>
+                  <option value="0-1">Meno di 1 anno</option>
+                  <option value="1-2">1-2 anni</option>
+                  <option value="2-3">2-3 anni</option>
+                  <option value="3-5">3-5 anni</option>
+                  <option value="5-10">5-10 anni</option>
+                  <option value="10+">Oltre 10 anni</option>
+                </select>
+              </div>
+              
+              <div class="input-group">
+                <label data-i18n="lbl_collaboration">Tipo di collaborazione</label>
+                <select id="collaboration_type">
+                  <option value="">-- Seleziona --</option>
+                  <option value="employee">Dipendente</option>
+                  <option value="freelance">Collaboratore esterno</option>
+                  <option value="contractor">Subappaltatore</option>
+                  <option value="partner">Partner / Socio</option>
+                  <option value="other">Altro</option>
+                </select>
+              </div>
+            </div>
           </div>
           
           <!-- CERTIFICAZIONI -->
-          <div class="input-group">
+          <div class="input-group" style="margin-top: 15px;">
             <label data-i18n="lbl_certifications">Certificazioni / Patentini</label>
             <div id="certifications-list"></div>
             <button type="button" class="btn btn-sm btn-secondary" onclick="addCertification()">
@@ -189,18 +257,27 @@
           </div>
         </div>
 
-        <!-- HARD SKILLS -->
+        <!-- COMPETENZE AI -->
         <div class="form-section">
-          <div class="section-title"><i class="fas fa-tools"></i> <span data-i18n="section_skills">Competenze Tecniche</span></div>
-          <p class="hint" data-i18n="hint_skills">Seleziona le tue competenze principali e indica il livello.</p>
+          <div class="section-title"><i class="fas fa-magic"></i> <span data-i18n="section_skills">Competenze Tecniche</span></div>
           
-          <div class="skills-grid" id="skills-grid">
-            <!-- Popolato dinamicamente -->
+          <div class="input-group">
+            <label class="required" data-i18n="lbl_work_desc">Descrivi la tua esperienza lavorativa</label>
+            <textarea id="work_description" rows="4" placeholder="Es: Ho lavorato 5 anni come elettricista in cantieri civili e industriali. Ho installato oltre 20 impianti fotovoltaici, gestito quadri elettrici BT/MT..." required></textarea>
+          </div>
+          
+          <button type="button" class="btn btn-primary btn-block" id="analyze-skills-btn" onclick="analyzeSkills()">
+            <i class="fas fa-sparkles"></i> <span data-i18n="btn_analyze">Analizza Competenze con AI</span>
+          </button>
+          
+          <div id="skills-result" class="hidden" style="margin-top: 15px;">
+            <p class="hint" data-i18n="hint_skills_ai">✅ Competenze estratte! Seleziona il livello per ognuna o rimuovila.</p>
+            <div class="skills-grid" id="skills-grid"></div>
           </div>
           
           <div class="input-group mt-2">
-            <label data-i18n="lbl_other_skills">Altre competenze (campo libero)</label>
-            <textarea id="other_skills" rows="2" placeholder="Competenze non presenti nella lista..."></textarea>
+            <label data-i18n="lbl_other_skills">Altre competenze (manuale)</label>
+            <textarea id="other_skills" rows="2" placeholder="Aggiungi competenze non rilevate..."></textarea>
           </div>
         </div>
 
