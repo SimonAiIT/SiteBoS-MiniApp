@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Specchio Magico AI - SiteBoS</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+
+  <div class="container">
+    
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 30px; padding-bottom: 15px; border-bottom: 1px solid var(--glass-border);">
+        <div>
+            <h1 style="font-size: 22px; margin: 0;">
+                <i class="fas fa-magic" style="color: #ec4899;"></i>
+                Specchio Magico AI
+            </h1>
+            <p class="subtitle">Analisi look personalizzata per parrucchieri</p>
+        </div>
+    </div>
+
+    <div class="card" style="text-align: center; padding: 60px 20px;">
+        <div style="font-size: 64px; color: #ec4899; margin-bottom: 20px;">
+            <i class="fas fa-magic"></i>
+        </div>
+        <h2 style="margin-bottom: 15px; color: #ec4899;">Funzione in Sviluppo</h2>
+        <p style="color: var(--text-muted); line-height: 1.6; max-width: 500px; margin: 0 auto 30px;">
+            Il <strong>Specchio Magico AI</strong> analizzerà foto dei tuoi clienti per suggerire:
+        </p>
+        
+        <div style="text-align: left; max-width: 500px; margin: 0 auto;">
+            <div style="padding: 15px; background: rgba(0,0,0,0.2); border-radius: 12px; margin-bottom: 10px;">
+                <i class="fas fa-cut" style="color: var(--primary); margin-right: 10px;"></i>
+                <strong>Tagli personalizzati</strong> in base alla forma del viso
+            </div>
+            <div style="padding: 15px; background: rgba(0,0,0,0.2); border-radius: 12px; margin-bottom: 10px;">
+                <i class="fas fa-palette" style="color: var(--warning); margin-right: 10px;"></i>
+                <strong>Colori consigliati</strong> per carnagione e stile
+            </div>
+            <div style="padding: 15px; background: rgba(0,0,0,0.2); border-radius: 12px; margin-bottom: 10px;">
+                <i class="fas fa-sparkles" style="color: var(--success); margin-right: 10px;"></i>
+                <strong>Styling e textures</strong> per look completo
+            </div>
+        </div>
+
+        <div class="note" style="margin-top: 30px; text-align: left;">
+            <i class="fas fa-info-circle"></i> <strong>Pricing</strong><br>
+            <strong>15.000 crediti (~33€)</strong> - Sblocco permanente, uso illimitato
+        </div>
+
+        <div class="note note-warning" style="margin-top: 20px; text-align: left;">
+            <i class="fas fa-calendar"></i> <strong>Disponibilità</strong><br>
+            Prevista per <strong>Q2 2025</strong>
+        </div>
+    </div>
+
+  </div>
+
+  <div class="fab-container">
+    <button class="fab-btn fab-secondary" onclick="goBack()" title="Torna Indietro">
+      <i class="fas fa-arrow-left"></i>
+    </button>
+  </div>
+
+  <script>
+    const tg = window.Telegram.WebApp;
+    tg.ready();
+    tg.expand();
+
+    function goBack() {
+        if (tg?.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
+        window.location.href = 'index.html' + window.location.search;
+    }
+  </script>
+
+</body>
+</html>

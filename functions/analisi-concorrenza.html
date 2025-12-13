@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Analisi Concorrenza AI - SiteBoS</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+
+  <div class="container">
+    
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 30px; padding-bottom: 15px; border-bottom: 1px solid var(--glass-border);">
+        <div>
+            <h1 style="font-size: 22px; margin: 0;">
+                <i class="fas fa-chart-line" style="color: #10b981;"></i>
+                Analisi Concorrenza AI
+            </h1>
+            <p class="subtitle">Identifica competitor e ottimizza posizionamento</p>
+        </div>
+    </div>
+
+    <div class="card" style="text-align: center; padding: 60px 20px;">
+        <div style="font-size: 64px; color: #10b981; margin-bottom: 20px;">
+            <i class="fas fa-chart-line"></i>
+        </div>
+        <h2 style="margin-bottom: 15px; color: #10b981;">Funzione in Sviluppo</h2>
+        <p style="color: var(--text-muted); line-height: 1.6; max-width: 500px; margin: 0 auto 30px;">
+            <strong>Analisi Concorrenza AI</strong> con 3 livelli di profondità:
+        </p>
+        
+        <div style="text-align: left; max-width: 500px; margin: 0 auto;">
+            <div style="padding: 15px; background: rgba(0,0,0,0.2); border-radius: 12px; margin-bottom: 10px; border-left: 3px solid #10b981;">
+                <strong style="color: #10b981;">Single Zone</strong> (15.000 crediti)<br>
+                <span style="font-size: 12px; color: var(--text-muted);">Top 10 competitor in città/zona specifica</span>
+            </div>
+            <div style="padding: 15px; background: rgba(0,0,0,0.2); border-radius: 12px; margin-bottom: 10px; border-left: 3px solid #f59e0b;">
+                <strong style="color: #f59e0b;">Multi-City</strong> (50.000 crediti)<br>
+                <span style="font-size: 12px; color: var(--text-muted);">Top 10 per ogni città (max 50 totali)</span>
+            </div>
+            <div style="padding: 15px; background: rgba(0,0,0,0.2); border-radius: 12px; margin-bottom: 10px; border-left: 3px solid #8b5cf6;">
+                <strong style="color: #8b5cf6;">Nazionale</strong> (75.000 crediti)<br>
+                <span style="font-size: 12px; color: var(--text-muted);">Top 20 player a livello nazionale</span>
+            </div>
+        </div>
+
+        <div class="note" style="margin-top: 30px; text-align: left;">
+            <i class="fas fa-info-circle"></i> <strong>Output Analisi</strong><br>
+            Tabella comparativa prezzi, SWOT automatica, raccomandazioni pricing
+        </div>
+
+        <div class="note note-warning" style="margin-top: 20px; text-align: left;">
+            <i class="fas fa-calendar"></i> <strong>Disponibilità</strong><br>
+            Prevista per <strong>Q3 2025</strong>
+        </div>
+    </div>
+
+  </div>
+
+  <div class="fab-container">
+    <button class="fab-btn fab-secondary" onclick="goBack()" title="Torna Indietro">
+      <i class="fas fa-arrow-left"></i>
+    </button>
+  </div>
+
+  <script>
+    const tg = window.Telegram.WebApp;
+    tg.ready();
+    tg.expand();
+
+    function goBack() {
+        if (tg?.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
+        window.location.href = 'index.html' + window.location.search;
+    }
+  </script>
+
+</body>
+</html>
