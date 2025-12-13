@@ -90,39 +90,59 @@ function renderSkillsGrid() {
     
     Object.keys(selectedSkills).forEach(skill => {
         const level = selectedSkills[skill];
+        const skillId = 'skill_' + Math.random().toString(36).substr(2, 9);
         
         const div = document.createElement('div');
         div.className = 'card';
         div.style.padding = '10px';
         div.style.background = 'rgba(91, 111, 237, 0.2)';
         div.style.border = '1px solid var(--primary)';
+        div.dataset.skillName = skill;
         
         div.innerHTML = `
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-                <div style="font-size: 13px; font-weight: 500;">${skill}</div>
-                <button type="button" onclick="removeSkill('${skill}')" style="background:none; border:none; color:var(--danger); cursor:pointer;">
+                <div style="font-size: 13px; font-weight: 500;">${escapeHtml(skill)}</div>
+                <button type="button" class="btn-remove-skill" style="background:none; border:none; color:var(--danger); cursor:pointer;">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
             <div class="level-selector">
-                <button type="button" class="level-btn ${level === 'beginner' ? 'active' : ''}" onclick="setSkillLevel('${skill}', 'beginner')">${t.level_beginner}</button>
-                <button type="button" class="level-btn ${level === 'intermediate' ? 'active' : ''}" onclick="setSkillLevel('${skill}', 'intermediate')">${t.level_intermediate}</button>
-                <button type="button" class="level-btn ${level === 'expert' ? 'active' : ''}" onclick="setSkillLevel('${skill}', 'expert')">${t.level_expert}</button>
+                <button type="button" class="level-btn ${level === 'beginner' ? 'active' : ''}" data-level="beginner">${t.level_beginner}</button>
+                <button type="button" class="level-btn ${level === 'intermediate' ? 'active' : ''}" data-level="intermediate">${t.level_intermediate}</button>
+                <button type="button" class="level-btn ${level === 'expert' ? 'active' : ''}" data-level="expert">${t.level_expert}</button>
             </div>
         `;
         
         grid.appendChild(div);
     });
+    
+    // Event delegation per level buttons e remove buttons
+    grid.querySelectorAll('.level-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const skillCard = this.closest('[data-skill-name]');
+            const skillName = skillCard.dataset.skillName;
+            const level = this.dataset.level;
+            
+            selectedSkills[skillName] = level;
+            renderSkillsGrid();
+        });
+    });
+    
+    grid.querySelectorAll('.btn-remove-skill').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const skillCard = this.closest('[data-skill-name]');
+            const skillName = skillCard.dataset.skillName;
+            
+            delete selectedSkills[skillName];
+            renderSkillsGrid();
+        });
+    });
 }
 
-window.removeSkill = function(skill) {
-    delete selectedSkills[skill];
-    renderSkillsGrid();
-}
-
-window.setSkillLevel = function(skill, level) {
-    selectedSkills[skill] = level;
-    renderSkillsGrid();
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
 }
 
 // CERTIFICAZIONI
@@ -153,7 +173,7 @@ function renderCertifications() {
         const div = document.createElement('div');
         div.className = 'cert-input-group';
         div.innerHTML = `
-            <input type="text" value="${cert}" placeholder="Es: Patentino PES-PAV" data-cert-index="${idx}" oninput="updateCertification(${idx}, this.value)">
+            <input type="text" value="${escapeHtml(cert)}" placeholder="Es: Patentino PES-PAV" data-cert-index="${idx}" oninput="updateCertification(${idx}, this.value)">
             <button type="button" onclick="removeCertification(${idx})"><i class="fas fa-trash"></i></button>
         `;
         list.appendChild(div);
@@ -236,17 +256,7 @@ document.getElementById('cv_upload').addEventListener('change', async function(e
             const data = await res.json();
             
             if (res.ok && data.profile) {
-                // Auto-fill tutti i campi
                 const p = data.profile;
-                
-                // Indirizzo
-                if (p.address) {
-                    document.getElementById('addr_route').value = p.address.route || '';
-                    document.getElementById('addr_num').value = p.address.number || '';
-                    document.getElementById('addr_zip').value = p.address.zip || '';
-                    document.getElementById('addr_city').value = p.address.city || '';
-                    document.getElementById('addr_prov').value = p.address.province || '';
-                }
                 
                 // Formazione
                 if (p.education_level) document.getElementById('education_level').value = p.education_level;
@@ -276,14 +286,14 @@ document.getElementById('cv_upload').addEventListener('change', async function(e
                     renderCertifications();
                 }
                 
-                cvStatusText.innerHTML = '<i class="fas fa-check" style="color:var(--success);"></i> CV analizzato! Tutti i campi sono stati compilati.';
+                cvStatusText.innerHTML = '<i class="fas fa-check" style="color:var(--success);"></i> CV analizzato! Verifica e modifica se necessario.';
                 tg.HapticFeedback.notificationOccurred('success');
             } else {
                 throw new Error('Parsing failed');
             }
         } catch (e) {
             console.error(e);
-            cvStatusText.innerHTML = '<i class="fas fa-exclamation-triangle" style="color:var(--danger);"></i> Errore analisi CV. Compila manualmente.';
+            cvStatusText.innerHTML = '<i class="fas fa-exclamation-triangle" style="color:#ffc107;"></i> Impossibile analizzare CV. Compila manualmente.';
         }
     };
     
