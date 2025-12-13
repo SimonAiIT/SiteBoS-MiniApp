@@ -42,7 +42,7 @@
       height: 70px;
       border-radius: 50%;
       background: white;
-      border: 4px solid #ec4899;
+      border: 4px solid var(--primary);
       cursor: pointer;
       transition: all 0.2s;
       box-shadow: 0 4px 20px rgba(0,0,0,0.3);
@@ -107,7 +107,7 @@
     
     .color-swatch:hover {
       transform: scale(1.1);
-      border-color: #ec4899;
+      border-color: var(--primary);
     }
     
     .share-buttons {
@@ -154,7 +154,7 @@
     <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 25px; padding-bottom: 15px; border-bottom: 1px solid var(--glass-border);">
         <div>
             <h1 style="font-size: 22px; margin: 0;">
-                <i class="fas fa-magic" style="color: #ec4899;"></i>
+                <i class="fas fa-magic" style="color: var(--warning);"></i>
                 Specchio Magico AI
             </h1>
             <p class="subtitle">Analisi look personalizzata</p>
@@ -164,24 +164,24 @@
     <!-- UNLOCK CHECK -->
     <div id="unlock-check" class="card">
         <div style="text-align: center; padding: 40px 20px;">
-            <div style="font-size: 64px; color: #ec4899; margin-bottom: 20px;">
+            <div style="font-size: 64px; color: var(--warning); margin-bottom: 20px;">
                 <i class="fas fa-magic"></i>
             </div>
-            <h2 style="margin-bottom: 15px; color: #ec4899;">Sblocca Specchio Magico AI</h2>
+            <h2 style="margin-bottom: 15px;">Sblocca Specchio Magico AI</h2>
             <p style="color: var(--text-muted); line-height: 1.6; max-width: 400px; margin: 0 auto 30px;">
                 Analisi illimitate del look dei tuoi clienti con intelligenza artificiale.
             </p>
             
-            <div style="background: rgba(236, 72, 153, 0.1); border: 1px solid rgba(236, 72, 153, 0.3); border-radius: 12px; padding: 20px; margin-bottom: 30px;">
-                <div style="font-size: 36px; font-weight: bold; color: #ec4899; margin-bottom: 5px;">
+            <div class="note note-warning" style="text-align: center; margin-bottom: 30px;">
+                <div style="font-size: 36px; font-weight: bold; margin-bottom: 5px;">
                     15.000 crediti
                 </div>
-                <div style="font-size: 12px; color: var(--text-secondary); text-transform: uppercase;">
+                <div style="font-size: 12px; text-transform: uppercase;">
                     Sblocco Permanente (~33€)
                 </div>
             </div>
             
-            <button class="btn" onclick="unlockFeature()" style="background: linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%);">
+            <button class="btn" onclick="unlockFeature()">
                 <i class="fas fa-unlock"></i> Sblocca Ora
             </button>
         </div>
@@ -200,7 +200,7 @@
                 
                 <div class="camera-controls">
                     <button class="capture-btn" onclick="capturePhoto()" title="Scatta Foto">
-                        <i class="fas fa-camera" style="font-size: 28px; color: #ec4899;"></i>
+                        <i class="fas fa-camera" style="font-size: 28px; color: var(--primary);"></i>
                     </button>
                 </div>
             </div>
@@ -220,7 +220,7 @@
                 <button class="btn btn-secondary" onclick="retakePhoto()">
                     <i class="fas fa-redo"></i> Riscatta
                 </button>
-                <button class="btn" onclick="analyzePhoto()" style="background: linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%);">
+                <button class="btn" onclick="analyzePhoto()">
                     <i class="fas fa-sparkles"></i> Analizza
                 </button>
             </div>
@@ -247,7 +247,7 @@
                 </div>
                 
                 <div class="info-item">
-                    <i class="fas fa-cut" style="color: #ec4899;"></i>
+                    <i class="fas fa-cut" style="color: var(--warning);"></i>
                     <div class="info-content">
                         <span class="label">Tipo Capelli</span>
                         <span class="value" id="hair-type">...</span>
@@ -255,7 +255,7 @@
                 </div>
                 
                 <div class="info-item">
-                    <i class="fas fa-ruler-vertical" style="color: var(--warning);"></i>
+                    <i class="fas fa-ruler-vertical" style="color: var(--info);"></i>
                     <div class="info-content">
                         <span class="label">Lunghezza</span>
                         <span class="value" id="hair-length">...</span>
@@ -263,7 +263,7 @@
                 </div>
                 
                 <div class="info-item">
-                    <i class="fas fa-palette" style="color: var(--info);"></i>
+                    <i class="fas fa-palette" style="color: var(--success);"></i>
                     <div class="info-content">
                         <span class="label">Carnagione</span>
                         <span class="value" id="skin-tone">...</span>
@@ -272,15 +272,15 @@
             </div>
         </div>
         
-        <div class="card" style="margin-top: 15px; background: rgba(236, 72, 153, 0.1); border: 1px solid rgba(236, 72, 153, 0.3);">
-            <h3 style="color: #ec4899; margin: 0 0 15px 0;">
-                <i class="fas fa-star"></i> Look Consigliato
+        <div class="card" style="margin-top: 15px;">
+            <h3 style="margin: 0 0 15px 0;">
+                <i class="fas fa-star" style="color: var(--warning);"></i> Look Consigliato
             </h3>
             
             <h4 id="recommended-cut" style="margin: 0 0 10px 0; font-size: 18px;">...</h4>
             <p id="recommendation-desc" style="margin: 0 0 15px 0; color: var(--text-muted); font-size: 14px; line-height: 1.6;">...</p>
             
-            <div style="padding-top: 15px; border-top: 1px solid rgba(236, 72, 153, 0.2);">
+            <div style="padding-top: 15px; border-top: 1px solid var(--glass-border);">
                 <span style="font-size: 12px; color: var(--text-secondary); text-transform: uppercase; font-weight: 600;">Palette Colori</span>
                 <div id="color-swatches" class="color-swatches"></div>
             </div>
@@ -296,7 +296,7 @@
                     <i class="fas fa-download"></i> Salva
                 </button>
                 
-                <button class="btn" onclick="openShareMenu()" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                <button class="btn" onclick="openShareMenu()">
                     <i class="fas fa-share-alt"></i> Condividi
                 </button>
             </div>
@@ -333,12 +333,12 @@
           <span>Instagram</span>
         </button>
         
-        <button class="share-btn" onclick="copyImageLink()" style="background: #667eea;">
+        <button class="share-btn" onclick="copyImageLink()" style="background: var(--primary);">
           <i class="fas fa-link"></i>
           <span>Copia</span>
         </button>
         
-        <button class="share-btn" onclick="shareNative()" style="background: var(--primary);">
+        <button class="share-btn" onclick="shareNative()" style="background: var(--info);">
           <i class="fas fa-share"></i>
           <span>Altro</span>
         </button>
@@ -456,7 +456,7 @@
         
         ctx.fillStyle = '#1a1a2e';
         ctx.fillRect(800, 0, 800, 800);
-        ctx.fillStyle = '#ec4899';
+        ctx.fillStyle = '#f59e0b';
         ctx.font = 'bold 48px Inter';
         ctx.textAlign = 'center';
         ctx.fillText('Look Suggerito', 1200, 380);
