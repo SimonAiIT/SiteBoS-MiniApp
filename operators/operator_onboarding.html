@@ -190,23 +190,33 @@
             <input type="text" id="job_title" placeholder="Es: Elettricista, Idraulico, Tecnico..." required>
           </div>
           
-          <div class="row">
-            <div class="col">
-              <label class="required" data-i18n="lbl_experience">Anni di Esperienza Totali</label>
-              <select id="experience_years" required>
-                <option value="">-- Seleziona --</option>
-                <option value="0-1">Meno di 1 anno</option>
-                <option value="1-3">1-3 anni</option>
-                <option value="3-5">3-5 anni</option>
-                <option value="5-10">5-10 anni</option>
-                <option value="10-15">10-15 anni</option>
-                <option value="15+">Oltre 15 anni</option>
-              </select>
-            </div>
-            
-            <div class="col">
-              <label class="required" data-i18n="lbl_first_job">Prima Esperienza</label>
-              <input type="number" id="first_job_year" placeholder="Anno (es: 2015)" min="1970" max="2025" required>
+          <!-- CHECKBOX PRIMA ESPERIENZA -->
+          <div class="checkbox-group" style="margin-bottom: 15px;">
+            <input type="checkbox" id="is_first_job">
+            <label for="is_first_job">
+              <strong data-i18n="lbl_first_job_ever">È la mia prima esperienza lavorativa</strong>
+            </label>
+          </div>
+          
+          <div id="experience-fields">
+            <div class="row">
+              <div class="col">
+                <label class="required" data-i18n="lbl_experience">Anni di Esperienza Totali</label>
+                <select id="experience_years" required>
+                  <option value="">-- Seleziona --</option>
+                  <option value="0-1">Meno di 1 anno</option>
+                  <option value="1-3">1-3 anni</option>
+                  <option value="3-5">3-5 anni</option>
+                  <option value="5-10">5-10 anni</option>
+                  <option value="10-15">10-15 anni</option>
+                  <option value="15+">Oltre 15 anni</option>
+                </select>
+              </div>
+              
+              <div class="col">
+                <label class="required" data-i18n="lbl_first_job">Prima Esperienza</label>
+                <input type="number" id="first_job_year" placeholder="Anno (es: 2015)" min="1970" max="2025" required>
+              </div>
             </div>
           </div>
           
