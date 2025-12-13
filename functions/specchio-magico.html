@@ -74,91 +74,162 @@
     .camera-toggle:active {
       transform: scale(0.95);
     }
-    
-    .info-grid {
+
+    .gender-grid {
       display: grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: repeat(3, 1fr);
       gap: 12px;
+      margin-top: 20px;
     }
-    
-    .info-item {
+
+    .gender-btn {
+      padding: 20px;
+      border: 2px solid var(--glass-border);
+      border-radius: 12px;
+      background: rgba(0,0,0,0.2);
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: center;
+    }
+
+    .gender-btn:hover {
+      border-color: var(--primary);
+      background: rgba(0,0,0,0.3);
+    }
+
+    .gender-btn.active {
+      border-color: var(--primary);
+      background: rgba(var(--primary-rgb), 0.2);
+    }
+
+    .gender-btn i {
+      font-size: 32px;
+      margin-bottom: 8px;
+      display: block;
+    }
+
+    .gender-btn .label {
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .input {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid var(--glass-border);
+      border-radius: 10px;
+      background: rgba(0,0,0,0.3);
+      color: var(--text-primary);
+      font-size: 14px;
+      font-family: 'Inter', sans-serif;
+      margin-top: 8px;
+    }
+
+    .input:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+
+    .reflect-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .reflect-btn {
+      padding: 10px;
+      border: 2px solid var(--glass-border);
+      border-radius: 10px;
+      background: rgba(0,0,0,0.2);
+      cursor: pointer;
+      transition: all 0.2s;
       display: flex;
       align-items: center;
       gap: 10px;
-      padding: 12px;
-      background: rgba(0,0,0,0.2);
-      border-radius: 10px;
+      font-size: 13px;
+    }
+
+    .reflect-btn:hover {
+      border-color: var(--primary);
+    }
+
+    .reflect-btn.active {
+      border-color: var(--primary);
+      background: rgba(var(--primary-rgb), 0.2);
+    }
+
+    .reflect-btn.warm {
+      border-left: 3px solid var(--warning);
+    }
+
+    .reflect-btn.cold {
+      border-left: 3px solid var(--info);
+    }
+
+    .swatch {
+      width: 30px;
+      height: 30px;
+      border-radius: 6px;
+      border: 1px solid rgba(255,255,255,0.2);
+      flex-shrink: 0;
+    }
+
+    .color-preview {
+      padding: 15px;
+      border-radius: 12px;
+      background: rgba(0,0,0,0.3);
       border: 1px solid var(--glass-border);
+      margin-top: 15px;
+      text-align: center;
     }
-    
-    .info-item i {
-      font-size: 20px;
+
+    .swatch-large {
+      width: 100%;
+      height: 80px;
+      border-radius: 10px;
+      margin-top: 10px;
+      border: 2px solid var(--glass-border);
     }
-    
-    .info-content .label {
-      font-size: 10px;
-      color: var(--text-secondary);
-      text-transform: uppercase;
-      display: block;
-    }
-    
-    .info-content .value {
-      font-size: 14px;
-      font-weight: 600;
-      color: var(--text-primary);
-    }
-    
-    .color-swatches {
+
+    .section-header {
       display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 20px 0 10px 0;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--glass-border);
+    }
+
+    .section-header h4 {
+      margin: 0;
+      font-size: 16px;
+    }
+
+    .makeup-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
       gap: 8px;
-      flex-wrap: wrap;
       margin-top: 10px;
     }
-    
-    .color-swatch {
-      width: 45px;
-      height: 45px;
-      border-radius: 10px;
+
+    .makeup-swatch {
+      width: 100%;
+      aspect-ratio: 1;
+      border-radius: 8px;
       border: 2px solid var(--glass-border);
       cursor: pointer;
       transition: all 0.2s;
-      position: relative;
     }
-    
-    .color-swatch:hover {
+
+    .makeup-swatch:hover {
       transform: scale(1.1);
       border-color: var(--primary);
     }
-    
-    .share-buttons {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 10px;
-      margin-top: 20px;
-    }
-    
-    .share-btn {
-      padding: 12px;
-      border: none;
-      border-radius: 12px;
-      color: white;
-      font-weight: 600;
-      font-size: 13px;
-      cursor: pointer;
-      transition: all 0.2s;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 5px;
-    }
-    
-    .share-btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 20px rgba(0,0,0,0.3);
-    }
-    
-    .share-btn i {
-      font-size: 24px;
+
+    .makeup-swatch.active {
+      border-color: var(--primary);
+      border-width: 3px;
     }
   </style>
 </head>
@@ -177,18 +248,19 @@
                 <i class="fas fa-magic" style="color: var(--warning);"></i>
                 Specchio Magico AI
             </h1>
-            <p class="subtitle">Analisi look personalizzata</p>
+            <p class="subtitle">Studio look professionale</p>
         </div>
     </div>
 
+    <!-- UNLOCK -->
     <div id="unlock-check" class="card">
         <div style="text-align: center; padding: 40px 20px;">
             <div style="font-size: 64px; color: var(--warning); margin-bottom: 20px;">
                 <i class="fas fa-magic"></i>
             </div>
-            <h2 style="margin-bottom: 15px;">Sblocca Specchio Magico AI</h2>
+            <h2 style="margin-bottom: 15px;">Sblocca Specchio Magico</h2>
             <p style="color: var(--text-muted); line-height: 1.6; max-width: 400px; margin: 0 auto 30px;">
-                Analisi illimitate del look dei tuoi clienti con intelligenza artificiale.
+                Dashboard professionale per configurare look personalizzati dei tuoi clienti.
             </p>
             
             <div class="note note-warning" style="text-align: center; margin-bottom: 30px;">
@@ -206,6 +278,38 @@
         </div>
     </div>
 
+    <!-- GENDER SELECTION -->
+    <div id="gender-section" class="hidden">
+        <div class="card">
+            <h3 style="margin: 0 0 15px 0;">👤 Seleziona Genere Cliente</h3>
+            <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 20px;">
+                Questo determinerà le opzioni di styling disponibili
+            </p>
+            
+            <div class="gender-grid">
+                <div class="gender-btn" onclick="selectGender('F')" id="gender-f">
+                    <i class="fas fa-venus" style="color: var(--warning);"></i>
+                    <span class="label">Donna</span>
+                </div>
+                
+                <div class="gender-btn" onclick="selectGender('M')" id="gender-m">
+                    <i class="fas fa-mars" style="color: var(--primary);"></i>
+                    <span class="label">Uomo</span>
+                </div>
+                
+                <div class="gender-btn" onclick="selectGender('X')" id="gender-x">
+                    <i class="fas fa-genderless" style="color: var(--success);"></i>
+                    <span class="label">Fluid</span>
+                </div>
+            </div>
+        </div>
+        
+        <button class="btn" onclick="startCamera()" style="margin-top: 15px; width: 100%;" id="btn-start-camera" disabled>
+            <i class="fas fa-camera"></i> Scatta Foto Cliente
+        </button>
+    </div>
+
+    <!-- CAMERA -->
     <div id="camera-section" class="hidden">
         <div class="note" style="margin-bottom: 20px;">
             <i class="fas fa-info-circle"></i> <strong>Consigli:</strong> Viso frontale, buona illuminazione, sfondo neutro
@@ -228,145 +332,203 @@
             </div>
         </div>
         
-        <button class="btn btn-secondary" onclick="stopCamera()" style="margin-top: 15px; width: 100%;">
+        <button class="btn btn-secondary" onclick="cancelCamera()" style="margin-top: 15px; width: 100%;">
             <i class="fas fa-times"></i> Annulla
         </button>
     </div>
 
-    <div id="preview-section" class="hidden">
+    <!-- CONFIGURATION DASHBOARD -->
+    <div id="config-section" class="hidden">
         <div class="card">
-            <img id="photo-preview" style="width: 100%; border-radius: 12px; margin-bottom: 20px;">
-            
-            <div class="btn-container">
-                <button class="btn btn-secondary" onclick="retakePhoto()">
-                    <i class="fas fa-redo"></i> Riscatta
-                </button>
-                <button class="btn" onclick="analyzePhoto()">
-                    <i class="fas fa-sparkles"></i> Analizza
-                </button>
+            <img id="client-photo" style="width: 100%; border-radius: 12px;">
+        </div>
+
+        <div class="card" style="margin-top: 15px;">
+            <h3 style="margin: 0 0 5px 0;">🎨 Configurazione Look</h3>
+            <p style="color: var(--text-muted); font-size: 13px; margin: 0;">
+                Genere: <strong id="selected-gender-label">-</strong>
+            </p>
+
+            <!-- CAPELLI -->
+            <div class="section-header">
+                <i class="fas fa-cut" style="color: var(--warning); font-size: 20px;"></i>
+                <h4>Capelli</h4>
             </div>
+
+            <label style="font-size: 13px; color: var(--text-secondary); text-transform: uppercase; font-weight: 600;">Tipo Taglio</label>
+            <select id="haircut" class="input"></select>
+
+            <label style="font-size: 13px; color: var(--text-secondary); text-transform: uppercase; font-weight: 600; display: block; margin-top: 15px;">Altezza Tono Base</label>
+            <select id="base-tone" class="input" onchange="updateColorPreview()">
+                <option value="1">1 - Nero</option>
+                <option value="2">2 - Bruno</option>
+                <option value="3">3 - Castano Scuro</option>
+                <option value="4">4 - Castano</option>
+                <option value="5">5 - Castano Chiaro</option>
+                <option value="6" selected>6 - Biondo Scuro</option>
+                <option value="7">7 - Biondo</option>
+                <option value="8">8 - Biondo Chiaro</option>
+                <option value="9">9 - Biondo Chiarissimo</option>
+                <option value="10">10 - Platino</option>
+            </select>
+
+            <label style="font-size: 13px; color: var(--text-secondary); text-transform: uppercase; font-weight: 600; display: block; margin-top: 15px;">Riflesso</label>
+            <div class="reflect-grid">
+                <div class="reflect-btn active" onclick="selectReflect('0')" data-reflect="0">
+                    <div class="swatch" style="background: linear-gradient(135deg, #8b7355 0%, #6b5645 100%);"></div>
+                    <span>.0 Naturale</span>
+                </div>
+                
+                <div class="reflect-btn cold" onclick="selectReflect('1')" data-reflect="1">
+                    <div class="swatch" style="background: #a8a8a8;"></div>
+                    <span>.1 Cenere ❄️</span>
+                </div>
+                
+                <div class="reflect-btn cold" onclick="selectReflect('2')" data-reflect="2">
+                    <div class="swatch" style="background: #b8a8c8;"></div>
+                    <span>.2 Perlato ❄️</span>
+                </div>
+                
+                <div class="reflect-btn warm" onclick="selectReflect('3')" data-reflect="3">
+                    <div class="swatch" style="background: #d4af37;"></div>
+                    <span>.3 Dorato 🔥</span>
+                </div>
+                
+                <div class="reflect-btn warm" onclick="selectReflect('4')" data-reflect="4">
+                    <div class="swatch" style="background: #b87333;"></div>
+                    <span>.4 Ramato 🔥</span>
+                </div>
+                
+                <div class="reflect-btn warm" onclick="selectReflect('5')" data-reflect="5">
+                    <div class="swatch" style="background: #c04000;"></div>
+                    <span>.5 Mogano 🔥</span>
+                </div>
+                
+                <div class="reflect-btn warm" onclick="selectReflect('6')" data-reflect="6">
+                    <div class="swatch" style="background: #c41e3a;"></div>
+                    <span>.6 Rosso 🔥</span>
+                </div>
+                
+                <div class="reflect-btn cold" onclick="selectReflect('7')" data-reflect="7">
+                    <div class="swatch" style="background: #8a9a5b;"></div>
+                    <span>.7 Mat ❄️</span>
+                </div>
+            </div>
+
+            <label style="display: flex; align-items: center; gap: 8px; margin-top: 15px; cursor: pointer;">
+                <input type="checkbox" id="double-reflect" onchange="updateColorPreview()" style="width: 18px; height: 18px;">
+                <span style="font-size: 13px;">Intensifica riflesso (doppio)</span>
+            </label>
+
+            <div class="color-preview">
+                <div style="font-size: 12px; color: var(--text-secondary); margin-bottom: 5px;">CODICE COLORE</div>
+                <div style="font-size: 28px; font-weight: bold; color: var(--primary);" id="color-code">6.0</div>
+                <div class="swatch-large" id="color-swatch"></div>
+            </div>
+
+            <!-- TRUCCO (Donna/Fluid) -->
+            <div id="makeup-section" class="hidden">
+                <div class="section-header">
+                    <i class="fas fa-paint-brush" style="color: var(--warning); font-size: 20px;"></i>
+                    <h4>Trucco</h4>
+                </div>
+
+                <label style="font-size: 13px; color: var(--text-secondary); text-transform: uppercase; font-weight: 600;">Occhi</label>
+                <select id="eye-makeup" class="input">
+                    <option value="none">Nessuno</option>
+                    <option value="natural">Naturale</option>
+                    <option value="smokey">Smokey Eyes</option>
+                    <option value="cat">Cat Eye</option>
+                    <option value="glam">Glam</option>
+                </select>
+
+                <label style="font-size: 13px; color: var(--text-secondary); text-transform: uppercase; font-weight: 600; display: block; margin-top: 15px;">Labbra</label>
+                <div class="makeup-grid">
+                    <div class="makeup-swatch active" style="background: transparent; border: 2px dashed var(--glass-border);" onclick="selectLipColor('none')" data-lip="none"></div>
+                    <div class="makeup-swatch" style="background: #d4a5a5;" onclick="selectLipColor('#d4a5a5')" data-lip="nude"></div>
+                    <div class="makeup-swatch" style="background: #ff6b9d;" onclick="selectLipColor('#ff6b9d')" data-lip="pink"></div>
+                    <div class="makeup-swatch" style="background: #c41e3a;" onclick="selectLipColor('#c41e3a')" data-lip="red"></div>
+                    <div class="makeup-swatch" style="background: #8b0000;" onclick="selectLipColor('#8b0000')" data-lip="dark"></div>
+                    <div class="makeup-swatch" style="background: #ff4500;" onclick="selectLipColor('#ff4500')" data-lip="orange"></div>
+                    <div class="makeup-swatch" style="background: #b565a7;" onclick="selectLipColor('#b565a7')" data-lip="mauve"></div>
+                    <div class="makeup-swatch" style="background: #704241;" onclick="selectLipColor('#704241')" data-lip="brown"></div>
+                </div>
+            </div>
+
+            <!-- BARBA (Uomo/Fluid) -->
+            <div id="beard-section" class="hidden">
+                <div class="section-header">
+                    <i class="fas fa-user-tie" style="color: var(--primary); font-size: 20px;"></i>
+                    <h4>Barba</h4>
+                </div>
+
+                <label style="font-size: 13px; color: var(--text-secondary); text-transform: uppercase; font-weight: 600;">Stile</label>
+                <select id="beard-style" class="input">
+                    <option value="none">Rasato</option>
+                    <option value="stubble">Barba Incolta (3 giorni)</option>
+                    <option value="short">Barba Corta</option>
+                    <option value="medium">Barba Media</option>
+                    <option value="full">Barba Piena</option>
+                    <option value="goatee">Pizzetto</option>
+                </select>
+
+                <label style="font-size: 13px; color: var(--text-secondary); text-transform: uppercase; font-weight: 600; display: block; margin-top: 15px;">Colore Barba</label>
+                <div class="makeup-grid">
+                    <div class="makeup-swatch active" style="background: #1a1a1a;" onclick="selectBeardColor('#1a1a1a')" data-beard="black"></div>
+                    <div class="makeup-swatch" style="background: #3d2314;" onclick="selectBeardColor('#3d2314')" data-beard="dark-brown"></div>
+                    <div class="makeup-swatch" style="background: #6b5645;" onclick="selectBeardColor('#6b5645')" data-beard="brown"></div>
+                    <div class="makeup-swatch" style="background: #b87333;" onclick="selectBeardColor('#b87333')" data-beard="red"></div>
+                    <div class="makeup-swatch" style="background: #d4af37;" onclick="selectBeardColor('#d4af37')" data-beard="blonde"></div>
+                    <div class="makeup-swatch" style="background: #c0c0c0;" onclick="selectBeardColor('#c0c0c0')" data-beard="grey"></div>
+                    <div class="makeup-swatch" style="background: #f5f5f5;" onclick="selectBeardColor('#f5f5f5')" data-beard="white"></div>
+                    <div class="makeup-swatch" style="background: linear-gradient(135deg, #6b5645 0%, #c0c0c0 100%);" onclick="selectBeardColor('salt-pepper')" data-beard="salt-pepper"></div>
+                </div>
+            </div>
+
+            <button class="btn" onclick="generatePreview()" style="margin-top: 30px; width: 100%;">
+                <i class="fas fa-magic"></i> Genera Anteprima
+            </button>
         </div>
     </div>
 
+    <!-- RESULTS -->
     <div id="results-section" class="hidden">
         <div class="card">
-            <canvas id="before-after-canvas" style="display: none;"></canvas>
-            <img id="before-after-img" style="width: 100%; border-radius: 12px;">
+            <h3 style="margin: 0 0 15px 0;">🎨 Anteprima Look</h3>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                <div>
+                    <div style="font-size: 11px; color: var(--text-secondary); margin-bottom: 5px; text-transform: uppercase; font-weight: 600;">Prima</div>
+                    <img id="before-img" style="width: 100%; border-radius: 8px;">
+                </div>
+                <div>
+                    <div style="font-size: 11px; color: var(--text-secondary); margin-bottom: 5px; text-transform: uppercase; font-weight: 600;">Dopo</div>
+                    <div id="after-img" style="width: 100%; aspect-ratio: 1; border-radius: 8px; background: #1a1a2e; display: flex; align-items: center; justify-content: center; color: var(--warning); font-size: 48px;">
+                        <i class="fas fa-magic"></i>
+                    </div>
+                </div>
+            </div>
         </div>
-        
+
         <div class="card" style="margin-top: 15px;">
-            <h3 style="margin: 0 0 15px 0;">📊 Analisi Professionale</h3>
-            
-            <div class="info-grid">
-                <div class="info-item">
-                    <i class="fas fa-user-circle" style="color: var(--primary);"></i>
-                    <div class="info-content">
-                        <span class="label">Forma Viso</span>
-                        <span class="value" id="face-shape">...</span>
-                    </div>
-                </div>
-                
-                <div class="info-item">
-                    <i class="fas fa-cut" style="color: var(--warning);"></i>
-                    <div class="info-content">
-                        <span class="label">Tipo Capelli</span>
-                        <span class="value" id="hair-type">...</span>
-                    </div>
-                </div>
-                
-                <div class="info-item">
-                    <i class="fas fa-ruler-vertical" style="color: var(--info);"></i>
-                    <div class="info-content">
-                        <span class="label">Lunghezza</span>
-                        <span class="value" id="hair-length">...</span>
-                    </div>
-                </div>
-                
-                <div class="info-item">
-                    <i class="fas fa-palette" style="color: var(--success);"></i>
-                    <div class="info-content">
-                        <span class="label">Carnagione</span>
-                        <span class="value" id="skin-tone">...</span>
-                    </div>
-                </div>
-            </div>
+            <h3 style="margin: 0 0 15px 0;">📋 Riepilogo Look</h3>
+            <div id="summary-content"></div>
         </div>
-        
-        <div class="card" style="margin-top: 15px;">
-            <h3 style="margin: 0 0 15px 0;">
-                <i class="fas fa-star" style="color: var(--warning);"></i> Look Consigliato
-            </h3>
+
+        <div class="btn-container" style="margin-top: 15px;">
+            <button class="btn btn-secondary" onclick="backToConfig()">
+                <i class="fas fa-edit"></i> Modifica
+            </button>
             
-            <h4 id="recommended-cut" style="margin: 0 0 10px 0; font-size: 18px;">...</h4>
-            <p id="recommendation-desc" style="margin: 0 0 15px 0; color: var(--text-muted); font-size: 14px; line-height: 1.6;">...</p>
+            <button class="btn" onclick="saveLook()">
+                <i class="fas fa-save"></i> Salva
+            </button>
             
-            <div style="padding-top: 15px; border-top: 1px solid var(--glass-border);">
-                <span style="font-size: 12px; color: var(--text-secondary); text-transform: uppercase; font-weight: 600;">Palette Colori</span>
-                <div id="color-swatches" class="color-swatches"></div>
-            </div>
-        </div>
-        
-        <div style="margin-top: 20px;">
-            <div class="btn-container" style="grid-template-columns: 1fr 1fr 1fr;">
-                <button class="btn btn-secondary" onclick="newAnalysis()">
-                    <i class="fas fa-camera"></i> Nuova
-                </button>
-                
-                <button class="btn" onclick="downloadImage()">
-                    <i class="fas fa-download"></i> Salva
-                </button>
-                
-                <button class="btn" onclick="openShareMenu()">
-                    <i class="fas fa-share-alt"></i> Condividi
-                </button>
-            </div>
+            <button class="btn" onclick="shareLook()">
+                <i class="fas fa-share-alt"></i> Condividi
+            </button>
         </div>
     </div>
 
-  </div>
-
-  <div id="share-overlay" class="modal-overlay hidden">
-    <div class="modal-content" style="max-width: 450px;">
-      <h3 style="margin-bottom: 20px; text-align: center;">
-        <i class="fas fa-share-alt"></i> Condividi Risultato
-      </h3>
-      
-      <div class="share-buttons">
-        <button class="share-btn" onclick="shareToWhatsApp()" style="background: #25D366;">
-          <i class="fab fa-whatsapp"></i>
-          <span>WhatsApp</span>
-        </button>
-        
-        <button class="share-btn" onclick="shareToTelegram()" style="background: #0088cc;">
-          <i class="fab fa-telegram"></i>
-          <span>Telegram</span>
-        </button>
-        
-        <button class="share-btn" onclick="shareToFacebook()" style="background: #1877F2;">
-          <i class="fab fa-facebook"></i>
-          <span>Facebook</span>
-        </button>
-        
-        <button class="share-btn" onclick="shareToInstagram()" style="background: linear-gradient(45deg, #f09433 0%,#e6683c 25%,#dc2743 50%,#cc2366 75%,#bc1888 100%);">
-          <i class="fab fa-instagram"></i>
-          <span>Instagram</span>
-        </button>
-        
-        <button class="share-btn" onclick="copyImageLink()" style="background: var(--primary);">
-          <i class="fas fa-link"></i>
-          <span>Copia</span>
-        </button>
-        
-        <button class="share-btn" onclick="shareNative()" style="background: var(--info);">
-          <i class="fas fa-share"></i>
-          <span>Altro</span>
-        </button>
-      </div>
-      
-      <button class="btn btn-secondary" onclick="closeShareMenu()" style="margin-top: 20px; width: 100%;">
-        <i class="fas fa-times"></i> Chiudi
-      </button>
-    </div>
   </div>
 
   <div class="fab-container">
@@ -382,20 +544,69 @@
 
     let currentStream = null;
     let capturedBlob = null;
-    let analysisResult = null;
     let facingMode = 'environment';
+    let selectedGender = null;
+    let selectedReflect = '0';
+    let lookConfig = {};
+
+    const HAIRCUTS = {
+      F: ['Bob', 'Long Bob', 'Pixie', 'Shag', 'Layers', 'Blunt Cut', 'Mullet', 'Wolf Cut'],
+      M: ['Buzz Cut', 'Crew Cut', 'Undercut', 'Fade', 'Pompadour', 'Quiff', 'Side Part', 'Textured Crop'],
+      X: ['Bob', 'Long Bob', 'Pixie', 'Shag', 'Undercut', 'Fade', 'Mullet', 'Wolf Cut']
+    };
+
+    const REFLECT_COLORS = {
+      '0': ['#8b7355', '#6b5645'],
+      '1': ['#a8a8a8', '#888888'],
+      '2': ['#b8a8c8', '#9888a8'],
+      '3': ['#d4af37', '#b48f27'],
+      '4': ['#b87333', '#986323'],
+      '5': ['#c04000', '#a03000'],
+      '6': ['#c41e3a', '#a40e2a'],
+      '7': ['#8a9a5b', '#6a7a4b']
+    };
 
     function unlockFeature() {
       showLoader('Elaborazione pagamento...');
       setTimeout(() => {
         hideLoader();
         document.getElementById('unlock-check').classList.add('hidden');
-        startCamera();
+        document.getElementById('gender-section').classList.remove('hidden');
       }, 2000);
     }
 
+    function selectGender(gender) {
+      selectedGender = gender;
+      document.querySelectorAll('.gender-btn').forEach(btn => btn.classList.remove('active'));
+      document.getElementById(`gender-${gender.toLowerCase()}`).classList.add('active');
+      document.getElementById('btn-start-camera').disabled = false;
+      
+      const labels = { F: 'Donna', M: 'Uomo', X: 'Fluid' };
+      document.getElementById('selected-gender-label').textContent = labels[gender];
+      
+      const haircutSelect = document.getElementById('haircut');
+      haircutSelect.innerHTML = HAIRCUTS[gender].map(cut => `<option value="${cut}">${cut}</option>`).join('');
+      
+      if (gender === 'F' || gender === 'X') {
+        document.getElementById('makeup-section').classList.remove('hidden');
+      } else {
+        document.getElementById('makeup-section').classList.add('hidden');
+      }
+      
+      if (gender === 'M' || gender === 'X') {
+        document.getElementById('beard-section').classList.remove('hidden');
+      } else {
+        document.getElementById('beard-section').classList.add('hidden');
+      }
+      
+      if (tg?.HapticFeedback) tg.HapticFeedback.impactOccurred('medium');
+    }
+
     async function startCamera() {
+      if (!selectedGender) return;
+      document.getElementById('gender-section').classList.add('hidden');
       document.getElementById('camera-section').classList.remove('hidden');
+      
       try {
         currentStream = await navigator.mediaDevices.getUserMedia({ 
           video: { 
@@ -406,12 +617,7 @@
         });
         const video = document.getElementById('video-preview');
         video.srcObject = currentStream;
-        
-        if (facingMode === 'user') {
-          video.style.transform = 'scaleX(-1)';
-        } else {
-          video.style.transform = 'scaleX(1)';
-        }
+        video.style.transform = facingMode === 'user' ? 'scaleX(-1)' : 'scaleX(1)';
       } catch (err) {
         console.error('Camera error:', err);
         showToast('Errore accesso camera');
@@ -420,7 +626,6 @@
 
     async function toggleCamera() {
       if (tg?.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
-      
       stopCamera();
       facingMode = facingMode === 'environment' ? 'user' : 'environment';
       await startCamera();
@@ -443,10 +648,13 @@
       
       canvas.toBlob((blob) => {
         capturedBlob = blob;
-        document.getElementById('photo-preview').src = URL.createObjectURL(blob);
+        const url = URL.createObjectURL(blob);
+        document.getElementById('client-photo').src = url;
+        document.getElementById('before-img').src = url;
         stopCamera();
         document.getElementById('camera-section').classList.add('hidden');
-        document.getElementById('preview-section').classList.remove('hidden');
+        document.getElementById('config-section').classList.remove('hidden');
+        updateColorPreview();
       }, 'image/jpeg', 0.85);
     }
 
@@ -457,144 +665,126 @@
       }
     }
 
-    function retakePhoto() {
+    function cancelCamera() {
       if (tg?.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
-      document.getElementById('preview-section').classList.add('hidden');
-      startCamera();
+      stopCamera();
+      document.getElementById('camera-section').classList.add('hidden');
+      document.getElementById('gender-section').classList.remove('hidden');
     }
 
-    async function analyzePhoto() {
+    function selectReflect(reflect) {
+      selectedReflect = reflect;
+      document.querySelectorAll('.reflect-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelector(`[data-reflect="${reflect}"]`).classList.add('active');
+      updateColorPreview();
+      if (tg?.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
+    }
+
+    function updateColorPreview() {
+      const baseTone = document.getElementById('base-tone').value;
+      const isDouble = document.getElementById('double-reflect').checked;
+      const reflectSuffix = isDouble ? selectedReflect + selectedReflect : selectedReflect;
+      const code = `${baseTone}.${reflectSuffix}`;
+      
+      document.getElementById('color-code').textContent = code;
+      
+      const colors = REFLECT_COLORS[selectedReflect];
+      const gradient = `linear-gradient(135deg, ${colors[0]} 0%, ${colors[1]} 100%)`;
+      document.getElementById('color-swatch').style.background = gradient;
+    }
+
+    function selectLipColor(color) {
+      document.querySelectorAll('[data-lip]').forEach(btn => btn.classList.remove('active'));
+      event.target.classList.add('active');
+      if (tg?.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
+    }
+
+    function selectBeardColor(color) {
+      document.querySelectorAll('[data-beard]').forEach(btn => btn.classList.remove('active'));
+      event.target.classList.add('active');
+      if (tg?.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
+    }
+
+    function generatePreview() {
       if (tg?.HapticFeedback) tg.HapticFeedback.impactOccurred('medium');
-      showLoader('Analizzo il tuo look...');
-      document.getElementById('preview-section').classList.add('hidden');
+      showLoader('Generazione anteprima...');
+      
+      lookConfig = {
+        gender: selectedGender,
+        haircut: document.getElementById('haircut').value,
+        colorCode: document.getElementById('color-code').textContent,
+        baseTone: document.getElementById('base-tone').value,
+        reflect: selectedReflect
+      };
+      
+      if (selectedGender === 'F' || selectedGender === 'X') {
+        lookConfig.eyeMakeup = document.getElementById('eye-makeup').value;
+        const activeLip = document.querySelector('[data-lip].active');
+        lookConfig.lipColor = activeLip ? activeLip.getAttribute('data-lip') : 'none';
+      }
+      
+      if (selectedGender === 'M' || selectedGender === 'X') {
+        lookConfig.beardStyle = document.getElementById('beard-style').value;
+        const activeBeard = document.querySelector('[data-beard].active');
+        lookConfig.beardColor = activeBeard ? activeBeard.getAttribute('data-beard') : 'black';
+      }
       
       setTimeout(() => {
-        analysisResult = {
-          analysis: { faceShape: 'Ovale', hairType: 'Mossi', hairLength: 'Medio', skinTone: 'Caldo' },
-          recommendations: [{
-            cutName: 'Textured Lob',
-            description: 'Un long bob scalato che valorizza la tua forma ovale. Le texture morbide donano movimento e modernità.',
-            colors: ['#8b6f47', '#a0826d', '#c19a6b']
-          }]
-        };
-        generateBeforeAfter();
         displayResults();
         hideLoader();
-      }, 3000);
-    }
-
-    function generateBeforeAfter() {
-      const canvas = document.getElementById('before-after-canvas');
-      canvas.width = 1600;
-      canvas.height = 800;
-      const ctx = canvas.getContext('2d');
-      const img = new Image();
-      img.onload = () => {
-        ctx.drawImage(img, 0, 0, 800, 800);
-        ctx.fillStyle = 'rgba(0,0,0,0.85)';
-        ctx.fillRect(0, 0, 800, 60);
-        ctx.fillStyle = '#fff';
-        ctx.font = 'bold 28px Inter';
-        ctx.fillText('👤 Prima', 30, 42);
-        
-        ctx.fillStyle = '#1a1a2e';
-        ctx.fillRect(800, 0, 800, 800);
-        ctx.fillStyle = '#f59e0b';
-        ctx.font = 'bold 48px Inter';
-        ctx.textAlign = 'center';
-        ctx.fillText('Look Suggerito', 1200, 380);
-        ctx.font = '24px Inter';
-        ctx.fillStyle = '#888';
-        ctx.fillText(analysisResult.recommendations[0].cutName, 1200, 430);
-        
-        ctx.textAlign = 'left';
-        ctx.fillStyle = 'rgba(0,0,0,0.85)';
-        ctx.fillRect(800, 0, 800, 60);
-        ctx.fillStyle = '#fff';
-        ctx.font = 'bold 28px Inter';
-        ctx.fillText('✨ Dopo', 830, 42);
-        
-        ctx.fillStyle = '#4cd964';
-        ctx.font = 'bold 80px Arial';
-        ctx.textAlign = 'center';
-        ctx.fillText('→', 800, 440);
-        
-        document.getElementById('before-after-img').src = canvas.toDataURL('image/jpeg', 0.90);
-      };
-      img.src = document.getElementById('photo-preview').src;
+      }, 2000);
     }
 
     function displayResults() {
-      document.getElementById('face-shape').textContent = analysisResult.analysis.faceShape;
-      document.getElementById('hair-type').textContent = analysisResult.analysis.hairType;
-      document.getElementById('hair-length').textContent = analysisResult.analysis.hairLength;
-      document.getElementById('skin-tone').textContent = analysisResult.analysis.skinTone;
+      let summary = `
+        <div style="padding: 12px; background: rgba(0,0,0,0.2); border-radius: 8px; margin-bottom: 10px;">
+          <strong style="color: var(--warning);">✂️ Capelli</strong><br>
+          <span style="font-size: 13px;">Taglio: ${lookConfig.haircut}</span><br>
+          <span style="font-size: 13px;">Colore: ${lookConfig.colorCode}</span>
+        </div>
+      `;
       
-      const reco = analysisResult.recommendations[0];
-      document.getElementById('recommended-cut').textContent = reco.cutName;
-      document.getElementById('recommendation-desc').textContent = reco.description;
+      if (lookConfig.eyeMakeup) {
+        summary += `
+          <div style="padding: 12px; background: rgba(0,0,0,0.2); border-radius: 8px; margin-bottom: 10px;">
+            <strong style="color: var(--warning);">💄 Trucco</strong><br>
+            <span style="font-size: 13px;">Occhi: ${lookConfig.eyeMakeup}</span><br>
+            <span style="font-size: 13px;">Labbra: ${lookConfig.lipColor}</span>
+          </div>
+        `;
+      }
       
-      const swatches = document.getElementById('color-swatches');
-      swatches.innerHTML = '';
-      reco.colors.forEach(color => {
-        const swatch = document.createElement('div');
-        swatch.className = 'color-swatch';
-        swatch.style.background = color;
-        swatches.appendChild(swatch);
-      });
+      if (lookConfig.beardStyle) {
+        summary += `
+          <div style="padding: 12px; background: rgba(0,0,0,0.2); border-radius: 8px;">
+            <strong style="color: var(--primary);">🧔 Barba</strong><br>
+            <span style="font-size: 13px;">Stile: ${lookConfig.beardStyle}</span><br>
+            <span style="font-size: 13px;">Colore: ${lookConfig.beardColor}</span>
+          </div>
+        `;
+      }
       
+      document.getElementById('summary-content').innerHTML = summary;
+      document.getElementById('config-section').classList.add('hidden');
       document.getElementById('results-section').classList.remove('hidden');
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
-    function newAnalysis() {
+    function backToConfig() {
       if (tg?.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
       document.getElementById('results-section').classList.add('hidden');
-      startCamera();
+      document.getElementById('config-section').classList.remove('hidden');
     }
 
-    function downloadImage() {
+    function saveLook() {
       if (tg?.HapticFeedback) tg.HapticFeedback.impactOccurred('medium');
-      const canvas = document.getElementById('before-after-canvas');
-      const link = document.createElement('a');
-      link.download = `specchio-magico-${Date.now()}.jpg`;
-      link.href = canvas.toDataURL('image/jpeg', 0.90);
-      link.click();
-      showToast('Immagine salvata!');
+      showToast('Look salvato!');
     }
 
-    function openShareMenu() {
-      if (tg?.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
-      document.getElementById('share-overlay').classList.remove('hidden');
+    function shareLook() {
+      if (tg?.HapticFeedback) tg.HapticFeedback.impactOccurred('medium');
+      showToast('Funzione condivisione in arrivo');
     }
-
-    function closeShareMenu() {
-      document.getElementById('share-overlay').classList.add('hidden');
-    }
-
-    async function shareNative() {
-      const canvas = document.getElementById('before-after-canvas');
-      canvas.toBlob(async (blob) => {
-        const file = new File([blob], 'specchio-magico.jpg', { type: 'image/jpeg' });
-        if (navigator.canShare && navigator.canShare({ files: [file] })) {
-          try {
-            await navigator.share({ title: 'Il mio nuovo look!', files: [file] });
-            if (tg?.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
-            closeShareMenu();
-          } catch (err) {
-            if (err.name !== 'AbortError') console.error(err);
-          }
-        } else {
-          showToast('Condivisione non supportata');
-        }
-      }, 'image/jpeg', 0.90);
-    }
-
-    function shareToWhatsApp() { showToast('Coming soon'); closeShareMenu(); }
-    function shareToTelegram() { showToast('Coming soon'); closeShareMenu(); }
-    function shareToFacebook() { showToast('Coming soon'); closeShareMenu(); }
-    function shareToInstagram() { shareNative(); }
-    function copyImageLink() { showToast('Coming soon'); closeShareMenu(); }
 
     function goBack() {
       if (tg?.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
@@ -618,10 +808,6 @@
         alert(message);
       }
     }
-
-    document.getElementById('share-overlay').addEventListener('click', (e) => {
-      if (e.target.id === 'share-overlay') closeShareMenu();
-    });
   </script>
 
 </body>
