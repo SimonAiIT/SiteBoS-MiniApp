@@ -296,7 +296,7 @@ document.querySelectorAll('input, select').forEach(el => el.addEventListener('in
 // OPERATOR INFO MODAL
 window.showOperatorInfo = () => {
     if(dom.opInfoModal) {
-        // ✅ EVIDENZIA TIER CORRENTE
+        // ✅ EVIDENZIA TIER CORRENTE (solo luce pulsante)
         highlightCurrentTier();
         dom.opInfoModal.classList.remove('hidden');
     }
@@ -306,7 +306,7 @@ window.closeOperatorInfo = () => {
     if(dom.opInfoModal) dom.opInfoModal.classList.add('hidden');
 }
 
-// 🎯 EVIDENZIA TIER CORRENTE
+// 🎯 EVIDENZIA TIER CORRENTE (SOLO EFFETTO LUCE)
 function highlightCurrentTier() {
     const currentTier = getCurrentTier();
     const tiers = ['starter', 'growth', 'enterprise'];
@@ -315,23 +315,11 @@ function highlightCurrentTier() {
         const el = document.getElementById(`tier-${tier}`);
         if (!el) return;
         
-        // Rimuovi badge esistenti
-        const existingBadge = el.querySelector('.tier-badge');
-        if (existingBadge) existingBadge.remove();
-        
         if (tier === currentTier) {
-            // Evidenzia tier corrente
+            // ✅ Solo effetto luminoso pulsante
             el.style.background = 'rgba(91, 111, 237, 0.2)';
-            el.style.boxShadow = '0 0 20px rgba(91, 111, 237, 0.3)';
+            el.style.boxShadow = '0 0 20px rgba(91, 111, 237, 0.4)';
             el.style.animation = 'pulse 2s ease-in-out infinite';
-            
-            // Aggiungi badge "SEI QUI"
-            const badge = document.createElement('div');
-            badge.className = 'tier-badge';
-            badge.style.cssText = 'position:absolute; top:8px; right:8px; background:var(--primary); color:white; padding:2px 8px; border-radius:4px; font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px;';
-            badge.innerText = '🎯 Sei qui';
-            el.style.position = 'relative';
-            el.appendChild(badge);
         } else {
             // Reset altri tier
             el.style.background = 'rgba(255,255,255,0.05)';
