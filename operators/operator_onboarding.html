@@ -28,6 +28,8 @@
     .cert-input-group { display: flex; gap: 8px; margin-bottom: 8px; }
     .cert-input-group input { flex: 1; }
     .cert-input-group button { padding: 8px 12px; background: var(--danger); border: none; color: white; border-radius: 6px; cursor: pointer; }
+    
+    .cv-upload-card { background: linear-gradient(135deg, rgba(255, 193, 7, 0.2) 0%, rgba(255, 193, 7, 0.05) 100%); border-left: 3px solid #ffc107; margin-bottom: 20px; }
   </style>
 </head>
 <body>
@@ -142,6 +144,28 @@
       <div class="step-content hidden fade-in" id="step-2">
         <h2 data-i18n="h_profile">Profilo Professionale</h2>
         <p class="subtitle" data-i18n="sub_profile">Competenze e esperienza lavorativa.</p>
+
+        <!-- 🚀 UPLOAD CV MAGIC -->
+        <div class="card cv-upload-card">
+          <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+            <i class="fas fa-file-upload" style="font-size: 28px; color: #ffc107;"></i>
+            <div>
+              <div style="font-weight: 600; font-size: 15px; margin-bottom: 4px;" data-i18n="cv_magic_title">⚡ Risparmia tempo!</div>
+              <div style="font-size: 12px; color: var(--text-secondary);" data-i18n="cv_magic_desc">
+                Carica il tuo CV e compileremo tutto automaticamente
+              </div>
+            </div>
+          </div>
+          
+          <input type="file" id="cv_upload" accept=".pdf,application/pdf" style="display:none;">
+          <button type="button" class="btn btn-secondary btn-block" onclick="document.getElementById('cv_upload').click()">
+            <i class="fas fa-upload"></i> <span data-i18n="btn_upload_cv">Carica CV (PDF)</span>
+          </button>
+          
+          <div id="cv-status" class="hidden" style="margin-top: 10px; padding: 10px; background: rgba(0,0,0,0.3); border-radius: 6px; font-size: 12px;">
+            <div id="cv-status-text"></div>
+          </div>
+        </div>
 
         <!-- INDIRIZZO -->
         <div class="form-section">
