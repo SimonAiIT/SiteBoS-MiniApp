@@ -142,18 +142,17 @@
       <div class="card">
           <div class="card-header" style="border-bottom: 1px solid var(--glass-border); margin-bottom:15px;">
             <h3 style="margin:0;"><i class="fas fa-users"></i> <span data-i18n="op_title">Gestione Operatori</span></h3>
-            <span id="slot-counter" style="font-size:12px; background:rgba(255,255,255,0.1); padding:4px 10px; border-radius:10px;">0 / 3</span>
+            <span id="slot-counter" style="font-size:12px; background:rgba(255,255,255,0.1); padding:4px 10px; border-radius:10px; cursor:pointer;" onclick="showOperatorInfo()">
+              <i class="fas fa-info-circle"></i> <span id="operator-count">0</span> attivi
+            </span>
           </div>
           
           <div id="operators-list"></div>
           
-          <button type="button" class="btn btn-secondary btn-block mt-2" id="add-operator-btn" onclick="openModal()">
-            <i class="fas fa-plus-circle"></i> <span data-i18n="op_btn_invite">Invita Nuovo Operatore</span>
+          <button type="button" class="btn btn-secondary btn-block mt-2" id="add-operator-btn" onclick="requestNewOperator()">
+            <i class="fas fa-plus-circle"></i> <span data-i18n="op_btn_invite">Aggiungi Operatore</span>
+            <small style="display:block; font-size:10px; opacity:0.7; margin-top:4px;">10.000 crediti</small>
           </button>
-          
-          <div class="hint hidden text-center" id="upgrade-prompt" style="color:var(--warning); margin-top:10px;">
-            <p data-i18n="op_limit_reached">Limite raggiunto.</p>
-          </div>
       </div>
 
       <!-- ⚠️ RIMOSSO bottone inline, ora usa FAB -->
@@ -187,6 +186,70 @@
       <div class="btn-container">
         <button type="button" class="btn btn-secondary col" onclick="closeModal()"><span data-i18n="btn_cancel">Annulla</span></button>
         <button type="button" class="btn btn-primary col" onclick="generateInvitation()"><span data-i18n="btn_generate">Genera</span></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL INFO OPERATORI -->
+  <div id="operator-info-modal" class="modal-overlay hidden">
+    <div class="modal-content" style="max-width: 500px;">
+      <h3 style="display:flex; align-items:center; gap:10px;">
+        <i class="fas fa-user-plus" style="color:var(--primary);"></i>
+        Sistema Operatori Premium
+      </h3>
+      
+      <div class="note" style="margin:15px 0;">
+        <strong>Costo: 10.000 crediti per operatore</strong>
+      </div>
+      
+      <div style="font-size:13px; line-height:1.6; color:var(--text-muted);">
+        <p style="margin-bottom:15px;">Ogni operatore aggiunto al sistema include:</p>
+        
+        <div style="display:flex; flex-direction:column; gap:12px; margin-bottom:20px;">
+          <div style="display:flex; align-items:start; gap:10px;">
+            <i class="fas fa-chart-line" style="color:var(--success); margin-top:3px;"></i>
+            <div>
+              <strong style="color:#fff;">Analisi Comportamento</strong><br>
+              Monitoraggio attività e performance in tempo reale
+            </div>
+          </div>
+          
+          <div style="display:flex; align-items:start; gap:10px;">
+            <i class="fas fa-brain" style="color:var(--primary); margin-top:3px;"></i>
+            <div>
+              <strong style="color:#fff;">Soft Skills Assessment</strong><br>
+              Profilo completo con 150 domande e valutazione AI
+            </div>
+          </div>
+          
+          <div style="display:flex; align-items:start; gap:10px;">
+            <i class="fas fa-graduation-cap" style="color:var(--info); margin-top:3px;"></i>
+            <div>
+              <strong style="color:#fff;">Sviluppo Capacità</strong><br>
+              Video formativi e percorsi di crescita personalizzati
+            </div>
+          </div>
+          
+          <div style="display:flex; align-items:start; gap:10px;">
+            <i class="fas fa-tasks" style="color:var(--warning); margin-top:3px;"></i>
+            <div>
+              <strong style="color:#fff;">Task Operativi</strong><br>
+              Gestione completa workflow e assegnazioni
+            </div>
+          </div>
+        </div>
+        
+        <div style="background:rgba(91,111,237,0.1); padding:12px; border-radius:8px; border-left:3px solid var(--primary);">
+          <strong style="color:var(--primary);">💡 Scalabilità Illimitata</strong><br>
+          <span style="font-size:12px;">Aggiungi tutti gli operatori necessari. Ogni aggiunta scala automaticamente crediti e funzionalità.</span>
+        </div>
+      </div>
+      
+      <div style="display:flex; gap:10px; margin-top:20px;">
+        <button class="btn btn-secondary col" onclick="closeOperatorInfo()">Chiudi</button>
+        <button class="btn btn-primary col" onclick="closeOperatorInfo(); requestNewOperator();">
+          <i class="fas fa-plus"></i> Aggiungi Ora
+        </button>
       </div>
     </div>
   </div>
