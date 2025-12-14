@@ -544,12 +544,12 @@
        FAB BUTTONS (Fixed Bottom)
        ======================================== -->
   <div class="fab-container" style="position: fixed; bottom: 20px; left: 20px; right: 20px; display: flex; justify-content: space-between; align-items: flex-end; pointer-events: none; z-index: 1000;">
-    <!-- Back Button (Left) -->
+    <!-- Back Button (Left) - Naviga sezioni interne -->
     <button class="fab-btn fab-secondary" onclick="goBack()" title="Torna Indietro" style="pointer-events: auto; width: 56px; height: 56px; border-radius: 50%; background: var(--secondary); border: none; box-shadow: 0 4px 12px rgba(0,0,0,0.3); cursor: pointer; display: flex; align-items: center; justify-content: center;">
       <i class="fas fa-arrow-left" style="color: white; font-size: 20px;"></i>
     </button>
 
-    <!-- Menu Button (Right) -->
+    <!-- Menu Button (Right) - Torna a functions/index.html -->
     <button class="fab-btn fab-primary" onclick="goToFunctionsIndex()" title="Menu Servizi" style="pointer-events: auto; width: 56px; height: 56px; border-radius: 50%; background: var(--primary); border: none; box-shadow: 0 4px 12px rgba(0,0,0,0.3); cursor: pointer; display: flex; align-items: center; justify-content: center;">
       <i class="fas fa-th" style="color: white; font-size: 20px;"></i>
     </button>
@@ -568,21 +568,14 @@
 
   <script>
     // ========================================
-    // NAVIGATION WITH SESSION PARAMS PRESERVED
+    // NAVIGATION: Menu FAB to functions/index.html
     // ========================================
-    
-    // Navigate to functions/index.html preserving session params
     function goToFunctionsIndex() {
       navigateWithParams('./index.html', {
         from: 'specchio-magico',
         system: currentSystem || 'standard',
         gender: selectedGender || 'F'
       });
-    }
-    
-    // Override goBack to preserve params
-    function goBack() {
-      goBackWithParams();
     }
   </script>
 
