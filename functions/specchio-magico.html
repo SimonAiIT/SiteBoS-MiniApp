@@ -473,19 +473,30 @@
   <!-- ========================================
        JAVASCRIPT ENGINE
        ======================================== -->
-  <!-- CRITICAL: Load pillars module BEFORE main JS -->
+  <!-- CRITICAL: Load URL manager FIRST -->
+  <script src="../url-params-manager.js"></script>
+  
+  <!-- Then load pillars and main JS -->
   <script src="./specchio-magico-pillars.js"></script>
   <script src="./specchio-magico.js"></script>
 
   <script>
-    // Navigation to functions/index.html with current config
+    // ========================================
+    // NAVIGATION WITH SESSION PARAMS PRESERVED
+    // ========================================
+    
+    // Navigate to functions/index.html preserving session params
     function goToFunctionsIndex() {
-      const params = new URLSearchParams({
+      navigateWithParams('./index.html', {
         from: 'specchio-magico',
         system: currentSystem || 'standard',
         gender: selectedGender || 'F'
       });
-      window.location.href = `./index.html?${params.toString()}`;
+    }
+    
+    // Override goBack to preserve params
+    function goBack() {
+      goBackWithParams();
     }
   </script>
 
