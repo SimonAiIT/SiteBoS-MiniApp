@@ -314,6 +314,7 @@ function selectSystem(system) {
 
 function showGenderSelection() {
   document.getElementById('gender-section').classList.remove('hidden');
+  updateSystemLabels();
 }
 
 function selectGender(gender) {
@@ -322,11 +323,7 @@ function selectGender(gender) {
   document.getElementById(`gender-${gender.toLowerCase()}`).classList.add('active');
   document.getElementById('btn-start-camera').disabled = false;
   
-  const labels = { F: 'Donna', M: 'Uomo', X: 'Fluid' };
-  document.getElementById('selected-gender-label').textContent = labels[gender];
-  
-  const systemLabels = { standard: 'Standard', german: 'Tedesco', alphabetic: 'Alfabetico' };
-  document.getElementById('current-system-label').textContent = systemLabels[currentSystem];
+  updateGenderLabels();
   
   const haircutSelect = document.getElementById('haircut');
   haircutSelect.innerHTML = HAIRCUTS[gender].map(cut => `<option value="${cut}">${cut}</option>`).join('');
@@ -346,6 +343,20 @@ function selectGender(gender) {
   }
   
   if (tg?.HapticFeedback) tg.HapticFeedback.impactOccurred('medium');
+}
+
+function updateSystemLabels() {
+  const systemLabels = { standard: 'Standard', german: 'Tedesco', alphabetic: 'Alfabetico' };
+  document.querySelectorAll('#current-system-label').forEach(el => {
+    el.textContent = systemLabels[currentSystem] || '-';
+  });
+}
+
+function updateGenderLabels() {
+  const labels = { F: 'Donna', M: 'Uomo', X: 'Fluid' };
+  document.querySelectorAll('#selected-gender-label').forEach(el => {
+    el.textContent = labels[selectedGender] || '-';
+  });
 }
 
 // ========================================
@@ -433,6 +444,8 @@ function cancelCamera() {
 
 function renderReflectPalette() {
   const palette = document.getElementById('reflect-palette');
+  if (!palette) return;
+  
   palette.innerHTML = '';
   
   // Ordiniamo i riflessi
@@ -475,6 +488,9 @@ function renderReflectPalette() {
     <div class="reflect-name">Reset</div>
   `;
   palette.appendChild(resetBtn);
+  
+  // Ripristina selezione se presente
+  updateReflectSelection();
 }
 
 function handleReflectTap(reflectKey) {
@@ -834,7 +850,43 @@ function closeTranslationModal() {
 
 function openBrandSettings() {
   if (tg?.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
+  document.getElementById('brand-list-modal').classList.remove('hidden');
   showDetailedBrandList();
+}
+
+// NEW FUNCTION: Cambia sistema da impostazioni
+function changeSystemFromSettings(newSystem) {
+  if (tg?.HapticFeedback) tg.HapticFeedback.impactOccurred('medium');
+  
+  if (newSystem === currentSystem) {
+    showToast('Sistema già selezionato');
+    return;
+  }
+  
+  const systemLabels = { 
+    standard: 'Standard', 
+    german: 'Tedesco', 
+    alphabetic: 'Alfabetico' 
+  };
+  
+  // Update sistema
+  currentSystem = newSystem;
+  localStorage.setItem('specchioMagico_system', newSystem);
+  
+  // Update labels
+  updateSystemLabels();
+  
+  // Re-render palette con nuove etichette
+  renderReflectPalette();
+  
+  // Update formula display
+  updateFormulaDisplay();
+  
+  // Close modal
+  closeBrandListModal();
+  
+  // Show success
+  showToast(`Sistema cambiato in ${systemLabels[newSystem]}`);
 }
 
 function showDetailedBrandList() {
@@ -870,8 +922,6 @@ function showDetailedBrandList() {
     
     container.appendChild(section);
   });
-  
-  document.getElementById('brand-list-modal').classList.remove('hidden');
 }
 
 function closeBrandListModal() {
