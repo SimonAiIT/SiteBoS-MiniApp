@@ -178,7 +178,7 @@
 
     <!-- ========================================
          FASE 4: CONFIGURATION (Il Composer)
-         + 3 NUOVI PILASTRI
+         + 3 NUOVI PILASTRI + STYLING + EXTENSIONS
          ======================================== -->
     <div id="config-section" class="hidden">
         <!-- Foto Cliente -->
@@ -207,7 +207,7 @@
                 <h4>Capelli</h4>
             </div>
 
-            <!-- NUOVO PILASTRO 1: TEXTURE -->
+            <!-- PILASTRO 1: TEXTURE -->
             <label class="input-label">
                 <i class="fas fa-spa"></i> Texture Capelli
             </label>
@@ -215,7 +215,7 @@
                 <!-- Popolato dinamicamente da JS -->
             </select>
 
-            <!-- NUOVO: Stili Protettivi (mostra solo se Texture = Afro/Coily) -->
+            <!-- Stili Protettivi (mostra solo se Texture = Afro/Coily) -->
             <div id="protective-styles-section" class="hidden" style="margin-top: 15px;">
                 <label class="input-label">
                     <i class="fas fa-braid"></i> Stili Protettivi (Opzionale)
@@ -228,6 +228,32 @@
 
             <label class="input-label" style="margin-top: 15px;">Taglio Desiderato</label>
             <select id="haircut" class="input"></select>
+
+            <!-- NUOVO: STYLING FINISH -->
+            <div style="margin-top: 15px;">
+                <label class="input-label">
+                    <i class="fas fa-wind"></i> Styling & Piega (Il Finish)
+                </label>
+                <select id="styling-finish" class="input">
+                    <!-- STYLING_OPTIONS iniettati da JS -->
+                </select>
+                <div style="margin-top: 5px; font-size: 12px; color: var(--text-muted);">
+                    💡 Definisci come verranno asciugati/acconciati i capelli
+                </div>
+            </div>
+
+            <!-- NUOVO: EXTENSIONS & INFOLTIMENTO -->
+            <div style="margin-top: 15px;">
+                <label class="input-label">
+                    <i class="fas fa-plus-circle"></i> Extension / Infoltimento (Opzionale)
+                </label>
+                <select id="extensions-type" class="input">
+                    <!-- EXTENSIONS iniettati da JS -->
+                </select>
+                <div style="margin-top: 5px; font-size: 12px; color: var(--text-muted);">
+                    💡 Le extension aumentano la massa colore necessaria
+                </div>
+            </div>
 
             <!-- SLIDER TONO BASE -->
             <div class="color-composer" style="margin-top: 25px;">
@@ -254,7 +280,7 @@
                 </div>
             </div>
 
-            <!-- NUOVO PILASTRO 2: TECNICA DI APPLICAZIONE COLORE -->
+            <!-- PILASTRO 2: TECNICA DI APPLICAZIONE COLORE -->
             <div style="margin-top: 20px;">
                 <label class="input-label">
                     <i class="fas fa-paint-roller"></i> Tecnica di Applicazione Colore
@@ -317,7 +343,7 @@
                     <option value="Van Dyke">Van Dyke</option>
                 </select>
 
-                <!-- NUOVO PILASTRO 3: SFUMATURE AVANZATE -->
+                <!-- PILASTRO 3: SFUMATURE AVANZATE -->
                 <div style="margin-top: 15px;">
                     <label class="input-label">
                         <i class="fas fa-layer-group"></i> Sfumatura Tecnica (Fade)
