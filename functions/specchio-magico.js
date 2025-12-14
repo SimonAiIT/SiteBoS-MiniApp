@@ -14,6 +14,9 @@ let currentStream = null;
 let usingFrontCamera = true;
 let currentRecipe = null;
 
+// NUOVO: Fluid Mode Flag
+window.isFluidMode = false;
+
 // ========================================
 // FASE 1: BRAND SYSTEM SELECTION
 // ========================================
@@ -37,7 +40,7 @@ function selectSystem(system) {
 }
 
 // ========================================
-// FASE 2: GENDER SELECTION
+// FASE 2: GENDER SELECTION (con Fluid Branching)
 // ========================================
 
 function selectGender(gender) {
@@ -47,15 +50,29 @@ function selectGender(gender) {
   document.querySelectorAll('.gender-btn').forEach(btn => btn.classList.remove('active'));
   document.getElementById(`gender-${gender.toLowerCase()}`).classList.add('active');
   
-  const genderLabels = { F: 'Donna', M: 'Uomo', X: 'Fluid' };
+  const genderLabels = { 
+    F: 'Donna', 
+    M: 'Uomo', 
+    X: 'Fluid (Creative)' 
+  };
+  
   document.querySelectorAll('#selected-gender-label').forEach(el => {
     el.textContent = genderLabels[gender];
   });
   
   document.getElementById('btn-start-camera').disabled = false;
   
-  if (typeof initPillars === 'function') {
-    initPillars();
+  // NUOVO: Branch logic per Fluid
+  if (gender === 'X') {
+    // FLUID: Sistema pigmentazione pura (Creative Colors)
+    window.isFluidMode = true;
+    console.log('🌈 Modalità Creative Colors attivata');
+  } else {
+    // F/M: Sistema colorimetria classica
+    window.isFluidMode = false;
+    if (typeof initPillars === 'function') {
+      initPillars();
+    }
   }
 }
 
@@ -114,20 +131,39 @@ function capturePhoto() {
   }
   
   document.getElementById('camera-section').classList.add('hidden');
-  document.getElementById('config-section').classList.remove('hidden');
   document.getElementById('client-photo').src = clientPhotoData;
   
-  populateHaircuts();
-  renderReflectPalette();
+  // ========================================
+  // BRANCH: Fluid (Creative) vs Classic (Colorimetry)
+  // ========================================
   
-  if (selectedGender === 'F' || selectedGender === 'X') {
-    document.getElementById('makeup-section').classList.remove('hidden');
-    renderLipColors();
-  }
-  
-  if (selectedGender === 'M' || selectedGender === 'X') {
-    document.getElementById('beard-section').classList.remove('hidden');
-    renderBeardColors();
+  if (window.isFluidMode) {
+    // FLUID MODE: Creative Colors UI
+    console.log('🌈 Caricamento UI Creative Colors...');
+    document.getElementById('fluid-config-section').classList.remove('hidden');
+    
+    if (typeof populateFluidUI === 'function') {
+      populateFluidUI();
+    } else {
+      console.error('❌ populateFluidUI() non trovata. Verificare inclusione specchio-magico-creative.js');
+    }
+  } else {
+    // CLASSIC MODE: Colorimetria Tradizionale
+    console.log('🎨 Caricamento UI Colorimetria Classica...');
+    document.getElementById('config-section').classList.remove('hidden');
+    
+    populateHaircuts();
+    renderReflectPalette();
+    
+    if (selectedGender === 'F') {
+      document.getElementById('makeup-section').classList.remove('hidden');
+      renderLipColors();
+    }
+    
+    if (selectedGender === 'M') {
+      document.getElementById('beard-section').classList.remove('hidden');
+      renderBeardColors();
+    }
   }
 }
 
@@ -161,16 +197,16 @@ const REFLECTS = {
 const REFLECT_SYSTEM_MAP = {
   standard: {
     violet: '2', ash: '1', blue: '8', green: '7', pearl: '89',
-    beige: '03', natural: '0', mat: '7', gold: '3', copper: '4',
+    beige: '03', natural: '0', mat: '02', gold: '3', copper: '4',
     mahogany: '5', red: '6'
   },
   german: {
     violet: '6', ash: '1', blue: '8', green: '2', pearl: '9',
-    beige: '12', natural: '0', mat: '2', gold: '3', copper: '4',
+    beige: '12', natural: '0', mat: '02', gold: '3', copper: '4',
     mahogany: '5', red: '4'
   },
   alphabetic: {
-    violet: 'V', ash: 'A', blue: 'B', green: 'G', pearl: 'P',
+    violet: 'V', ash: 'A', blue: 'B', green: 'Gr', pearl: 'P',
     beige: 'Be', natural: 'N', mat: 'M', gold: 'G', copper: 'C',
     mahogany: 'Mh', red: 'R'
   }
@@ -992,7 +1028,7 @@ function shareLook() {
 // ========================================
 
 function goBack() {
-  const sections = ['results-section', 'config-section', 'camera-section', 'gender-section', 'brand-selection'];
+  const sections = ['results-section', 'config-section', 'fluid-config-section', 'camera-section', 'gender-section', 'brand-selection'];
   
   for (let i = 0; i < sections.length; i++) {
     const section = document.getElementById(sections[i]);
