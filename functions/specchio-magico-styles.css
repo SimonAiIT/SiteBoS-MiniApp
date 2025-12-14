@@ -271,45 +271,71 @@
   text-align: center;
 }
 
-/* Reflect Palette */
+/* ========================================
+   REFLECT PALETTE (FIXED)
+   ======================================== */
+
 .reflect-palette {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 10px;
   margin-top: 10px;
 }
 
-.reflect-drop {
+.reflect-btn {
   position: relative;
-  padding: 15px;
+  padding: 12px;
+  background: rgba(0,0,0,0.3);
+  border: 2px solid var(--glass-border);
   border-radius: 12px;
   cursor: pointer;
   transition: all 0.2s;
-  border: 2px solid transparent;
+  text-align: center;
   min-height: 80px;
   display: flex;
   flex-direction: column;
+  align-items: center;
   justify-content: center;
+  gap: 6px;
 }
 
-.reflect-drop:hover {
+.reflect-btn:hover {
   transform: translateY(-2px);
+  border-color: var(--primary);
   box-shadow: 0 4px 12px rgba(0,0,0,0.3);
 }
 
-.reflect-drop.active {
-  border-color: white;
-  box-shadow: 0 0 0 3px var(--primary);
+.reflect-btn.active {
+  border-color: var(--primary);
+  border-width: 3px;
+  background: rgba(var(--primary-rgb), 0.15);
 }
 
-/* Slot Indicators */
-.reflect-drop.primary::after {
+/* Color Swatch Circle */
+.reflect-swatch {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid rgba(255,255,255,0.3);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3), inset 0 1px 2px rgba(255,255,255,0.2);
+}
+
+/* Code and Name Labels */
+.reflect-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1.2;
+}
+
+/* Slot Indicators (1° / 2°) */
+.reflect-btn.active::after {
   content: '1°';
   position: absolute;
-  top: 5px;
-  right: 5px;
-  width: 28px;
-  height: 28px;
+  top: 4px;
+  right: 4px;
+  width: 24px;
+  height: 24px;
   background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
   color: #000;
   border-radius: 50%;
@@ -317,42 +343,29 @@
   align-items: center;
   justify-content: center;
   font-weight: bold;
-  font-size: 11px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+  font-size: 10px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.4);
   animation: slotPulse 0.3s ease;
 }
 
-.reflect-drop.secondary::after {
+.reflect-btn.secondary::after {
   content: '2°';
-  position: absolute;
-  top: 5px;
-  right: 5px;
-  width: 28px;
-  height: 28px;
   background: linear-gradient(135deg, #c0c0c0 0%, #e8e8e8 100%);
-  color: #000;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: bold;
-  font-size: 11px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-  animation: slotPulse 0.3s ease;
 }
 
-.reflect-drop.intensified::before {
+/* Intensified Badge (x2) */
+.reflect-btn.intensified::before {
   content: 'x2';
   position: absolute;
-  top: 38px;
-  right: 5px;
+  top: 32px;
+  right: 4px;
   padding: 2px 6px;
-  background: rgba(255, 215, 0, 0.9);
+  background: rgba(255, 215, 0, 0.95);
   color: #000;
-  border-radius: 10px;
+  border-radius: 8px;
   font-size: 9px;
   font-weight: bold;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.4);
   animation: intensifyPulse 0.4s ease;
 }
 
@@ -379,27 +392,6 @@
   }
 }
 
-.reflect-code {
-  font-size: 18px;
-  font-weight: bold;
-  color: white;
-  text-shadow: 0 1px 3px rgba(0,0,0,0.5);
-}
-
-.reflect-name {
-  font-size: 11px;
-  color: white;
-  text-shadow: 0 1px 3px rgba(0,0,0,0.5);
-  margin-top: 4px;
-}
-
-.reflect-temp-icon {
-  position: absolute;
-  bottom: 5px;
-  right: 5px;
-  font-size: 14px;
-}
-
 /* Formula Display */
 .formula-display {
   padding: 20px;
@@ -408,6 +400,7 @@
   border-radius: 12px;
   text-align: center;
   margin-top: 20px;
+  transition: all 0.3s;
 }
 
 .formula-label {
@@ -526,13 +519,13 @@
 }
 
 /* Summary Blocks */
-.summary-block {
-  padding: 12px;
+.summary-item {
+  padding: 10px;
   background: rgba(0,0,0,0.2);
-  border-radius: 8px;
-  margin-bottom: 10px;
+  border-left: 3px solid var(--primary);
+  border-radius: 4px;
+  margin-bottom: 8px;
   font-size: 13px;
-  line-height: 1.6;
 }
 
 /* Translation Modal */
@@ -568,6 +561,7 @@
   font-size: 13px;
   color: var(--text-muted);
   margin-top: 5px;
+  white-space: pre-line;
 }
 
 .translation-alt {
