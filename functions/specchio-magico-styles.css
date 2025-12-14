@@ -528,6 +528,121 @@
   font-size: 13px;
 }
 
+/* ========================================
+   DIAGNOSIS CARD (Professional Look Summary)
+   ======================================== */
+
+.diagnosis-card {
+  background: linear-gradient(135deg, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.2) 100%);
+  border: 2px solid var(--glass-border);
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 15px;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+}
+
+.diagnosis-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 15px;
+  background: rgba(0,0,0,0.3);
+  border-radius: 10px;
+  margin-bottom: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  border-left: 4px solid var(--primary);
+}
+
+.diagnosis-header span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.diagnosis-section {
+  padding: 15px;
+  background: rgba(0,0,0,0.2);
+  border-radius: 12px;
+  margin-bottom: 12px;
+  border: 1px solid rgba(255,255,255,0.05);
+}
+
+.diagnosis-section h4 {
+  margin: 0 0 12px 0;
+  font-size: 15px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-primary);
+}
+
+.diagnosis-section ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.diagnosis-section li {
+  padding: 8px 0;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text-secondary);
+  border-bottom: 1px dashed rgba(255,255,255,0.05);
+}
+
+.diagnosis-section li:last-child {
+  border-bottom: none;
+}
+
+.diagnosis-section li strong {
+  color: var(--text-primary);
+  font-weight: 600;
+  margin-right: 6px;
+}
+
+/* Highlight section for color/chemistry */
+.diagnosis-section.highlight {
+  background: linear-gradient(135deg, rgba(var(--primary-rgb), 0.15) 0%, rgba(0,0,0,0.2) 100%);
+  border: 1px solid rgba(var(--primary-rgb), 0.3);
+}
+
+.diagnosis-section.highlight h4 {
+  color: var(--primary);
+}
+
+/* Rainbow color list */
+.rainbow-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.rainbow-list .color-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: rgba(0,0,0,0.3);
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  border: 1px solid rgba(255,255,255,0.1);
+}
+
+.color-dot {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 2px solid rgba(255,255,255,0.4);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3), inset 0 1px 2px rgba(255,255,255,0.2);
+}
+
 /* Translation Modal */
 .translation-card {
   padding: 15px;
