@@ -1,6 +1,6 @@
 // ========================================
-// SPECCHIO MAGICO AI - MAIN ENGINE v4.3
-// Sistema Colorimetria Professionale + MULTI-BOWL SYSTEM + AI WEBHOOK + RESPONSE HANDLING
+// SPECCHIO MAGICO AI - MAIN ENGINE v4.4
+// Sistema Colorimetria Professionale + MULTI-BOWL SYSTEM + AI WEBHOOK + FULLSCREEN VIEWER
 // ========================================
 
 let currentSystem = null;
@@ -10,7 +10,7 @@ let primaryReflect = null;
 let primaryIntensified = false;
 let secondaryReflect = null;
 let clientPhotoData = null;
-let aiPreviewPhotoData = null; // NEW: Store AI generated photo
+let aiPreviewPhotoData = null;
 let currentStream = null;
 let usingFrontCamera = true;
 let currentRecipes = null;
@@ -85,7 +85,7 @@ function resetSessionState() {
   secondaryReflect = null;
   currentBaseTone = 7;
   currentRecipes = null;
-  aiPreviewPhotoData = null; // NEW: Reset AI photo
+  aiPreviewPhotoData = null;
   
   if (typeof selectedCreativeColors !== 'undefined') {
     selectedCreativeColors = [];
@@ -820,70 +820,46 @@ function getURLParams() {
 function generatePreview() {
   showLoader('🤖 Generazione AI in corso...');
   
-  // Collect complete diagnosis data
   const diagnosisData = generateDiagnosisCard();
   const urlParams = getURLParams();
   
-  // Build comprehensive payload with BASE64 PHOTO
   const payload = {
-    // URL Params
     owner: urlParams.owner,
     token: urlParams.token,
-    
-    // ✨ CLIENT PHOTO (Base64) - THIS IS SENT TO AI
     photo: clientPhotoData,
-    
-    // Diagnosis Data
     gender: selectedGender,
     genderLabel: diagnosisData.gender,
     system: currentSystem,
     systemLabel: diagnosisData.system,
-    
-    // Hair Structure
     haircut: diagnosisData.haircut,
     styling: diagnosisData.styling,
     texture: diagnosisData.texture,
     extension: diagnosisData.extension,
-    
-    // Color Formula
     formula: diagnosisData.formula,
     baseTone: currentBaseTone,
     primaryReflect: primaryReflect ? REFLECTS[primaryReflect].name : null,
     secondaryReflect: secondaryReflect ? REFLECTS[secondaryReflect].name : null,
     intensified: primaryIntensified,
     colorTechnique: diagnosisData.colorTechnique,
-    
-    // Recipes (Multi-Bowl)
     recipes: currentRecipes,
-    
-    // Creative Colors (if applicable)
     isCreative: diagnosisData.isCreative,
     creativeColors: diagnosisData.creativeColors,
-    
-    // Total Look
     eyeMakeup: diagnosisData.eyeMakeup,
     lipColor: diagnosisData.lipColor,
     beardStyle: diagnosisData.beardStyle,
     beardColor: diagnosisData.beardColor,
-    
-    // AI Prompt (if generated)
     aiPrompt: typeof generateAIPrompt === 'function' ? generateAIPrompt() : null,
-    
-    // Timestamp
     timestamp: Date.now()
   };
   
   console.log('🚀 Sending to AI Webhook:', {
     ...payload,
-    photo: `[BASE64 DATA ${clientPhotoData?.length || 0} chars]` // Log size not full data
+    photo: `[BASE64 DATA ${clientPhotoData?.length || 0} chars]`
   });
   
-  // Call webhook
   fetch(AI_WEBHOOK_URL, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload)
   })
   .then(response => {
@@ -895,13 +871,12 @@ function generatePreview() {
   .then(data => {
     console.log('✅ AI Response:', data);
     
-    // ✨ STORE AI GENERATED IMAGE (Base64)
     if (data.success && data.aiImage) {
       aiPreviewPhotoData = data.aiImage;
       console.log('🎨 AI Preview Image received:', aiPreviewPhotoData.substring(0, 50) + '...');
     } else {
       console.warn('⚠️ No AI image in response, using original photo as fallback');
-      aiPreviewPhotoData = clientPhotoData; // Fallback
+      aiPreviewPhotoData = clientPhotoData;
     }
     
     hideLoader();
@@ -911,8 +886,6 @@ function generatePreview() {
     console.error('❌ Webhook Error:', error);
     hideLoader();
     alert('⚠️ Errore durante la generazione AI. Mostro risultati con foto originale.');
-    
-    // Fallback: use original photo
     aiPreviewPhotoData = clientPhotoData;
     showResults();
   });
@@ -923,17 +896,146 @@ function showResults() {
   document.getElementById('fluid-config-section').classList.add('hidden');
   document.getElementById('results-section').classList.remove('hidden');
   
-  // Set BEFORE image (original)
-  document.getElementById('before-img').src = clientPhotoData;
-  
-  // ✨ Set AFTER image (AI generated or fallback)
+  const beforeImg = document.getElementById('before-img');
   const afterImg = document.getElementById('after-img');
+  
+  if (beforeImg) {
+    beforeImg.src = clientPhotoData;
+    // ✨ Add fullscreen click listener
+    beforeImg.style.cursor = 'pointer';
+    beforeImg.onclick = () => openFullscreenImage(clientPhotoData);
+  }
+  
   if (afterImg) {
     afterImg.src = aiPreviewPhotoData || clientPhotoData;
+    // ✨ Add fullscreen click listener
+    afterImg.style.cursor = 'pointer';
+    afterImg.onclick = () => openFullscreenImage(aiPreviewPhotoData || clientPhotoData);
     console.log('🖼️ Displaying AI preview:', aiPreviewPhotoData ? 'AI Generated' : 'Original (Fallback)');
   }
   
   displayResults();
+}
+
+// ========================================
+// ✨ FULLSCREEN IMAGE VIEWER
+// ========================================
+
+function openFullscreenImage(imageSrc) {
+  // Create overlay
+  const overlay = document.createElement('div');
+  overlay.id = 'fullscreen-overlay';
+  overlay.style.cssText = `
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.95);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: fadeIn 0.3s ease;
+    cursor: zoom-out;
+  `;
+  
+  // Create close button
+  const closeBtn = document.createElement('button');
+  closeBtn.innerHTML = '✕';
+  closeBtn.style.cssText = `
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: rgba(255, 255, 255, 0.2);
+    border: 2px solid rgba(255, 255, 255, 0.5);
+    color: white;
+    font-size: 24px;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    cursor: pointer;
+    z-index: 10001;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+  `;
+  
+  closeBtn.onmouseover = () => {
+    closeBtn.style.background = 'rgba(255, 255, 255, 0.3)';
+    closeBtn.style.transform = 'scale(1.1)';
+  };
+  
+  closeBtn.onmouseout = () => {
+    closeBtn.style.background = 'rgba(255, 255, 255, 0.2)';
+    closeBtn.style.transform = 'scale(1)';
+  };
+  
+  closeBtn.onclick = (e) => {
+    e.stopPropagation();
+    closeFullscreenImage();
+  };
+  
+  // Create image
+  const img = document.createElement('img');
+  img.src = imageSrc;
+  img.style.cssText = `
+    max-width: 90vw;
+    max-height: 90vh;
+    border-radius: 10px;
+    box-shadow: 0 10px 50px rgba(0, 0, 0, 0.5);
+    animation: zoomIn 0.3s ease;
+    cursor: default;
+  `;
+  
+  // Prevent image click from closing
+  img.onclick = (e) => e.stopPropagation();
+  
+  // Close on overlay click
+  overlay.onclick = () => closeFullscreenImage();
+  
+  // Close on ESC key
+  const handleEsc = (e) => {
+    if (e.key === 'Escape') {
+      closeFullscreenImage();
+      document.removeEventListener('keydown', handleEsc);
+    }
+  };
+  document.addEventListener('keydown', handleEsc);
+  
+  // Add animations
+  const style = document.createElement('style');
+  style.textContent = `
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    @keyframes zoomIn {
+      from { transform: scale(0.8); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+  `;
+  document.head.appendChild(style);
+  
+  overlay.appendChild(closeBtn);
+  overlay.appendChild(img);
+  document.body.appendChild(overlay);
+  
+  // Prevent body scroll
+  document.body.style.overflow = 'hidden';
+  
+  console.log('🖼️ Fullscreen image opened');
+}
+
+function closeFullscreenImage() {
+  const overlay = document.getElementById('fullscreen-overlay');
+  if (overlay) {
+    overlay.style.animation = 'fadeOut 0.3s ease';
+    setTimeout(() => {
+      overlay.remove();
+      document.body.style.overflow = ''; // Restore scroll
+      console.log('✖️ Fullscreen image closed');
+    }, 300);
+  }
 }
 
 // ========================================
