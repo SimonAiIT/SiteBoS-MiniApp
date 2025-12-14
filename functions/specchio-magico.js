@@ -1,6 +1,6 @@
 // ========================================
-// SPECCHIO MAGICO AI - MAIN ENGINE v4.2
-// Sistema Colorimetria Professionale + MULTI-BOWL SYSTEM + AI WEBHOOK
+// SPECCHIO MAGICO AI - MAIN ENGINE v4.3
+// Sistema Colorimetria Professionale + MULTI-BOWL SYSTEM + AI WEBHOOK + RESPONSE HANDLING
 // ========================================
 
 let currentSystem = null;
@@ -10,6 +10,7 @@ let primaryReflect = null;
 let primaryIntensified = false;
 let secondaryReflect = null;
 let clientPhotoData = null;
+let aiPreviewPhotoData = null; // NEW: Store AI generated photo
 let currentStream = null;
 let usingFrontCamera = true;
 let currentRecipes = null;
@@ -84,6 +85,7 @@ function resetSessionState() {
   secondaryReflect = null;
   currentBaseTone = 7;
   currentRecipes = null;
+  aiPreviewPhotoData = null; // NEW: Reset AI photo
   
   if (typeof selectedCreativeColors !== 'undefined') {
     selectedCreativeColors = [];
@@ -802,7 +804,7 @@ function renderBeardColors() {
 }
 
 // ========================================
-// AI WEBHOOK INTEGRATION
+// AI WEBHOOK INTEGRATION + RESPONSE HANDLING
 // ========================================
 
 function getURLParams() {
@@ -822,13 +824,13 @@ function generatePreview() {
   const diagnosisData = generateDiagnosisCard();
   const urlParams = getURLParams();
   
-  // Build comprehensive payload
+  // Build comprehensive payload with BASE64 PHOTO
   const payload = {
     // URL Params
     owner: urlParams.owner,
     token: urlParams.token,
     
-    // Client Photo (Base64)
+    // ✨ CLIENT PHOTO (Base64) - THIS IS SENT TO AI
     photo: clientPhotoData,
     
     // Diagnosis Data
@@ -871,7 +873,10 @@ function generatePreview() {
     timestamp: Date.now()
   };
   
-  console.log('🚀 Sending to AI Webhook:', payload);
+  console.log('🚀 Sending to AI Webhook:', {
+    ...payload,
+    photo: `[BASE64 DATA ${clientPhotoData?.length || 0} chars]` // Log size not full data
+  });
   
   // Call webhook
   fetch(AI_WEBHOOK_URL, {
@@ -889,14 +894,26 @@ function generatePreview() {
   })
   .then(data => {
     console.log('✅ AI Response:', data);
+    
+    // ✨ STORE AI GENERATED IMAGE (Base64)
+    if (data.success && data.aiImage) {
+      aiPreviewPhotoData = data.aiImage;
+      console.log('🎨 AI Preview Image received:', aiPreviewPhotoData.substring(0, 50) + '...');
+    } else {
+      console.warn('⚠️ No AI image in response, using original photo as fallback');
+      aiPreviewPhotoData = clientPhotoData; // Fallback
+    }
+    
     hideLoader();
     showResults();
   })
   .catch(error => {
     console.error('❌ Webhook Error:', error);
     hideLoader();
-    alert('⚠️ Errore durante la generazione AI. Riprova.');
-    // Show results anyway (fallback)
+    alert('⚠️ Errore durante la generazione AI. Mostro risultati con foto originale.');
+    
+    // Fallback: use original photo
+    aiPreviewPhotoData = clientPhotoData;
     showResults();
   });
 }
@@ -905,7 +922,16 @@ function showResults() {
   document.getElementById('config-section').classList.add('hidden');
   document.getElementById('fluid-config-section').classList.add('hidden');
   document.getElementById('results-section').classList.remove('hidden');
+  
+  // Set BEFORE image (original)
   document.getElementById('before-img').src = clientPhotoData;
+  
+  // ✨ Set AFTER image (AI generated or fallback)
+  const afterImg = document.getElementById('after-img');
+  if (afterImg) {
+    afterImg.src = aiPreviewPhotoData || clientPhotoData;
+    console.log('🖼️ Displaying AI preview:', aiPreviewPhotoData ? 'AI Generated' : 'Original (Fallback)');
+  }
   
   displayResults();
 }
@@ -1291,12 +1317,13 @@ function saveLook() {
     haircut: document.getElementById('haircut')?.value,
     recipes: currentRecipes,
     diagnosis: generateDiagnosisCard(),
-    photo: clientPhotoData,
+    photoOriginal: clientPhotoData,
+    photoAI: aiPreviewPhotoData,
     timestamp: Date.now()
   };
   
   console.log('💾 Salvato:', lookData);
-  alert('Look salvato con ricetta!');
+  alert('Look salvato con ricetta e anteprime!');
 }
 
 function shareLook() {
