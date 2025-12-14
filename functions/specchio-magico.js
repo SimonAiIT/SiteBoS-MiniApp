@@ -234,13 +234,14 @@ function estimateHairMass(haircutName) {
 
 // ========================================
 // MIXING CALCULATOR - STEP 2: ALGORITMO SOMMELIER + EXTENSIONS + GLOSS LOGIC
+// AGGIORNATO: + Highlights/Lowlights + Gloss dedicato
 // ========================================
 
 function calculateMixingRecipe(baseTone, primaryKey, secondaryKey, intensified, lengthCategory, developerVolume = 20, colorTechnique = 'global') {
   const hairMass = estimateHairMass(lengthCategory);
   let colorGrams = hairMass.baseGrams;
   
-  // NUOVO: Applica moltiplicatore extension
+  // Applica moltiplicatore extension
   const extensionEl = document.getElementById('extensions-type');
   if (extensionEl && extensionEl.value !== 'none' && typeof EXTENSIONS !== 'undefined') {
     const ext = EXTENSIONS.find(e => e.id === extensionEl.value);
@@ -249,18 +250,34 @@ function calculateMixingRecipe(baseTone, primaryKey, secondaryKey, intensified, 
     }
   }
   
-  // NUOVO: Logica Gloss/Toner per tecniche parziali
-  const partialTechniques = ['balayage', 'shatush', 'airtouch', 'degrade', 'babylights', 'money-piece'];
+  // AGGIORNATO: Logica Gloss/Toner per tecniche parziali + Gloss puro
+  const partialTechniques = [
+    'balayage', 'shatush', 'airtouch', 'degrade', 
+    'babylights', 'money-piece', 'highlights', 'lowlights' // NUOVO
+  ];
   const isPartialTechnique = partialTechniques.includes(colorTechnique);
+  const isPureGloss = colorTechnique === 'gloss';
   
   let recipeType = 'COLORE PERMANENTE';
   let ratio = 1.5;
+  let specialNote = null;
   
-  if (isPartialTechnique) {
+  if (isPureGloss) {
+    // NUOVO: Gloss puro (servizio rapido)
+    recipeType = '✨ GLOSS LUCIDANTE';
+    ratio = 2.0;
+    developerVolume = Math.min(developerVolume, 10); // Max 10 Vol
+    colorGrams = Math.round(colorGrams * 0.3); // Gloss usa pochissimo prodotto
+    specialNote = '⚡ Servizio rapido al lavatesta (15-20 min)';
+  } else if (isPartialTechnique) {
     recipeType = 'TONALIZZANTE / GLOSS';
-    ratio = 2.0; // Gloss/Toner usa ratio 1:2
-    developerVolume = Math.min(developerVolume, 10); // Max 10 Vol per toner
-    colorGrams = Math.round(colorGrams * 0.5); // Toner usa meno prodotto (solo sulle lunghezze)
+    ratio = 2.0;
+    developerVolume = Math.min(developerVolume, 10);
+    colorGrams = Math.round(colorGrams * 0.5); // Toner usa meno prodotto
+  } else if (colorTechnique === 'bleach-tone') {
+    // NUOVO: Bleach & Tone (servizio doppio)
+    recipeType = '🧊 BLEACH & TONE (Doppio Servizio)';
+    specialNote = '⚠️ Richiede: 1) Decolorazione + 2) Tonalizzante. Calcolare entrambi separatamente.';
   } else if (developerVolume === 40) {
     ratio = 2.0;
   }
@@ -321,7 +338,8 @@ function calculateMixingRecipe(baseTone, primaryKey, secondaryKey, intensified, 
       volume: developerVolume,
       grams: developerGrams
     },
-    totalMix: totalMix
+    totalMix: totalMix,
+    specialNote: specialNote
   };
 }
 
@@ -700,9 +718,12 @@ function injectMixingCard() {
   card.className = 'card';
   card.style.marginTop = '15px';
   
-  // NUOVO: Badge tipo ricetta
-  const recipeTypeColor = currentRecipe.recipeType === 'COLORE PERMANENTE' ? 'var(--primary)' : 'var(--warning)';
-  const recipeTypeIcon = currentRecipe.recipeType === 'COLORE PERMANENTE' ? '🎨' : '✨';
+  const recipeTypeColor = currentRecipe.recipeType.includes('PERMANENTE') ? 'var(--primary)' : 
+                          currentRecipe.recipeType.includes('GLOSS LUCIDANTE') ? 'var(--success)' : 
+                          currentRecipe.recipeType.includes('BLEACH') ? 'var(--error)' : 'var(--warning)';
+  const recipeTypeIcon = currentRecipe.recipeType.includes('PERMANENTE') ? '🎨' : 
+                         currentRecipe.recipeType.includes('GLOSS LUCIDANTE') ? '✨' :
+                         currentRecipe.recipeType.includes('BLEACH') ? '🧊' : '✨';
   
   let html = `
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
@@ -712,9 +733,18 @@ function injectMixingCard() {
       </div>
       <span style="font-size: 12px; color: var(--text-muted); text-transform: uppercase;">Capelli ${currentRecipe.hairLength}</span>
     </div>
-    
-    <div style="background: rgba(0,0,0,0.3); border-radius: 10px; padding: 15px; font-family: 'Courier New', monospace;">
   `;
+  
+  // NUOVO: Special Note (per Bleach & Tone)
+  if (currentRecipe.specialNote) {
+    html += `
+      <div style="padding: 12px; background: rgba(255,152,0,0.2); border-left: 3px solid var(--warning); border-radius: 8px; margin-bottom: 15px; font-size: 12px; line-height: 1.5;">
+        ${currentRecipe.specialNote}
+      </div>
+    `;
+  }
+  
+  html += `<div style="background: rgba(0,0,0,0.3); border-radius: 10px; padding: 15px; font-family: 'Courier New', monospace;">`;
   
   currentRecipe.tubes.forEach((tube, i) => {
     html += `
