@@ -12,27 +12,33 @@
 </head>
 <body>
 
-  <div id="loader" class="hidden">
+  <!-- LOADER -->
+  <div id="loader" class="hidden" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center;">
     <div class="spinner-ring"></div>
-    <div style="margin-top:10px; opacity:0.7; text-align:center;" id="loader-text">Caricamento...</div>
+    <div style="margin-top:15px; opacity:0.8; text-align:center; font-size: 14px;" id="loader-text">Caricamento...</div>
   </div>
+
+  <!-- SETTINGS BUTTON -->
+  <button id="settings-btn" onclick="openBrandSettings()" style="display: none; position: fixed; top: 20px; right: 20px; width: 40px; height: 40px; border-radius: 50%; background: rgba(0,0,0,0.3); border: 1px solid var(--glass-border); z-index: 100; cursor: pointer;">
+    <i class="fas fa-cog" style="color: var(--text-primary);"></i>
+  </button>
 
   <div class="container" id="app-content">
     
+    <!-- HEADER -->
     <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 25px; padding-bottom: 15px; border-bottom: 1px solid var(--glass-border);">
         <div>
             <h1 style="font-size: 22px; margin: 0;">
                 <i class="fas fa-magic" style="color: var(--warning);"></i>
                 Specchio Magico AI
             </h1>
-            <p class="subtitle">Studio look professionale</p>
+            <p class="subtitle">Sistema colorimetria professionale</p>
         </div>
-        <button class="btn-icon" onclick="openBrandSettings()" title="Impostazioni Brand" id="settings-btn" style="display: none;">
-            <i class="fas fa-cog"></i>
-        </button>
     </div>
 
-    <!-- UNLOCK -->
+    <!-- ========================================
+         FASE 0: UNLOCK PAYWALL
+         ======================================== -->
     <div id="unlock-check" class="card">
         <div style="text-align: center; padding: 40px 20px;">
             <div style="font-size: 64px; color: var(--warning); margin-bottom: 20px;">
@@ -40,61 +46,63 @@
             </div>
             <h2 style="margin-bottom: 15px;">Sblocca Specchio Magico</h2>
             <p style="color: var(--text-muted); line-height: 1.6; max-width: 400px; margin: 0 auto 30px;">
-                Sistema colorimetria professionale multi-brand con traduttore universale.
+                Sistema colorimetria multi-brand con traduttore universale e 60+ marche.
             </p>
             
             <div class="note note-warning" style="text-align: center; margin-bottom: 30px;">
                 <div style="font-size: 36px; font-weight: bold; margin-bottom: 5px;">
-                    15.000 crediti
+                    50 Token
                 </div>
                 <div style="font-size: 12px; text-transform: uppercase;">
-                    Sblocco Permanente (~33€)
+                    Per utilizzo
                 </div>
             </div>
             
-            <button class="btn" onclick="unlockFeature()">
+            <button class="btn" onclick="unlockFeature()" style="padding: 15px 40px;">
                 <i class="fas fa-unlock"></i> Sblocca Ora
             </button>
         </div>
     </div>
 
-    <!-- ONBOARDING: BRAND SELECTION -->
+    <!-- ========================================
+         FASE 1: BRAND SELECTION
+         ======================================== -->
     <div id="brand-selection" class="hidden">
         <div class="card">
-            <h2 style="margin: 0 0 10px 0;">🎯 Calibrazione Colorimetria</h2>
+            <h2 style="margin: 0 0 10px 0;">🎯 Configurazione Colorimetria</h2>
             <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 25px;">
-                Seleziona il tuo brand principale per adattare la numerazione
+                Seleziona il sistema di numerazione del tuo salone
             </p>
 
             <div class="brand-system-grid">
-                <!-- Sistema Standard -->
+                <!-- SISTEMA STANDARD -->
                 <div class="brand-system-card" onclick="selectSystem('standard')">
                     <div class="system-badge" style="background: var(--primary);">Standard</div>
                     <h3>🌍 Sistema Internazionale</h3>
                     <div class="system-example">
                         <div class="example-code">7.2</div>
-                        <div class="example-label">Biondo Irisé</div>
+                        <div class="example-label">Biondo Viola</div>
                     </div>
                     <div class="brand-logos">
                         <span class="brand-tag">L'Oréal</span>
                         <span class="brand-tag">Inoa</span>
                         <span class="brand-tag">Alfaparf</span>
                         <span class="brand-tag">Fanola</span>
-                        <span class="brand-tag">Revlon</span>
+                        <span class="brand-tag">Farmagan</span>
                         <span class="brand-tag">Davines</span>
                     </div>
                     <div class="system-key">
-                        <strong>Chiave:</strong> .2=Viola | .6=Rosso | .7=Verde
+                        <strong>Logica:</strong> .2 = Viola | .6 = Rosso | .7 = Mat
                     </div>
                 </div>
 
-                <!-- Sistema Tedesco -->
+                <!-- SISTEMA TEDESCO -->
                 <div class="brand-system-card" onclick="selectSystem('german')">
                     <div class="system-badge" style="background: var(--warning);">Tedesco</div>
                     <h3>🇩🇪 Sistema Invertito</h3>
                     <div class="system-example">
                         <div class="example-code">7/6</div>
-                        <div class="example-label">Biondo Irisé</div>
+                        <div class="example-label">Biondo Viola</div>
                     </div>
                     <div class="brand-logos">
                         <span class="brand-tag">Wella</span>
@@ -104,43 +112,41 @@
                         <span class="brand-tag">Igora</span>
                     </div>
                     <div class="system-key">
-                        <strong>Chiave:</strong> /6=Viola | /4=Rosso | /2=Verde
+                        <strong>⚠️ Critico:</strong> /6 = Viola | /4 = Rosso | /2 = Mat
                     </div>
                 </div>
 
-                <!-- Sistema Alfabetico -->
+                <!-- SISTEMA ALFABETICO -->
                 <div class="brand-system-card" onclick="selectSystem('alphabetic')">
-                    <div class="system-badge" style="background: var(--success);">Lettere</div>
-                    <h3>🇺🇸 Sistema Alfabetico</h3>
+                    <div class="system-badge" style="background: var(--success);">Alfabetico</div>
+                    <h3>🇺🇸 Sistema Letterale (USA)</h3>
                     <div class="system-example">
                         <div class="example-code">7V</div>
-                        <div class="example-label">Biondo Irisé</div>
+                        <div class="example-label">Biondo Viola</div>
                     </div>
                     <div class="brand-logos">
                         <span class="brand-tag">Matrix</span>
                         <span class="brand-tag">Redken</span>
                         <span class="brand-tag">Goldwell</span>
                         <span class="brand-tag">Joico</span>
-                        <span class="brand-tag">CHI</span>
+                        <span class="brand-tag">Aveda</span>
                     </div>
                     <div class="system-key">
-                        <strong>Chiave:</strong> V=Viola | R=Rosso | M=Verde
+                        <strong>Logica:</strong> V = Violet | R = Red | M = Matte
                     </div>
                 </div>
             </div>
-
-            <button class="btn btn-secondary" onclick="showDetailedBrandList()" style="margin-top: 20px; width: 100%;">
-                <i class="fas fa-list"></i> Vedi Lista Completa Brand
-            </button>
         </div>
     </div>
 
-    <!-- GENDER SELECTION -->
+    <!-- ========================================
+         FASE 2: GENDER SELECTION
+         ======================================== -->
     <div id="gender-section" class="hidden">
         <div class="card">
             <h3 style="margin: 0 0 15px 0;">👤 Seleziona Genere Cliente</h3>
             <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 20px;">
-                Questo determinerà le opzioni di styling disponibili
+                Determina le opzioni di styling disponibili
             </p>
             
             <div class="gender-grid">
@@ -159,6 +165,13 @@
                     <span class="label">Fluid</span>
                 </div>
             </div>
+
+            <div style="margin-top: 25px; padding: 15px; background: rgba(0,0,0,0.2); border-radius: 10px; text-align: center;">
+                <p style="margin: 0 0 5px 0; font-size: 12px; color: var(--text-secondary);">Sistema configurato:</p>
+                <p style="margin: 0; font-size: 16px; color: var(--primary); font-weight: bold;" id="current-system-label">-</p>
+                <p style="margin: 10px 0 5px 0; font-size: 12px; color: var(--text-secondary);">Genere selezionato:</p>
+                <p style="margin: 0; font-size: 16px; color: var(--warning); font-weight: bold;" id="selected-gender-label">-</p>
+            </div>
         </div>
         
         <button class="btn" onclick="startCamera()" style="margin-top: 15px; width: 100%;" id="btn-start-camera" disabled>
@@ -166,42 +179,49 @@
         </button>
     </div>
 
-    <!-- CAMERA -->
+    <!-- ========================================
+         FASE 3: CAMERA
+         ======================================== -->
     <div id="camera-section" class="hidden">
         <div class="note" style="margin-bottom: 20px;">
             <i class="fas fa-info-circle"></i> <strong>Consigli:</strong> Viso frontale, buona illuminazione, sfondo neutro
         </div>
         
-        <div class="card">
+        <div class="card" style="padding: 0; overflow: hidden;">
             <div class="camera-container">
                 <video id="video-preview" autoplay playsinline></video>
-                <canvas id="canvas-preview"></canvas>
+                <canvas id="canvas-preview" style="display: none;"></canvas>
                 
                 <div class="camera-controls">
                     <button class="camera-toggle" onclick="toggleCamera()" title="Cambia Camera">
-                        <i class="fas fa-sync-alt" style="font-size: 20px;"></i>
+                        <i class="fas fa-sync-alt" style="font-size: 18px;"></i>
                     </button>
                     
-                    <button class="capture-btn" onclick="capturePhoto()" title="Scatta Foto">
-                        <i class="fas fa-camera" style="font-size: 28px; color: var(--primary);"></i>
+                    <button class="capture-btn" onclick="capturePhoto()" title="Scatta">
+                        <i class="fas fa-camera" style="font-size: 24px; color: var(--primary);"></i>
+                    </button>
+                    
+                    <button class="camera-toggle" onclick="cancelCamera()" title="Annulla">
+                        <i class="fas fa-times" style="font-size: 18px;"></i>
                     </button>
                 </div>
             </div>
         </div>
-        
-        <button class="btn btn-secondary" onclick="cancelCamera()" style="margin-top: 15px; width: 100%;">
-            <i class="fas fa-times"></i> Annulla
-        </button>
     </div>
 
-    <!-- CONFIGURATION DASHBOARD -->
+    <!-- ========================================
+         FASE 4: CONFIGURATION (Il Composer)
+         QUESTO È IL CUORE
+         ======================================== -->
     <div id="config-section" class="hidden">
+        <!-- Foto Cliente -->
         <div class="card">
-            <img id="client-photo" style="width: 100%; border-radius: 12px;">
+            <img id="client-photo" style="width: 100%; border-radius: 12px; display: block;">
         </div>
 
+        <!-- Main Config Card -->
         <div class="card" style="margin-top: 15px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                 <div>
                     <h3 style="margin: 0;">🎨 Configurazione Look</h3>
                     <p style="color: var(--text-muted); font-size: 13px; margin: 5px 0 0 0;">
@@ -216,113 +236,120 @@
 
             <!-- CAPELLI -->
             <div class="section-header">
-                <i class="fas fa-cut" style="color: var(--warning); font-size: 20px;"></i>
+                <i class="fas fa-cut" style="color: var(--warning);"></i>
                 <h4>Capelli</h4>
             </div>
 
-            <label class="input-label">Tipo Taglio</label>
+            <label class="input-label">Taglio Desiderato</label>
             <select id="haircut" class="input"></select>
 
-            <!-- COLOR COMPOSER -->
-            <div class="color-composer">
-                <label class="input-label">Altezza Tono Base</label>
+            <!-- SLIDER TONO BASE -->
+            <div class="color-composer" style="margin-top: 25px;">
+                <label class="input-label">Tono Base (Livello Schiaritura)</label>
                 <div class="tone-slider-container">
-                    <input type="range" id="base-tone" min="1" max="10" value="7" class="tone-slider" oninput="updateToneDisplay()">
                     <div class="tone-display" id="tone-display">7</div>
-                </div>
-                <div class="tone-labels">
-                    <span>1<br>Nero</span>
-                    <span>5<br>Castano</span>
-                    <span>10<br>Platino</span>
+                    <input type="range" id="base-tone" class="tone-slider" min="1" max="10" value="7" oninput="updateToneDisplay()">
+                    <div class="tone-labels">
+                        <span>1<br>Nero</span>
+                        <span>3<br>Bruno</span>
+                        <span>5<br>Castano</span>
+                        <span>7<br>Biondo</span>
+                        <span>9<br>Chiaris.</span>
+                        <span>10<br>Plat.</span>
+                    </div>
                 </div>
             </div>
 
-            <label class="input-label" style="margin-top: 20px;">Riflessi</label>
-            <div class="reflect-palette" id="reflect-palette">
-                <!-- Populated by JS -->
+            <!-- PALETTE RIFLESSI - Container VUOTO -->
+            <div style="margin-top: 25px;">
+                <label class="input-label">Riflessi (Tap = Seleziona | Double Tap = Intenso)</label>
+                <!-- QUESTA GRIGLIA È VUOTA! IL JS LA RIEMPIE -->
+                <div id="reflect-palette" class="reflect-palette">
+                    <!-- renderReflectPalette() inietta qui i bottoni -->
+                </div>
             </div>
 
-            <!-- FORMULA DISPLAY -->
-            <div class="formula-display">
+            <!-- FORMULA DISPLAY - Live Update -->
+            <div class="formula-display" style="margin-top: 20px;">
                 <div class="formula-label">FORMULA COLORE</div>
-                <div class="formula-code" id="formula-code">7</div>
+                <div class="formula-code" id="formula-code">7.0</div>
                 <div class="formula-meta">
-                    <span id="formula-temp" class="temp-badge">NEUTRO</span>
-                    <span id="formula-name" style="font-size: 13px; color: var(--text-muted);">Naturale</span>
+                    <span class="temp-badge temp-neutral" id="formula-temp">NEUTRO</span>
+                    <span style="font-size: 13px; color: var(--text-secondary);" id="formula-name">Naturale</span>
                 </div>
             </div>
 
-            <!-- MAKEUP -->
-            <div id="makeup-section" class="hidden">
+            <!-- MAKEUP (Solo F/X) -->
+            <div id="makeup-section" class="hidden" style="margin-top: 25px;">
                 <div class="section-header">
-                    <i class="fas fa-paint-brush" style="color: var(--warning); font-size: 20px;"></i>
+                    <i class="fas fa-paint-brush" style="color: var(--warning);"></i>
                     <h4>Trucco</h4>
                 </div>
 
-                <label class="input-label">Occhi</label>
+                <label class="input-label">Trucco Occhi</label>
                 <select id="eye-makeup" class="input">
-                    <option value="none">Nessuno</option>
-                    <option value="natural">Naturale Nude</option>
-                    <option value="soft-glam">Soft Glam</option>
-                    <option value="smokey">Smokey Eyes</option>
-                    <option value="cat">Cat Eye</option>
-                    <option value="graphic">Graphic Liner</option>
-                    <option value="glitter">Glitter</option>
-                    <option value="cut-crease">Cut Crease</option>
-                    <option value="halo">Halo Eyes</option>
-                    <option value="editorial">Editorial</option>
+                    <option value="Nessuno">Nessuno</option>
+                    <option value="Naturale">Naturale Nude</option>
+                    <option value="Soft Glam">Soft Glam</option>
+                    <option value="Smokey Eyes">Smokey Eyes</option>
+                    <option value="Cat Eye">Cat Eye</option>
+                    <option value="Glitter">Glitter</option>
+                    <option value="Cut Crease">Cut Crease</option>
                 </select>
 
-                <label class="input-label" style="margin-top: 15px;">Labbra</label>
+                <label class="input-label" style="margin-top: 15px;">Colore Labbra</label>
                 <div class="makeup-grid" id="lip-colors">
-                    <!-- Populated by JS -->
+                    <!-- renderLipColors() inietta qui -->
                 </div>
             </div>
 
-            <!-- BEARD -->
-            <div id="beard-section" class="hidden">
+            <!-- BARBA (Solo M/X) -->
+            <div id="beard-section" class="hidden" style="margin-top: 25px;">
                 <div class="section-header">
-                    <i class="fas fa-user-tie" style="color: var(--primary); font-size: 20px;"></i>
+                    <i class="fas fa-user-tie" style="color: var(--primary);"></i>
                     <h4>Barba</h4>
                 </div>
 
-                <label class="input-label">Stile</label>
+                <label class="input-label">Stile Barba</label>
                 <select id="beard-style" class="input">
                     <option value="none">Rasato</option>
-                    <option value="stubble-1">Barba Incolta 1-2 giorni</option>
-                    <option value="stubble-3">Barba Incolta 3-5 giorni</option>
-                    <option value="short">Barba Corta (5-15mm)</option>
-                    <option value="medium">Barba Media (15-25mm)</option>
-                    <option value="full">Barba Piena (25mm+)</option>
-                    <option value="goatee">Pizzetto</option>
-                    <option value="van-dyke">Van Dyke</option>
-                    <option value="circle">Circle Beard</option>
-                    <option value="anchor">Anchor</option>
+                    <option value="Stubble 1-2 giorni">Stubble 1-2 giorni</option>
+                    <option value="Stubble 3-5 giorni">Stubble 3-5 giorni</option>
+                    <option value="Barba Corta">Barba Corta (5-15mm)</option>
+                    <option value="Barba Media">Barba Media (15-25mm)</option>
+                    <option value="Barba Piena">Barba Piena (25mm+)</option>
+                    <option value="Pizzetto">Pizzetto</option>
+                    <option value="Van Dyke">Van Dyke</option>
                 </select>
 
                 <label class="input-label" style="margin-top: 15px;">Colore Barba</label>
                 <div class="makeup-grid" id="beard-colors">
-                    <!-- Populated by JS -->
+                    <!-- renderBeardColors() inietta qui -->
                 </div>
             </div>
 
             <button class="btn" onclick="generatePreview()" style="margin-top: 30px; width: 100%;">
-                <i class="fas fa-magic"></i> Genera Anteprima
+                <i class="fas fa-wand-magic-sparkles"></i> Genera Anteprima AI
             </button>
         </div>
     </div>
 
-    <!-- RESULTS -->
+    <!-- ========================================
+         FASE 5: RESULTS
+         ======================================== -->
     <div id="results-section" class="hidden">
         <div class="card">
-            <h3 style="margin: 0 0 15px 0;">🎨 Anteprima Look</h3>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            <h3 style="margin: 0 0 20px 0; text-align: center;">
+                <i class="fas fa-check-circle" style="color: var(--success);"></i> Risultato
+            </h3>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px;">
                 <div>
                     <div class="preview-label">Prima</div>
                     <img id="before-img" class="preview-image">
                 </div>
                 <div>
-                    <div class="preview-label">Dopo</div>
+                    <div class="preview-label">Dopo (AI)</div>
                     <div id="after-img" class="preview-placeholder">
                         <i class="fas fa-magic"></i>
                     </div>
@@ -333,23 +360,28 @@
         <div class="card" style="margin-top: 15px;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                 <h3 style="margin: 0;">📋 Riepilogo Look</h3>
-                <button class="btn-icon" onclick="translateFormula()" title="Traduci Formula">
-                    <i class="fas fa-language"></i>
-                </button>
             </div>
-            <div id="summary-content"></div>
+            <div id="summary-content">
+                <!-- displayResults() inietta qui -->
+            </div>
         </div>
 
-        <div class="btn-container" style="margin-top: 15px;">
+        <div class="btn-container" style="margin-top: 15px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
             <button class="btn btn-secondary" onclick="backToConfig()">
                 <i class="fas fa-edit"></i> Modifica
             </button>
             
-            <button class="btn" onclick="saveLook()">
+            <button class="btn" onclick="translateFormula()">
+                <i class="fas fa-language"></i> Traduci
+            </button>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px;">
+            <button class="btn btn-success" onclick="saveLook()">
                 <i class="fas fa-save"></i> Salva
             </button>
             
-            <button class="btn" onclick="shareLook()">
+            <button class="btn btn-outline" onclick="shareLook()">
                 <i class="fas fa-share-alt"></i> Condividi
             </button>
         </div>
@@ -357,25 +389,35 @@
 
   </div>
 
-  <!-- BRAND LIST MODAL -->
+  <!-- ========================================
+       MODAL: BRAND LIST
+       ======================================== -->
   <div id="brand-list-modal" class="modal-overlay hidden">
     <div class="modal-content" style="max-width: 600px; max-height: 80vh; overflow-y: auto;">
-      <h3 style="margin: 0 0 20px 0;">🎯 Lista Completa Brand</h3>
-      
-      <div id="brand-list-container">
-        <!-- Populated by JS -->
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h3 style="margin: 0;">🎯 Database Brand (60+)</h3>
+        <button class="btn-icon" onclick="closeBrandListModal()">
+          <i class="fas fa-times"></i>
+        </button>
       </div>
       
-      <button class="btn btn-secondary" onclick="closeBrandListModal()" style="margin-top: 20px; width: 100%;">
-        <i class="fas fa-times"></i> Chiudi
-      </button>
+      <div id="brand-list-container">
+        <!-- showDetailedBrandList() inietta qui -->
+      </div>
     </div>
   </div>
 
-  <!-- TRANSLATION MODAL -->
+  <!-- ========================================
+       MODAL: TRANSLATION
+       ======================================== -->
   <div id="translation-modal" class="modal-overlay hidden">
     <div class="modal-content" style="max-width: 500px;">
-      <h3 style="margin: 0 0 15px 0;">🌎 Traduttore Universale</h3>
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h3 style="margin: 0;">🌎 Traduttore Universale</h3>
+        <button class="btn-icon" onclick="closeTranslationModal()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
       
       <div class="translation-card">
         <div class="translation-label">La tua formula</div>
@@ -384,31 +426,31 @@
       </div>
 
       <div style="text-align: center; margin: 20px 0;">
-        <i class="fas fa-exchange-alt" style="font-size: 24px; color: var(--primary);"></i>
+        <i class="fas fa-arrows-up-down" style="font-size: 28px; color: var(--primary);"></i>
       </div>
 
       <div class="translation-card">
         <div class="translation-label">Traduzione universale</div>
-        <div class="translation-code" id="universal-formula">-</div>
+        <div class="translation-code" id="universal-formula" style="color: var(--warning);">-</div>
         <div class="translation-desc" id="universal-desc">-</div>
       </div>
 
       <div style="margin-top: 20px;" id="alternative-systems">
-        <!-- Populated by JS -->
+        <!-- translateFormula() inietta qui -->
       </div>
-      
-      <button class="btn btn-secondary" onclick="closeTranslationModal()" style="margin-top: 20px; width: 100%;">
-        <i class="fas fa-times"></i> Chiudi
-      </button>
     </div>
   </div>
 
+  <!-- FAB Back Button -->
   <div class="fab-container">
     <button class="fab-btn fab-secondary" onclick="goBack()" title="Torna Indietro">
       <i class="fas fa-arrow-left"></i>
     </button>
   </div>
 
+  <!-- ========================================
+       JAVASCRIPT ENGINE
+       ======================================== -->
   <script src="./specchio-magico.js"></script>
 
 </body>
