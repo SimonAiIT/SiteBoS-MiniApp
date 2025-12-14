@@ -9,7 +9,7 @@ tg.ready();
 tg.expand();
 
 // ========================================
-// BRAND DATABASE (EXPANDED - 50+ BRANDS)
+// BRAND DATABASE (EXPANDED - 60+ BRANDS)
 // ========================================
 
 const BRAND_DATABASE = {
@@ -23,10 +23,10 @@ const BRAND_DATABASE = {
     { name: 'Framesi', lines: ['Framcolor 2001', 'Framesi Bold', 'Eclectic Care'] },
     { name: 'Selective Professional', lines: ['Evo', 'Oligomineral', 'ColorEvo'] },
     { name: 'Elgon', lines: ['Moda & Style', 'I-Care'] },
-    { name: 'Kemon', lines: ['Nayo', 'Cramer', 'Actyva'] },
+    { name: 'Kemon', lines: ['Nayo', 'Cramer', 'Actyva', 'Coloro'] },
     { name: 'Inebrya', lines: ['Color', 'Bionic Color', 'Kolor Vibes'] },
-    { name: 'Vitality\'s', lines: ['Tone Intense', 'Art Absolute', 'Keratin Colour'] },
-    { name: 'Oway', lines: ['Hcolor', 'Hbleach', 'Silk\'n Glo'] },
+    { name: 'Vitality\'s', lines: ['Tone Intense', 'Art Absolute', 'Keratin Colour', 'Heart'] },
+    { name: 'Oway (Rolland)', lines: ['Hcolor', 'Hbleach', 'Silk\'n Glo'] },
     { name: 'ColorDesign Hair', lines: ['Permanent Color', 'Demi-Permanent'] },
     { name: 'Diapason', lines: ['Cosmetica Italiana', 'Professional'] },
     { name: 'Be Hair', lines: ['Be Color', 'Crazy Color'] },
@@ -34,11 +34,11 @@ const BRAND_DATABASE = {
     { name: 'Echosline', lines: ['Echos Color', 'Seliactive'] },
     { name: 'Koster', lines: ['Made in Italy Professional'] },
     { name: 'BES Beauty & Science', lines: ['Hi-Fi', 'Silkat Color'] },
-    { name: 'Cotril', lines: ['IceCream Hair Color'] },
+    { name: 'Cotril', lines: ['IceCream Hair Color', 'Color Tech'] },
     { name: 'Green Light', lines: ['Natural Colors'] },
     { name: 'Medavita', lines: ['Luxviva'] },
     { name: 'Napura', lines: ['Napura Color'] },
-    { name: 'Oyster Cosmetics', lines: ['Perlacolor'] },
+    { name: 'Oyster Cosmetics', lines: ['Perlacolor', 'Perlacolor No Ammonia'] },
     { name: 'Insight Professional', lines: ['Incolor'] },
     { name: 'Lowell', lines: ['Liso Leve Color'] },
     { name: 'Ekre', lines: ['Professional Color'] },
@@ -46,7 +46,15 @@ const BRAND_DATABASE = {
     { name: 'BeautyNova', lines: ['Color Line'] },
     { name: 'Color Joy', lines: ['Professional'] },
     { name: 'Free Limix', lines: ['Color Professional'] },
-    { name: 'Duomo', lines: ['Italian Luxury Color'] }
+    { name: 'Duomo', lines: ['Italian Luxury Color'] },
+    { name: 'Farmagan', lines: ['Superlative Color', 'Performance Color', 'Tone&Color Ready Mix'] },
+    { name: 'Barex Italiana', lines: ['Permesse', 'Joc Color', 'Olioseta Oro del Marocco'] },
+    { name: 'Rolland', lines: ['Professional Color Line'] },
+    { name: 'Compagnia del Colore', lines: ['CDC Professional', 'Fast Color'] },
+    { name: 'Maxima', lines: ['Professional Hair Color'] },
+    { name: 'Sílika', lines: ['Professional Color System'] },
+    { name: 'Intercosmo', lines: ['Color & Care'] },
+    { name: 'Elgon Professional', lines: ['Get The Color'] }
   ],
   
   // SISTEMA TEDESCO (Invertito) - Germania, Austria, Svizzera
