@@ -1,5 +1,5 @@
 // ========================================
-// SPECCHIO MAGICO - 3 PILASTRI AGGIUNTIVI
+// SPECCHIO MAGICO - PILASTRI COMPLETI
 // Modulo separato per evitare troncamento file principale
 // ========================================
 
@@ -65,6 +65,7 @@ const PROTECTIVE_STYLES = [
 
 // ========================================
 // PILASTRO 2: TECNICHE DI COLORAZIONE (PLACEMENT)
+// AGGIORNATO: + Shatush + Degradé
 // ========================================
 
 const COLOR_TECHNIQUES = [
@@ -72,43 +73,186 @@ const COLOR_TECHNIQUES = [
     id: 'global', 
     label: '🎨 Tinta Globale (Full Head)', 
     prompt: 'uniform all-over hair color from roots to tips, consistent full coverage',
-    description: 'Colore uniforme radice-punte, copertura totale'
+    description: 'Colore uniforme radice-punte, copertura totale',
+    type: 'permanent' // Per logica mixing calculator
   },
   { 
     id: 'root-melt', 
     label: '🌑 Root Melt / Shadow Root', 
     prompt: 'darker root melting seamlessly into lighter lengths, shadow root transition, soft blended gradient',
-    description: 'Radice scura che sfuma impercettibilmente nel colore chiaro'
+    description: 'Radice scura che sfuma impercettibilmente nel colore chiaro',
+    type: 'partial'
   },
   { 
     id: 'balayage', 
     label: '☀️ Balayage / Foilyage', 
     prompt: 'hand-painted balayage technique, sun-kissed dimension, depth at roots with lighter ends, natural gradient',
-    description: 'Schiaritura a mano libera, effetto "baciata dal sole"'
+    description: 'Schiaritura a mano libera, effetto "baciata dal sole"',
+    type: 'partial'
+  },
+  { 
+    id: 'shatush', 
+    label: '☁️ Shatush (Cotonatura)', 
+    prompt: 'shatush technique with backcombing, strong gradient from dark roots to light ends, cloud-like effect with visible demarcation',
+    description: 'Schiaritura con cotonatura radice (effetto nuvola, stacco più netto)',
+    type: 'partial'
+  },
+  { 
+    id: 'degrade', 
+    label: '🌿 Degradé Joelle', 
+    prompt: 'degrade hair color technique, vertical natural blending, multi-tonal seamless gradient, Italian school method',
+    description: 'Sfumatura verticale naturale tipica scuola italiana (Joelle)',
+    type: 'partial'
   },
   { 
     id: 'babylights', 
     label: '✨ Babylights (Micro-Tessitura)', 
     prompt: 'ultra-fine babylights, microscopic highlights blended throughout for natural diffused blonde, no visible stripes',
-    description: 'Micro-ciocche finissime per biondo naturale diffuso'
+    description: 'Micro-ciocche finissime per biondo naturale diffuso',
+    type: 'partial'
   },
   { 
     id: 'money-piece', 
     label: '💰 Money Piece / Face Framing', 
     prompt: 'distinct bright face-framing highlights, two frontal strands much lighter than base color, frames the face',
-    description: 'Due ciocche frontali molto più chiare per incorniciare il viso'
+    description: 'Due ciocche frontali molto più chiare per incorniciare il viso',
+    type: 'partial'
   },
   { 
     id: 'airtouch', 
     label: '💨 Airtouch (Tecnica Russa)', 
     prompt: 'airtouch technique using blow dryer separation, seamless hyper-realistic blonde blending, no demarcation lines',
-    description: 'Il "non plus ultra" del biondo freddo con sfumatura impossibile'
+    description: 'Il "non plus ultra" del biondo freddo con sfumatura impossibile',
+    type: 'partial'
   },
   { 
     id: 'color-block', 
     label: '🎭 Color Block / Split Dye', 
     prompt: 'geometric color blocking, half-and-half split dye or sharp contrasting sections, bold statement',
-    description: 'Metà testa di un colore, metà dell\'altro (o blocchi geometrici)'
+    description: 'Metà testa di un colore, metà dell\'altro (o blocchi geometrici)',
+    type: 'creative'
+  }
+];
+
+// ========================================
+// NUOVO: STYLING & PIEGA (Il Finish)
+// ========================================
+
+const STYLING_OPTIONS = [
+  { 
+    id: 'natural', 
+    label: '🌿 Naturale (Asciugatura Libera)', 
+    prompt: 'natural air-dried finish, effortless texture',
+    category: 'natural'
+  },
+  { 
+    id: 'smooth-blowout', 
+    label: '💨 Piega Liscia Spaghetto', 
+    prompt: 'smooth sleek blowout, straight as spaghetti, glossy finish',
+    category: 'straight'
+  },
+  { 
+    id: 'volume-90s', 
+    label: '🎆 Volume 90s (Big Hair)', 
+    prompt: '90s voluminous blowout, lifted roots, bouncy body',
+    category: 'straight'
+  },
+  { 
+    id: 'inward-tips', 
+    label: '➡️ Punte in Dentro (Classic Bob)', 
+    prompt: 'classic blowout with tips curled inward, sophisticated finish',
+    category: 'straight'
+  },
+  { 
+    id: 'beach-waves', 
+    label: '🌊 Beach Waves', 
+    prompt: 'effortless beach waves, tousled texture, salt-spray effect',
+    category: 'wavy'
+  },
+  { 
+    id: 'hollywood-waves', 
+    label: '✨ Hollywood Waves (Vintage)', 
+    prompt: 'glamorous vintage hollywood waves, defined S-curves, red carpet style',
+    category: 'wavy'
+  },
+  { 
+    id: 'soft-waves', 
+    label: '🌼 Onde Morbide', 
+    prompt: 'soft romantic waves, gentle movement, natural flow',
+    category: 'wavy'
+  },
+  { 
+    id: 'low-bun', 
+    label: '🧘 Chignon Basso', 
+    prompt: 'elegant low bun chignon, sleek and polished',
+    category: 'updo'
+  },
+  { 
+    id: 'high-ponytail', 
+    label: '👇 Coda Alta (Ponytail)', 
+    prompt: 'high sleek ponytail, tight and polished',
+    category: 'updo'
+  },
+  { 
+    id: 'french-twist', 
+    label: '🇫🇷 Banana (French Twist)', 
+    prompt: 'classic french twist banana updo, sophisticated roll',
+    category: 'updo'
+  },
+  { 
+    id: 'messy-bun', 
+    label: '🎀 Messy Bun', 
+    prompt: 'casual messy bun, effortless chic, loose texture',
+    category: 'updo'
+  },
+  { 
+    id: 'french-braid', 
+    label: '🩮 Treccia alla Francese', 
+    prompt: 'classic french braid, neat and tight, traditional weave',
+    category: 'braids'
+  },
+  { 
+    id: 'fishtail-braid', 
+    label: '🐟 Spina di Pesce', 
+    prompt: 'intricate fishtail braid, herringbone pattern',
+    category: 'braids'
+  }
+];
+
+// ========================================
+// NUOVO: EXTENSION & INFOLTIMENTO
+// ========================================
+
+const EXTENSIONS = [
+  { 
+    id: 'none', 
+    label: '❌ Nessuno', 
+    prompt: '',
+    massMultiplier: 1.0
+  },
+  { 
+    id: 'volume-wefts', 
+    label: '💪 Infoltimento Volume (Wefts)', 
+    prompt: 'wearing volumizing hair wefts for extra thickness and body',
+    massMultiplier: 1.3 // +30% massa colore
+  },
+  { 
+    id: 'tape-in-length', 
+    label: '📏 Allungamento Tape-In', 
+    prompt: 'wearing tape-in hair extensions for extra length',
+    massMultiplier: 1.5 // +50% massa colore
+  },
+  { 
+    id: 'keratin-bonds', 
+    label: '🔥 Cheratina (Bonds)', 
+    prompt: 'wearing keratin bond hair extensions, seamless blend',
+    massMultiplier: 1.4 // +40% massa colore
+  },
+  { 
+    id: 'flash-highlights', 
+    label: '⚡ Punti Luce (Flash Color)', 
+    prompt: 'flash color highlights extensions for dimensional color effect without bleaching',
+    massMultiplier: 1.0 // Non aggiunge massa (già colorate)
   }
 ];
 
@@ -156,38 +300,6 @@ const ADVANCED_FADES = [
 ];
 
 // ========================================
-// AGGIORNAMENTO HAIRCUTS CON TEXTURE
-// ========================================
-
-const HAIRCUTS_EXTENDED = {
-  F: [
-    'Bob', 'Long Bob (Lob)', 'Pixie Cut', 'Shag', 'Layered Cut', 
-    'Blunt Cut', 'Mullet Moderno', 'Wolf Cut', 'Buzz Cut Femminile', 
-    'Undercut Laterale', 'Carré', 'French Bob', 'Shaggy Bob', 
-    'Bixie (Bob+Pixie)', 'Textured Lob',
-    // NUOVO: Afro Styles
-    'Afro Naturale (Type 4)', 'TWA (Teeny Weeny Afro)', 'Tapered Afro',
-    'High Top Fade', 'Curly Shag'
-  ],
-  M: [
-    'Buzz Cut', 'Crew Cut', 'Undercut', 'Fade (Low/Mid/High)', 
-    'Taper Fade', 'Pompadour', 'Quiff', 'Side Part', 'Textured Crop', 
-    'French Crop', 'Slick Back', 'Faux Hawk', 'Spiky Hair', 
-    'Caesar Cut', 'Ivy League',
-    // NUOVO: Advanced Fades
-    'Skin Fade + Design', 'Drop Fade', 'Burst Fade', 'Edgar Cut',
-    'High Top Fade', 'Temple Fade'
-  ],
-  X: [
-    'Bob', 'Long Bob', 'Pixie', 'Shag', 'Undercut', 'Fade', 
-    'Mullet', 'Wolf Cut', 'Buzz Cut', 'Crew Cut', 'Textured Crop', 
-    'French Crop', 'Bixie', 'Pompadour', 'Quiff',
-    // NUOVO: Inclusive
-    'Afro Naturale', 'Skin Fade', 'Silk Press', 'High Top Fade'
-  ]
-};
-
-// ========================================
 // FUNZIONI DI POPOLAZIONE SELETTORI
 // ========================================
 
@@ -204,7 +316,6 @@ function populateHairTexture() {
     select.appendChild(option);
   });
   
-  // Event listener per mostrare Protective Styles se Afro/Coily
   select.addEventListener('change', () => {
     const protectiveSection = document.getElementById('protective-styles-section');
     if (select.value.includes('coily') || select.value.includes('silk-press')) {
@@ -220,7 +331,6 @@ function populateProtectiveStyles() {
   const select = document.getElementById('protective-style');
   if (!select) return;
   
-  // Mantieni opzione "none"
   const noneOption = select.querySelector('option[value="none"]');
   select.innerHTML = '';
   if (noneOption) select.appendChild(noneOption);
@@ -248,11 +358,38 @@ function populateColorTechniques() {
   });
 }
 
+function populateStylingOptions() {
+  const select = document.getElementById('styling-finish');
+  if (!select) return;
+  
+  select.innerHTML = '';
+  
+  STYLING_OPTIONS.forEach(style => {
+    const option = document.createElement('option');
+    option.value = style.id;
+    option.textContent = style.label;
+    select.appendChild(option);
+  });
+}
+
+function populateExtensions() {
+  const select = document.getElementById('extensions-type');
+  if (!select) return;
+  
+  select.innerHTML = '';
+  
+  EXTENSIONS.forEach(ext => {
+    const option = document.createElement('option');
+    option.value = ext.id;
+    option.textContent = ext.label;
+    select.appendChild(option);
+  });
+}
+
 function populateAdvancedFades() {
   const select = document.getElementById('fade-type');
   if (!select) return;
   
-  // Mantieni opzione "none"
   const noneOption = select.querySelector('option[value="none"]');
   select.innerHTML = '';
   if (noneOption) select.appendChild(noneOption);
@@ -267,7 +404,7 @@ function populateAdvancedFades() {
 }
 
 // ========================================
-// GENERATORE PROMPT AI COMPLETO
+// GENERATORE PROMPT AI COMPLETO (AGGIORNATO)
 // ========================================
 
 function generateAIPrompt() {
@@ -299,13 +436,21 @@ function generateAIPrompt() {
     }
   }
   
-  // 4. FORMULA COLORE
+  // 4. EXTENSION (se selezionate)
+  const extensionEl = document.getElementById('extensions-type');
+  if (extensionEl && extensionEl.value !== 'none') {
+    const ext = EXTENSIONS.find(e => e.id === extensionEl.value);
+    if (ext && ext.prompt) {
+      prompt += `${ext.prompt}. `;
+    }
+  }
+  
+  // 5. FORMULA COLORE
   const formulaEl = document.getElementById('formula-code');
   if (formulaEl) {
     const formula = formulaEl.textContent;
     let colorDesc = `Hair color formula: ${formula}`;
     
-    // Traduco in descrizione universale (usa variabili globali dal file principale)
     if (typeof primaryReflect !== 'undefined' && primaryReflect) {
       const primaryReflectData = REFLECTS[primaryReflect];
       if (primaryReflectData) {
@@ -328,7 +473,7 @@ function generateAIPrompt() {
     prompt += colorDesc + '. ';
   }
   
-  // 5. TECNICA DI APPLICAZIONE
+  // 6. TECNICA DI APPLICAZIONE
   const techniqueEl = document.getElementById('color-technique');
   if (techniqueEl && techniqueEl.value) {
     const technique = COLOR_TECHNIQUES.find(t => t.id === techniqueEl.value);
@@ -337,7 +482,16 @@ function generateAIPrompt() {
     }
   }
   
-  // 6. FADE (se uomo e selezionato)
+  // 7. STYLING FINALE
+  const stylingEl = document.getElementById('styling-finish');
+  if (stylingEl && stylingEl.value && stylingEl.value !== 'natural') {
+    const styling = STYLING_OPTIONS.find(s => s.id === stylingEl.value);
+    if (styling) {
+      prompt += `Styled with ${styling.prompt}. `;
+    }
+  }
+  
+  // 8. FADE (se uomo e selezionato)
   const fadeEl = document.getElementById('fade-type');
   if (fadeEl && fadeEl.value !== 'none') {
     const fade = ADVANCED_FADES.find(f => f.id === fadeEl.value);
@@ -346,7 +500,7 @@ function generateAIPrompt() {
     }
   }
   
-  // 7. MAKEUP (se presente)
+  // 9. MAKEUP (se presente)
   const eyeMakeupEl = document.getElementById('eye-makeup');
   if (eyeMakeupEl && eyeMakeupEl.value !== 'Nessuno') {
     prompt += `Eye makeup: ${eyeMakeupEl.value}. `;
@@ -360,7 +514,7 @@ function generateAIPrompt() {
     }
   }
   
-  // 8. BEARD (se presente)
+  // 10. BEARD (se presente)
   const beardStyleEl = document.getElementById('beard-style');
   if (beardStyleEl && beardStyleEl.value !== 'none') {
     prompt += `Beard style: ${beardStyleEl.value}. `;
@@ -374,7 +528,6 @@ function generateAIPrompt() {
     }
   }
   
-  // Final touch
   prompt += 'Studio lighting, professional hair salon result, high quality photography.';
   
   console.log('🎨 AI PROMPT COMPLETO:', prompt);
@@ -388,12 +541,14 @@ function generateAIPrompt() {
 function initPillars() {
   populateHairTexture();
   populateColorTechniques();
+  populateStylingOptions();
+  populateExtensions();
   
   if (selectedGender === 'M' || selectedGender === 'X') {
     populateAdvancedFades();
   }
   
-  console.log('✅ 3 Pilastri inizializzati: Texture, Color Techniques, Advanced Fades');
+  console.log('✅ Pilastri inizializzati: Texture, Color, Styling, Extensions, Fades');
 }
 
 // Export per uso nel file principale
@@ -403,6 +558,7 @@ if (typeof window !== 'undefined') {
   window.HAIR_TEXTURES = HAIR_TEXTURES;
   window.PROTECTIVE_STYLES = PROTECTIVE_STYLES;
   window.COLOR_TECHNIQUES = COLOR_TECHNIQUES;
+  window.STYLING_OPTIONS = STYLING_OPTIONS;
+  window.EXTENSIONS = EXTENSIONS;
   window.ADVANCED_FADES = ADVANCED_FADES;
-  window.HAIRCUTS_EXTENDED = HAIRCUTS_EXTENDED;
 }
