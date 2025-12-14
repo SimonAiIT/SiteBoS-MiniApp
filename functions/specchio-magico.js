@@ -1,6 +1,6 @@
 // ========================================
-// SPECCHIO MAGICO AI - MAIN ENGINE v4.1
-// Sistema Colorimetria Professionale + MULTI-BOWL SYSTEM (Dual Phase Mixing)
+// SPECCHIO MAGICO AI - MAIN ENGINE v4.2
+// Sistema Colorimetria Professionale + MULTI-BOWL SYSTEM + AI WEBHOOK
 // ========================================
 
 let currentSystem = null;
@@ -12,10 +12,13 @@ let secondaryReflect = null;
 let clientPhotoData = null;
 let currentStream = null;
 let usingFrontCamera = true;
-let currentRecipes = null; // CHANGED: Now array of recipes
+let currentRecipes = null;
 
 // FLUID MODE FLAG
 window.isFluidMode = false;
+
+// AI WEBHOOK ENDPOINT
+const AI_WEBHOOK_URL = 'https://trinai.api.workflow.dcmake.it/webhook/5364bb15-4186-4246-8d00-c82218f5e407';
 
 // ========================================
 // PHASE 1: BRAND SYSTEM SELECTION
@@ -283,7 +286,6 @@ function calculateMixingRecipe(baseTone, primaryKey, secondaryKey, intensified, 
   const hairMass = estimateHairMass(lengthCategory);
   let MassaBase = hairMass.baseGrams;
   
-  // Extension Multiplier
   let MoltiplicatoreExtension = 1.0;
   const extensionEl = document.getElementById('extensions-type');
   if (extensionEl && extensionEl.value !== 'none' && typeof EXTENSIONS !== 'undefined') {
@@ -293,23 +295,13 @@ function calculateMixingRecipe(baseTone, primaryKey, secondaryKey, intensified, 
     }
   }
   
-  // ========================================
-  // DUAL PHASE DETECTION
-  // ========================================
-  
-  // CASO A: ROOT MELT (Sfumatura Radice)
   if (colorTechnique === 'root-melt') {
     return calculateRootMeltRecipe(baseTone, primaryKey, secondaryKey, intensified, MassaBase, MoltiplicatoreExtension, developerVolume, hairMass.category);
   }
   
-  // CASO B: BLEACH & TONE
   if (colorTechnique === 'bleach-tone') {
     return calculateBleachToneRecipe(baseTone, primaryKey, secondaryKey, intensified, MassaBase, MoltiplicatoreExtension, developerVolume, hairMass.category);
   }
-  
-  // ========================================
-  // CASO C: STANDARD SINGLE BOWL
-  // ========================================
   
   let MoltiplicatoreTecnica = 1.0;
   const partialTechniques = [
@@ -331,7 +323,6 @@ function calculateMixingRecipe(baseTone, primaryKey, secondaryKey, intensified, 
   
   let TotaleColore = Math.round(MassaBase * MoltiplicatoreExtension * MoltiplicatoreTecnica);
   
-  // CREATIVE MODE
   if (isCreativeMode && creativeColorsArray.length > 0) {
     const tubes = creativeColorsArray.map(colorObj => ({
       name: colorObj.name,
@@ -352,7 +343,6 @@ function calculateMixingRecipe(baseTone, primaryKey, secondaryKey, intensified, 
     }];
   }
   
-  // CLASSIC MODE
   let recipeType = 'COLORE PERMANENTE';
   let ratio = 1.5;
   let specialNote = null;
@@ -390,14 +380,9 @@ function calculateMixingRecipe(baseTone, primaryKey, secondaryKey, intensified, 
   }];
 }
 
-// ========================================
-// ROOT MELT RECIPE (Dual Bowl)
-// ========================================
-
 function calculateRootMeltRecipe(baseTone, primaryKey, secondaryKey, intensified, MassaBase, MoltiplicatoreExtension, developerVolume, hairLength) {
   const TotaleColore = Math.round(MassaBase * MoltiplicatoreExtension);
   
-  // CIOTOLA 1: RADICE (40% del totale) - 2 toni più scura
   const rootTone = Math.max(1, baseTone - 2);
   const rootColorGrams = Math.round(TotaleColore * 0.4);
   const rootDeveloperGrams = Math.round(rootColorGrams * 1.5);
@@ -421,7 +406,6 @@ function calculateRootMeltRecipe(baseTone, primaryKey, secondaryKey, intensified
     specialNote: `💡 Applicare su radice (primi 2-3 cm) per effetto ombré naturale`
   };
   
-  // CIOTOLA 2: LUNGHEZZE (60% del totale) - Formula utente
   const lengthsColorGrams = Math.round(TotaleColore * 0.6);
   const lengthsDeveloperGrams = Math.round(lengthsColorGrams * 1.5);
   
@@ -443,16 +427,11 @@ function calculateRootMeltRecipe(baseTone, primaryKey, secondaryKey, intensified
   return [bowl1, bowl2];
 }
 
-// ========================================
-// BLEACH & TONE RECIPE (Dual Bowl)
-// ========================================
-
 function calculateBleachToneRecipe(baseTone, primaryKey, secondaryKey, intensified, MassaBase, MoltiplicatoreExtension, developerVolume, hairLength) {
   const TotaleColore = Math.round(MassaBase * MoltiplicatoreExtension);
   
-  // CIOTOLA 1: DECOLORAZIONE
   const bleachPowderGrams = TotaleColore;
-  const bleachDeveloperGrams = Math.round(bleachPowderGrams * 2); // Ratio 1:2
+  const bleachDeveloperGrams = Math.round(bleachPowderGrams * 2);
   
   const bowl1 = {
     phase: 'phase1',
@@ -473,9 +452,8 @@ function calculateBleachToneRecipe(baseTone, primaryKey, secondaryKey, intensifi
     specialNote: `⚠️ Controllare schiarimento ogni 10 min. Target: Biondo 9-10`
   };
   
-  // CIOTOLA 2: TONALIZZAZIONE
-  const tonerColorGrams = Math.round(TotaleColore * 0.5); // Meno prodotto per toner
-  const tonerDeveloperGrams = Math.round(tonerColorGrams * 2); // Ratio 1:2
+  const tonerColorGrams = Math.round(TotaleColore * 0.5);
+  const tonerDeveloperGrams = Math.round(tonerColorGrams * 2);
   
   const bowl2 = {
     phase: 'phase2',
@@ -485,7 +463,7 @@ function calculateBleachToneRecipe(baseTone, primaryKey, secondaryKey, intensifi
     hairLength: hairLength,
     tubes: buildTubesList(baseTone, primaryKey, secondaryKey, intensified, tonerColorGrams),
     developer: {
-      volume: 10, // Sempre 10 Vol per toner
+      volume: 10,
       grams: tonerDeveloperGrams
     },
     totalMix: tonerColorGrams + tonerDeveloperGrams,
@@ -494,10 +472,6 @@ function calculateBleachToneRecipe(baseTone, primaryKey, secondaryKey, intensifi
   
   return [bowl1, bowl2];
 }
-
-// ========================================
-// TUBES LIST BUILDER (Helper)
-// ========================================
 
 function buildTubesList(baseTone, primaryKey, secondaryKey, intensified, TotaleColore) {
   const tubes = [];
@@ -828,24 +802,108 @@ function renderBeardColors() {
 }
 
 // ========================================
-// GENERATE PREVIEW
+// AI WEBHOOK INTEGRATION
 // ========================================
 
+function getURLParams() {
+  const urlParams = new URLSearchParams(window.location.search);
+  return {
+    owner: urlParams.get('owner') || '',
+    token: urlParams.get('token') || '',
+    system: urlParams.get('system') || 'standard',
+    gender: urlParams.get('gender') || 'F'
+  };
+}
+
 function generatePreview() {
-  showLoader('Generazione anteprima AI...');
+  showLoader('🤖 Generazione AI in corso...');
   
-  const aiPrompt = typeof generateAIPrompt === 'function' ? generateAIPrompt() : 'AI generation prompt';
+  // Collect complete diagnosis data
+  const diagnosisData = generateDiagnosisCard();
+  const urlParams = getURLParams();
   
-  console.log('🎨 AI PROMPT:', aiPrompt);
+  // Build comprehensive payload
+  const payload = {
+    // URL Params
+    owner: urlParams.owner,
+    token: urlParams.token,
+    
+    // Client Photo (Base64)
+    photo: clientPhotoData,
+    
+    // Diagnosis Data
+    gender: selectedGender,
+    genderLabel: diagnosisData.gender,
+    system: currentSystem,
+    systemLabel: diagnosisData.system,
+    
+    // Hair Structure
+    haircut: diagnosisData.haircut,
+    styling: diagnosisData.styling,
+    texture: diagnosisData.texture,
+    extension: diagnosisData.extension,
+    
+    // Color Formula
+    formula: diagnosisData.formula,
+    baseTone: currentBaseTone,
+    primaryReflect: primaryReflect ? REFLECTS[primaryReflect].name : null,
+    secondaryReflect: secondaryReflect ? REFLECTS[secondaryReflect].name : null,
+    intensified: primaryIntensified,
+    colorTechnique: diagnosisData.colorTechnique,
+    
+    // Recipes (Multi-Bowl)
+    recipes: currentRecipes,
+    
+    // Creative Colors (if applicable)
+    isCreative: diagnosisData.isCreative,
+    creativeColors: diagnosisData.creativeColors,
+    
+    // Total Look
+    eyeMakeup: diagnosisData.eyeMakeup,
+    lipColor: diagnosisData.lipColor,
+    beardStyle: diagnosisData.beardStyle,
+    beardColor: diagnosisData.beardColor,
+    
+    // AI Prompt (if generated)
+    aiPrompt: typeof generateAIPrompt === 'function' ? generateAIPrompt() : null,
+    
+    // Timestamp
+    timestamp: Date.now()
+  };
   
-  setTimeout(() => {
+  console.log('🚀 Sending to AI Webhook:', payload);
+  
+  // Call webhook
+  fetch(AI_WEBHOOK_URL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(payload)
+  })
+  .then(response => {
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+    return response.json();
+  })
+  .then(data => {
+    console.log('✅ AI Response:', data);
     hideLoader();
     showResults();
-  }, 2000);
+  })
+  .catch(error => {
+    console.error('❌ Webhook Error:', error);
+    hideLoader();
+    alert('⚠️ Errore durante la generazione AI. Riprova.');
+    // Show results anyway (fallback)
+    showResults();
+  });
 }
 
 function showResults() {
   document.getElementById('config-section').classList.add('hidden');
+  document.getElementById('fluid-config-section').classList.add('hidden');
   document.getElementById('results-section').classList.remove('hidden');
   document.getElementById('before-img').src = clientPhotoData;
   
@@ -1097,7 +1155,6 @@ function injectMixingCard() {
     </div>
   `;
   
-  // RENDER EACH BOWL
   currentRecipes.forEach((recipe, bowlIndex) => {
     const recipeTypeColor = recipe.recipeType.includes('ROOT SHADOW') ? '#2d2d2d' :
                             recipe.recipeType.includes('BLEACH') ? '#fbbf24' :
