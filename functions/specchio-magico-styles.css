@@ -302,21 +302,81 @@
   box-shadow: 0 0 0 3px var(--primary);
 }
 
-.reflect-drop.active::after {
-  content: attr(data-position);
+/* Slot Indicators */
+.reflect-drop.primary::after {
+  content: '1°';
   position: absolute;
   top: 5px;
   right: 5px;
-  width: 24px;
-  height: 24px;
-  background: white;
-  color: var(--primary);
+  width: 28px;
+  height: 28px;
+  background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+  color: #000;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: bold;
-  font-size: 12px;
+  font-size: 11px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+  animation: slotPulse 0.3s ease;
+}
+
+.reflect-drop.secondary::after {
+  content: '2°';
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  width: 28px;
+  height: 28px;
+  background: linear-gradient(135deg, #c0c0c0 0%, #e8e8e8 100%);
+  color: #000;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 11px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+  animation: slotPulse 0.3s ease;
+}
+
+.reflect-drop.intensified::before {
+  content: 'x2';
+  position: absolute;
+  top: 38px;
+  right: 5px;
+  padding: 2px 6px;
+  background: rgba(255, 215, 0, 0.9);
+  color: #000;
+  border-radius: 10px;
+  font-size: 9px;
+  font-weight: bold;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+  animation: intensifyPulse 0.4s ease;
+}
+
+@keyframes slotPulse {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes intensifyPulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.15);
+  }
 }
 
 .reflect-code {
@@ -335,7 +395,7 @@
 
 .reflect-temp-icon {
   position: absolute;
-  top: 5px;
+  bottom: 5px;
   right: 5px;
   font-size: 14px;
 }
@@ -363,6 +423,8 @@
   font-weight: bold;
   color: var(--primary);
   margin-bottom: 10px;
+  font-family: 'Courier New', monospace;
+  letter-spacing: 2px;
 }
 
 .formula-meta {
@@ -494,6 +556,7 @@
   font-weight: bold;
   color: var(--primary);
   margin-bottom: 5px;
+  font-family: 'Courier New', monospace;
 }
 
 .translation-system {
@@ -522,6 +585,7 @@
   border-radius: 8px;
   margin-bottom: 8px;
   font-size: 13px;
+  line-height: 1.5;
 }
 
 /* Button Icon */
