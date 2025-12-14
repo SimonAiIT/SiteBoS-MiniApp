@@ -1,6 +1,6 @@
 // ========================================
 // SPECCHIO MAGICO AI - MAIN ENGINE
-// Sistema Colorimetria Professionale Multi-Brand
+// Sistema Colorimetria Professionale Multi-Brand + MIXING CALCULATOR
 // ========================================
 
 let currentSystem = null;
@@ -12,6 +12,7 @@ let secondaryReflect = null;
 let clientPhotoData = null;
 let currentStream = null;
 let usingFrontCamera = true;
+let currentRecipe = null; // NUOVO: Memorizza la ricetta calcolata
 
 // ========================================
 // FASE 1: BRAND SYSTEM SELECTION
@@ -21,13 +22,9 @@ function selectSystem(system) {
   currentSystem = system;
   console.log('✅ Sistema selezionato:', system);
   
-  // Nascondi brand selection
   document.getElementById('brand-selection').classList.add('hidden');
-  
-  // Mostra gender selection
   document.getElementById('gender-section').classList.remove('hidden');
   
-  // Aggiorna label sistema
   const systemLabels = {
     'standard': 'Standard (IT/FR)',
     'german': 'Tedesco (DE)',
@@ -38,7 +35,6 @@ function selectSystem(system) {
     el.textContent = systemLabels[system];
   });
   
-  // Mostra settings button
   document.getElementById('settings-btn').style.display = 'flex';
 }
 
@@ -50,7 +46,6 @@ function selectGender(gender) {
   selectedGender = gender;
   console.log('✅ Genere selezionato:', gender);
   
-  // Update UI
   document.querySelectorAll('.gender-btn').forEach(btn => btn.classList.remove('active'));
   document.getElementById(`gender-${gender.toLowerCase()}`).classList.add('active');
   
@@ -59,10 +54,8 @@ function selectGender(gender) {
     el.textContent = genderLabels[gender];
   });
   
-  // Enable camera button
   document.getElementById('btn-start-camera').disabled = false;
   
-  // CRITICAL: Inizializza i 3 pilastri
   if (typeof initPillars === 'function') {
     initPillars();
   }
@@ -118,23 +111,17 @@ function capturePhoto() {
   
   clientPhotoData = canvas.toDataURL('image/jpeg', 0.8);
   
-  // Stop camera
   if (currentStream) {
     currentStream.getTracks().forEach(track => track.stop());
   }
   
-  // Show config section
   document.getElementById('camera-section').classList.add('hidden');
   document.getElementById('config-section').classList.remove('hidden');
   document.getElementById('client-photo').src = clientPhotoData;
   
-  // Populate haircuts
   populateHaircuts();
-  
-  // Render reflects
   renderReflectPalette();
   
-  // Show/hide sections based on gender
   if (selectedGender === 'F' || selectedGender === 'X') {
     document.getElementById('makeup-section').classList.remove('hidden');
     renderLipColors();
@@ -215,6 +202,126 @@ function populateHaircuts() {
 }
 
 // ========================================
+// MIXING CALCULATOR - STEP 1: STIMA LUNGHEZZA
+// ========================================
+
+function estimateHairMass(haircutName) {
+  const shortCuts = [
+    'Buzz Cut', 'Pixie Cut', 'Crop', 'Crew Cut', 'Fade', 'Taper Fade',
+    'French Crop', 'Textured Crop', 'Caesar Cut', 'Ivy League',
+    'Skin Fade', 'Drop Fade', 'Burst Fade', 'Edgar Cut', 'Temple Fade',
+    'TWA', 'Buzz Cut Femminile', 'Bixie'
+  ];
+  
+  const mediumCuts = [
+    'Bob', 'Carré', 'French Bob', 'Shaggy Bob', 'Undercut',
+    'Side Part', 'Pompadour', 'Quiff', 'Slick Back', 'Faux Hawk',
+    'Spiky Hair', 'Mullet', 'Tapered Afro', 'High Top Fade'
+  ];
+  
+  // Tutto il resto è Long
+  const longCuts = [
+    'Long Bob', 'Lob', 'Shag', 'Layered', 'Blunt Cut', 'Wolf Cut',
+    'Textured Lob', 'Afro Naturale', 'Curly Shag', 'Silk Press'
+  ];
+  
+  // Matching fuzzy (case-insensitive, partial match)
+  const cutLower = haircutName.toLowerCase();
+  
+  if (shortCuts.some(c => cutLower.includes(c.toLowerCase()))) {
+    return { category: 'Short', baseGrams: 30 };
+  }
+  
+  if (mediumCuts.some(c => cutLower.includes(c.toLowerCase()))) {
+    return { category: 'Medium', baseGrams: 40 };
+  }
+  
+  if (longCuts.some(c => cutLower.includes(c.toLowerCase()))) {
+    return { category: 'Long', baseGrams: 60 };
+  }
+  
+  // Default fallback
+  return { category: 'Medium', baseGrams: 40 };
+}
+
+// ========================================
+// MIXING CALCULATOR - STEP 2: ALGORITMO SOMMELIER
+// ========================================
+
+function calculateMixingRecipe(baseTone, primaryKey, secondaryKey, intensified, lengthCategory, developerVolume = 20) {
+  const hairMass = estimateHairMass(lengthCategory);
+  const colorGrams = hairMass.baseGrams;
+  
+  // Ratio dinamico in base al volume ossidante
+  let ratio = 1.5; // Standard 1:1.5
+  if (developerVolume === 40) {
+    ratio = 2.0; // Superschiarenti 1:2
+  }
+  
+  const developerGrams = Math.round(colorGrams * ratio);
+  const totalMix = colorGrams + developerGrams;
+  
+  let tubes = [];
+  
+  // CASO A: Naturale (7.0)
+  if (!primaryKey) {
+    tubes.push({
+      name: `Tubo ${baseTone}.0 (Naturale)`,
+      grams: colorGrams,
+      percentage: 100
+    });
+  }
+  // CASO D: Riflesso Intenso (7.44)
+  else if (intensified && !secondaryKey) {
+    const reflectCode = REFLECT_SYSTEM_MAP[currentSystem || 'standard'][primaryKey];
+    tubes.push({
+      name: `Tubo ${baseTone}.${reflectCode}${reflectCode} (${REFLECTS[primaryKey].name} INTENSO)`,
+      grams: colorGrams,
+      percentage: 100
+    });
+  }
+  // CASO B: Riflesso Puro (7.4)
+  else if (primaryKey && !secondaryKey) {
+    const reflectCode = REFLECT_SYSTEM_MAP[currentSystem || 'standard'][primaryKey];
+    tubes.push({
+      name: `Tubo ${baseTone}.${reflectCode} (${REFLECTS[primaryKey].name})`,
+      grams: colorGrams,
+      percentage: 100
+    });
+  }
+  // CASO C: Riflesso Composto (7.34)
+  else if (primaryKey && secondaryKey) {
+    const primaryCode = REFLECT_SYSTEM_MAP[currentSystem || 'standard'][primaryKey];
+    const secondaryCode = REFLECT_SYSTEM_MAP[currentSystem || 'standard'][secondaryKey];
+    
+    const primaryGrams = Math.round(colorGrams * 0.7);
+    const secondaryGrams = colorGrams - primaryGrams;
+    
+    tubes.push({
+      name: `Tubo ${baseTone}.${primaryCode} (${REFLECTS[primaryKey].name})`,
+      grams: primaryGrams,
+      percentage: 70
+    });
+    
+    tubes.push({
+      name: `Tubo ${baseTone}.${secondaryCode} (${REFLECTS[secondaryKey].name})`,
+      grams: secondaryGrams,
+      percentage: 30
+    });
+  }
+  
+  return {
+    hairLength: hairMass.category,
+    tubes: tubes,
+    developer: {
+      volume: developerVolume,
+      grams: developerGrams
+    },
+    totalMix: totalMix
+  };
+}
+
+// ========================================
 // REFLECT PALETTE RENDERER
 // ========================================
 
@@ -250,7 +357,6 @@ function selectReflect(key) {
     primaryReflect = key;
     document.querySelector(`[data-reflect="${key}"]`).classList.add('active');
   } else if (primaryReflect === key && !secondaryReflect) {
-    // Deselect primary
     primaryReflect = null;
     primaryIntensified = false;
     document.querySelector(`[data-reflect="${key}"]`).classList.remove('active', 'intensified');
@@ -258,7 +364,6 @@ function selectReflect(key) {
     secondaryReflect = key;
     document.querySelector(`[data-reflect="${key}"]`).classList.add('active', 'secondary');
   } else {
-    // Reset all
     document.querySelectorAll('.reflect-btn').forEach(btn => {
       btn.classList.remove('active', 'intensified', 'secondary');
     });
@@ -320,7 +425,6 @@ function updateFormulaDisplay() {
   
   document.getElementById('formula-code').textContent = formula;
   
-  // Update temperatura e nome
   let tempText = 'NEUTRO';
   let tempClass = 'temp-neutral';
   let reflectName = 'Naturale';
@@ -364,7 +468,6 @@ function updateFormulaDisplay() {
   
   document.getElementById('formula-name').textContent = reflectName;
   
-  // Color preview
   const finalColor = calculateHairColor();
   const formulaDisplay = document.querySelector('.formula-display');
   if (formulaDisplay && finalColor) {
@@ -504,12 +607,10 @@ function renderBeardColors() {
 function generatePreview() {
   showLoader('Generazione anteprima AI...');
   
-  // Usa il generatore di prompt dai pilastri
   const aiPrompt = typeof generateAIPrompt === 'function' ? generateAIPrompt() : 'AI generation prompt';
   
   console.log('🎨 AI Prompt:', aiPrompt);
   
-  // Simula generazione (sostituire con API reale)
   setTimeout(() => {
     hideLoader();
     showResults();
@@ -524,27 +625,134 @@ function showResults() {
   displayResults();
 }
 
+// ========================================
+// DISPLAY RESULTS + MIXING CALCULATOR CARD
+// ========================================
+
 function displayResults() {
   const summary = document.getElementById('summary-content');
   if (!summary) return;
   
+  // Calculate recipe
+  const haircut = document.getElementById('haircut')?.value || 'Bob';
+  currentRecipe = calculateMixingRecipe(
+    currentBaseTone,
+    primaryReflect,
+    secondaryReflect,
+    primaryIntensified,
+    haircut,
+    20 // Default 20 Vol
+  );
+  
   let html = `<div class="summary-item"><strong>Sistema:</strong> ${currentSystem}</div>`;
   html += `<div class="summary-item"><strong>Formula:</strong> ${document.getElementById('formula-code').textContent}</div>`;
-  html += `<div class="summary-item"><strong>Taglio:</strong> ${document.getElementById('haircut').value}</div>`;
+  html += `<div class="summary-item"><strong>Taglio:</strong> ${haircut}</div>`;
   
-  // Texture
   const texture = document.getElementById('hair-texture')?.value;
   if (texture) {
     html += `<div class="summary-item"><strong>Texture:</strong> ${texture}</div>`;
   }
   
-  // Color technique
   const technique = document.getElementById('color-technique')?.value;
   if (technique) {
     html += `<div class="summary-item"><strong>Tecnica:</strong> ${technique}</div>`;
   }
   
   summary.innerHTML = html;
+  
+  // INJECT MIXING CALCULATOR CARD
+  injectMixingCard();
+}
+
+function injectMixingCard() {
+  // Find insertion point (after summary, before buttons)
+  const resultsSection = document.getElementById('results-section');
+  const btnContainer = resultsSection.querySelector('.btn-container');
+  
+  // Remove old card if exists
+  const oldCard = document.getElementById('mixing-calculator-card');
+  if (oldCard) oldCard.remove();
+  
+  // Create new card
+  const card = document.createElement('div');
+  card.id = 'mixing-calculator-card';
+  card.className = 'card';
+  card.style.marginTop = '15px';
+  
+  let html = `
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+      <h3 style="margin: 0;">⚖️ LABORATORIO COLORE</h3>
+      <span style="font-size: 12px; color: var(--text-muted); text-transform: uppercase;">Capelli ${currentRecipe.hairLength}</span>
+    </div>
+    
+    <div style="background: rgba(0,0,0,0.3); border-radius: 10px; padding: 15px; font-family: 'Courier New', monospace;">
+  `;
+  
+  // Tubes
+  currentRecipe.tubes.forEach((tube, i) => {
+    html += `
+      <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0; ${i < currentRecipe.tubes.length - 1 ? 'border-bottom: 1px dashed var(--glass-border);' : ''}">
+        <div>
+          <div style="font-size: 13px; font-weight: 600; color: var(--text-primary);">${tube.name}</div>
+          <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">${tube.percentage}% del colore totale</div>
+        </div>
+        <div style="font-size: 18px; font-weight: bold; color: var(--primary);">${tube.grams}g</div>
+      </div>
+    `;
+  });
+  
+  // Divider
+  html += `<div style="height: 1px; background: var(--glass-border); margin: 15px 0;"></div>`;
+  
+  // Developer (with selector)
+  html += `
+    <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0;">
+      <div style="flex: 1;">
+        <div style="font-size: 13px; font-weight: 600; color: var(--text-primary); margin-bottom: 8px;">Ossidante</div>
+        <select id="developer-volume-selector" onchange="recalculateRecipe()" style="width: 100%; padding: 8px; border: 1px solid var(--glass-border); border-radius: 6px; background: rgba(0,0,0,0.3); color: var(--text-primary); font-size: 12px;">
+          <option value="10">10 Vol (3%) - Tono su Tono</option>
+          <option value="20" selected>20 Vol (6%) - Standard/Copertura</option>
+          <option value="30">30 Vol (9%) - Schiaritura 2-3 Liv</option>
+          <option value="40">40 Vol (12%) - Superschiarenti</option>
+        </select>
+      </div>
+      <div style="font-size: 18px; font-weight: bold; color: var(--success); margin-left: 15px;" id="developer-grams-display">${currentRecipe.developer.grams}g</div>
+    </div>
+  `;
+  
+  // Total
+  html += `
+    <div style="height: 2px; background: var(--primary); margin: 15px 0;"></div>
+    <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0;">
+      <div style="font-size: 15px; font-weight: bold; color: var(--text-primary);">TOTALE MISCELA</div>
+      <div style="font-size: 24px; font-weight: bold; color: var(--warning);" id="total-mix-display">${currentRecipe.totalMix}g</div>
+    </div>
+  `;
+  
+  html += `</div>`;
+  
+  card.innerHTML = html;
+  
+  // Insert before buttons
+  resultsSection.insertBefore(card, btnContainer);
+}
+
+function recalculateRecipe() {
+  const volume = parseInt(document.getElementById('developer-volume-selector').value);
+  const haircut = document.getElementById('haircut')?.value || 'Bob';
+  
+  currentRecipe = calculateMixingRecipe(
+    currentBaseTone,
+    primaryReflect,
+    secondaryReflect,
+    primaryIntensified,
+    haircut,
+    volume
+  );
+  
+  // Update only developer and total
+  document.getElementById('developer-grams-display').textContent = currentRecipe.developer.grams + 'g';
+  document.getElementById('total-mix-display').textContent = currentRecipe.totalMix + 'g';
 }
 
 function backToConfig() {
@@ -563,7 +771,6 @@ function translateFormula() {
   document.getElementById('your-formula').textContent = formula;
   document.getElementById('your-system').textContent = currentSystem;
   
-  // Generate universal description
   let universalDesc = `Tono Base: ${currentBaseTone}\n`;
   if (primaryReflect) {
     universalDesc += `Riflesso: ${REFLECTS[primaryReflect].name}`;
@@ -588,12 +795,13 @@ function saveLook() {
     gender: selectedGender,
     formula: document.getElementById('formula-code').textContent,
     haircut: document.getElementById('haircut').value,
+    recipe: currentRecipe,
     photo: clientPhotoData,
     timestamp: Date.now()
   };
   
   console.log('💾 Salvato:', lookData);
-  alert('Look salvato!');
+  alert('Look salvato con ricetta!');
 }
 
 function shareLook() {
