@@ -1,5 +1,7 @@
 // ========================================
 // SPECCHIO MAGICO AI - MULTI-BRAND COLORIMETRY SYSTEM
+// Sistema Slot: [BASE].[PRIMARIO][SECONDARIO]
+// Esempio: 7.34 = Base 7 + Primario 3 (Dorato) + Secondario 4 (Ramato)
 // ========================================
 
 const tg = window.Telegram.WebApp;
@@ -7,50 +9,72 @@ tg.ready();
 tg.expand();
 
 // ========================================
-// BRAND DATABASE
+// BRAND DATABASE (EXPANDED - 50+ BRANDS)
 // ========================================
 
 const BRAND_DATABASE = {
-  // SISTEMA STANDARD (Internazionale)
+  // SISTEMA STANDARD (Internazionale) - Italia, Francia, Spagna, Portogallo
   standard: [
-    { name: "L'Oréal Professionnel", lines: ['Majirel', 'Inoa', 'DiaRichesse', 'Luo Color'] },
-    { name: 'Alfaparf Milano', lines: ['Evolution', 'Yellow', 'Revolution'] },
-    { name: 'Fanola', lines: ['Oro Therapy', 'No Yellow'] },
-    { name: 'Revlon Professional', lines: ['Revlonissimo', 'Nutri Color'] },
-    { name: 'Davines', lines: ['Mask with Vibrachrom'] },
-    { name: 'Framesi', lines: ['Framcolor'] },
-    { name: 'Selective Professional', lines: ['Evo', 'Oligomineral'] },
-    { name: 'Schwarzkopf (linee IT)', lines: ['Essensity', 'BlondMe Italia'] },
-    { name: 'Elgon', lines: ['Moda & Style'] },
-    { name: 'Indola', lines: ['Permanent Caring Color'] },
-    { name: 'Kemon', lines: ['Nayo', 'Cramer'] },
-    { name: 'Lowell', lines: ['Liso Leve'] },
-    { name: 'Oyster Cosmetics', lines: ['Perlacolor'] }
+    { name: "L'Oréal Professionnel", lines: ['Majirel', 'Inoa', 'DiaRichesse', 'Luo Color', 'DiaLight'] },
+    { name: 'Alfaparf Milano', lines: ['Evolution', 'Yellow', 'Revolution JC', 'Precious Nature'] },
+    { name: 'Fanola', lines: ['Oro Therapy', 'No Yellow', 'Free Paint', 'Color Mask'] },
+    { name: 'Revlon Professional', lines: ['Revlonissimo', 'Nutri Color', 'Young Color Excel'] },
+    { name: 'Davines', lines: ['Mask with Vibrachrom', 'A New Colour'] },
+    { name: 'Framesi', lines: ['Framcolor 2001', 'Framesi Bold', 'Eclectic Care'] },
+    { name: 'Selective Professional', lines: ['Evo', 'Oligomineral', 'ColorEvo'] },
+    { name: 'Elgon', lines: ['Moda & Style', 'I-Care'] },
+    { name: 'Kemon', lines: ['Nayo', 'Cramer', 'Actyva'] },
+    { name: 'Inebrya', lines: ['Color', 'Bionic Color', 'Kolor Vibes'] },
+    { name: 'Vitality\'s', lines: ['Tone Intense', 'Art Absolute', 'Keratin Colour'] },
+    { name: 'Oway', lines: ['Hcolor', 'Hbleach', 'Silk\'n Glo'] },
+    { name: 'ColorDesign Hair', lines: ['Permanent Color', 'Demi-Permanent'] },
+    { name: 'Diapason', lines: ['Cosmetica Italiana', 'Professional'] },
+    { name: 'Be Hair', lines: ['Be Color', 'Crazy Color'] },
+    { name: 'Brelil', lines: ['Colorianne', 'Numero'] },
+    { name: 'Echosline', lines: ['Echos Color', 'Seliactive'] },
+    { name: 'Koster', lines: ['Made in Italy Professional'] },
+    { name: 'BES Beauty & Science', lines: ['Hi-Fi', 'Silkat Color'] },
+    { name: 'Cotril', lines: ['IceCream Hair Color'] },
+    { name: 'Green Light', lines: ['Natural Colors'] },
+    { name: 'Medavita', lines: ['Luxviva'] },
+    { name: 'Napura', lines: ['Napura Color'] },
+    { name: 'Oyster Cosmetics', lines: ['Perlacolor'] },
+    { name: 'Insight Professional', lines: ['Incolor'] },
+    { name: 'Lowell', lines: ['Liso Leve Color'] },
+    { name: 'Ekre', lines: ['Professional Color'] },
+    { name: '6.Zero', lines: ['Take Over'] },
+    { name: 'BeautyNova', lines: ['Color Line'] },
+    { name: 'Color Joy', lines: ['Professional'] },
+    { name: 'Free Limix', lines: ['Color Professional'] },
+    { name: 'Duomo', lines: ['Italian Luxury Color'] }
   ],
   
-  // SISTEMA TEDESCO (Invertito)
+  // SISTEMA TEDESCO (Invertito) - Germania, Austria, Svizzera
   german: [
-    { name: 'Wella Professionals', lines: ['Koleston Perfect', 'Illumina Color', 'Color Touch'] },
-    { name: 'Schwarzkopf Professional', lines: ['Igora Royal', 'Igora Vibrance', 'BlondMe'] },
-    { name: 'Londa Professional', lines: ['Londacolor', 'Londa Color'] },
+    { name: 'Wella Professionals', lines: ['Koleston Perfect', 'Illumina Color', 'Color Touch', 'Color Fresh', 'Blondor'] },
+    { name: 'Schwarzkopf Professional', lines: ['Igora Royal', 'Igora Vibrance', 'BlondMe', 'Essensity'] },
+    { name: 'Londa Professional', lines: ['Londacolor Permanent', 'Londa Color'] },
     { name: 'Kadus Professional', lines: ['Kadus Color'] },
-    { name: 'Goldwell (DE lines)', lines: ['Topchic', 'Colorance', 'Nectaya'] },
-    { name: 'Indola (DE)', lines: ['Permanent'] },
-    { name: 'Paul Mitchell (DE)', lines: ['The Color'] }
+    { name: 'Goldwell (DE)', lines: ['Topchic', 'Colorance', 'Nectaya', 'Elumen'] },
+    { name: 'Indola Professional', lines: ['Permanent Caring Color', 'Rapid Blonde'] },
+    { name: 'Paul Mitchell (DE)', lines: ['The Color', 'PM Shines'] }
   ],
   
   // SISTEMA ALFABETICO (USA/UK)
   alphabetic: [
-    { name: 'Matrix (USA)', lines: ['SoColor', 'ColorSync', 'Color Graphics'] },
-    { name: 'Redken', lines: ['Chromatics', 'Shades EQ', 'Color Fusion'] },
-    { name: 'Goldwell (USA)', lines: ['Topchic USA', 'Colorance USA'] },
-    { name: 'Joico', lines: ['LumiShine', 'Vero K-PAK'] },
-    { name: 'CHI', lines: ['Ionic', 'Chromashine'] },
-    { name: 'Paul Mitchell', lines: ['The Color XG', 'Inkworks'] },
-    { name: 'Pravana', lines: ['ChromaSilk', 'Vivids'] },
-    { name: 'Kenra', lines: ['Professional Color'] },
-    { name: 'Aveda', lines: ['Full Spectrum'] },
-    { name: 'Pulp Riot', lines: ['Barcelona', 'Faction8'] }
+    { name: 'Matrix (L\'Oréal USA)', lines: ['SoColor', 'ColorSync', 'Color Graphics', 'SoRED'] },
+    { name: 'Redken (L\'Oréal USA)', lines: ['Chromatics', 'Shades EQ', 'Color Fusion', 'Cover Fusion'] },
+    { name: 'Goldwell (USA)', lines: ['Topchic USA', 'Colorance USA', '@Pure Pigments'] },
+    { name: 'Joico', lines: ['LumiShine', 'Vero K-PAK', 'Intensities'] },
+    { name: 'CHI', lines: ['Ionic Permanent', 'Chromashine', 'Colormaster'] },
+    { name: 'Paul Mitchell', lines: ['The Color XG', 'Inkworks', 'PM Shines'] },
+    { name: 'Pravana', lines: ['ChromaSilk', 'Vivids', 'Nevo'] },
+    { name: 'Kenra', lines: ['Professional Color', 'Demi-Permanent'] },
+    { name: 'Aveda', lines: ['Full Spectrum', 'Hair Color', 'Enlightener'] },
+    { name: 'Pulp Riot', lines: ['Barcelona', 'Faction8', 'Noir', 'Cupid'] },
+    { name: 'Keune', lines: ['Tinta Color', 'Semi Color'] },
+    { name: 'Oribe', lines: ['Beautiful Color'] },
+    { name: 'KMS (Kao)', lines: ['Color Vitality'] }
   ]
 };
 
@@ -60,28 +84,28 @@ const BRAND_DATABASE = {
 
 const REFLECT_SYSTEM_MAP = {
   standard: {
-    ash: '.1',
-    violet: '.2',
-    gold: '.3',
-    copper: '.4',
-    mahogany: '.5',
-    red: '.6',
-    mat: '.7',
-    moka: '.8',
-    beige: '.9',
-    natural: '.0'
+    ash: '1',
+    violet: '2',
+    gold: '3',
+    copper: '4',
+    mahogany: '5',
+    red: '6',
+    mat: '7',
+    moka: '8',
+    beige: '9',
+    natural: '0'
   },
   german: {
-    ash: '/1',
-    violet: '/6',      // ⚠️ INVERSIONE
-    gold: '/3',
-    copper: '/4',
-    mahogany: '/5',
-    red: '/4',         // spesso /4 o /44
-    mat: '/2',         // ⚠️ INVERSIONE
-    moka: '/7',
-    beige: '/8',
-    natural: '/0'
+    ash: '1',
+    violet: '6',      // ⚠️ INVERSIONE CRITICA
+    gold: '3',
+    copper: '4',
+    mahogany: '5',
+    red: '4',         // spesso /4 o /44 intenso
+    mat: '2',         // ⚠️ INVERSIONE CRITICA
+    moka: '7',
+    beige: '8',
+    natural: '0'
   },
   alphabetic: {
     ash: 'A',
@@ -91,7 +115,7 @@ const REFLECT_SYSTEM_MAP = {
     mahogany: 'M',
     red: 'R',
     mat: 'M',          // Matte
-    moka: 'B',         // Brown
+    moka: 'B',         // Brown/Beige
     beige: 'N',        // Natural/Neutral
     natural: 'N'
   }
@@ -102,13 +126,23 @@ const REFLECT_SYSTEM_MAP = {
 // ========================================
 
 const REFLECTS = {
+  natural: { 
+    name: 'Naturale', 
+    nameEN: 'Natural',
+    color: '#8b7355', 
+    gradient: ['#8b7355', '#6b5645'],
+    temp: 'neutral',
+    icon: '',
+    order: 0
+  },
   ash: { 
     name: 'Cenere', 
     nameEN: 'Ash',
     color: '#a8a8a8', 
     gradient: ['#a8a8a8', '#888888'],
     temp: 'cold',
-    icon: '❄️'
+    icon: '❄️',
+    order: 1
   },
   violet: { 
     name: 'Iridé/Viola', 
@@ -116,7 +150,8 @@ const REFLECTS = {
     color: '#b8a8c8', 
     gradient: ['#b8a8c8', '#9888a8'],
     temp: 'cold',
-    icon: '❄️'
+    icon: '❄️',
+    order: 2
   },
   gold: { 
     name: 'Dorato', 
@@ -124,7 +159,8 @@ const REFLECTS = {
     color: '#d4af37', 
     gradient: ['#d4af37', '#b48f27'],
     temp: 'warm',
-    icon: '🔥'
+    icon: '🔥',
+    order: 3
   },
   copper: { 
     name: 'Ramato', 
@@ -132,7 +168,8 @@ const REFLECTS = {
     color: '#b87333', 
     gradient: ['#b87333', '#986323'],
     temp: 'warm',
-    icon: '🔥'
+    icon: '🔥',
+    order: 4
   },
   mahogany: { 
     name: 'Mogano', 
@@ -140,7 +177,8 @@ const REFLECTS = {
     color: '#c04000', 
     gradient: ['#c04000', '#a03000'],
     temp: 'warm',
-    icon: '🔥'
+    icon: '🔥',
+    order: 5
   },
   red: { 
     name: 'Rosso', 
@@ -148,7 +186,8 @@ const REFLECTS = {
     color: '#c41e3a', 
     gradient: ['#c41e3a', '#a40e2a'],
     temp: 'warm',
-    icon: '🔥'
+    icon: '🔥',
+    order: 6
   },
   mat: { 
     name: 'Mat (Verde)', 
@@ -156,7 +195,8 @@ const REFLECTS = {
     color: '#8a9a5b', 
     gradient: ['#8a9a5b', '#6a7a4b'],
     temp: 'cold',
-    icon: '❄️'
+    icon: '❄️',
+    order: 7
   },
   moka: { 
     name: 'Moka', 
@@ -164,7 +204,8 @@ const REFLECTS = {
     color: '#967969', 
     gradient: ['#967969', '#765948'],
     temp: 'neutral',
-    icon: ''
+    icon: '',
+    order: 8
   },
   beige: { 
     name: 'Beige', 
@@ -172,15 +213,8 @@ const REFLECTS = {
     color: '#c9b7a3', 
     gradient: ['#c9b7a3', '#a99783'],
     temp: 'cold',
-    icon: '❄️'
-  },
-  natural: { 
-    name: 'Naturale', 
-    nameEN: 'Natural',
-    color: '#8b7355', 
-    gradient: ['#8b7355', '#6b5645'],
-    temp: 'neutral',
-    icon: ''
+    icon: '❄️',
+    order: 9
   }
 };
 
@@ -190,12 +224,16 @@ const REFLECTS = {
 
 let currentSystem = null;
 let selectedGender = null;
-let selectedReflects = [];
+let primaryReflect = null;      // Primo riflesso (es: 3 in 7.34)
+let secondaryReflect = null;    // Secondo riflesso (es: 4 in 7.34)
+let primaryIntensified = false; // Double tap sul primario
 let currentBaseTone = 7;
 let capturedBlob = null;
 let facingMode = 'environment';
 let currentStream = null;
 let lookConfig = {};
+let lastTapTime = 0;
+let lastTappedReflect = null;
 
 const HAIRCUTS = {
   F: ['Bob', 'Long Bob (Lob)', 'Pixie Cut', 'Shag', 'Layered Cut', 'Blunt Cut', 'Mullet Moderno', 'Wolf Cut', 'Buzz Cut Femminile', 'Undercut Laterale', 'Carré', 'French Bob', 'Shaggy Bob', 'Bixie (Bob+Pixie)', 'Textured Lob'],
@@ -245,7 +283,6 @@ function unlockFeature() {
     hideLoader();
     document.getElementById('unlock-check').classList.add('hidden');
     
-    // Check if system already configured
     const savedSystem = localStorage.getItem('specchioMagico_system');
     if (savedSystem) {
       currentSystem = savedSystem;
@@ -380,14 +417,18 @@ function cancelCamera() {
 }
 
 // ========================================
-// COLOR COMPOSER
+// COLOR COMPOSER (SLOT SYSTEM)
+// Sistema: [BASE].[PRIMARIO][SECONDARIO]
+// Esempio: 7.34 = Base 7 + Primario 3 (Dorato) + Secondario 4 (Ramato)
+// Double tap = Intensificato (.33 o .44)
 // ========================================
 
 function renderReflectPalette() {
   const palette = document.getElementById('reflect-palette');
   palette.innerHTML = '';
   
-  const reflectKeys = ['ash', 'violet', 'gold', 'copper', 'mahogany', 'red', 'mat', 'moka', 'beige', 'natural'];
+  // Ordiniamo i riflessi
+  const reflectKeys = Object.keys(REFLECTS).sort((a, b) => REFLECTS[a].order - REFLECTS[b].order);
   
   reflectKeys.forEach(key => {
     const reflect = REFLECTS[key];
@@ -396,37 +437,84 @@ function renderReflectPalette() {
     const btn = document.createElement('div');
     btn.className = `reflect-drop ${reflect.temp}`;
     btn.dataset.reflect = key;
-    btn.onclick = () => toggleReflect(key);
+    btn.onclick = () => handleReflectTap(key);
     
     const gradient = `linear-gradient(135deg, ${reflect.gradient[0]} 0%, ${reflect.gradient[1]} 100%)`;
     btn.style.background = gradient;
     
+    // Mostriamo il codice del sistema scelto
+    let displayCode = systemCode;
+    if (currentSystem === 'standard') displayCode = '.' + systemCode;
+    else if (currentSystem === 'german') displayCode = '/' + systemCode;
+    
     btn.innerHTML = `
-      <div class="reflect-code">${systemCode}</div>
+      <div class="reflect-code">${displayCode}</div>
       <div class="reflect-name">${reflect.name}</div>
       <div class="reflect-temp-icon">${reflect.icon}</div>
     `;
     
     palette.appendChild(btn);
   });
+  
+  // Aggiungiamo il tasto RESET/CLEAR
+  const resetBtn = document.createElement('div');
+  resetBtn.className = 'reflect-drop neutral';
+  resetBtn.style.background = 'rgba(255,255,255,0.1)';
+  resetBtn.style.border = '2px dashed var(--glass-border)';
+  resetBtn.onclick = resetReflects;
+  resetBtn.innerHTML = `
+    <div class="reflect-code"><i class="fas fa-undo"></i></div>
+    <div class="reflect-name">Reset</div>
+  `;
+  palette.appendChild(resetBtn);
 }
 
-function toggleReflect(reflectKey) {
+function handleReflectTap(reflectKey) {
   if (tg?.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
   
-  const index = selectedReflects.indexOf(reflectKey);
+  const now = Date.now();
+  const isDoubleTap = (now - lastTapTime < 500) && (lastTappedReflect === reflectKey);
   
-  if (index > -1) {
-    selectedReflects.splice(index, 1);
+  if (isDoubleTap) {
+    // DOUBLE TAP: Intensifica il primario
+    if (primaryReflect === reflectKey && !primaryIntensified) {
+      primaryIntensified = true;
+      if (tg?.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
+    }
   } else {
-    if (selectedReflects.length < 2) {
-      selectedReflects.push(reflectKey);
+    // SINGLE TAP: Assegna agli slot
+    if (!primaryReflect) {
+      // Slot primario vuoto
+      primaryReflect = reflectKey;
+      primaryIntensified = false;
+    } else if (primaryReflect === reflectKey) {
+      // Rimuovi primario
+      primaryReflect = secondaryReflect;
+      secondaryReflect = null;
+      primaryIntensified = false;
+    } else if (!secondaryReflect) {
+      // Slot secondario vuoto
+      secondaryReflect = reflectKey;
     } else {
-      selectedReflects.shift();
-      selectedReflects.push(reflectKey);
+      // Shift: secondario diventa primario, nuovo riflesso diventa secondario
+      primaryReflect = secondaryReflect;
+      secondaryReflect = reflectKey;
+      primaryIntensified = false;
     }
   }
   
+  lastTapTime = now;
+  lastTappedReflect = reflectKey;
+  
+  updateReflectSelection();
+  updateFormulaDisplay();
+}
+
+function resetReflects() {
+  if (tg?.HapticFeedback) tg.HapticFeedback.impactOccurred('medium');
+  primaryReflect = null;
+  secondaryReflect = null;
+  primaryIntensified = false;
   updateReflectSelection();
   updateFormulaDisplay();
 }
@@ -434,13 +522,19 @@ function toggleReflect(reflectKey) {
 function updateReflectSelection() {
   document.querySelectorAll('.reflect-drop').forEach(btn => {
     const key = btn.dataset.reflect;
-    if (selectedReflects.includes(key)) {
-      btn.classList.add('active');
-      const position = selectedReflects.indexOf(key);
-      btn.dataset.position = position + 1;
+    btn.classList.remove('active', 'primary', 'secondary', 'intensified');
+    
+    if (key === primaryReflect) {
+      btn.classList.add('active', 'primary');
+      btn.dataset.slot = '1';
+      if (primaryIntensified) {
+        btn.classList.add('intensified');
+      }
+    } else if (key === secondaryReflect) {
+      btn.classList.add('active', 'secondary');
+      btn.dataset.slot = '2';
     } else {
-      btn.classList.remove('active');
-      delete btn.dataset.position;
+      delete btn.dataset.slot;
     }
   });
 }
@@ -452,44 +546,74 @@ function updateToneDisplay() {
 }
 
 function updateFormulaDisplay() {
+  // Costruiamo la formula: [BASE].[PRIMARIO][SECONDARIO]
   let formula = currentBaseTone.toString();
-  let separator = '';
+  let separator = currentSystem === 'standard' ? '.' : currentSystem === 'german' ? '/' : '';
   
-  if (currentSystem === 'standard') separator = '.';
-  else if (currentSystem === 'german') separator = '/';
-  else separator = '';
-  
-  if (selectedReflects.length > 0) {
-    const codes = selectedReflects.map(key => REFLECT_SYSTEM_MAP[currentSystem][key].replace(/[.\/]/g, ''));
-    formula += separator + codes.join('');
+  if (primaryReflect) {
+    const primaryCode = REFLECT_SYSTEM_MAP[currentSystem][primaryReflect];
+    let reflectPart = primaryCode;
+    
+    // Se intensificato, doppio riflesso
+    if (primaryIntensified) {
+      reflectPart = primaryCode + primaryCode;
+    }
+    
+    // Aggiungi secondario se presente
+    if (secondaryReflect) {
+      const secondaryCode = REFLECT_SYSTEM_MAP[currentSystem][secondaryReflect];
+      reflectPart += secondaryCode;
+    }
+    
+    formula += separator + reflectPart;
+  } else {
+    // Nessun riflesso = Naturale (.0)
+    if (currentSystem === 'standard') formula += '.0';
+    else if (currentSystem === 'german') formula += '/0';
+    else formula += 'N';
   }
   
   document.getElementById('formula-code').textContent = formula;
   
-  // Update temperature and name
+  // Update temperatura e nome
   let tempText = 'NEUTRO';
   let tempClass = 'temp-neutral';
   let reflectName = 'Naturale';
   
-  if (selectedReflects.length > 0) {
-    const mainReflect = REFLECTS[selectedReflects[0]];
-    reflectName = mainReflect.name;
+  if (primaryReflect) {
+    const primary = REFLECTS[primaryReflect];
+    reflectName = primary.name;
     
-    const temps = selectedReflects.map(key => REFLECTS[key].temp);
-    if (temps.every(t => t === 'warm')) {
-      tempText = 'CALDO 🔥';
-      tempClass = 'temp-warm';
-    } else if (temps.every(t => t === 'cold')) {
-      tempText = 'FREDDO ❄️';
-      tempClass = 'temp-cold';
-    } else if (temps.includes('warm') || temps.includes('cold')) {
-      tempText = 'MISTO';
-      tempClass = 'temp-neutral';
+    if (primaryIntensified) {
+      reflectName += ' INTENSO';
     }
     
-    if (selectedReflects.length > 1) {
-      const secondReflect = REFLECTS[selectedReflects[1]];
-      reflectName += ' + ' + secondReflect.name;
+    if (secondaryReflect) {
+      const secondary = REFLECTS[secondaryReflect];
+      reflectName += ' + ' + secondary.name;
+      
+      // Temperatura mista
+      if (primary.temp === secondary.temp) {
+        if (primary.temp === 'warm') {
+          tempText = 'CALDO 🔥';
+          tempClass = 'temp-warm';
+        } else if (primary.temp === 'cold') {
+          tempText = 'FREDDO ❄️';
+          tempClass = 'temp-cold';
+        }
+      } else {
+        tempText = 'MISTO';
+        tempClass = 'temp-neutral';
+      }
+    } else {
+      // Solo primario
+      if (primary.temp === 'warm') {
+        tempText = 'CALDO 🔥';
+        tempClass = 'temp-warm';
+      } else if (primary.temp === 'cold') {
+        tempText = 'FREDDO ❄️';
+        tempClass = 'temp-cold';
+      }
     }
   }
   
@@ -558,7 +682,9 @@ function generatePreview() {
     haircut: document.getElementById('haircut').value,
     formula: document.getElementById('formula-code').textContent,
     baseTone: currentBaseTone,
-    reflects: selectedReflects.map(key => REFLECTS[key].name),
+    primaryReflect: primaryReflect ? REFLECTS[primaryReflect].name : 'Naturale',
+    secondaryReflect: secondaryReflect ? REFLECTS[secondaryReflect].name : null,
+    intensified: primaryIntensified,
     system: currentSystem
   };
   
@@ -587,12 +713,16 @@ function displayResults() {
     alphabetic: 'Sistema Alfabetico'
   };
   
+  let reflectDesc = lookConfig.primaryReflect;
+  if (lookConfig.intensified) reflectDesc += ' INTENSO';
+  if (lookConfig.secondaryReflect) reflectDesc += ' + ' + lookConfig.secondaryReflect;
+  
   let summary = `
     <div class="summary-block">
       <strong style="color: var(--warning);">✂️ Capelli</strong><br>
       <span>Taglio: <strong>${lookConfig.haircut}</strong></span><br>
       <span>Formula: <strong>${lookConfig.formula}</strong> (${systemLabels[lookConfig.system]})</span><br>
-      <span>Riflessi: <strong>${lookConfig.reflects.join(' + ') || 'Naturale'}</strong></span>
+      <span>Riflessi: <strong>${reflectDesc}</strong></span>
     </div>
   `;
   
@@ -641,7 +771,13 @@ function translateFormula() {
   document.getElementById('your-system').textContent = systemLabels[lookConfig.system];
   
   // Universal description
-  const universalDesc = `Base ${lookConfig.baseTone} + ${lookConfig.reflects.join(' + ') || 'Naturale'}`;
+  let universalDesc = `Base ${lookConfig.baseTone}`;
+  if (lookConfig.primaryReflect !== 'Naturale') {
+    universalDesc += ` + ${lookConfig.primaryReflect}`;
+    if (lookConfig.intensified) universalDesc += ' INTENSO';
+    if (lookConfig.secondaryReflect) universalDesc += ` + ${lookConfig.secondaryReflect}`;
+  }
+  
   document.getElementById('universal-formula').textContent = universalDesc;
   document.getElementById('universal-desc').textContent = 'Formula universale (indipendente dal brand)';
   
@@ -655,9 +791,17 @@ function translateFormula() {
     let altFormula = lookConfig.baseTone.toString();
     let separator = sys === 'standard' ? '.' : sys === 'german' ? '/' : '';
     
-    if (selectedReflects.length > 0) {
-      const codes = selectedReflects.map(key => REFLECT_SYSTEM_MAP[sys][key].replace(/[.\/]/g, ''));
-      altFormula += separator + codes.join('');
+    if (primaryReflect) {
+      const primaryCode = REFLECT_SYSTEM_MAP[sys][primaryReflect];
+      let reflectPart = primaryIntensified ? primaryCode + primaryCode : primaryCode;
+      if (secondaryReflect) {
+        reflectPart += REFLECT_SYSTEM_MAP[sys][secondaryReflect];
+      }
+      altFormula += separator + reflectPart;
+    } else {
+      if (sys === 'standard') altFormula += '.0';
+      else if (sys === 'german') altFormula += '/0';
+      else altFormula += 'N';
     }
     
     const altCard = document.createElement('div');
@@ -690,27 +834,28 @@ function showDetailedBrandList() {
   container.innerHTML = '';
   
   const systems = {
-    standard: { name: 'Sistema Standard', color: 'var(--primary)' },
-    german: { name: 'Sistema Tedesco', color: 'var(--warning)' },
-    alphabetic: { name: 'Sistema Alfabetico', color: 'var(--success)' }
+    standard: { name: 'Sistema Standard (Internazionale)', color: 'var(--primary)' },
+    german: { name: 'Sistema Tedesco (Invertito)', color: 'var(--warning)' },
+    alphabetic: { name: 'Sistema Alfabetico (USA/UK)', color: 'var(--success)' }
   };
   
   Object.entries(systems).forEach(([key, sys]) => {
     const section = document.createElement('div');
-    section.style.marginBottom = '20px';
+    section.style.marginBottom = '25px';
     
     const header = document.createElement('h4');
-    header.style.margin = '0 0 10px 0';
+    header.style.margin = '0 0 12px 0';
     header.style.color = sys.color;
-    header.textContent = sys.name;
+    header.style.fontSize = '15px';
+    header.textContent = `${sys.name} (${BRAND_DATABASE[key].length} brand)`;
     section.appendChild(header);
     
     BRAND_DATABASE[key].forEach(brand => {
       const brandCard = document.createElement('div');
       brandCard.className = 'brand-list-item';
       brandCard.innerHTML = `
-        <strong>${brand.name}</strong><br>
-        <span style="font-size: 12px; color: var(--text-muted);">${brand.lines.join(', ')}</span>
+        <strong style="font-size: 14px;">${brand.name}</strong><br>
+        <span style="font-size: 11px; color: var(--text-muted);">${brand.lines.join(', ')}</span>
       `;
       section.appendChild(brandCard);
     });
