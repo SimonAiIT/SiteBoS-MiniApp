@@ -1,6 +1,7 @@
 // ========================================
-// SPECCHIO MAGICO AI - MAIN ENGINE v4.4
+// SPECCHIO MAGICO AI - MAIN ENGINE v4.5
 // Sistema Colorimetria Professionale + MULTI-BOWL SYSTEM + AI WEBHOOK + FULLSCREEN VIEWER
+// 🔧 FIX: AI Image Display + Debug Logging
 // ========================================
 
 let currentSystem = null;
@@ -805,6 +806,7 @@ function renderBeardColors() {
 
 // ========================================
 // AI WEBHOOK INTEGRATION + RESPONSE HANDLING
+// 🔧 FIX: Improved error handling and debug logging
 // ========================================
 
 function getURLParams() {
@@ -818,6 +820,11 @@ function getURLParams() {
 }
 
 function generatePreview() {
+  if (!clientPhotoData) {
+    alert('⚠️ Scatta prima la foto del cliente!');
+    return;
+  }
+
   showLoader('🤖 Generazione AI in corso...');
   
   const diagnosisData = generateDiagnosisCard();
@@ -852,10 +859,7 @@ function generatePreview() {
     timestamp: Date.now()
   };
   
-  console.log('🚀 Sending to AI Webhook:', {
-    ...payload,
-    photo: `[BASE64 DATA ${clientPhotoData?.length || 0} chars]`
-  });
+  console.log('📤 Sending to AI Webhook:', AI_WEBHOOK_URL);
   
   fetch(AI_WEBHOOK_URL, {
     method: 'POST',
@@ -863,23 +867,31 @@ function generatePreview() {
     body: JSON.stringify(payload)
   })
   .then(response => {
+    console.log('📥 Response status:', response.status, response.ok);
+    
     if (!response.ok) {
       throw new Error(`HTTP ${response.status}: ${response.statusText}`);
     }
     return response.json();
   })
   .then(data => {
-    console.log('✅ AI Response:', data);
+    console.log('📦 AI Response:', data);
     
     if (data.success && data.aiImage) {
+      console.log('✅ AI Image received, length:', data.aiImage.length);
+      
+      // 🎯 ASSEGNA L'IMMAGINE AI ALLA VARIABILE GLOBALE
       aiPreviewPhotoData = data.aiImage;
-      console.log('🎨 AI Preview Image received:', aiPreviewPhotoData.substring(0, 50) + '...');
+      
+      console.log('🖼️ aiPreviewPhotoData assigned:', aiPreviewPhotoData.substring(0, 50));
+      
     } else {
       console.warn('⚠️ No AI image in response, using original photo as fallback');
       aiPreviewPhotoData = clientPhotoData;
     }
     
     hideLoader();
+    console.log('📸 Displaying AI preview: AI Generated');
     showResults();
   })
   .catch(error => {
@@ -892,6 +904,10 @@ function generatePreview() {
 }
 
 function showResults() {
+  console.log('🎬 showResults() called');
+  console.log('📸 clientPhotoData exists:', !!clientPhotoData);
+  console.log('🤖 aiPreviewPhotoData exists:', !!aiPreviewPhotoData);
+  
   document.getElementById('config-section').classList.add('hidden');
   document.getElementById('fluid-config-section').classList.add('hidden');
   document.getElementById('results-section').classList.remove('hidden');
@@ -899,21 +915,52 @@ function showResults() {
   const beforeImg = document.getElementById('before-img');
   const afterImg = document.getElementById('after-img');
   
+  // ========== BEFORE IMAGE ==========
   if (beforeImg) {
+    console.log('🔵 Setting BEFORE image');
     beforeImg.src = clientPhotoData;
-    // ✨ Add fullscreen click listener
     beforeImg.style.cursor = 'pointer';
+    
+    beforeImg.onerror = () => {
+      console.error('❌ BEFORE image failed to load');
+    };
+    
+    beforeImg.onload = () => {
+      console.log('✅ BEFORE image loaded successfully');
+    };
+    
     beforeImg.onclick = () => openFullscreenImage(clientPhotoData);
   }
   
+  // ========== AFTER IMAGE ==========
   if (afterImg) {
-    afterImg.src = aiPreviewPhotoData || clientPhotoData;
-    // ✨ Add fullscreen click listener
+    if (aiPreviewPhotoData) {
+      console.log('🟢 Setting AFTER to AI generated image');
+      console.log('🔍 AI image preview:', aiPreviewPhotoData.substring(0, 100));
+      
+      afterImg.src = aiPreviewPhotoData;
+      
+      afterImg.onerror = () => {
+        console.error('❌ AFTER (AI) image failed to load!');
+        console.error('🔍 First 200 chars:', aiPreviewPhotoData.substring(0, 200));
+        // Fallback alla foto cliente
+        console.warn('⚠️ Falling back to client photo');
+        afterImg.src = clientPhotoData;
+      };
+      
+      afterImg.onload = () => {
+        console.log('✅ AFTER (AI) image loaded successfully');
+      };
+    } else {
+      console.log('⚠️ No AI image available, using client photo for AFTER');
+      afterImg.src = clientPhotoData;
+    }
+    
     afterImg.style.cursor = 'pointer';
     afterImg.onclick = () => openFullscreenImage(aiPreviewPhotoData || clientPhotoData);
-    console.log('🖼️ Displaying AI preview:', aiPreviewPhotoData ? 'AI Generated' : 'Original (Fallback)');
   }
   
+  console.log('✅ Results section displayed');
   displayResults();
 }
 
