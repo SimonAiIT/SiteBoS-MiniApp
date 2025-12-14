@@ -64,18 +64,21 @@ const PROTECTIVE_STYLES = [
 ];
 
 // ========================================
-// PILASTRO 2: TECNICHE DI COLORAZIONE (PLACEMENT)
-// AGGIORNATO: + Shatush + Degradé
+// PILASTRO 2: TECNICHE DI COLORAZIONE COMPLETE
+// AGGIORNATO: + Shatush + Degradé + Highlights + Lowlights + Bleach & Tone + Gloss
 // ========================================
 
 const COLOR_TECHNIQUES = [
+  // === SERVIZI FULL COVERAGE ===
   { 
     id: 'global', 
     label: '🎨 Tinta Globale (Full Head)', 
     prompt: 'uniform all-over hair color from roots to tips, consistent full coverage',
     description: 'Colore uniforme radice-punte, copertura totale',
-    type: 'permanent' // Per logica mixing calculator
+    type: 'permanent'
   },
+  
+  // === SERVIZI PARTIAL / DIMENSIONAL ===
   { 
     id: 'root-melt', 
     label: '🌑 Root Melt / Shadow Root', 
@@ -105,8 +108,22 @@ const COLOR_TECHNIQUES = [
     type: 'partial'
   },
   { 
+    id: 'highlights', 
+    label: '✨ Mèches / Colpi di Sole (Highlights)', 
+    prompt: 'classic foil highlights from roots to ends, evenly distributed defined streaks, high contrast or blended dimensional lightening',
+    description: 'Schiariture regolari dalla radice (Stagnola) - Classico',
+    type: 'partial'
+  },
+  { 
+    id: 'lowlights', 
+    label: '🌙 Lowlights (Colpi di Buio)', 
+    prompt: 'lowlights technique, darker strands intermixed with lighter hair to add depth and dimension, reverse highlights',
+    description: 'Inserimento ciocche scure per dare profondità',
+    type: 'partial'
+  },
+  { 
     id: 'babylights', 
-    label: '✨ Babylights (Micro-Tessitura)', 
+    label: '👶 Babylights (Micro-Tessitura)', 
     prompt: 'ultra-fine babylights, microscopic highlights blended throughout for natural diffused blonde, no visible stripes',
     description: 'Micro-ciocche finissime per biondo naturale diffuso',
     type: 'partial'
@@ -125,12 +142,30 @@ const COLOR_TECHNIQUES = [
     description: 'Il "non plus ultra" del biondo freddo con sfumatura impossibile',
     type: 'partial'
   },
+  
+  // === SERVIZI EXTREME / CREATIVE ===
+  { 
+    id: 'bleach-tone', 
+    label: '🧊 Total Bleach & Tone (Platino)', 
+    prompt: 'platinum blonde all-over bleach and tone, solid ice blonde color from roots to ends, no dark areas, ultra-light result',
+    description: 'Decolorazione totale + Tonalizzante (Marilyn/Gwen Stefani)',
+    type: 'creative'
+  },
   { 
     id: 'color-block', 
     label: '🎭 Color Block / Split Dye', 
     prompt: 'geometric color blocking, half-and-half split dye or sharp contrasting sections, bold statement',
     description: 'Metà testa di un colore, metà dell\'altro (o blocchi geometrici)',
     type: 'creative'
+  },
+  
+  // === SERVIZI FINISHING / GLOSS ===
+  { 
+    id: 'gloss', 
+    label: '✨ Gloss / Tonalizzante (Lucidante)', 
+    prompt: 'hair gloss treatment, extremely shiny finish, subtle sheer color overlay, healthy glossy look, no lift',
+    description: 'Servizio lucidante rapido al lavatesta (ravviva/spegne toni)',
+    type: 'gloss'
   }
 ];
 
@@ -234,25 +269,25 @@ const EXTENSIONS = [
     id: 'volume-wefts', 
     label: '💪 Infoltimento Volume (Wefts)', 
     prompt: 'wearing volumizing hair wefts for extra thickness and body',
-    massMultiplier: 1.3 // +30% massa colore
+    massMultiplier: 1.3
   },
   { 
     id: 'tape-in-length', 
     label: '📏 Allungamento Tape-In', 
     prompt: 'wearing tape-in hair extensions for extra length',
-    massMultiplier: 1.5 // +50% massa colore
+    massMultiplier: 1.5
   },
   { 
     id: 'keratin-bonds', 
     label: '🔥 Cheratina (Bonds)', 
     prompt: 'wearing keratin bond hair extensions, seamless blend',
-    massMultiplier: 1.4 // +40% massa colore
+    massMultiplier: 1.4
   },
   { 
     id: 'flash-highlights', 
     label: '⚡ Punti Luce (Flash Color)', 
     prompt: 'flash color highlights extensions for dimensional color effect without bleaching',
-    massMultiplier: 1.0 // Non aggiunge massa (già colorate)
+    massMultiplier: 1.0
   }
 ];
 
