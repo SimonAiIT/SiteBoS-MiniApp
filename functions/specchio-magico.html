@@ -27,42 +27,14 @@
                 <i class="fas fa-magic" style="color: var(--warning);"></i>
                 Specchio Magico AI
             </h1>
-            <p class="subtitle">Sistema colorimetria professionale</p>
+            <p class="subtitle">Sistema colorimetria professionale multi-brand</p>
         </div>
     </div>
 
     <!-- ========================================
-         FASE 0: UNLOCK PAYWALL
+         FASE 1: BRAND SELECTION (INIZIO DIRETTO)
          ======================================== -->
-    <div id="unlock-check" class="card">
-        <div style="text-align: center; padding: 40px 20px;">
-            <div style="font-size: 64px; color: var(--warning); margin-bottom: 20px;">
-                <i class="fas fa-magic"></i>
-            </div>
-            <h2 style="margin-bottom: 15px;">Sblocca Specchio Magico</h2>
-            <p style="color: var(--text-muted); line-height: 1.6; max-width: 400px; margin: 0 auto 30px;">
-                Sistema colorimetria multi-brand con traduttore universale e 60+ marche.
-            </p>
-            
-            <div class="note note-warning" style="text-align: center; margin-bottom: 30px;">
-                <div style="font-size: 36px; font-weight: bold; margin-bottom: 5px;">
-                    50 Token
-                </div>
-                <div style="font-size: 12px; text-transform: uppercase;">
-                    Per utilizzo
-                </div>
-            </div>
-            
-            <button class="btn" onclick="unlockFeature()" style="padding: 15px 40px;">
-                <i class="fas fa-unlock"></i> Sblocca Ora
-            </button>
-        </div>
-    </div>
-
-    <!-- ========================================
-         FASE 1: BRAND SELECTION
-         ======================================== -->
-    <div id="brand-selection" class="hidden">
+    <div id="brand-selection">
         <div class="card">
             <h2 style="margin: 0 0 10px 0;">🎯 Configurazione Colorimetria</h2>
             <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 25px;">
@@ -206,7 +178,7 @@
 
     <!-- ========================================
          FASE 4: CONFIGURATION (Il Composer)
-         QUESTO È IL CUORE
+         + 3 NUOVI PILASTRI
          ======================================== -->
     <div id="config-section" class="hidden">
         <!-- Foto Cliente -->
@@ -235,7 +207,26 @@
                 <h4>Capelli</h4>
             </div>
 
-            <label class="input-label">Taglio Desiderato</label>
+            <!-- NUOVO PILASTRO 1: TEXTURE -->
+            <label class="input-label">
+                <i class="fas fa-spa"></i> Texture Capelli
+            </label>
+            <select id="hair-texture" class="input">
+                <!-- Popolato dinamicamente da JS -->
+            </select>
+
+            <!-- NUOVO: Stili Protettivi (mostra solo se Texture = Afro/Coily) -->
+            <div id="protective-styles-section" class="hidden" style="margin-top: 15px;">
+                <label class="input-label">
+                    <i class="fas fa-braid"></i> Stili Protettivi (Opzionale)
+                </label>
+                <select id="protective-style" class="input">
+                    <option value="none">Nessuno (Naturale)</option>
+                    <!-- PROTECTIVE_STYLES iniettati da JS -->
+                </select>
+            </div>
+
+            <label class="input-label" style="margin-top: 15px;">Taglio Desiderato</label>
             <select id="haircut" class="input"></select>
 
             <!-- SLIDER TONO BASE -->
@@ -255,13 +246,22 @@
                 </div>
             </div>
 
-            <!-- PALETTE RIFLESSI - Container VUOTO -->
+            <!-- PALETTE RIFLESSI -->
             <div style="margin-top: 25px;">
                 <label class="input-label">Riflessi (Tap = Seleziona | Double Tap = Intenso)</label>
-                <!-- QUESTA GRIGLIA È VUOTA! IL JS LA RIEMPIE -->
                 <div id="reflect-palette" class="reflect-palette">
                     <!-- renderReflectPalette() inietta qui i bottoni -->
                 </div>
+            </div>
+
+            <!-- NUOVO PILASTRO 2: TECNICA DI APPLICAZIONE COLORE -->
+            <div style="margin-top: 20px;">
+                <label class="input-label">
+                    <i class="fas fa-paint-roller"></i> Tecnica di Applicazione Colore
+                </label>
+                <select id="color-technique" class="input">
+                    <!-- COLOR_TECHNIQUES iniettati da JS -->
+                </select>
             </div>
 
             <!-- FORMULA DISPLAY - Live Update -->
@@ -316,6 +316,17 @@
                     <option value="Pizzetto">Pizzetto</option>
                     <option value="Van Dyke">Van Dyke</option>
                 </select>
+
+                <!-- NUOVO PILASTRO 3: SFUMATURE AVANZATE -->
+                <div style="margin-top: 15px;">
+                    <label class="input-label">
+                        <i class="fas fa-layer-group"></i> Sfumatura Tecnica (Fade)
+                    </label>
+                    <select id="fade-type" class="input">
+                        <option value="none">Nessuna (Lunghezza Uniforme)</option>
+                        <!-- ADVANCED_FADES iniettati da JS -->
+                    </select>
+                </div>
 
                 <label class="input-label" style="margin-top: 15px;">Colore Barba</label>
                 <div class="makeup-grid" id="beard-colors">
@@ -402,7 +413,6 @@
         </p>
 
         <div class="brand-system-grid">
-          <!-- Stesse 3 card ma per cambio sistema -->
           <div class="brand-system-card" onclick="changeSystemFromSettings('standard')" style="cursor: pointer;">
             <div class="system-badge" style="background: var(--primary);">Standard</div>
             <h3 style="font-size: 16px;">Sistema Internazionale</h3>
