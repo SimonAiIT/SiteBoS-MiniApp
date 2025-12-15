@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Attivazione Completata</title>
+  
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="../styles.css">
+  
+  <style>
+    .success-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 20px;
+      text-align: center;
+    }
+    
+    .success-icon {
+      font-size: 80px;
+      margin-bottom: 20px;
+      animation: scaleIn 0.5s ease-out;
+    }
+    
+    @keyframes scaleIn {
+      0% { transform: scale(0); opacity: 0; }
+      50% { transform: scale(1.1); }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    
+    .success-title {
+      font-size: 28px;
+      font-weight: 700;
+      margin-bottom: 12px;
+      color: var(--success);
+    }
+    
+    .success-subtitle {
+      font-size: 16px;
+      color: var(--text-secondary);
+      margin-bottom: 30px;
+    }
+    
+    .info-card {
+      background: rgba(91, 111, 237, 0.1);
+      border-left: 3px solid var(--primary);
+      padding: 16px;
+      border-radius: 8px;
+      margin-bottom: 30px;
+      text-align: left;
+      max-width: 400px;
+      width: 100%;
+    }
+    
+    .info-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+      font-size: 14px;
+    }
+    
+    .info-item:last-child {
+      margin-bottom: 0;
+    }
+    
+    .info-icon {
+      color: var(--primary);
+      font-size: 16px;
+      width: 20px;
+    }
+    
+    .next-steps {
+      max-width: 400px;
+      width: 100%;
+      text-align: left;
+      margin-bottom: 30px;
+    }
+    
+    .step-item {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 16px;
+      padding: 12px;
+      background: rgba(255,255,255,0.03);
+      border-radius: 8px;
+    }
+    
+    .step-number {
+      min-width: 28px;
+      height: 28px;
+      background: var(--primary);
+      color: white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      font-size: 14px;
+    }
+    
+    .step-content {
+      flex: 1;
+    }
+    
+    .step-title {
+      font-weight: 600;
+      margin-bottom: 4px;
+      font-size: 14px;
+    }
+    
+    .step-desc {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+    
+    .action-buttons {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      max-width: 400px;
+      width: 100%;
+    }
+    
+    .confetti {
+      position: fixed;
+      width: 10px;
+      height: 10px;
+      background: var(--primary);
+      animation: confetti-fall 3s ease-out forwards;
+    }
+    
+    @keyframes confetti-fall {
+      to {
+        transform: translateY(100vh) rotate(360deg);
+        opacity: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="success-container">
+    <!-- Confetti Container -->
+    <div id="confetti-container"></div>
+    
+    <!-- Success Icon -->
+    <div class="success-icon">🎉</div>
+    
+    <!-- Title -->
+    <h1 class="success-title" id="welcome-title">Benvenuto nel Team!</h1>
+    <p class="success-subtitle">La tua attivazione è stata completata con successo.</p>
+    
+    <!-- Info Card -->
+    <div class="info-card">
+      <div class="info-item">
+        <i class="fas fa-user info-icon"></i>
+        <div>
+          <strong>Nome:</strong> <span id="operator-name">...</span>
+        </div>
+      </div>
+      <div class="info-item">
+        <i class="fas fa-briefcase info-icon"></i>
+        <div>
+          <strong>Ruolo:</strong> Operatore
+        </div>
+      </div>
+      <div class="info-item">
+        <i class="fas fa-building info-icon"></i>
+        <div>
+          <strong>Azienda:</strong> <span id="company-name">...</span>
+        </div>
+      </div>
+      <div class="info-item">
+        <i class="fas fa-check-circle info-icon"></i>
+        <div>
+          <strong>Status:</strong> <span style="color: var(--success);">Attivo</span>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Next Steps -->
+    <div class="next-steps">
+      <h3 style="margin-bottom: 16px; font-size: 18px;">📋 Prossimi Passi</h3>
+      
+      <div class="step-item">
+        <div class="step-number">1</div>
+        <div class="step-content">
+          <div class="step-title">Accedi al Bot</div>
+          <div class="step-desc">Torna al bot Telegram per ricevere notifiche e gestire le tue attività</div>
+        </div>
+      </div>
+      
+      <div class="step-item">
+        <div class="step-number">2</div>
+        <div class="step-content">
+          <div class="step-title">Attendi Istruzioni</div>
+          <div class="step-desc">Il tuo responsabile ti contatterà con i dettagli operativi</div>
+        </div>
+      </div>
+      
+      <div class="step-item">
+        <div class="step-number">3</div>
+        <div class="step-content">
+          <div class="step-title">Inizia a Lavorare</div>
+          <div class="step-desc">Riceverai notifiche per nuove commesse e task assegnati</div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Action Buttons -->
+    <div class="action-buttons">
+      <button class="btn btn-primary btn-block" id="open-bot-btn">
+        <i class="fas fa-paper-plane"></i> Apri Bot Telegram
+      </button>
+      <button class="btn btn-secondary btn-block" id="close-btn">
+        <i class="fas fa-times"></i> Chiudi
+      </button>
+    </div>
+  </div>
+  
+  <script>
+    const tg = window.Telegram.WebApp;
+    tg.ready();
+    tg.expand();
+    
+    // Get URL params
+    const urlParams = new URLSearchParams(window.location.search);
+    const chatId = urlParams.get('chat_id');
+    const ownerVat = urlParams.get('vat');
+    
+    // Fetch operator data from sessionStorage
+    let operatorName = sessionStorage.getItem('operator_name') || 'Operatore';
+    let companyName = sessionStorage.getItem('company_name') || 'Team';
+    
+    // Set dynamic content
+    document.getElementById('operator-name').innerText = operatorName;
+    document.getElementById('company-name').innerText = companyName;
+    document.getElementById('welcome-title').innerText = `Benvenuto ${operatorName}!`;
+    
+    // Confetti effect
+    function createConfetti() {
+      const colors = ['#5B6FED', '#00D4AA', '#FFC107', '#FF6B6B'];
+      const container = document.getElementById('confetti-container');
+      
+      for (let i = 0; i < 50; i++) {
+        setTimeout(() => {
+          const confetti = document.createElement('div');
+          confetti.className = 'confetti';
+          confetti.style.left = Math.random() * 100 + '%';
+          confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
+          confetti.style.animationDelay = Math.random() * 2 + 's';
+          container.appendChild(confetti);
+          
+          setTimeout(() => confetti.remove(), 3000);
+        }, i * 30);
+      }
+    }
+    
+    createConfetti();
+    
+    // Haptic feedback
+    tg.HapticFeedback.notificationOccurred('success');
+    
+    // Button actions
+    document.getElementById('open-bot-btn').addEventListener('click', () => {
+      tg.openTelegramLink('https://t.me/TrinAi_Site_bot');
+    });
+    
+    document.getElementById('close-btn').addEventListener('click', () => {
+      tg.close();
+    });
+    
+    // Store params for future use
+    if (chatId) {
+      sessionStorage.setItem('operator_chat_id', chatId);
+    }
+    if (ownerVat) {
+      sessionStorage.setItem('owner_vat', ownerVat);
+    }
+  </script>
+</body>
+</html>
