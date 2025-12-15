@@ -485,7 +485,8 @@ function navToSkills() {
 
 function goToSoftSkills() {
   tg.HapticFeedback.impactOccurred('light');
-  window.location.href = `../softskill/complete-profile.html?chat_id=${chatId}&role=operator`;
+  // Passa vat (owner) e user_id (operator chat_id) al sistema soft skills
+  window.location.href = `../softskill/dashboard.html?vat=${ownerVat}&user_id=${chatId}&role=operator`;
 }
 
 function openModule(title) {
