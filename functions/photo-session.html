@@ -502,7 +502,7 @@
   <script src="../url-params-manager.js"></script>
   <script>
     // ========================================
-    // PHOTO SESSION ENGINE v2.0 - 3 PHOTOS
+    // PHOTO SESSION ENGINE v3.0 - 3 PHOTOS + SessionStorage
     // ========================================
 
     const PHOTO_STEPS = ['front', 'profile', 'scalp'];
@@ -523,16 +523,16 @@
     let analysisData = null;
     let clientId = null;
 
-    // AI WEBHOOKS
-    const AI_ANALYSIS_URL = 'https://trinai.api.workflow.dcmake.it/webhook/photo-session-analysis';
-    const MONGO_SAVE_URL = 'https://trinai.api.workflow.dcmake.it/webhook/photo-session-save';
+    // AI WEBHOOK
+    const AI_WEBHOOK = 'https://trinai.api.workflow.dcmake.it/webhook/5364bb15-4186-4246-8d00-c82218f5e407';
 
     // ========================================
     // INIT
     // ========================================
 
     window.addEventListener('DOMContentLoaded', () => {
-      console.log('📸 Photo Session initialized (3 photos mode)');
+      console.log('📸 Photo Session initialized (3 photos + sessionStorage)');
+      clientId = `client_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
       startCurrentStep();
     });
 
@@ -763,7 +763,7 @@
     }
 
     // ========================================
-    // SESSION COMPLETE
+    // SESSION COMPLETE + AI ANALYSIS
     // ========================================
 
     function completeSession() {
@@ -778,30 +778,27 @@
       analyzePhotos();
     }
 
-    // ========================================
-    // AI ANALYSIS + MONGODB SAVE
-    // ========================================
-
     async function analyzePhotos() {
       showLoader('🤖 Analisi AI in corso...');
       
       const urlParams = getURLParams();
       
-      // Generate unique client ID
-      clientId = `client_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-      
       const payload = {
+        action: 'analyze',
         owner: urlParams.owner,
         token: urlParams.token,
-        clientId: clientId,
-        photos: photos,
+        photos: {
+          front: photos.front,
+          profile: photos.profile,
+          scalp: photos.scalp
+        },
         timestamp: Date.now()
       };
       
       try {
-        console.log('📤 Sending to AI webhook:', AI_ANALYSIS_URL);
+        console.log('📤 Sending to AI webhook:', AI_WEBHOOK);
         
-        const response = await fetch(AI_ANALYSIS_URL, {
+        const response = await fetch(AI_WEBHOOK, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
@@ -817,8 +814,8 @@
         if (data.success && data.analysis) {
           analysisData = data.analysis;
           
-          // Save to MongoDB
-          await saveToMongoDB();
+          // Save to sessionStorage (NO MongoDB)
+          saveToSessionStorage();
           
           displayAnalysis();
         } else {
@@ -830,41 +827,21 @@
         
         // Mock data for testing
         analysisData = generateMockAnalysis();
-        await saveToMongoDB();
+        saveToSessionStorage();
         displayAnalysis();
       }
     }
 
-    async function saveToMongoDB() {
-      try {
-        const urlParams = getURLParams();
-        
-        const mongoPayload = {
-          owner: urlParams.owner,
-          clientId: clientId,
-          photos: photos,
-          analysis: analysisData,
-          timestamp: Date.now()
-        };
-        
-        console.log('💾 Saving to MongoDB:', MONGO_SAVE_URL);
-        
-        const response = await fetch(MONGO_SAVE_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(mongoPayload)
-        });
-        
-        if (response.ok) {
-          const result = await response.json();
-          console.log('✅ MongoDB save success:', result);
-        } else {
-          console.warn('⚠️ MongoDB save failed, continuing anyway');
-        }
-      } catch (error) {
-        console.error('❌ MongoDB save error:', error);
-        // Non blocca il flow, continua comunque
-      }
+    function saveToSessionStorage() {
+      const sessionData = {
+        clientId: clientId,
+        photos: photos,
+        analysis: analysisData,
+        timestamp: Date.now()
+      };
+      
+      sessionStorage.setItem('photoSessionData', JSON.stringify(sessionData));
+      console.log('💾 Saved to sessionStorage:', clientId);
     }
 
     function displayAnalysis() {
@@ -941,7 +918,6 @@
       navigateWithParams('./specchio-magico.html', {
         owner: urlParams.owner,
         token: urlParams.token,
-        clientId: clientId,
         gender: analysisData.gender.detected || 'F',
         fromPhotoSession: 'true'
       });
