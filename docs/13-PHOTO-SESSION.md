@@ -12,14 +12,16 @@ Il **Photo Session** è un sistema di acquisizione fotografica professionale a *
 
 ### Caratteristiche Chiave
 
-- 📷 **3 scatti essenziali**: frontale, profilo, cute
+- 📷 **3 scatti essenziali**: frontale, **dettaglio capelli**, cute
 - 👁️ **Guide visive overlay**: sagome posizionamento per ogni angolazione
 - 💾 **Compressione intelligente**: JPEG quality 0.7, max 800px lato lungo
 - 📱 **Upload alternativo**: possibilità di caricare da galleria per ogni scatto
 - 🔒 **Single permission**: richiesta camera una sola volta (persistente)
-- 🤖 **Analisi AI completa**: età, genere, pelle, capelli, consigli personalizzati
+- 🤖 **Analisi AI completa**: età, genere, pelle, capelli, consigli personalizzati, makeup
 - ⚡ **SessionStorage**: dati volatili, auto-expire dopo sessione
 - 🔗 **Integrazione seamless**: dati pre-compilati in Specchio Magico
+- 🌍 **Multi-lingua**: output in lingua owner (italiano, english, etc.)
+- 👩 **Age clemency**: -3/4 anni per donne
 
 ---
 
@@ -29,7 +31,7 @@ Il **Photo Session** è un sistema di acquisizione fotografica professionale a *
 graph TD
     A[Functions Hub] -->|Click Specchio Magico| B[Photo Session Start]
     B -->|Scatto 1/3| C[Frontale]
-    C -->|Next| D[Profilo]
+    C -->|Next| D[Dettaglio Capelli]
     D -->|Next| E[Cute/Radici]
     E -->|Complete| F[AI Analysis Webhook]
     F -->|Response| G[sessionStorage.setItem]
@@ -61,29 +63,35 @@ graph TD
 **Guide Overlay**: Ovale verticale (60% larghezza, 80% altezza)
 
 **Dati estratti**:
-- Età stimata (range)
+- Età stimata (range) con clemenza per donne (-3/4 anni)
 - Genere rilevato (confidence %)
-- Tono pelle + sottotono (hex color)
+- Tono pelle + sottotono + HEX color
 - Forma viso (oval, square, heart, round)
-- Colore occhi
+- Colore occhi + HEX
 - Lunghezza capelli frontale
-- Features facciali (cheekbones, lip shape)
+- Features facciali
 
 ---
 
-### 2. **Profilo** ↗️
+### 2. **Dettaglio Capelli** 💇‍♀️ ⭐ NEW
 
-**Obiettivo**: Laterale 90°, linea mandibola visibile, orecchio inquadrato
+**Obiettivo**: Close-up su ciocca capelli per mostrare texture, colore, condizione
 
-**Guide Overlay**: Ovale orizzontale (rotazione 90°)
+**Guide Overlay**: Rettangolo arrotondato (70% larghezza, 60% altezza)
 
 **Dati estratti**:
-- Profilo naso
-- Linea mandibola
-- Volume capelli laterale
-- Attaccatura frontale/temporale
-- Texture capelli (ricci/lisci/ondulati)
-- Lunghezza effettiva capelli
+- Texture capelli dettagliata (1A-4C classification)
+- Porosità visibile (low, medium, high)
+- Livello danno (frizz, secchezza, split ends)
+- Colore naturale + HEX
+- Contrasto radici/lunghezze
+- Presenza trattamenti chimici (decolorazione, tinte)
+
+**Perché è meglio del profilo?**
+- ✅ Focus 100% su condizione capelli
+- ✅ Texture rilevabile con precisione
+- ✅ Damage level oggettivo (frizz, split ends visibili)
+- ✅ Colore reale senza ombre viso
 
 ---
 
@@ -94,13 +102,12 @@ graph TD
 **Guide Overlay**: Cerchio (60% dimensione)
 
 **Dati estratti**:
-- Salute cute (secca, grassa, normale)
+- Salute cute (secca, grassa, normale, sensibile)
 - Densità capelli (bassa, media, alta)
 - % bianchi (rilevazione automatica pixel saturation)
-- Presenza forfora/dermatiti
-- Colore naturale radici
+- Presenza forfora/dermatiti/rossori
+- Colore naturale radici + HEX
 - Contrasto radici/lunghezze (ricrescita)
-- Porosità stimata
 
 ---
 
@@ -140,19 +147,57 @@ function compressImage(canvas, callback) {
 
 ---
 
+### Guide Overlay Aggiornate
+
+```javascript
+const photoSteps = [
+  {
+    id: 1,
+    title: '📸 Foto 1: Frontale',
+    instruction: 'Viso completo, espressione neutra, capelli visibili',
+    overlay: {
+      type: 'oval-vertical',
+      width: '60%',
+      height: '80%'
+    }
+  },
+  {
+    id: 2,
+    title: '💇‍♀️ Foto 2: Dettaglio Capelli',
+    instruction: 'Inquadra una ciocca da vicino per mostrare texture e condizione',
+    overlay: {
+      type: 'rounded-rect',
+      width: '70%',
+      height: '60%'
+    }
+  },
+  {
+    id: 3,
+    title: '🔍 Foto 3: Cute e Radici',
+    instruction: 'Zona superiore testa, radici ben visibili',
+    overlay: {
+      type: 'circle',
+      size: '60%'
+    }
+  }
+];
+```
+
+---
+
 ### SessionStorage Architecture
 
 ```javascript
 // photo-session.html - Dopo AI response
-function saveToSessionStorage() {
+function saveToSessionStorage(response) {
   const sessionData = {
     clientId: clientId,
     photos: {
       front: photos.front,
-      profile: photos.profile,
+      hairDetail: photos.hairDetail, // NEW: dettaglio capelli
       scalp: photos.scalp
     },
-    analysis: analysisData,
+    report: response.report, // Full report object
     timestamp: Date.now()
   };
   
@@ -167,19 +212,13 @@ if (urlParams.get('fromPhotoSession') === 'true') {
   if (sessionData) {
     const data = JSON.parse(sessionData);
     
-    // Pre-fill tutto
+    // Pre-fill tutto dal report
     clientPhotoData = data.photos.front;
-    autoFillFromAnalysis(data.analysis);
-    selectedGender = data.analysis.gender.detected;
+    autoFillFromReport(data.report);
+    selectedGender = data.report.gender.detected;
   }
 }
 ```
-
-**Vantaggi**:
-- ⚡ Zero latency (localStorage in-browser)
-- 🔒 Privacy-first (nessun dato server-side)
-- 🧹 Auto-cleanup (expiry chiusura tab)
-- 💰 Zero costi storage
 
 ---
 
@@ -198,10 +237,24 @@ POST https://trinai.api.workflow.dcmake.it/webhook/5364bb15-4186-4246-8d00-c8221
   "action": "analyze",
   "owner": "telegram_user_id",
   "token": "session_token",
-  "photos": {
-    "front": "data:image/jpeg;base64,/9j/4AAQSkZJRg...",
-    "profile": "data:image/jpeg;base64,/9j/4AAQSkZJRg...",
-    "scalp": "data:image/jpeg;base64,/9j/4AAQSkZJRg..."
+  "body": {
+    "photos": {
+      "front": {
+        "base64": "/9j/4AAQSkZJRg...",
+        "mimeType": "image/jpeg",
+        "size": 78
+      },
+      "hairDetail": {
+        "base64": "/9j/4AAQSkZJRg...",
+        "mimeType": "image/jpeg",
+        "size": 82
+      },
+      "scalp": {
+        "base64": "/9j/4AAQSkZJRg...",
+        "mimeType": "image/jpeg",
+        "size": 85
+      }
+    }
   },
   "timestamp": 1734284400000
 }
@@ -211,65 +264,91 @@ POST https://trinai.api.workflow.dcmake.it/webhook/5364bb15-4186-4246-8d00-c8221
 
 ---
 
-### Response (Success)
+### Response (Success) - Esempio REALE
 
 ```json
 {
   "success": true,
-  "analysis": {
+  "report": {
     "age": {
-      "estimated": 34,
-      "range": "30-40"
+      "range": "40-50 anni"
     },
     "gender": {
       "detected": "F",
-      "confidence": 0.95
+      "confidence": 0.98
     },
     "skinTone": {
-      "category": "Medium",
-      "undertone": "Warm",
-      "hex": "#d4a891"
+      "category": "Medio-Chiaro",
+      "undertone": "Neutral-Warm",
+      "hex": "#D8A68C"
+    },
+    "faceShape": "Round",
+    "eyeColor": {
+      "color": "Grigio-Azzurro",
+      "hex": "#637B85"
     },
     "hairAnalysis": {
       "naturalColor": {
-        "level": 5,
-        "tone": "Warm Brown"
+        "level": 4,
+        "tone": "Neutrale",
+        "hex": "#4A3A2F"
       },
       "texture": {
-        "type": "2B",
-        "porosity": "Medium"
+        "type": "2C (Onde marcate/Riccio debole)",
+        "porosity": "High"
       },
-      "density": "Medium-High",
-      "greyPercentage": 15,
+      "density": "Medium",
+      "length": "Media (alle spalle)",
+      "greyPercentage": 20,
       "damage": {
-        "level": "Low",
-        "concerns": []
+        "level": "Medium",
+        "concerns": [
+          "Frizz eccessivo sulle lunghezze schiarite",
+          "Secchezza e mancanza di elasticità"
+        ]
+      },
+      "scalpHealth": {
+        "condition": "Sensibile",
+        "concerns": [
+          "Lieve rossore visibile",
+          "Potenziale accumulo di sebo/residui"
+        ]
       }
     },
-    "faceShape": "Oval",
     "recommendations": {
-      "suitableHaircuts": [
-        "Long Bob",
-        "Layered Cut"
+      "salonTreatments": [
+        "Trattamento di Ricostruzione Profonda (Cheratina/Proteine)",
+        "Gloss Tonalizzante (per neutralizzare i riflessi gialli indesiderati sulle schiariture)",
+        "Taglio Punte (per eliminare le parti più danneggiate)"
       ],
-      "colorSuggestions": [
-        "Warm Tones",
-        "Caramel Highlights"
+      "retailProducts": [
+        "Shampoo Idratante Ristrutturante Professionale",
+        "Maschera Intensiva per Capelli Trattati e Ricci",
+        "Crema Leave-in per la Definizione dei Ricci"
       ],
-      "avoidColors": [
-        "Ash Tones",
-        "Cool Platinum"
-      ]
+      "makeupColors": {
+        "eyeshadows": [
+          {"name": "Bronzo Caldo", "hex": "#B87333"},
+          {"name": "Malva/Taupe", "hex": "#856D6E"}
+        ],
+        "lipsticks": [
+          {"name": "Rosa Pesca Nude", "hex": "#E8A398"},
+          {"name": "Marrone Rosato (Mauve)", "hex": "#A47F7F"}
+        ],
+        "blush": [
+          {"name": "Corallo Tenue", "hex": "#E49B80"}
+        ]
+      }
     }
-  },
-  "processingTime": 3.8
+  }
 }
 ```
 
 **Note**:
-- ❌ **NO** foto nel response (già salvate client-side)
-- ✅ Solo `analysis` object
-- Frontend riusa foto da variabile `photos`
+- ✅ Foto **NON** incluse nel response (già salvate client-side)
+- ✅ Tutti i colori hanno HEX code
+- ✅ Testi in lingua owner (italiano nell'esempio)
+- ✅ Age con clemenza per donne (-3/4 anni)
 
 ---
 
@@ -291,9 +370,78 @@ POST https://trinai.api.workflow.dcmake.it/webhook/5364bb15-4186-4246-8d00-c8221
 | Codice | Causa | Fix |
 |--------|-------|-----|
 | `FACE_NOT_DETECTED` | Viso non riconosciuto | Ri-scattare frontale |
+| `HAIR_NOT_DETECTABLE` | Dettaglio capelli sfocato | Ri-scattare foto 2 |
 | `LOW_QUALITY` | Foto sfocata/scura | Migliorare illuminazione |
 | `INVALID_PAYLOAD` | Payload malformato | Check base64 encoding |
 | `API_QUOTA_EXCEEDED` | Rate limit AI | Attendere 60s |
+
+---
+
+## 🎨 Display Scheda Cliente
+
+Dopo il response, il frontend mostra una scheda riepilogativa:
+
+```html
+<div class="client-card">
+  <div class="header">
+    <img src="{{ photos.front }}" class="client-photo">
+    <div class="info">
+      <h2>Analisi Completa</h2>
+      <p class="age">{{ report.age.range }}</p>
+      <p class="gender">{{ report.gender.detected }}</p>
+    </div>
+  </div>
+  
+  <div class="section">
+    <h3>🎨 Pelle & Viso</h3>
+    <div class="color-swatch" style="background: {{ report.skinTone.hex }}"></div>
+    <p>{{ report.skinTone.category }} - {{ report.skinTone.undertone }}</p>
+    <p>Forma viso: {{ report.faceShape }}</p>
+  </div>
+  
+  <div class="section">
+    <h3>💇‍♀️ Capelli</h3>
+    <div class="color-swatch" style="background: {{ report.hairAnalysis.naturalColor.hex }}"></div>
+    <p>Livello {{ report.hairAnalysis.naturalColor.level }} - {{ report.hairAnalysis.naturalColor.tone }}</p>
+    <p>Texture: {{ report.hairAnalysis.texture.type }}</p>
+    <p>Danno: {{ report.hairAnalysis.damage.level }}</p>
+    <p>Bianchi: {{ report.hairAnalysis.greyPercentage }}%</p>
+  </div>
+  
+  <div class="section">
+    <h3>✨ Trattamenti Consigliati</h3>
+    <ul>
+      <li v-for="treatment in report.recommendations.salonTreatments">
+        {{ treatment }}
+      </li>
+    </ul>
+  </div>
+  
+  <div class="section">
+    <h3>🛍️ Prodotti Retail</h3>
+    <ul>
+      <li v-for="product in report.recommendations.retailProducts">
+        {{ product }}
+      </li>
+    </ul>
+  </div>
+  
+  <div class="section">
+    <h3>💄 Palette Makeup</h3>
+    <div class="color-palette">
+      <div v-for="color in report.recommendations.makeupColors.eyeshadows" 
+           class="color-item">
+        <div class="swatch" :style="{background: color.hex}"></div>
+        <span>{{ color.name }}</span>
+      </div>
+    </div>
+  </div>
+  
+  <button @click="proceedToSpecchioMagico">
+    Procedi a Specchio Magico →
+  </button>
+</div>
+```
 
 ---
 
@@ -302,59 +450,55 @@ POST https://trinai.api.workflow.dcmake.it/webhook/5364bb15-4186-4246-8d00-c8221
 ### Navigation URL
 
 ```javascript
-function proceedToColorimetry() {
+function proceedToSpecchioMagico() {
   const urlParams = getURLParams();
   
   navigateWithParams('./specchio-magico.html', {
     owner: urlParams.owner,
     token: urlParams.token,
-    gender: analysisData.gender.detected || 'F',
-    fromPhotoSession: 'true' // <<< FLAG
+    gender: report.gender.detected || 'F',
+    fromPhotoSession: 'true'
   });
 }
 ```
 
-### Specchio Magico Load
+### Specchio Magico Pre-fill
 
 ```javascript
 // specchio-magico.js - All'init
-window.addEventListener('DOMContentLoaded', () => {
-  const urlParams = new URLSearchParams(window.location.search);
+if (urlParams.get('fromPhotoSession') === 'true') {
+  const sessionData = sessionStorage.getItem('photoSessionData');
   
-  if (urlParams.get('fromPhotoSession') === 'true') {
-    const sessionData = sessionStorage.getItem('photoSessionData');
+  if (sessionData) {
+    const data = JSON.parse(sessionData);
+    const report = data.report;
     
-    if (sessionData) {
-      const data = JSON.parse(sessionData);
-      
-      // 1. Usa foto frontale come preview cliente
-      clientPhotoData = data.photos.front;
-      document.getElementById('client-photo').src = clientPhotoData;
-      
-      // 2. Pre-fill gender
-      selectedGender = data.analysis.gender.detected;
-      
-      // 3. Auto-fill texture capelli
-      document.getElementById('hair-texture').value = 
-        data.analysis.hairAnalysis.texture.type;
-      
-      // 4. Set tono base da colore naturale
-      currentBaseTone = data.analysis.hairAnalysis.naturalColor.level;
-      document.getElementById('base-tone').value = currentBaseTone;
-      
-      // 5. Blocca tecniche pericolose se damage = High
-      if (data.analysis.hairAnalysis.damage.level === 'High') {
-        blockDangerousTechniques();
-      }
-      
-      // 6. Mostra consigli AI
-      displayAISuggestions(data.analysis.recommendations);
-      
-      // 7. Skip brand selection se preferito
-      // skipToBrandSelection();
+    // 1. Foto cliente
+    clientPhotoData = data.photos.front;
+    document.getElementById('client-photo').src = clientPhotoData;
+    
+    // 2. Gender
+    selectedGender = report.gender.detected;
+    
+    // 3. Texture capelli
+    document.getElementById('hair-texture').value = report.hairAnalysis.texture.type;
+    
+    // 4. Tono base
+    currentBaseTone = report.hairAnalysis.naturalColor.level;
+    document.getElementById('base-tone').value = currentBaseTone;
+    
+    // 5. % bianchi
+    document.getElementById('grey-percentage').value = report.hairAnalysis.greyPercentage;
+    
+    // 6. Blocca tecniche pericolose se damage = High
+    if (report.hairAnalysis.damage.level === 'High') {
+      blockDangerousTechniques(['Decolorazione Totale', 'Mèches Extra Light']);
     }
+    
+    // 7. Mostra consigli AI in sidebar
+    displayAISuggestions(report.recommendations);
   }
-});
+}
 ```
 
 ---
@@ -367,19 +511,20 @@ window.addEventListener('DOMContentLoaded', () => {
 |---------|--------|------|
 | **Tempo sessione** | < 1 min | 3 foto + AI |
 | **Tempo per scatto** | < 5s | Include posizionamento |
-| **AI Analysis** | < 4s | Webhook processing |
+| **AI Analysis** | < 5s | Webhook processing (3 foto) |
 | **Dimensione foto** | ~80 KB | Per foto |
 | **Payload totale** | ~240 KB | 3 foto base64 |
-| **Completion Rate** | 90% | Target vs 85% con 5 foto |
-| **SessionStorage size** | ~250 KB | Foto + analysis |
+| **Completion Rate** | 90% | Target |
+| **SessionStorage size** | ~280 KB | Foto + report completo |
 
 ### Business KPIs
 
 - **Completion Rate**: % sessioni completate (target 90%)
 - **Photo Quality**: % foto accettate da AI (target 95%)
-- **Retake Rate**: % foto ri-scattate (target < 12%)
+- **Retake Rate**: % foto ri-scattate (target < 10%)
 - **Time to First Service**: da photo session a colorimetria (target < 3 min)
 - **AI Accuracy**: precision età ±5 anni (target 85%)
+- **Hair Texture Detection**: accuracy texture classification (target 90%)
 
 ---
 
@@ -395,23 +540,24 @@ window.addEventListener('DOMContentLoaded', () => {
 
 ---
 
-### 📸 Foto Sfocate
+### 📸 Foto 2 Sfocata (Dettaglio Capelli)
 
-**Causa**: Illuminazione insufficiente, mano tremante
+**Causa**: Camera non mette a fuoco da vicino
 
 **Fix**:
-- Tip pre-scatto: "💡 Assicurati di avere buona luce"
+- Tip pre-scatto: "📏 Allontana leggermente il telefono (20-30 cm)"
+- Suggerisci di usare focus tap sullo schermo
 - Retake illimitati
 
 ---
 
-### 🔴 AI Returns "FACE_NOT_DETECTED"
+### 🔴 AI Returns "HAIR_NOT_DETECTABLE"
 
-**Causa**: Viso non riconosciuto in foto frontale
+**Causa**: Foto 2 troppo sfocata o luce insufficiente
 
 **Fix**:
-- Mostra errore specifico: "Viso non rilevato. Ri-scatta foto frontale."
-- Auto-jump a step 1 (frontale)
+- Mostra errore specifico: "Dettaglio capelli non chiaro. Ri-scatta foto 2 con più luce."
+- Auto-jump a step 2 (hair detail)
 
 ---
 
@@ -427,25 +573,28 @@ window.addEventListener('DOMContentLoaded', () => {
 
 ## 🚀 Roadmap
 
-### Q1 2025 ✅
+### Q4 2025 ✅
 - [x] Sistema 3 scatti con guide overlay
+- [x] Foto 2 cambiata: Profilo → Dettaglio Capelli
 - [x] Compressione JPEG ottimizzata
 - [x] Upload da galleria alternativo
-- [x] AI analysis webhook
+- [x] AI analysis webhook completo
 - [x] SessionStorage integration
-- [x] Correct webhook URL
+- [x] Response structure con HEX colors
+- [x] Multi-lingua support
+- [x] Age clemency per donne
 
-### Q2 2025 🚧
-- [ ] **Auto-capture**: rileva posizionamento corretto e scatta automaticamente
+### Q1 2026 🚧
+- [ ] **Auto-focus**: tap-to-focus automatico per foto 2
 - [ ] **Mirror mode**: flip orizzontale per selfie
-- [ ] **Grid overlay**: linee guida rule of thirds
-- [ ] **Client history**: lista ultimi 10 clienti analizzati (localStorage)
+- [ ] **Lighting check**: warning se foto troppo scura
+- [ ] **Client history**: lista ultimi 10 clienti (localStorage)
 
-### Q3 2025 📋
-- [ ] **Batch photos**: carica tutte 3 foto insieme
+### Q2 2026 📋
 - [ ] **Hair length measurement**: misura automatica cm capelli
 - [ ] **Scalp health score**: punteggio 0-100
 - [ ] **Before/After comparison**: side-by-side in results
+- [ ] **PDF export**: scheda cliente stampabile
 
 ---
 
@@ -463,7 +612,9 @@ window.addEventListener('DOMContentLoaded', () => {
 
 *Analisi AI professionale in 1 minuto con 3 foto*
 
-*SessionStorage-only • Zero persistence • Privacy-first*
+*Frontale • Dettaglio Capelli • Cute*
+
+*SessionStorage-only • Zero persistence • Privacy-first • Multi-lingua*
 
 ---
 
