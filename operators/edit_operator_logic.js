@@ -111,13 +111,7 @@ function populateForm(stakeholder) {
   // Professionale
   setValue('current_role', prof.current_role);
   setValue('years_experience', profProfile.years_experience || '15+');
-
-  // Social
-  setValue('website', social.website);
   setValue('linkedin', social.linkedin);
-  setValue('facebook', social.facebook);
-  setValue('twitter', social.twitter);
-  setValue('instagram', social.instagram);
 }
 
 function setValue(id, val) {
@@ -171,15 +165,7 @@ async function saveChanges() {
       // Professional
       current_role: document.getElementById('current_role').value,
       years_experience: document.getElementById('years_experience').value,
-      
-      // Social
-      social: {
-        website: document.getElementById('website').value,
-        linkedin: document.getElementById('linkedin').value,
-        facebook: document.getElementById('facebook').value,
-        twitter: document.getElementById('twitter').value,
-        instagram: document.getElementById('instagram').value
-      }
+      linkedin: document.getElementById('linkedin').value
     };
 
     const payload = {
