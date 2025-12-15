@@ -91,6 +91,7 @@
       width: 100%;
       height: 100%;
       object-fit: cover;
+      cursor: crosshair; /* Indica che è tappabile */
     }
 
     .guide-overlay {
@@ -115,9 +116,10 @@
       animation: pulse 2s ease-in-out infinite;
     }
 
-    .guide-silhouette.profile {
-      border-radius: 50% 50% 50% 50% / 70% 70% 30% 30%;
-      transform: translate(-50%, -50%) rotate(90deg);
+    .guide-silhouette.hairDetail {
+      width: 70%;
+      height: 60%;
+      border-radius: 16px;
     }
 
     .guide-silhouette.scalp {
@@ -144,6 +146,56 @@
       font-weight: 600;
       text-align: center;
       backdrop-filter: blur(10px);
+      max-width: 90%;
+    }
+
+    /* TAP-TO-FOCUS INDICATOR */
+    .focus-indicator {
+      position: absolute;
+      width: 80px;
+      height: 80px;
+      border: 2px solid #4cd964;
+      border-radius: 50%;
+      transform: translate(-50%, -50%) scale(1.5);
+      opacity: 0;
+      transition: all 0.3s ease;
+      pointer-events: none;
+      box-shadow: 0 0 0 2px rgba(76, 217, 100, 0.3);
+      z-index: 100;
+    }
+
+    .focus-indicator.focused {
+      transform: translate(-50%, -50%) scale(1);
+      opacity: 1;
+    }
+
+    /* TAP HINT */
+    .tap-hint {
+      position: absolute;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(76, 217, 100, 0.9);
+      padding: 12px 20px;
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      animation: pulseHint 2s infinite;
+      z-index: 15;
+      pointer-events: none;
+      font-size: 13px;
+      font-weight: 600;
+      color: white;
+    }
+
+    .tap-hint.hidden {
+      display: none;
+    }
+
+    @keyframes pulseHint {
+      0%, 100% { opacity: 1; transform: translateX(-50%) scale(1); }
+      50% { opacity: 0.7; transform: translateX(-50%) scale(0.95); }
     }
 
     .camera-controls {
@@ -227,6 +279,7 @@
       font-size: 12px;
       text-align: center;
       padding: 10px;
+      height: 100%;
     }
 
     .thumbnail-icon {
@@ -260,7 +313,8 @@
       background: rgba(91, 111, 237, 0.1);
     }
 
-    .analysis-card {
+    /* CLIENT CARD */
+    .client-card {
       background: linear-gradient(135deg, var(--glass-bg), rgba(91, 111, 237, 0.1));
       border: 1px solid var(--glass-border);
       border-radius: 12px;
@@ -268,42 +322,86 @@
       margin: 20px 0;
     }
 
-    .analysis-section {
-      margin: 15px 0;
+    .card-header {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      margin-bottom: 20px;
+      padding-bottom: 15px;
+      border-bottom: 1px solid var(--glass-border);
     }
 
-    .analysis-label {
-      font-size: 12px;
+    .card-photo {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 3px solid var(--primary);
+    }
+
+    .card-info h2 {
+      margin: 0;
+      font-size: 18px;
+    }
+
+    .card-info p {
+      margin: 5px 0 0 0;
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+
+    .card-section {
+      margin: 20px 0;
+    }
+
+    .section-title {
+      font-size: 16px;
+      font-weight: 600;
+      margin: 0 0 15px 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 15px;
+    }
+
+    .info-item {
+      background: rgba(255, 255, 255, 0.05);
+      padding: 12px;
+      border-radius: 8px;
+    }
+
+    .info-label {
+      font-size: 11px;
       color: var(--text-muted);
       text-transform: uppercase;
       font-weight: 600;
       margin-bottom: 5px;
     }
 
-    .analysis-value {
-      font-size: 16px;
+    .info-value {
+      font-size: 14px;
       color: var(--text-primary);
       font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 10px;
     }
 
-    .analysis-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 15px;
-      margin: 15px 0;
-    }
-
-    .skin-tone-preview {
-      width: 40px;
-      height: 40px;
+    .color-swatch {
+      width: 30px;
+      height: 30px;
       border-radius: 50%;
       border: 2px solid white;
       display: inline-block;
-      vertical-align: middle;
-      margin-left: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
     }
 
-    .recommendations {
+    .recommendations-box {
       background: rgba(76, 217, 100, 0.1);
       border-left: 3px solid var(--success);
       padding: 15px;
@@ -311,14 +409,49 @@
       margin: 15px 0;
     }
 
-    .recommendations ul {
+    .recommendations-box h4 {
+      margin: 0 0 10px 0;
+      font-size: 14px;
+      color: var(--success);
+    }
+
+    .recommendations-box ul {
       margin: 10px 0;
       padding-left: 20px;
     }
 
-    .recommendations li {
+    .recommendations-box li {
       margin: 5px 0;
-      font-size: 14px;
+      font-size: 13px;
+    }
+
+    .color-palette {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .color-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .color-item .swatch {
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      border: 2px solid white;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+
+    .color-item span {
+      font-size: 10px;
+      color: var(--text-muted);
+      text-align: center;
+      max-width: 60px;
     }
   </style>
 </head>
@@ -360,10 +493,10 @@
           <div>Frontale</div>
         </div>
       </div>
-      <div class="thumbnail" id="thumb-profile" onclick="retakePhoto('profile')">
+      <div class="thumbnail" id="thumb-hairDetail" onclick="retakePhoto('hairDetail')">
         <div class="thumbnail-empty">
-          <div class="thumbnail-icon"><i class="fas fa-arrow-right"></i></div>
-          <div>Profilo</div>
+          <div class="thumbnail-icon"><i class="fas fa-cut"></i></div>
+          <div>Capelli</div>
         </div>
       </div>
       <div class="thumbnail" id="thumb-scalp" onclick="retakePhoto('scalp')">
@@ -381,6 +514,12 @@
         <canvas id="camera-canvas" style="display: none;"></canvas>
         
         <div class="guide-overlay">
+          <!-- Tap hint (solo per foto 2 e 3) -->
+          <div class="tap-hint hidden" id="tap-hint">
+            <span>🎯</span>
+            <span>Tocca per mettere a fuoco</span>
+          </div>
+          
           <div class="guide-silhouette" id="guide-silhouette"></div>
           <div class="guide-text" id="guide-text">Posiziona il viso al centro</div>
         </div>
@@ -410,86 +549,9 @@
       </div>
     </div>
 
-    <!-- ANALYSIS SECTION -->
+    <!-- ANALYSIS/REPORT SECTION -->
     <div id="analysis-section" class="hidden">
-      <div class="analysis-card">
-        <h3 style="margin: 0 0 20px 0; text-align: center;">
-          <i class="fas fa-robot" style="color: var(--primary);"></i>
-          Analisi AI Cliente
-        </h3>
-        
-        <div class="analysis-grid">
-          <div class="analysis-section">
-            <div class="analysis-label">Età Stimata</div>
-            <div class="analysis-value" id="analysis-age">-</div>
-          </div>
-          
-          <div class="analysis-section">
-            <div class="analysis-label">Genere Rilevato</div>
-            <div class="analysis-value" id="analysis-gender">-</div>
-          </div>
-          
-          <div class="analysis-section">
-            <div class="analysis-label">Tono Pelle</div>
-            <div class="analysis-value">
-              <span id="analysis-skin-tone">-</span>
-              <span class="skin-tone-preview" id="skin-tone-preview"></span>
-            </div>
-          </div>
-          
-          <div class="analysis-section">
-            <div class="analysis-label">Sottotono</div>
-            <div class="analysis-value" id="analysis-undertone">-</div>
-          </div>
-        </div>
-
-        <div class="analysis-section" style="margin-top: 25px;">
-          <h4 style="margin: 0 0 15px 0; font-size: 16px;">
-            <i class="fas fa-cut" style="color: var(--warning);"></i>
-            Analisi Capelli
-          </h4>
-          
-          <div class="analysis-grid">
-            <div class="analysis-section">
-              <div class="analysis-label">Colore Naturale</div>
-              <div class="analysis-value" id="analysis-hair-color">-</div>
-            </div>
-            
-            <div class="analysis-section">
-              <div class="analysis-label">Texture</div>
-              <div class="analysis-value" id="analysis-hair-texture">-</div>
-            </div>
-            
-            <div class="analysis-section">
-              <div class="analysis-label">Densità</div>
-              <div class="analysis-value" id="analysis-hair-density">-</div>
-            </div>
-            
-            <div class="analysis-section">
-              <div class="analysis-label">% Bianchi</div>
-              <div class="analysis-value" id="analysis-grey">-</div>
-            </div>
-          </div>
-
-          <div style="margin-top: 15px;">
-            <div class="analysis-label">Livello Danno</div>
-            <div class="analysis-value" id="analysis-damage">-</div>
-          </div>
-        </div>
-
-        <div class="recommendations">
-          <h4 style="margin: 0 0 10px 0; font-size: 14px; color: var(--success);">
-            <i class="fas fa-lightbulb"></i> Consigli AI
-          </h4>
-          <div id="ai-recommendations">
-            <p style="font-size: 13px; color: var(--text-muted);">Elaborazione...</p>
-          </div>
-        </div>
-      </div>
-
-      <button class="btn" onclick="proceedToColorimetry()" style="width: 100%; margin-top: 20px;">
-        <i class="fas fa-arrow-right"></i> Procedi a Colorimetria
-      </button>
+      <!-- Client card populated by displayReport() -->
     </div>
 
   </div>
@@ -502,25 +564,37 @@
   <script src="../url-params-manager.js"></script>
   <script>
     // ========================================
-    // PHOTO SESSION ENGINE v3.0 - 3 PHOTOS + SessionStorage
+    // PHOTO SESSION ENGINE v4.0
+    // - 3 Photos: Frontale, Dettaglio Capelli, Cute
+    // - Tap-to-Focus con manual focus mode
+    // - Report completo con HEX colors
+    // - SessionStorage ONLY
     // ========================================
 
-    const PHOTO_STEPS = ['front', 'profile', 'scalp'];
-    const GUIDE_TEXTS = {
-      front: 'Viso frontale, sguardo dritto verso la camera',
-      profile: 'Profilo laterale a 90°, viso completo',
-      scalp: 'Zona superiore della testa, cute e radici visibili'
+    const PHOTO_STEPS = ['front', 'hairDetail', 'scalp'];
+    const GUIDE_CONFIG = {
+      front: {
+        text: 'Viso frontale, sguardo dritto',
+        class: '',
+        tapToFocus: false
+      },
+      hairDetail: {
+        text: 'Inquadra una ciocca da vicino. Tocca per mettere a fuoco.',
+        class: 'hairDetail',
+        tapToFocus: true
+      },
+      scalp: {
+        text: 'Cute e radici, zona superiore testa',
+        class: 'scalp',
+        tapToFocus: true
+      }
     };
 
     let currentStep = 0;
-    let photos = {
-      front: null,
-      profile: null,
-      scalp: null
-    };
+    let photos = { front: null, hairDetail: null, scalp: null };
     let cameraStream = null;
     let usingFrontCamera = true;
-    let analysisData = null;
+    let reportData = null;
     let clientId = null;
 
     // AI WEBHOOK
@@ -531,7 +605,7 @@
     // ========================================
 
     window.addEventListener('DOMContentLoaded', () => {
-      console.log('📸 Photo Session initialized (3 photos + sessionStorage)');
+      console.log('📸 Photo Session v4.0 initialized');
       clientId = `client_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
       startCurrentStep();
     });
@@ -546,7 +620,7 @@
       updateProgress();
       
       if (photos[stepName]) {
-        console.log(`Step ${stepName} already captured, moving to next`);
+        console.log(`Step ${stepName} already captured`);
         nextStep();
         return;
       }
@@ -575,16 +649,19 @@
     }
 
     function updateGuide(stepName) {
+      const config = GUIDE_CONFIG[stepName];
       const silhouette = document.getElementById('guide-silhouette');
-      silhouette.className = 'guide-silhouette';
+      const tapHint = document.getElementById('tap-hint');
       
-      if (stepName === 'profile') {
-        silhouette.classList.add('profile');
-      } else if (stepName === 'scalp') {
-        silhouette.classList.add('scalp');
+      silhouette.className = 'guide-silhouette ' + config.class;
+      document.getElementById('guide-text').textContent = config.text;
+      
+      // Show/hide tap hint
+      if (config.tapToFocus) {
+        tapHint.classList.remove('hidden');
+      } else {
+        tapHint.classList.add('hidden');
       }
-      
-      document.getElementById('guide-text').textContent = GUIDE_TEXTS[stepName];
     }
 
     function nextStep() {
@@ -607,7 +684,7 @@
       thumb.innerHTML = `
         <div class="thumbnail-empty">
           <div class="thumbnail-icon"><i class="fas fa-${getStepIcon(stepName)}"></i></div>
-          <div>${stepName.charAt(0).toUpperCase() + stepName.slice(1)}</div>
+          <div>${getStepLabel(stepName)}</div>
         </div>
       `;
       thumb.classList.remove('captured');
@@ -617,16 +694,17 @@
     }
 
     function getStepIcon(stepName) {
-      const icons = {
-        front: 'user',
-        profile: 'arrow-right',
-        scalp: 'head-side-virus'
-      };
+      const icons = { front: 'user', hairDetail: 'cut', scalp: 'head-side-virus' };
       return icons[stepName] || 'user';
     }
 
+    function getStepLabel(stepName) {
+      const labels = { front: 'Frontale', hairDetail: 'Capelli', scalp: 'Cute' };
+      return labels[stepName] || stepName;
+    }
+
     // ========================================
-    // CAMERA
+    // CAMERA + TAP-TO-FOCUS
     // ========================================
 
     async function initCamera() {
@@ -639,18 +717,75 @@
           video: {
             facingMode: usingFrontCamera ? 'user' : 'environment',
             width: { ideal: 1280 },
-            height: { ideal: 1920 }
+            height: { ideal: 1920 },
+            focusMode: 'manual' // Try manual focus
           },
           audio: false
         });
         
         cameraStream = stream;
-        document.getElementById('camera-video').srcObject = stream;
+        const video = document.getElementById('camera-video');
+        video.srcObject = stream;
+        
+        // Attach tap-to-focus if enabled for current step
+        const stepName = PHOTO_STEPS[currentStep];
+        if (GUIDE_CONFIG[stepName].tapToFocus) {
+          video.addEventListener('click', handleTapToFocus);
+        }
+        
         console.log('✅ Camera initialized');
       } catch (error) {
         console.error('❌ Camera error:', error);
         alert('Impossibile accedere alla camera. Usa il pulsante Upload.');
       }
+    }
+
+    function handleTapToFocus(event) {
+      const video = event.target;
+      const rect = video.getBoundingClientRect();
+      
+      // Calculate relative coordinates (0-1)
+      const x = (event.clientX - rect.left) / rect.width;
+      const y = (event.clientY - rect.top) / rect.height;
+      
+      applyFocusPoint(x, y);
+      showFocusIndicator(event.clientX, event.clientY);
+    }
+
+    async function applyFocusPoint(x, y) {
+      if (!cameraStream) return;
+      
+      const track = cameraStream.getVideoTracks()[0];
+      const capabilities = track.getCapabilities();
+      
+      // Try manual focus with points of interest
+      if (capabilities.focusMode && capabilities.focusMode.includes('manual')) {
+        try {
+          await track.applyConstraints({
+            advanced: [{
+              focusMode: 'manual',
+              focusDistance: 0.2, // Close-up (macro) for hair detail
+              pointsOfInterest: [{ x: x, y: y }]
+            }]
+          });
+          console.log(`🎯 Focus applied at (${x.toFixed(2)}, ${y.toFixed(2)})`);
+        } catch (err) {
+          console.warn('Manual focus not supported, fallback to continuous:', err);
+          await track.applyConstraints({ advanced: [{ focusMode: 'continuous' }] });
+        }
+      }
+    }
+
+    function showFocusIndicator(clientX, clientY) {
+      const indicator = document.createElement('div');
+      indicator.className = 'focus-indicator';
+      indicator.style.left = `${clientX}px`;
+      indicator.style.top = `${clientY}px`;
+      
+      document.body.appendChild(indicator);
+      
+      setTimeout(() => indicator.classList.add('focused'), 10);
+      setTimeout(() => indicator.remove(), 1000);
     }
 
     function toggleCamera() {
@@ -663,6 +798,10 @@
         cameraStream.getTracks().forEach(track => track.stop());
         cameraStream = null;
       }
+      
+      const video = document.getElementById('camera-video');
+      video.removeEventListener('click', handleTapToFocus);
+      
       document.getElementById('camera-section').classList.add('hidden');
     }
 
@@ -787,10 +926,12 @@
         action: 'analyze',
         owner: urlParams.owner,
         token: urlParams.token,
-        photos: {
-          front: photos.front,
-          profile: photos.profile,
-          scalp: photos.scalp
+        body: {
+          photos: {
+            front: { base64: photos.front.split(',')[1], mimeType: 'image/jpeg' },
+            hairDetail: { base64: photos.hairDetail.split(',')[1], mimeType: 'image/jpeg' },
+            scalp: { base64: photos.scalp.split(',')[1], mimeType: 'image/jpeg' }
+          }
         },
         timestamp: Date.now()
       };
@@ -811,32 +952,30 @@
         const data = await response.json();
         console.log('📦 AI Response:', data);
         
-        if (data.success && data.analysis) {
-          analysisData = data.analysis;
-          
-          // Save to sessionStorage (NO MongoDB)
+        if (data.success && data.report) {
+          reportData = data.report;
           saveToSessionStorage();
-          
-          displayAnalysis();
+          displayReport();
         } else {
-          throw new Error('Invalid response');
+          throw new Error('Invalid response structure');
         }
       } catch (error) {
         console.error('❌ Analysis error:', error);
-        hideLoader();
         
-        // Mock data for testing
-        analysisData = generateMockAnalysis();
+        // Mock data for development
+        reportData = generateMockReport();
         saveToSessionStorage();
-        displayAnalysis();
+        displayReport();
       }
+      
+      hideLoader();
     }
 
     function saveToSessionStorage() {
       const sessionData = {
         clientId: clientId,
         photos: photos,
-        analysis: analysisData,
+        report: reportData,
         timestamp: Date.now()
       };
       
@@ -844,66 +983,206 @@
       console.log('💾 Saved to sessionStorage:', clientId);
     }
 
-    function displayAnalysis() {
-      hideLoader();
-      
+    function displayReport() {
       document.getElementById('camera-section').classList.add('hidden');
-      document.getElementById('analysis-section').classList.remove('hidden');
+      const section = document.getElementById('analysis-section');
+      section.classList.remove('hidden');
       
-      const analysis = analysisData;
-      
-      document.getElementById('analysis-age').textContent = 
-        `${analysis.age.estimated} anni (${analysis.age.range})`;
-      
+      const report = reportData;
       const genderLabels = { F: 'Donna', M: 'Uomo', X: 'Non Binario' };
-      document.getElementById('analysis-gender').textContent = 
-        genderLabels[analysis.gender.detected] || analysis.gender.detected;
       
-      document.getElementById('analysis-skin-tone').textContent = 
-        `${analysis.skinTone.category}`;
-      document.getElementById('analysis-undertone').textContent = 
-        analysis.skinTone.undertone;
-      document.getElementById('skin-tone-preview').style.background = 
-        analysis.skinTone.hex;
-      
-      document.getElementById('analysis-hair-color').textContent = 
-        `Livello ${analysis.hairAnalysis.naturalColor.level} - ${analysis.hairAnalysis.naturalColor.tone}`;
-      document.getElementById('analysis-hair-texture').textContent = 
-        `${analysis.hairAnalysis.texture.type} (${analysis.hairAnalysis.texture.porosity})`;
-      document.getElementById('analysis-hair-density').textContent = 
-        analysis.hairAnalysis.density;
-      document.getElementById('analysis-grey').textContent = 
-        `${analysis.hairAnalysis.greyPercentage}%`;
-      document.getElementById('analysis-damage').textContent = 
-        `${analysis.hairAnalysis.damage.level}`;
-      
-      const recsHTML = `
-        <ul>
-          <li><strong>Tagli consigliati:</strong> ${analysis.recommendations.suitableHaircuts.join(', ')}</li>
-          <li><strong>Colori suggeriti:</strong> ${analysis.recommendations.colorSuggestions.join(', ')}</li>
-          <li><strong>Da evitare:</strong> ${analysis.recommendations.avoidColors.join(', ')}</li>
-        </ul>
+      section.innerHTML = `
+        <div class="client-card">
+          <div class="card-header">
+            <img src="${photos.front}" class="card-photo" alt="Client">
+            <div class="card-info">
+              <h2>Analisi Completa</h2>
+              <p>${report.age.range} • ${genderLabels[report.gender.detected] || report.gender.detected}</p>
+            </div>
+          </div>
+
+          <!-- Skin & Face -->
+          <div class="card-section">
+            <h3 class="section-title">
+              <i class="fas fa-palette" style="color: var(--warning);"></i>
+              Pelle & Viso
+            </h3>
+            <div class="info-grid">
+              <div class="info-item">
+                <div class="info-label">Tono Pelle</div>
+                <div class="info-value">
+                  ${report.skinTone.category}
+                  <span class="color-swatch" style="background: ${report.skinTone.hex}"></span>
+                </div>
+              </div>
+              <div class="info-item">
+                <div class="info-label">Sottotono</div>
+                <div class="info-value">${report.skinTone.undertone}</div>
+              </div>
+              <div class="info-item">
+                <div class="info-label">Forma Viso</div>
+                <div class="info-value">${report.faceShape}</div>
+              </div>
+              <div class="info-item">
+                <div class="info-label">Colore Occhi</div>
+                <div class="info-value">
+                  ${report.eyeColor.color}
+                  <span class="color-swatch" style="background: ${report.eyeColor.hex}"></span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Hair Analysis -->
+          <div class="card-section">
+            <h3 class="section-title">
+              <i class="fas fa-cut" style="color: var(--primary);"></i>
+              Analisi Capelli
+            </h3>
+            <div class="info-grid">
+              <div class="info-item">
+                <div class="info-label">Colore Naturale</div>
+                <div class="info-value">
+                  Liv. ${report.hairAnalysis.naturalColor.level}
+                  <span class="color-swatch" style="background: ${report.hairAnalysis.naturalColor.hex}"></span>
+                </div>
+              </div>
+              <div class="info-item">
+                <div class="info-label">Texture</div>
+                <div class="info-value">${report.hairAnalysis.texture.type}</div>
+              </div>
+              <div class="info-item">
+                <div class="info-label">Densità</div>
+                <div class="info-value">${report.hairAnalysis.density}</div>
+              </div>
+              <div class="info-item">
+                <div class="info-label">Bianchi</div>
+                <div class="info-value">${report.hairAnalysis.greyPercentage}%</div>
+              </div>
+              <div class="info-item">
+                <div class="info-label">Danno</div>
+                <div class="info-value">${report.hairAnalysis.damage.level}</div>
+              </div>
+              <div class="info-item">
+                <div class="info-label">Cute</div>
+                <div class="info-value">${report.hairAnalysis.scalpHealth.condition}</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Treatments -->
+          <div class="card-section">
+            <h3 class="section-title">
+              <i class="fas fa-spa" style="color: var(--success);"></i>
+              Trattamenti Consigliati
+            </h3>
+            <ul style="padding-left: 20px; margin: 10px 0;">
+              ${report.recommendations.salonTreatments.map(t => `<li style="margin: 8px 0; font-size: 14px;">${t}</li>`).join('')}
+            </ul>
+          </div>
+
+          <!-- Retail Products -->
+          <div class="card-section">
+            <h3 class="section-title">
+              <i class="fas fa-shopping-bag" style="color: var(--warning);"></i>
+              Prodotti Retail
+            </h3>
+            <ul style="padding-left: 20px; margin: 10px 0;">
+              ${report.recommendations.retailProducts.map(p => `<li style="margin: 8px 0; font-size: 14px;">${p}</li>`).join('')}
+            </ul>
+          </div>
+
+          <!-- Makeup Colors -->
+          <div class="card-section">
+            <h3 class="section-title">
+              <i class="fas fa-paint-brush" style="color: var(--primary);"></i>
+              Palette Makeup
+            </h3>
+            
+            <div style="margin-bottom: 15px;">
+              <div class="info-label" style="margin-bottom: 8px;">Ombretti</div>
+              <div class="color-palette">
+                ${report.recommendations.makeupColors.eyeshadows.map(c => `
+                  <div class="color-item">
+                    <div class="swatch" style="background: ${c.hex}"></div>
+                    <span>${c.name}</span>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+
+            <div style="margin-bottom: 15px;">
+              <div class="info-label" style="margin-bottom: 8px;">Rossetti</div>
+              <div class="color-palette">
+                ${report.recommendations.makeupColors.lipsticks.map(c => `
+                  <div class="color-item">
+                    <div class="swatch" style="background: ${c.hex}"></div>
+                    <span>${c.name}</span>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+
+            <div>
+              <div class="info-label" style="margin-bottom: 8px;">Blush</div>
+              <div class="color-palette">
+                ${report.recommendations.makeupColors.blush.map(c => `
+                  <div class="color-item">
+                    <div class="swatch" style="background: ${c.hex}"></div>
+                    <span>${c.name}</span>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <button class="btn" onclick="proceedToSpecchioMagico()" style="width: 100%; margin-top: 20px;">
+          <i class="fas fa-arrow-right"></i> Procedi a Specchio Magico
+        </button>
       `;
-      document.getElementById('ai-recommendations').innerHTML = recsHTML;
     }
 
-    function generateMockAnalysis() {
+    function generateMockReport() {
       return {
-        age: { estimated: 34, range: "30-40" },
-        gender: { detected: "F", confidence: 0.95 },
-        skinTone: { category: "Medium", undertone: "Warm", hex: "#d4a891" },
+        age: { range: "40-50 anni" },
+        gender: { detected: "F", confidence: 0.98 },
+        skinTone: { category: "Medio-Chiaro", undertone: "Neutral-Warm", hex: "#D8A68C" },
+        faceShape: "Round",
+        eyeColor: { color: "Grigio-Azzurro", hex: "#637B85" },
         hairAnalysis: {
-          naturalColor: { level: 5, tone: "Warm Brown" },
-          texture: { type: "2B", porosity: "Medium" },
-          density: "Medium-High",
-          greyPercentage: 15,
-          damage: { level: "Low", concerns: [] }
+          naturalColor: { level: 4, tone: "Neutrale", hex: "#4A3A2F" },
+          texture: { type: "2C (Onde marcate)", porosity: "High" },
+          density: "Medium",
+          length: "Media (alle spalle)",
+          greyPercentage: 20,
+          damage: { level: "Medium", concerns: ["Frizz eccessivo", "Secchezza"] },
+          scalpHealth: { condition: "Sensibile", concerns: ["Lieve rossore"] }
         },
-        faceShape: "Oval",
         recommendations: {
-          suitableHaircuts: ["Long Bob", "Layered Cut"],
-          colorSuggestions: ["Warm Tones", "Caramel Highlights"],
-          avoidColors: ["Ash Tones", "Cool Platinum"]
+          salonTreatments: [
+            "Trattamento Ricostruzione Profonda (Cheratina)",
+            "Gloss Tonalizzante",
+            "Taglio Punte"
+          ],
+          retailProducts: [
+            "Shampoo Idratante Ristrutturante",
+            "Maschera Intensiva per Ricci",
+            "Crema Leave-in Definizione"
+          ],
+          makeupColors: {
+            eyeshadows: [
+              { name: "Bronzo Caldo", hex: "#B87333" },
+              { name: "Malva", hex: "#856D6E" }
+            ],
+            lipsticks: [
+              { name: "Rosa Pesca", hex: "#E8A398" },
+              { name: "Mauve", hex: "#A47F7F" }
+            ],
+            blush: [
+              { name: "Corallo Tenue", hex: "#E49B80" }
+            ]
+          }
         }
       };
     }
@@ -912,19 +1191,19 @@
     // NAVIGATION
     // ========================================
 
-    function proceedToColorimetry() {
+    function proceedToSpecchioMagico() {
       const urlParams = getURLParams();
       
       navigateWithParams('./specchio-magico.html', {
         owner: urlParams.owner,
         token: urlParams.token,
-        gender: analysisData.gender.detected || 'F',
+        gender: reportData.gender.detected || 'F',
         fromPhotoSession: 'true'
       });
     }
 
     function goBack() {
-      if (currentStep > 0) {
+      if (currentStep > 0 && !photos[PHOTO_STEPS[currentStep]]) {
         currentStep--;
         startCurrentStep();
       } else {
