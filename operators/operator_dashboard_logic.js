@@ -166,7 +166,7 @@ function mapStakeholderToDashboard(stakeholder) {
       linked_owner: {
         vat_number: stakeholder.system_access?.linked_owner?.vat_number || '',
         ragione_sociale: stakeholder.system_access?.linked_owner?.company_name || 'Company',
-        logo_url: null // TODO: add to owner
+        logo_url: null
       }
     },
     
@@ -189,7 +189,6 @@ function mapStakeholderToDashboard(stakeholder) {
 function parseCertifications(certString) {
   if (!certString) return [];
   
-  // Parse "Corso HACCP (2017), Corso Tecnico (2015), ..."
   const certArray = certString.split(',').map(c => c.trim());
   
   return certArray.map(cert => {
@@ -198,7 +197,7 @@ function parseCertifications(certString) {
     const title = cert.replace(/\(\d{4}\)/, '').trim();
     
     return { title, year };
-  }).slice(0, 5); // Max 5 certifications
+  }).slice(0, 5);
 }
 
 function calculateCompletedQuestions(softSkillsModules) {
@@ -233,7 +232,6 @@ function getCompletedModules(softSkillsModules) {
 function generateWelcomeNotifications(stakeholder) {
   const notifications = [];
   
-  // Welcome notification
   notifications.push({
     id: 'welcome',
     icon: '🎉',
@@ -242,7 +240,6 @@ function generateWelcomeNotifications(stakeholder) {
     read: false
   });
   
-  // Soft skills invitation
   const softSkillsProgress = calculateSoftSkillsCompletion(stakeholder.professional_profile?.soft_skills_modules);
   if (softSkillsProgress < 100) {
     notifications.push({
@@ -254,7 +251,6 @@ function generateWelcomeNotifications(stakeholder) {
     });
   }
   
-  // Skills profile invitation
   if (!stakeholder.professional_profile?.hard_skills?.length) {
     notifications.push({
       id: 'skills',
@@ -290,9 +286,8 @@ function populateDashboard() {
     : 'oggi';
   document.getElementById('memberSince').innerText = memberSince;
   
-  // Avatar initial
-  const initial = (operatorData.identity.name?.[0] || '👤').toUpperCase();
-  document.getElementById('operator-avatar').innerText = initial;
+  // Avatar con logo owner
+  loadOwnerLogo();
   
   // Stats
   populateStats();
@@ -307,42 +302,65 @@ function populateDashboard() {
   loadNotifications();
 }
 
+function loadOwnerLogo() {
+  const ownerVat = operatorData.system_access.linked_owner.vat_number;
+  const avatarDiv = document.getElementById('operator-avatar');
+  
+  if (!ownerVat || !avatarDiv) return;
+  
+  const extensions = ['png', 'jpg', 'jpeg', 'svg'];
+  let currentIndex = 0;
+  
+  function tryLoadLogo() {
+    if (currentIndex >= extensions.length) {
+      return;
+    }
+    
+    const ext = extensions[currentIndex];
+    const logoPath = `../logos/logo_${ownerVat}.${ext}`;
+    
+    const img = new Image();
+    img.onload = function() {
+      avatarDiv.innerHTML = `<img src="${logoPath}" alt="Logo" style="width:100%; height:100%; object-fit:cover; border-radius:50%;">`;
+    };
+    img.onerror = function() {
+      currentIndex++;
+      tryLoadLogo();
+    };
+    img.src = logoPath;
+  }
+  
+  tryLoadLogo();
+}
+
 function populateStats() {
-  // Task attivi
   const activeTasks = operatorData.tasks.active;
   document.getElementById('stat-tasks').innerText = activeTasks;
   document.getElementById('sub-tasks').innerText = `${activeTasks} in corso`;
   
-  // Ore settimana
   const hoursWeek = operatorData.performance.hours_this_week;
   document.getElementById('stat-hours').innerText = `${hoursWeek}h`;
   
-  // Level (calcolo da XP)
   const xp = operatorData.gamification.xp;
   const level = calculateLevel(xp);
   document.getElementById('stat-level').innerText = level;
   
-  // Streak
   const streak = operatorData.gamification.streak;
   document.getElementById('stat-streak').innerText = streak;
   
-  // Badge
   const badgesUnlocked = operatorData.gamification.badges.length;
   document.getElementById('sub-badges').innerText = `${badgesUnlocked}/12 sbloccati`;
 }
 
 function populateGrowth() {
-  // Competenze tecniche (professional profile)
   const skillsProgress = calculateSkillsProgress();
   document.getElementById('progress-skills').style.width = `${skillsProgress}%`;
   document.getElementById('percent-skills').innerText = `${skillsProgress}%`;
   
-  // Soft skills
   const softSkillsProgress = operatorData.soft_skills.completion_percentage;
   document.getElementById('progress-softskills').style.width = `${softSkillsProgress}%`;
   document.getElementById('percent-softskills').innerText = `${softSkillsProgress}%`;
   
-  // Summary
   const avgProgress = Math.round((skillsProgress + softSkillsProgress) / 2);
   document.getElementById('sub-growth').innerText = `Profilo: ${avgProgress}%`;
 }
@@ -390,7 +408,6 @@ function calculateLevel(xp) {
 function loadRecommendedModules() {
   const container = document.getElementById('recommended-modules');
   
-  // Mock modules (da integrare con sistema formazione)
   const modules = [
     { title: 'Comunicazione Efficace', duration: '30 min', icon: '🗣️' },
     { title: 'Problem Solving', duration: '25 min', icon: '🧩' },
@@ -468,8 +485,6 @@ function navToSkills() {
 
 function goToSoftSkills() {
   tg.HapticFeedback.impactOccurred('light');
-  
-  // Redirect to softskill complete-profile
   window.location.href = `../softskill/complete-profile.html?chat_id=${chatId}&role=operator`;
 }
 
@@ -480,7 +495,7 @@ function openModule(title) {
 
 function openSettings() {
   tg.HapticFeedback.impactOccurred('light');
-  alert('⚙️ Impostazioni operatore in sviluppo');
+  window.location.href = `edit_operator.html?chat_id=${chatId}&vat=${ownerVat}`;
 }
 
 // ============================================

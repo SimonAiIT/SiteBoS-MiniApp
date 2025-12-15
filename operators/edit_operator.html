@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Modifica Profilo</title>
+  
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+
+  <!-- LOADER -->
+  <div id="loader">
+    <div class="spinner-ring"></div>
+    <div style="margin-top:10px; opacity:0.7; text-align:center;">Caricamento...</div>
+  </div>
+
+  <!-- MAIN CONTENT -->
+  <div id="app-content" class="container hidden fade-in">
+    
+    <div class="dashboard-header">
+      <div class="header-info">
+        <h1>Modifica Profilo</h1>
+        <small>Aggiorna i tuoi dati personali</small>
+      </div>
+    </div>
+
+    <form id="editForm" onsubmit="return false;">
+      
+      <!-- ANAGRAFICA -->
+      <div class="form-section">
+        <div class="form-section-title">Dati Personali</div>
+        
+        <div class="input-group">
+          <label class="required">Nome Completo</label>
+          <input type="text" id="full_name" required>
+        </div>
+        
+        <div class="input-group">
+          <label>Codice Fiscale</label>
+          <input type="text" id="tax_code" disabled style="opacity:0.5;">
+        </div>
+      </div>
+
+      <!-- CONTATTI -->
+      <div class="form-section">
+        <div class="form-section-title">Contatti</div>
+        
+        <div class="input-group">
+          <label class="required">Email</label>
+          <input type="email" id="email" required>
+        </div>
+        
+        <div class="input-group">
+          <label>Telefono</label>
+          <input type="tel" id="phone">
+        </div>
+      </div>
+
+      <!-- PROFILO PROFESSIONALE -->
+      <div class="form-section">
+        <div class="form-section-title">Profilo Professionale</div>
+        
+        <div class="input-group">
+          <label>Ruolo Attuale</label>
+          <input type="text" id="current_role" placeholder="es: AI Automation Architect">
+        </div>
+        
+        <div class="input-group">
+          <label>Anni di Esperienza</label>
+          <select id="years_experience">
+            <option value="0-2">0-2 anni</option>
+            <option value="3-5">3-5 anni</option>
+            <option value="5-10">5-10 anni</option>
+            <option value="10-15">10-15 anni</option>
+            <option value="15+">15+ anni</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- SOCIAL -->
+      <div class="form-section">
+        <div class="form-section-title">Social & Web</div>
+        
+        <div class="input-group">
+          <label><i class="fab fa-linkedin"></i> LinkedIn</label>
+          <input type="url" id="linkedin" placeholder="https://linkedin.com/in/...">
+        </div>
+      </div>
+
+      <div style="height:80px;"></div>
+
+    </form>
+  </div>
+
+  <!-- FAB CONTAINER -->
+  <div class="fab-container">
+    <button class="fab-btn fab-secondary" onclick="goBack()" title="Torna alla Dashboard">
+      <i class="fas fa-arrow-left"></i>
+    </button>
+    
+    <button class="fab-btn" id="saveBtn" disabled title="Salva Modifiche">
+      <i class="fas fa-save"></i>
+    </button>
+  </div>
+
+  <script src="edit_operator_logic.js"></script>
+</body>
+</html>
