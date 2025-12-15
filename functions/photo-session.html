@@ -91,7 +91,7 @@
       width: 100%;
       height: 100%;
       object-fit: cover;
-      cursor: crosshair; /* Indica che è tappabile */
+      cursor: crosshair;
     }
 
     .guide-overlay {
@@ -149,7 +149,6 @@
       max-width: 90%;
     }
 
-    /* TAP-TO-FOCUS INDICATOR */
     .focus-indicator {
       position: absolute;
       width: 80px;
@@ -169,7 +168,6 @@
       opacity: 1;
     }
 
-    /* TAP HINT */
     .tap-hint {
       position: absolute;
       top: 20px;
@@ -313,7 +311,6 @@
       background: rgba(91, 111, 237, 0.1);
     }
 
-    /* CLIENT CARD */
     .client-card {
       background: linear-gradient(135deg, var(--glass-bg), rgba(91, 111, 237, 0.1));
       border: 1px solid var(--glass-border);
@@ -401,30 +398,6 @@
       box-shadow: 0 2px 8px rgba(0,0,0,0.2);
     }
 
-    .recommendations-box {
-      background: rgba(76, 217, 100, 0.1);
-      border-left: 3px solid var(--success);
-      padding: 15px;
-      border-radius: 8px;
-      margin: 15px 0;
-    }
-
-    .recommendations-box h4 {
-      margin: 0 0 10px 0;
-      font-size: 14px;
-      color: var(--success);
-    }
-
-    .recommendations-box ul {
-      margin: 10px 0;
-      padding-left: 20px;
-    }
-
-    .recommendations-box li {
-      margin: 5px 0;
-      font-size: 13px;
-    }
-
     .color-palette {
       display: flex;
       flex-wrap: wrap;
@@ -457,7 +430,6 @@
 </head>
 <body>
 
-  <!-- LOADER -->
   <div id="loader" class="hidden" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center;">
     <div class="spinner-ring"></div>
     <div style="margin-top:15px; opacity:0.8; text-align:center; font-size: 14px;" id="loader-text">Analisi AI in corso...</div>
@@ -465,7 +437,6 @@
 
   <div class="photo-session-container">
     
-    <!-- HEADER -->
     <div class="session-header">
       <h1 style="font-size: 22px; margin: 0;">
         <i class="fas fa-camera-retro" style="color: var(--primary);"></i>
@@ -476,7 +447,6 @@
       </p>
     </div>
 
-    <!-- PROGRESS BAR -->
     <div class="session-progress">
       <div class="progress-line"></div>
       <div class="progress-line-filled" id="progress-fill" style="width: 0%;"></div>
@@ -485,7 +455,6 @@
       <div class="progress-step" id="step-3">3</div>
     </div>
 
-    <!-- THUMBNAILS PREVIEW -->
     <div class="thumbnails-grid">
       <div class="thumbnail" id="thumb-front" onclick="retakePhoto('front')">
         <div class="thumbnail-empty">
@@ -507,14 +476,12 @@
       </div>
     </div>
 
-    <!-- CAMERA SECTION -->
     <div id="camera-section" class="hidden">
       <div class="camera-guide">
         <video id="camera-video" class="camera-video" autoplay playsinline></video>
         <canvas id="camera-canvas" style="display: none;"></canvas>
         
         <div class="guide-overlay">
-          <!-- Tap hint (solo per foto 2 e 3) -->
           <div class="tap-hint hidden" id="tap-hint">
             <span>🎯</span>
             <span>Tocca per mettere a fuoco</span>
@@ -549,45 +516,21 @@
       </div>
     </div>
 
-    <!-- ANALYSIS/REPORT SECTION -->
-    <div id="analysis-section" class="hidden">
-      <!-- Client card populated by displayReport() -->
-    </div>
+    <div id="analysis-section" class="hidden"></div>
 
   </div>
 
-  <!-- FAB BACK BUTTON -->
   <button class="fab-btn fab-secondary" onclick="goBack()" style="position: fixed; bottom: 20px; left: 20px; width: 56px; height: 56px; border-radius: 50%; background: var(--secondary); border: none; box-shadow: 0 4px 12px rgba(0,0,0,0.3); cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 1000;">
     <i class="fas fa-arrow-left" style="color: white; font-size: 20px;"></i>
   </button>
 
   <script src="../url-params-manager.js"></script>
   <script>
-    // ========================================
-    // PHOTO SESSION ENGINE v4.0
-    // - 3 Photos: Frontale, Dettaglio Capelli, Cute
-    // - Tap-to-Focus con manual focus mode
-    // - Report completo con HEX colors
-    // - SessionStorage ONLY
-    // ========================================
-
     const PHOTO_STEPS = ['front', 'hairDetail', 'scalp'];
     const GUIDE_CONFIG = {
-      front: {
-        text: 'Viso frontale, sguardo dritto',
-        class: '',
-        tapToFocus: false
-      },
-      hairDetail: {
-        text: 'Inquadra una ciocca da vicino. Tocca per mettere a fuoco.',
-        class: 'hairDetail',
-        tapToFocus: true
-      },
-      scalp: {
-        text: 'Cute e radici, zona superiore testa',
-        class: 'scalp',
-        tapToFocus: true
-      }
+      front: { text: 'Viso frontale, sguardo dritto', class: '', tapToFocus: false },
+      hairDetail: { text: 'Inquadra una ciocca da vicino. Tocca per mettere a fuoco.', class: 'hairDetail', tapToFocus: true },
+      scalp: { text: 'Cute e radici, zona superiore testa', class: 'scalp', tapToFocus: true }
     };
 
     let currentStep = 0;
@@ -597,12 +540,7 @@
     let reportData = null;
     let clientId = null;
 
-    // AI WEBHOOK
     const AI_WEBHOOK = 'https://trinai.api.workflow.dcmake.it/webhook/5364bb15-4186-4246-8d00-c82218f5e407';
-
-    // ========================================
-    // INIT
-    // ========================================
 
     window.addEventListener('DOMContentLoaded', () => {
       console.log('📸 Photo Session v4.0 initialized');
@@ -610,13 +548,8 @@
       startCurrentStep();
     });
 
-    // ========================================
-    // STEP NAVIGATION
-    // ========================================
-
     function startCurrentStep() {
       const stepName = PHOTO_STEPS[currentStep];
-      
       updateProgress();
       
       if (photos[stepName]) {
@@ -627,7 +560,6 @@
       
       document.getElementById('camera-section').classList.remove('hidden');
       document.getElementById('analysis-section').classList.add('hidden');
-      
       updateGuide(stepName);
       initCamera();
     }
@@ -639,39 +571,22 @@
       PHOTO_STEPS.forEach((step, index) => {
         const stepEl = document.getElementById(`step-${index + 1}`);
         stepEl.classList.remove('active', 'completed');
-        
-        if (index < currentStep) {
-          stepEl.classList.add('completed');
-        } else if (index === currentStep) {
-          stepEl.classList.add('active');
-        }
+        if (index < currentStep) stepEl.classList.add('completed');
+        else if (index === currentStep) stepEl.classList.add('active');
       });
     }
 
     function updateGuide(stepName) {
       const config = GUIDE_CONFIG[stepName];
-      const silhouette = document.getElementById('guide-silhouette');
-      const tapHint = document.getElementById('tap-hint');
-      
-      silhouette.className = 'guide-silhouette ' + config.class;
+      document.getElementById('guide-silhouette').className = 'guide-silhouette ' + config.class;
       document.getElementById('guide-text').textContent = config.text;
-      
-      // Show/hide tap hint
-      if (config.tapToFocus) {
-        tapHint.classList.remove('hidden');
-      } else {
-        tapHint.classList.add('hidden');
-      }
+      document.getElementById('tap-hint').classList.toggle('hidden', !config.tapToFocus);
     }
 
     function nextStep() {
       currentStep++;
-      
-      if (currentStep >= PHOTO_STEPS.length) {
-        completeSession();
-      } else {
-        startCurrentStep();
-      }
+      if (currentStep >= PHOTO_STEPS.length) completeSession();
+      else startCurrentStep();
     }
 
     function retakePhoto(stepName) {
@@ -679,47 +594,23 @@
       if (stepIndex === -1) return;
       
       photos[stepName] = null;
+      const icons = { front: 'user', hairDetail: 'cut', scalp: 'head-side-virus' };
+      const labels = { front: 'Frontale', hairDetail: 'Capelli', scalp: 'Cute' };
       
       const thumb = document.getElementById(`thumb-${stepName}`);
-      thumb.innerHTML = `
-        <div class="thumbnail-empty">
-          <div class="thumbnail-icon"><i class="fas fa-${getStepIcon(stepName)}"></i></div>
-          <div>${getStepLabel(stepName)}</div>
-        </div>
-      `;
+      thumb.innerHTML = `<div class="thumbnail-empty"><div class="thumbnail-icon"><i class="fas fa-${icons[stepName]}"></i></div><div>${labels[stepName]}</div></div>`;
       thumb.classList.remove('captured');
       
       currentStep = stepIndex;
       startCurrentStep();
     }
 
-    function getStepIcon(stepName) {
-      const icons = { front: 'user', hairDetail: 'cut', scalp: 'head-side-virus' };
-      return icons[stepName] || 'user';
-    }
-
-    function getStepLabel(stepName) {
-      const labels = { front: 'Frontale', hairDetail: 'Capelli', scalp: 'Cute' };
-      return labels[stepName] || stepName;
-    }
-
-    // ========================================
-    // CAMERA + TAP-TO-FOCUS
-    // ========================================
-
     async function initCamera() {
       try {
-        if (cameraStream) {
-          cameraStream.getTracks().forEach(track => track.stop());
-        }
+        if (cameraStream) cameraStream.getTracks().forEach(track => track.stop());
         
         const stream = await navigator.mediaDevices.getUserMedia({
-          video: {
-            facingMode: usingFrontCamera ? 'user' : 'environment',
-            width: { ideal: 1280 },
-            height: { ideal: 1920 },
-            focusMode: 'manual' // Try manual focus
-          },
+          video: { facingMode: usingFrontCamera ? 'user' : 'environment', width: { ideal: 1280 }, height: { ideal: 1920 }, focusMode: 'manual' },
           audio: false
         });
         
@@ -727,7 +618,6 @@
         const video = document.getElementById('camera-video');
         video.srcObject = stream;
         
-        // Attach tap-to-focus if enabled for current step
         const stepName = PHOTO_STEPS[currentStep];
         if (GUIDE_CONFIG[stepName].tapToFocus) {
           video.addEventListener('click', handleTapToFocus);
@@ -743,8 +633,6 @@
     function handleTapToFocus(event) {
       const video = event.target;
       const rect = video.getBoundingClientRect();
-      
-      // Calculate relative coordinates (0-1)
       const x = (event.clientX - rect.left) / rect.width;
       const y = (event.clientY - rect.top) / rect.height;
       
@@ -758,15 +646,10 @@
       const track = cameraStream.getVideoTracks()[0];
       const capabilities = track.getCapabilities();
       
-      // Try manual focus with points of interest
       if (capabilities.focusMode && capabilities.focusMode.includes('manual')) {
         try {
           await track.applyConstraints({
-            advanced: [{
-              focusMode: 'manual',
-              focusDistance: 0.2, // Close-up (macro) for hair detail
-              pointsOfInterest: [{ x: x, y: y }]
-            }]
+            advanced: [{ focusMode: 'manual', focusDistance: 0.2, pointsOfInterest: [{ x: x, y: y }] }]
           });
           console.log(`🎯 Focus applied at (${x.toFixed(2)}, ${y.toFixed(2)})`);
         } catch (err) {
@@ -781,9 +664,7 @@
       indicator.className = 'focus-indicator';
       indicator.style.left = `${clientX}px`;
       indicator.style.top = `${clientY}px`;
-      
       document.body.appendChild(indicator);
-      
       setTimeout(() => indicator.classList.add('focused'), 10);
       setTimeout(() => indicator.remove(), 1000);
     }
@@ -798,16 +679,9 @@
         cameraStream.getTracks().forEach(track => track.stop());
         cameraStream = null;
       }
-      
-      const video = document.getElementById('camera-video');
-      video.removeEventListener('click', handleTapToFocus);
-      
+      document.getElementById('camera-video').removeEventListener('click', handleTapToFocus);
       document.getElementById('camera-section').classList.add('hidden');
     }
-
-    // ========================================
-    // CAPTURE & COMPRESS
-    // ========================================
 
     function capturePhoto() {
       const video = document.getElementById('camera-video');
@@ -830,11 +704,7 @@
     function uploadPhoto(event) {
       const file = event.target.files[0];
       if (!file) return;
-      
-      if (file.size > 10 * 1024 * 1024) {
-        alert('⚠️ File troppo grande. Max 10 MB.');
-        return;
-      }
+      if (file.size > 10 * 1024 * 1024) { alert('⚠️ File troppo grande. Max 10 MB.'); return; }
       
       const reader = new FileReader();
       reader.onload = (e) => {
@@ -842,21 +712,12 @@
         img.onload = () => {
           const canvas = document.createElement('canvas');
           const ctx = canvas.getContext('2d');
+          let width = img.width, height = img.height, maxDim = 800;
           
-          let width = img.width;
-          let height = img.height;
-          const maxDim = 800;
+          if (width > height && width > maxDim) { height = (height / width) * maxDim; width = maxDim; }
+          else if (height > maxDim) { width = (width / height) * maxDim; height = maxDim; }
           
-          if (width > height && width > maxDim) {
-            height = (height / width) * maxDim;
-            width = maxDim;
-          } else if (height > maxDim) {
-            width = (width / height) * maxDim;
-            height = maxDim;
-          }
-          
-          canvas.width = width;
-          canvas.height = height;
+          canvas.width = width; canvas.height = height;
           ctx.drawImage(img, 0, 0, width, height);
           
           compressImage(canvas, (compressedBase64) => {
@@ -873,20 +734,14 @@
     }
 
     function compressImage(canvas, callback) {
-      let width = canvas.width;
-      let height = canvas.height;
-      const maxDim = 800;
+      let width = canvas.width, height = canvas.height, maxDim = 800;
       
       if (width > maxDim || height > maxDim) {
         const scale = maxDim / Math.max(width, height);
-        width *= scale;
-        height *= scale;
-        
+        width *= scale; height *= scale;
         const tempCanvas = document.createElement('canvas');
-        tempCanvas.width = width;
-        tempCanvas.height = height;
-        const tempCtx = tempCanvas.getContext('2d');
-        tempCtx.drawImage(canvas, 0, 0, width, height);
+        tempCanvas.width = width; tempCanvas.height = height;
+        tempCanvas.getContext('2d').drawImage(canvas, 0, 0, width, height);
         canvas = tempCanvas;
       }
       
@@ -901,19 +756,13 @@
       thumb.classList.add('captured');
     }
 
-    // ========================================
-    // SESSION COMPLETE + AI ANALYSIS
-    // ========================================
-
     function completeSession() {
       console.log('✅ All 3 photos captured');
       stopCamera();
-      
       document.getElementById('progress-fill').style.width = '100%';
       PHOTO_STEPS.forEach((step, index) => {
         document.getElementById(`step-${index + 1}`).classList.add('completed');
       });
-      
       analyzePhotos();
     }
 
@@ -921,23 +770,23 @@
       showLoader('🤖 Analisi AI in corso...');
       
       const urlParams = getURLParams();
-      
       const payload = {
         action: 'analyze',
         owner: urlParams.owner,
         token: urlParams.token,
         body: {
           photos: {
-            front: { base64: photos.front.split(',')[1], mimeType: 'image/jpeg' },
-            hairDetail: { base64: photos.hairDetail.split(',')[1], mimeType: 'image/jpeg' },
-            scalp: { base64: photos.scalp.split(',')[1], mimeType: 'image/jpeg' }
+            front: { base64: photos.front.split(',')[1], mimeType: 'image/jpeg', size: Math.round(photos.front.length / 1024) },
+            hairDetail: { base64: photos.hairDetail.split(',')[1], mimeType: 'image/jpeg', size: Math.round(photos.hairDetail.length / 1024) },
+            scalp: { base64: photos.scalp.split(',')[1], mimeType: 'image/jpeg', size: Math.round(photos.scalp.length / 1024) }
           }
         },
         timestamp: Date.now()
       };
       
       try {
-        console.log('📤 Sending to AI webhook:', AI_WEBHOOK);
+        console.log('📤 Calling AI webhook:', AI_WEBHOOK);
+        console.log('📦 Payload size:', JSON.stringify(payload).length / 1024, 'KB');
         
         const response = await fetch(AI_WEBHOOK, {
           method: 'POST',
@@ -946,26 +795,34 @@
         });
         
         if (!response.ok) {
-          throw new Error(`HTTP ${response.status}`);
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         }
         
         const data = await response.json();
         console.log('📦 AI Response:', data);
         
-        if (data.success && data.report) {
-          reportData = data.report;
-          saveToSessionStorage();
-          displayReport();
-        } else {
-          throw new Error('Invalid response structure');
+        if (!data.success) {
+          throw new Error(data.error?.message || 'Analisi fallita');
         }
-      } catch (error) {
-        console.error('❌ Analysis error:', error);
         
-        // Mock data for development
-        reportData = generateMockReport();
+        if (!data.report) {
+          throw new Error('Report mancante nella response');
+        }
+        
+        reportData = data.report;
         saveToSessionStorage();
         displayReport();
+        
+      } catch (error) {
+        console.error('❌ Analysis error:', error);
+        hideLoader();
+        
+        if (confirm(`Errore analisi AI: ${error.message}\n\nRitentare?`)) {
+          analyzePhotos();
+        } else {
+          alert('Analisi fallita. Torna indietro e riprova.');
+        }
+        return;
       }
       
       hideLoader();
@@ -978,7 +835,6 @@
         report: reportData,
         timestamp: Date.now()
       };
-      
       sessionStorage.setItem('photoSessionData', JSON.stringify(sessionData));
       console.log('💾 Saved to sessionStorage:', clientId);
     }
@@ -1001,199 +857,51 @@
             </div>
           </div>
 
-          <!-- Skin & Face -->
           <div class="card-section">
-            <h3 class="section-title">
-              <i class="fas fa-palette" style="color: var(--warning);"></i>
-              Pelle & Viso
-            </h3>
+            <h3 class="section-title"><i class="fas fa-palette" style="color: var(--warning);"></i> Pelle & Viso</h3>
             <div class="info-grid">
-              <div class="info-item">
-                <div class="info-label">Tono Pelle</div>
-                <div class="info-value">
-                  ${report.skinTone.category}
-                  <span class="color-swatch" style="background: ${report.skinTone.hex}"></span>
-                </div>
-              </div>
-              <div class="info-item">
-                <div class="info-label">Sottotono</div>
-                <div class="info-value">${report.skinTone.undertone}</div>
-              </div>
-              <div class="info-item">
-                <div class="info-label">Forma Viso</div>
-                <div class="info-value">${report.faceShape}</div>
-              </div>
-              <div class="info-item">
-                <div class="info-label">Colore Occhi</div>
-                <div class="info-value">
-                  ${report.eyeColor.color}
-                  <span class="color-swatch" style="background: ${report.eyeColor.hex}"></span>
-                </div>
-              </div>
+              <div class="info-item"><div class="info-label">Tono Pelle</div><div class="info-value">${report.skinTone.category}<span class="color-swatch" style="background: ${report.skinTone.hex}"></span></div></div>
+              <div class="info-item"><div class="info-label">Sottotono</div><div class="info-value">${report.skinTone.undertone}</div></div>
+              <div class="info-item"><div class="info-label">Forma Viso</div><div class="info-value">${report.faceShape}</div></div>
+              <div class="info-item"><div class="info-label">Colore Occhi</div><div class="info-value">${report.eyeColor.color}<span class="color-swatch" style="background: ${report.eyeColor.hex}"></span></div></div>
             </div>
           </div>
 
-          <!-- Hair Analysis -->
           <div class="card-section">
-            <h3 class="section-title">
-              <i class="fas fa-cut" style="color: var(--primary);"></i>
-              Analisi Capelli
-            </h3>
+            <h3 class="section-title"><i class="fas fa-cut" style="color: var(--primary);"></i> Analisi Capelli</h3>
             <div class="info-grid">
-              <div class="info-item">
-                <div class="info-label">Colore Naturale</div>
-                <div class="info-value">
-                  Liv. ${report.hairAnalysis.naturalColor.level}
-                  <span class="color-swatch" style="background: ${report.hairAnalysis.naturalColor.hex}"></span>
-                </div>
-              </div>
-              <div class="info-item">
-                <div class="info-label">Texture</div>
-                <div class="info-value">${report.hairAnalysis.texture.type}</div>
-              </div>
-              <div class="info-item">
-                <div class="info-label">Densità</div>
-                <div class="info-value">${report.hairAnalysis.density}</div>
-              </div>
-              <div class="info-item">
-                <div class="info-label">Bianchi</div>
-                <div class="info-value">${report.hairAnalysis.greyPercentage}%</div>
-              </div>
-              <div class="info-item">
-                <div class="info-label">Danno</div>
-                <div class="info-value">${report.hairAnalysis.damage.level}</div>
-              </div>
-              <div class="info-item">
-                <div class="info-label">Cute</div>
-                <div class="info-value">${report.hairAnalysis.scalpHealth.condition}</div>
-              </div>
+              <div class="info-item"><div class="info-label">Colore Naturale</div><div class="info-value">Liv. ${report.hairAnalysis.naturalColor.level}<span class="color-swatch" style="background: ${report.hairAnalysis.naturalColor.hex}"></span></div></div>
+              <div class="info-item"><div class="info-label">Texture</div><div class="info-value">${report.hairAnalysis.texture.type}</div></div>
+              <div class="info-item"><div class="info-label">Densità</div><div class="info-value">${report.hairAnalysis.density}</div></div>
+              <div class="info-item"><div class="info-label">Bianchi</div><div class="info-value">${report.hairAnalysis.greyPercentage}%</div></div>
+              <div class="info-item"><div class="info-label">Danno</div><div class="info-value">${report.hairAnalysis.damage.level}</div></div>
+              <div class="info-item"><div class="info-label">Cute</div><div class="info-value">${report.hairAnalysis.scalpHealth.condition}</div></div>
             </div>
           </div>
 
-          <!-- Treatments -->
           <div class="card-section">
-            <h3 class="section-title">
-              <i class="fas fa-spa" style="color: var(--success);"></i>
-              Trattamenti Consigliati
-            </h3>
-            <ul style="padding-left: 20px; margin: 10px 0;">
-              ${report.recommendations.salonTreatments.map(t => `<li style="margin: 8px 0; font-size: 14px;">${t}</li>`).join('')}
-            </ul>
+            <h3 class="section-title"><i class="fas fa-spa" style="color: var(--success);"></i> Trattamenti Consigliati</h3>
+            <ul style="padding-left: 20px; margin: 10px 0;">${report.recommendations.salonTreatments.map(t => `<li style="margin: 8px 0; font-size: 14px;">${t}</li>`).join('')}</ul>
           </div>
 
-          <!-- Retail Products -->
           <div class="card-section">
-            <h3 class="section-title">
-              <i class="fas fa-shopping-bag" style="color: var(--warning);"></i>
-              Prodotti Retail
-            </h3>
-            <ul style="padding-left: 20px; margin: 10px 0;">
-              ${report.recommendations.retailProducts.map(p => `<li style="margin: 8px 0; font-size: 14px;">${p}</li>`).join('')}
-            </ul>
+            <h3 class="section-title"><i class="fas fa-shopping-bag" style="color: var(--warning);"></i> Prodotti Retail</h3>
+            <ul style="padding-left: 20px; margin: 10px 0;">${report.recommendations.retailProducts.map(p => `<li style="margin: 8px 0; font-size: 14px;">${p}</li>`).join('')}</ul>
           </div>
 
-          <!-- Makeup Colors -->
           <div class="card-section">
-            <h3 class="section-title">
-              <i class="fas fa-paint-brush" style="color: var(--primary);"></i>
-              Palette Makeup
-            </h3>
-            
-            <div style="margin-bottom: 15px;">
-              <div class="info-label" style="margin-bottom: 8px;">Ombretti</div>
-              <div class="color-palette">
-                ${report.recommendations.makeupColors.eyeshadows.map(c => `
-                  <div class="color-item">
-                    <div class="swatch" style="background: ${c.hex}"></div>
-                    <span>${c.name}</span>
-                  </div>
-                `).join('')}
-              </div>
-            </div>
-
-            <div style="margin-bottom: 15px;">
-              <div class="info-label" style="margin-bottom: 8px;">Rossetti</div>
-              <div class="color-palette">
-                ${report.recommendations.makeupColors.lipsticks.map(c => `
-                  <div class="color-item">
-                    <div class="swatch" style="background: ${c.hex}"></div>
-                    <span>${c.name}</span>
-                  </div>
-                `).join('')}
-              </div>
-            </div>
-
-            <div>
-              <div class="info-label" style="margin-bottom: 8px;">Blush</div>
-              <div class="color-palette">
-                ${report.recommendations.makeupColors.blush.map(c => `
-                  <div class="color-item">
-                    <div class="swatch" style="background: ${c.hex}"></div>
-                    <span>${c.name}</span>
-                  </div>
-                `).join('')}
-              </div>
-            </div>
+            <h3 class="section-title"><i class="fas fa-paint-brush" style="color: var(--primary);"></i> Palette Makeup</h3>
+            <div style="margin-bottom: 15px;"><div class="info-label" style="margin-bottom: 8px;">Ombretti</div><div class="color-palette">${report.recommendations.makeupColors.eyeshadows.map(c => `<div class="color-item"><div class="swatch" style="background: ${c.hex}"></div><span>${c.name}</span></div>`).join('')}</div></div>
+            <div style="margin-bottom: 15px;"><div class="info-label" style="margin-bottom: 8px;">Rossetti</div><div class="color-palette">${report.recommendations.makeupColors.lipsticks.map(c => `<div class="color-item"><div class="swatch" style="background: ${c.hex}"></div><span>${c.name}</span></div>`).join('')}</div></div>
+            <div><div class="info-label" style="margin-bottom: 8px;">Blush</div><div class="color-palette">${report.recommendations.makeupColors.blush.map(c => `<div class="color-item"><div class="swatch" style="background: ${c.hex}"></div><span>${c.name}</span></div>`).join('')}</div></div>
           </div>
         </div>
-
-        <button class="btn" onclick="proceedToSpecchioMagico()" style="width: 100%; margin-top: 20px;">
-          <i class="fas fa-arrow-right"></i> Procedi a Specchio Magico
-        </button>
+        <button class="btn" onclick="proceedToSpecchioMagico()" style="width: 100%; margin-top: 20px;"><i class="fas fa-arrow-right"></i> Procedi a Specchio Magico</button>
       `;
     }
 
-    function generateMockReport() {
-      return {
-        age: { range: "40-50 anni" },
-        gender: { detected: "F", confidence: 0.98 },
-        skinTone: { category: "Medio-Chiaro", undertone: "Neutral-Warm", hex: "#D8A68C" },
-        faceShape: "Round",
-        eyeColor: { color: "Grigio-Azzurro", hex: "#637B85" },
-        hairAnalysis: {
-          naturalColor: { level: 4, tone: "Neutrale", hex: "#4A3A2F" },
-          texture: { type: "2C (Onde marcate)", porosity: "High" },
-          density: "Medium",
-          length: "Media (alle spalle)",
-          greyPercentage: 20,
-          damage: { level: "Medium", concerns: ["Frizz eccessivo", "Secchezza"] },
-          scalpHealth: { condition: "Sensibile", concerns: ["Lieve rossore"] }
-        },
-        recommendations: {
-          salonTreatments: [
-            "Trattamento Ricostruzione Profonda (Cheratina)",
-            "Gloss Tonalizzante",
-            "Taglio Punte"
-          ],
-          retailProducts: [
-            "Shampoo Idratante Ristrutturante",
-            "Maschera Intensiva per Ricci",
-            "Crema Leave-in Definizione"
-          ],
-          makeupColors: {
-            eyeshadows: [
-              { name: "Bronzo Caldo", hex: "#B87333" },
-              { name: "Malva", hex: "#856D6E" }
-            ],
-            lipsticks: [
-              { name: "Rosa Pesca", hex: "#E8A398" },
-              { name: "Mauve", hex: "#A47F7F" }
-            ],
-            blush: [
-              { name: "Corallo Tenue", hex: "#E49B80" }
-            ]
-          }
-        }
-      };
-    }
-
-    // ========================================
-    // NAVIGATION
-    // ========================================
-
     function proceedToSpecchioMagico() {
       const urlParams = getURLParams();
-      
       navigateWithParams('./specchio-magico.html', {
         owner: urlParams.owner,
         token: urlParams.token,
@@ -1203,20 +911,13 @@
     }
 
     function goBack() {
-      if (currentStep > 0 && !photos[PHOTO_STEPS[currentStep]]) {
-        currentStep--;
-        startCurrentStep();
-      } else {
-        navigateWithParams('./index.html', getURLParams());
-      }
+      if (currentStep > 0 && !photos[PHOTO_STEPS[currentStep]]) { currentStep--; startCurrentStep(); }
+      else { navigateWithParams('./index.html', getURLParams()); }
     }
 
     function getURLParams() {
       const urlParams = new URLSearchParams(window.location.search);
-      return {
-        owner: urlParams.get('owner') || '',
-        token: urlParams.get('token') || ''
-      };
+      return { owner: urlParams.get('owner') || '', token: urlParams.get('token') || '' };
     }
 
     function showLoader(text) {
@@ -1228,6 +929,5 @@
       document.getElementById('loader').classList.add('hidden');
     }
   </script>
-
 </body>
 </html>
