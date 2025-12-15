@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Dashboard Operatore</title>
+  
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+
+  <!-- LOADER -->
+  <div id="loader">
+    <div class="spinner-ring"></div>
+    <div style="margin-top:10px; opacity:0.7; text-align:center;">Caricamento Dashboard...</div>
+  </div>
+
+  <!-- MAIN CONTENT -->
+  <div id="app-content" class="container hidden fade-in">
+    
+    <!-- HEADER OPERATOR -->
+    <div class="dashboard-header">
+      <div class="header-info">
+        <div style="display:flex; align-items:center; gap:12px;">
+          <div class="avatar-circle" id="operator-avatar" style="width:50px; height:50px; font-size:20px;">
+            👤
+          </div>
+          <div>
+            <h1 id="operatorName" style="font-size:18px; margin:0;">Operatore</h1>
+            <small id="operatorRole" style="color:var(--text-muted); font-size:12px;">Ruolo</small>
+            <small id="companyInfo" style="display:block; color:var(--text-secondary); font-size:11px; margin-top:2px;">
+              🏢 <span id="companyName">Company</span> • Attivo dal <span id="memberSince">...</span>
+            </small>
+          </div>
+        </div>
+      </div>
+      
+      <div class="header-actions" style="display:flex; align-items:center; gap:8px;">
+        <button class="btn-icon" onclick="openSettings()" title="Impostazioni">
+          <i class="fas fa-cog"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- QUICK STATS GAMIFICATI -->
+    <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:10px; margin-bottom:20px;">
+      <div class="stat-box" style="text-align:center; background:rgba(255,255,255,0.05); padding:12px; border-radius:12px; border:1px solid var(--glass-border);">
+        <div style="font-size:20px; margin-bottom:4px;">🎯</div>
+        <div id="stat-tasks" style="font-size:20px; font-weight:700; color:var(--primary);">0</div>
+        <div style="font-size:9px; color:var(--text-muted); text-transform:uppercase; margin-top:2px;">Task</div>
+      </div>
+      
+      <div class="stat-box" style="text-align:center; background:rgba(255,255,255,0.05); padding:12px; border-radius:12px; border:1px solid var(--glass-border);">
+        <div style="font-size:20px; margin-bottom:4px;">⏱️</div>
+        <div id="stat-hours" style="font-size:20px; font-weight:700; color:var(--success);">0h</div>
+        <div style="font-size:9px; color:var(--text-muted); text-transform:uppercase; margin-top:2px;">Ore</div>
+      </div>
+      
+      <div class="stat-box" style="text-align:center; background:rgba(255,255,255,0.05); padding:12px; border-radius:12px; border:1px solid var(--glass-border);">
+        <div style="font-size:20px; margin-bottom:4px;">🏆</div>
+        <div id="stat-level" style="font-size:20px; font-weight:700; color:var(--warning);">1</div>
+        <div style="font-size:9px; color:var(--text-muted); text-transform:uppercase; margin-top:2px;">Livello</div>
+      </div>
+      
+      <div class="stat-box" style="text-align:center; background:rgba(255,255,255,0.05); padding:12px; border-radius:12px; border:1px solid var(--glass-border);">
+        <div style="font-size:20px; margin-bottom:4px;">🔥</div>
+        <div id="stat-streak" style="font-size:20px; font-weight:700; color:var(--danger);">0</div>
+        <div style="font-size:9px; color:var(--text-muted); text-transform:uppercase; margin-top:2px;">Streak</div>
+      </div>
+    </div>
+
+    <div style="margin-bottom:15px;">
+      <h4 style="opacity:0.7; text-transform:uppercase; font-size:12px; letter-spacing:1px;">Gestione Operativa</h4>
+    </div>
+
+    <!-- DASH GRID -->
+    <div class="dash-grid">
+      
+      <!-- CRESCITA PERSONALE (LARGO, PRIORITY) -->
+      <div class="dash-card" onclick="navTo('growth')" style="grid-column: span 2; flex-direction:row; justify-content:center; gap:15px; min-height:90px;">
+        <div class="dash-icon" style="background:rgba(91, 111, 237, 0.2);">
+          <i class="fas fa-seedling"></i>
+        </div>
+        <div style="text-align:left;">
+          <div class="dash-label">🌱 Crescita Personale</div>
+          <div class="dash-sub" id="sub-growth">Profilo: 0%</div>
+        </div>
+      </div>
+
+      <!-- TASK ATTIVI -->
+      <div class="dash-card" onclick="navTo('tasks')">
+        <div class="dash-icon"><i class="fas fa-tasks"></i></div>
+        <div class="dash-label">Task Attivi</div>
+        <div class="dash-sub" id="sub-tasks">0 in corso</div>
+      </div>
+
+      <!-- BADGE -->
+      <div class="dash-card" onclick="navTo('badges')">
+        <div class="dash-icon" style="background:rgba(245, 158, 11, 0.2);">
+          <i class="fas fa-trophy"></i>
+        </div>
+        <div class="dash-label">Badge</div>
+        <div class="dash-sub" id="sub-badges">0/12 sbloccati</div>
+      </div>
+
+      <!-- FORMAZIONE -->
+      <div class="dash-card" onclick="navTo('training')">
+        <div class="dash-icon" style="background:rgba(34, 197, 94, 0.2);">
+          <i class="fas fa-graduation-cap"></i>
+        </div>
+        <div class="dash-label">Formazione</div>
+        <div class="dash-sub" id="sub-training">0 moduli disponibili</div>
+      </div>
+
+      <!-- CALENDARIO -->
+      <div class="dash-card" onclick="navTo('calendar')">
+        <div class="dash-icon"><i class="fas fa-calendar-alt"></i></div>
+        <div class="dash-label">Calendario</div>
+        <div class="dash-sub" id="sub-calendar">Prossimi eventi</div>
+      </div>
+
+    </div>
+
+    <!-- SEZIONE CRESCITA DETTAGLIATA -->
+    <div class="form-section" style="margin-top:30px;">
+      <div class="form-section-title">🌱 Crescita Personale</div>
+      
+      <!-- PROFILO COMPETENZE TECNICHE -->
+      <div class="card" onclick="navToSkills()" style="cursor:pointer; margin-bottom:15px; padding:15px;">
+        <div style="display:flex; align-items:center; gap:15px;">
+          <div style="font-size:40px;">🧠</div>
+          <div style="flex:1;">
+            <div style="font-weight:600; margin-bottom:4px;">Profilo Competenze</div>
+            <div style="font-size:12px; color:var(--text-muted); margin-bottom:8px;">Hard skills e specializzazioni tecniche</div>
+            <div class="progress-bar" style="height:8px; background:rgba(255,255,255,0.1); border-radius:10px; overflow:hidden;">
+              <div id="progress-skills" class="progress-fill" style="width:0%; height:100%; background:var(--primary); transition:width 0.5s;"></div>
+            </div>
+          </div>
+          <div id="percent-skills" style="font-size:20px; font-weight:700; color:var(--primary);">0%</div>
+        </div>
+      </div>
+
+      <!-- PROFILO COMPORTAMENTALE (SOFT SKILLS) -->
+      <div class="card" onclick="goToSoftSkills()" style="cursor:pointer; margin-bottom:15px; padding:15px;">
+        <div style="display:flex; align-items:center; gap:15px;">
+          <div style="font-size:40px;">🎯</div>
+          <div style="flex:1;">
+            <div style="font-weight:600; margin-bottom:4px;">Profilo Comportamentale</div>
+            <div style="font-size:12px; color:var(--text-muted); margin-bottom:8px;">Soft skills e attitudini personali</div>
+            <div class="progress-bar" style="height:8px; background:rgba(255,255,255,0.1); border-radius:10px; overflow:hidden;">
+              <div id="progress-softskills" class="progress-fill" style="width:0%; height:100%; background:var(--success); transition:width 0.5s;"></div>
+            </div>
+          </div>
+          <div id="percent-softskills" style="font-size:20px; font-weight:700; color:var(--success);">0%</div>
+        </div>
+      </div>
+
+      <!-- MODULI FORMATIVI CONSIGLIATI -->
+      <div class="card" style="padding:15px;">
+        <h4 style="margin-bottom:12px; display:flex; align-items:center; gap:8px;">
+          <i class="fas fa-graduation-cap"></i> Moduli Consigliati
+        </h4>
+        <div id="recommended-modules">
+          <div style="text-align:center; padding:20px; color:var(--text-muted); font-size:13px;">
+            <i class="fas fa-spinner fa-spin"></i> Caricamento moduli...
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- NOTIFICHE RECENTI -->
+    <div class="card" style="margin-top:20px; padding:15px;">
+      <h4 style="margin-bottom:12px; display:flex; align-items:center; gap:8px;">
+        <i class="fas fa-bell"></i> Notifiche Recenti
+      </h4>
+      <div id="notifications-list">
+        <div style="text-align:center; padding:20px; color:var(--text-muted); font-size:13px;">
+          Nessuna notifica
+        </div>
+      </div>
+    </div>
+
+    <div style="text-align:center; margin-top:30px; margin-bottom:30px; opacity:0.3; font-size:10px;">
+      <p>SiteBoS Operator v1.0</p>
+    </div>
+
+  </div>
+
+  <script src="operator_dashboard_logic.js"></script>
+</body>
+</html>
