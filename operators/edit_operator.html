@@ -60,6 +60,47 @@
         </div>
       </div>
 
+      <!-- INDIRIZZO -->
+      <div class="form-section">
+        <div class="form-section-title">Indirizzo</div>
+        
+        <div class="row">
+          <div class="col" style="flex:3;">
+            <div class="input-group">
+              <label>Via</label>
+              <input type="text" id="address_route" placeholder="es: Via Roma">
+            </div>
+          </div>
+          <div class="col" style="flex:1;">
+            <div class="input-group">
+              <label>Civico</label>
+              <input type="text" id="address_number" placeholder="es: 123">
+            </div>
+          </div>
+        </div>
+        
+        <div class="row">
+          <div class="col">
+            <div class="input-group">
+              <label>CAP</label>
+              <input type="text" id="address_zip" placeholder="es: 90100">
+            </div>
+          </div>
+          <div class="col">
+            <div class="input-group">
+              <label>Città</label>
+              <input type="text" id="address_city" placeholder="es: Palermo">
+            </div>
+          </div>
+          <div class="col">
+            <div class="input-group">
+              <label>Provincia</label>
+              <input type="text" id="address_province" placeholder="es: PA" maxlength="2" style="text-transform:uppercase;">
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- PROFILO PROFESSIONALE -->
       <div class="form-section">
         <div class="form-section-title">Profilo Professionale</div>
@@ -81,13 +122,33 @@
         </div>
       </div>
 
-      <!-- SOCIAL -->
+      <!-- SOCIAL & WEB -->
       <div class="form-section">
         <div class="form-section-title">Social & Web</div>
         
         <div class="input-group">
+          <label><i class="fas fa-globe"></i> Sito Web</label>
+          <input type="url" id="website" placeholder="https://tuosito.it">
+        </div>
+        
+        <div class="input-group">
           <label><i class="fab fa-linkedin"></i> LinkedIn</label>
           <input type="url" id="linkedin" placeholder="https://linkedin.com/in/...">
+        </div>
+        
+        <div class="input-group">
+          <label><i class="fab fa-facebook"></i> Facebook</label>
+          <input type="url" id="facebook" placeholder="https://facebook.com/...">
+        </div>
+        
+        <div class="input-group">
+          <label><i class="fab fa-twitter"></i> Twitter</label>
+          <input type="url" id="twitter" placeholder="https://twitter.com/...">
+        </div>
+        
+        <div class="input-group">
+          <label><i class="fab fa-instagram"></i> Instagram</label>
+          <input type="url" id="instagram" placeholder="https://instagram.com/...">
         </div>
       </div>
 

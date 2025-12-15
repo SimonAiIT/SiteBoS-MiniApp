@@ -91,6 +91,7 @@ function populateForm(stakeholder) {
   const prof = stakeholder.identity?.professional_background || {};
   const profProfile = stakeholder.professional_profile || {};
   const social = id.social_profiles || {};
+  const address = stakeholder.additional_kwargs?.address_provided || {};
 
   // Anagrafica
   setValue('full_name', id.full_name);
@@ -100,12 +101,23 @@ function populateForm(stakeholder) {
   setValue('email', contact.email);
   setValue('phone', contact.phone);
 
+  // Indirizzo
+  setValue('address_route', address.route);
+  setValue('address_number', address.number);
+  setValue('address_zip', address.zip);
+  setValue('address_city', address.city);
+  setValue('address_province', address.province);
+
   // Professionale
   setValue('current_role', prof.current_role);
   setValue('years_experience', profProfile.years_experience || '15+');
 
   // Social
+  setValue('website', social.website);
   setValue('linkedin', social.linkedin);
+  setValue('facebook', social.facebook);
+  setValue('twitter', social.twitter);
+  setValue('instagram', social.instagram);
 }
 
 function setValue(id, val) {
@@ -142,12 +154,32 @@ async function saveChanges() {
 
   try {
     const updatedFields = {
+      // Identity
       full_name: document.getElementById('full_name').value,
       email: document.getElementById('email').value,
       phone: document.getElementById('phone').value,
+      
+      // Address
+      address: {
+        route: document.getElementById('address_route').value,
+        number: document.getElementById('address_number').value,
+        zip: document.getElementById('address_zip').value,
+        city: document.getElementById('address_city').value,
+        province: document.getElementById('address_province').value.toUpperCase()
+      },
+      
+      // Professional
       current_role: document.getElementById('current_role').value,
       years_experience: document.getElementById('years_experience').value,
-      linkedin: document.getElementById('linkedin').value
+      
+      // Social
+      social: {
+        website: document.getElementById('website').value,
+        linkedin: document.getElementById('linkedin').value,
+        facebook: document.getElementById('facebook').value,
+        twitter: document.getElementById('twitter').value,
+        instagram: document.getElementById('instagram').value
+      }
     };
 
     const payload = {
@@ -168,7 +200,7 @@ async function saveChanges() {
     if (result.status === 'success') {
       tg.HapticFeedback.notificationOccurred('success');
       
-      // Update sessionStorage
+      // Clear cache to force reload
       sessionStorage.removeItem('operator_data');
       sessionStorage.removeItem('stakeholder_raw');
       
