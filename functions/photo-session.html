@@ -1,0 +1,991 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Photo Session - SiteBoS</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="../styles.css">
+  <style>
+    .photo-session-container {
+      padding: 20px;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .session-header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .session-progress {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin: 20px 0;
+      position: relative;
+    }
+
+    .progress-line {
+      position: absolute;
+      top: 15px;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: var(--glass-border);
+      z-index: 0;
+    }
+
+    .progress-line-filled {
+      position: absolute;
+      top: 15px;
+      left: 0;
+      height: 2px;
+      background: var(--primary);
+      z-index: 1;
+      transition: width 0.3s ease;
+    }
+
+    .progress-step {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background: var(--glass-bg);
+      border: 2px solid var(--glass-border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 600;
+      position: relative;
+      z-index: 2;
+      transition: all 0.3s ease;
+    }
+
+    .progress-step.active {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: white;
+      transform: scale(1.2);
+    }
+
+    .progress-step.completed {
+      background: var(--success);
+      border-color: var(--success);
+      color: white;
+    }
+
+    .camera-guide {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 3/4;
+      background: #000;
+      border-radius: 12px;
+      overflow: hidden;
+      margin: 20px 0;
+    }
+
+    .camera-video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .guide-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      pointer-events: none;
+      z-index: 10;
+    }
+
+    .guide-silhouette {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 70%;
+      height: 80%;
+      border: 3px dashed rgba(255, 255, 255, 0.5);
+      border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    .guide-silhouette.profile {
+      border-radius: 50% 50% 50% 50% / 70% 70% 30% 30%;
+      transform: translate(-50%, -50%) rotate(90deg);
+    }
+
+    .guide-silhouette.back {
+      border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+    }
+
+    .guide-silhouette.scalp {
+      width: 60%;
+      height: 60%;
+      border-radius: 50%;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 0.5; }
+      50% { opacity: 1; }
+    }
+
+    .guide-text {
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0, 0, 0, 0.8);
+      padding: 10px 20px;
+      border-radius: 20px;
+      color: white;
+      font-size: 14px;
+      font-weight: 600;
+      text-align: center;
+      backdrop-filter: blur(10px);
+    }
+
+    .camera-controls {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 15px;
+      margin: 20px 0;
+    }
+
+    .capture-btn {
+      width: 70px;
+      height: 70px;
+      border-radius: 50%;
+      background: var(--primary);
+      border: 4px solid white;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .capture-btn:active {
+      transform: scale(0.95);
+    }
+
+    .control-btn {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(10px);
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .control-btn:hover {
+      background: rgba(255, 255, 255, 0.3);
+    }
+
+    .thumbnails-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 10px;
+      margin: 20px 0;
+    }
+
+    .thumbnail {
+      aspect-ratio: 3/4;
+      background: var(--glass-bg);
+      border: 2px solid var(--glass-border);
+      border-radius: 8px;
+      overflow: hidden;
+      position: relative;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .thumbnail.captured {
+      border-color: var(--success);
+    }
+
+    .thumbnail img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .thumbnail-empty {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-muted);
+      font-size: 11px;
+      text-align: center;
+      padding: 5px;
+    }
+
+    .thumbnail-icon {
+      font-size: 18px;
+      margin-bottom: 5px;
+    }
+
+    .upload-option {
+      text-align: center;
+      margin: 15px 0;
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+
+    .upload-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 20px;
+      background: var(--glass-bg);
+      border: 2px dashed var(--glass-border);
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-size: 14px;
+      color: var(--text-primary);
+    }
+
+    .upload-btn:hover {
+      border-color: var(--primary);
+      background: rgba(91, 111, 237, 0.1);
+    }
+
+    .analysis-card {
+      background: linear-gradient(135deg, var(--glass-bg), rgba(91, 111, 237, 0.1));
+      border: 1px solid var(--glass-border);
+      border-radius: 12px;
+      padding: 20px;
+      margin: 20px 0;
+    }
+
+    .analysis-section {
+      margin: 15px 0;
+    }
+
+    .analysis-label {
+      font-size: 12px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      font-weight: 600;
+      margin-bottom: 5px;
+    }
+
+    .analysis-value {
+      font-size: 16px;
+      color: var(--text-primary);
+      font-weight: 600;
+    }
+
+    .analysis-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 15px;
+      margin: 15px 0;
+    }
+
+    .skin-tone-preview {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: 2px solid white;
+      display: inline-block;
+      vertical-align: middle;
+      margin-left: 10px;
+    }
+
+    .recommendations {
+      background: rgba(76, 217, 100, 0.1);
+      border-left: 3px solid var(--success);
+      padding: 15px;
+      border-radius: 8px;
+      margin: 15px 0;
+    }
+
+    .recommendations ul {
+      margin: 10px 0;
+      padding-left: 20px;
+    }
+
+    .recommendations li {
+      margin: 5px 0;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- LOADER -->
+  <div id="loader" class="hidden" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+    <div class="spinner-ring"></div>
+    <div style="margin-top:15px; opacity:0.8; text-align:center; font-size: 14px;" id="loader-text">Analisi AI in corso...</div>
+  </div>
+
+  <div class="photo-session-container">
+    
+    <!-- HEADER -->
+    <div class="session-header">
+      <h1 style="font-size: 22px; margin: 0;">
+        <i class="fas fa-camera-retro" style="color: var(--primary);"></i>
+        Photo Session Professionale
+      </h1>
+      <p style="color: var(--text-muted); font-size: 14px; margin: 10px 0;">
+        Scatta 5 foto per analisi AI completa
+      </p>
+    </div>
+
+    <!-- PROGRESS BAR -->
+    <div class="session-progress">
+      <div class="progress-line"></div>
+      <div class="progress-line-filled" id="progress-fill" style="width: 0%;"></div>
+      <div class="progress-step active" id="step-1">1</div>
+      <div class="progress-step" id="step-2">2</div>
+      <div class="progress-step" id="step-3">3</div>
+      <div class="progress-step" id="step-4">4</div>
+      <div class="progress-step" id="step-5">5</div>
+    </div>
+
+    <!-- THUMBNAILS PREVIEW -->
+    <div class="thumbnails-grid">
+      <div class="thumbnail" id="thumb-front" onclick="retakePhoto('front')">
+        <div class="thumbnail-empty">
+          <div class="thumbnail-icon"><i class="fas fa-user"></i></div>
+          <div>Frontale</div>
+        </div>
+      </div>
+      <div class="thumbnail" id="thumb-right" onclick="retakePhoto('right')">
+        <div class="thumbnail-empty">
+          <div class="thumbnail-icon"><i class="fas fa-arrow-right"></i></div>
+          <div>Destro</div>
+        </div>
+      </div>
+      <div class="thumbnail" id="thumb-left" onclick="retakePhoto('left')">
+        <div class="thumbnail-empty">
+          <div class="thumbnail-icon"><i class="fas fa-arrow-left"></i></div>
+          <div>Sinistro</div>
+        </div>
+      </div>
+      <div class="thumbnail" id="thumb-back" onclick="retakePhoto('back')">
+        <div class="thumbnail-empty">
+          <div class="thumbnail-icon"><i class="fas fa-user"></i></div>
+          <div>Posteriore</div>
+        </div>
+      </div>
+      <div class="thumbnail" id="thumb-scalp" onclick="retakePhoto('scalp')">
+        <div class="thumbnail-empty">
+          <div class="thumbnail-icon"><i class="fas fa-head-side-virus"></i></div>
+          <div>Cute</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CAMERA SECTION -->
+    <div id="camera-section" class="hidden">
+      <div class="camera-guide">
+        <video id="camera-video" class="camera-video" autoplay playsinline></video>
+        <canvas id="camera-canvas" style="display: none;"></canvas>
+        
+        <div class="guide-overlay">
+          <div class="guide-silhouette" id="guide-silhouette"></div>
+          <div class="guide-text" id="guide-text">Posiziona il viso al centro</div>
+        </div>
+      </div>
+
+      <div class="camera-controls">
+        <button class="control-btn" onclick="toggleCamera()" title="Cambia Camera">
+          <i class="fas fa-sync-alt" style="font-size: 18px; color: white;"></i>
+        </button>
+        
+        <button class="capture-btn" onclick="capturePhoto()">
+          <i class="fas fa-camera" style="font-size: 28px; color: white;"></i>
+        </button>
+        
+        <button class="control-btn" onclick="stopCamera()" title="Chiudi">
+          <i class="fas fa-times" style="font-size: 18px; color: white;"></i>
+        </button>
+      </div>
+
+      <div class="upload-option">
+        <span style="margin-right: 10px;">oppure</span>
+        <label class="upload-btn">
+          <i class="fas fa-upload"></i>
+          <span>Carica da Galleria</span>
+          <input type="file" accept="image/*" onchange="uploadPhoto(event)" style="display: none;">
+        </label>
+      </div>
+    </div>
+
+    <!-- ANALYSIS SECTION -->
+    <div id="analysis-section" class="hidden">
+      <div class="analysis-card">
+        <h3 style="margin: 0 0 20px 0; text-align: center;">
+          <i class="fas fa-robot" style="color: var(--primary);"></i>
+          Analisi AI Cliente
+        </h3>
+        
+        <div class="analysis-grid">
+          <div class="analysis-section">
+            <div class="analysis-label">Età Stimata</div>
+            <div class="analysis-value" id="analysis-age">-</div>
+          </div>
+          
+          <div class="analysis-section">
+            <div class="analysis-label">Genere Rilevato</div>
+            <div class="analysis-value" id="analysis-gender">-</div>
+          </div>
+          
+          <div class="analysis-section">
+            <div class="analysis-label">Tono Pelle</div>
+            <div class="analysis-value">
+              <span id="analysis-skin-tone">-</span>
+              <span class="skin-tone-preview" id="skin-tone-preview"></span>
+            </div>
+          </div>
+          
+          <div class="analysis-section">
+            <div class="analysis-label">Sottotono</div>
+            <div class="analysis-value" id="analysis-undertone">-</div>
+          </div>
+        </div>
+
+        <div class="analysis-section" style="margin-top: 25px;">
+          <h4 style="margin: 0 0 15px 0; font-size: 16px;">
+            <i class="fas fa-cut" style="color: var(--warning);"></i>
+            Analisi Capelli
+          </h4>
+          
+          <div class="analysis-grid">
+            <div class="analysis-section">
+              <div class="analysis-label">Colore Naturale</div>
+              <div class="analysis-value" id="analysis-hair-color">-</div>
+            </div>
+            
+            <div class="analysis-section">
+              <div class="analysis-label">Texture</div>
+              <div class="analysis-value" id="analysis-hair-texture">-</div>
+            </div>
+            
+            <div class="analysis-section">
+              <div class="analysis-label">Densità</div>
+              <div class="analysis-value" id="analysis-hair-density">-</div>
+            </div>
+            
+            <div class="analysis-section">
+              <div class="analysis-label">% Bianchi</div>
+              <div class="analysis-value" id="analysis-grey">-</div>
+            </div>
+          </div>
+
+          <div style="margin-top: 15px;">
+            <div class="analysis-label">Livello Danno</div>
+            <div class="analysis-value" id="analysis-damage">-</div>
+          </div>
+        </div>
+
+        <div class="recommendations">
+          <h4 style="margin: 0 0 10px 0; font-size: 14px; color: var(--success);">
+            <i class="fas fa-lightbulb"></i> Consigli AI
+          </h4>
+          <div id="ai-recommendations">
+            <p style="font-size: 13px; color: var(--text-muted);">Elaborazione...</p>
+          </div>
+        </div>
+      </div>
+
+      <button class="btn" onclick="proceedToColorimetry()" style="width: 100%; margin-top: 20px;">
+        <i class="fas fa-arrow-right"></i> Procedi a Colorimetria
+      </button>
+    </div>
+
+  </div>
+
+  <!-- FAB BACK BUTTON -->
+  <button class="fab-btn fab-secondary" onclick="goBack()" style="position: fixed; bottom: 20px; left: 20px; width: 56px; height: 56px; border-radius: 50%; background: var(--secondary); border: none; box-shadow: 0 4px 12px rgba(0,0,0,0.3); cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 1000;">
+    <i class="fas fa-arrow-left" style="color: white; font-size: 20px;"></i>
+  </button>
+
+  <script src="../url-params-manager.js"></script>
+  <script>
+    // ========================================
+    // PHOTO SESSION ENGINE v1.0
+    // ========================================
+
+    const PHOTO_STEPS = ['front', 'right', 'left', 'back', 'scalp'];
+    const GUIDE_TEXTS = {
+      front: 'Viso frontale, sguardo dritto verso la camera',
+      right: 'Profilo destro a 90°, viso laterale',
+      left: 'Profilo sinistro a 90°, viso laterale',
+      back: 'Nuca e parte posteriore capelli',
+      scalp: 'Zona superiore della testa, cute visibile'
+    };
+
+    let currentStep = 0;
+    let photos = {
+      front: null,
+      right: null,
+      left: null,
+      back: null,
+      scalp: null
+    };
+    let cameraStream = null;
+    let usingFrontCamera = true;
+    let analysisData = null;
+
+    // AI WEBHOOK
+    const AI_ANALYSIS_URL = 'https://trinai.api.workflow.dcmake.it/webhook/photo-session-analysis';
+
+    // ========================================
+    // INIT
+    // ========================================
+
+    window.addEventListener('DOMContentLoaded', () => {
+      console.log('Photo Session initialized');
+      startCurrentStep();
+    });
+
+    // ========================================
+    // STEP NAVIGATION
+    // ========================================
+
+    function startCurrentStep() {
+      const stepName = PHOTO_STEPS[currentStep];
+      
+      // Update progress
+      updateProgress();
+      
+      // Check if already captured
+      if (photos[stepName]) {
+        console.log(`Step ${stepName} already captured, moving to next`);
+        nextStep();
+        return;
+      }
+      
+      // Show camera
+      document.getElementById('camera-section').classList.remove('hidden');
+      document.getElementById('analysis-section').classList.add('hidden');
+      
+      // Update guide
+      updateGuide(stepName);
+      
+      // Start camera
+      initCamera();
+    }
+
+    function updateProgress() {
+      const progress = (currentStep / PHOTO_STEPS.length) * 100;
+      document.getElementById('progress-fill').style.width = `${progress}%`;
+      
+      PHOTO_STEPS.forEach((step, index) => {
+        const stepEl = document.getElementById(`step-${index + 1}`);
+        stepEl.classList.remove('active', 'completed');
+        
+        if (index < currentStep) {
+          stepEl.classList.add('completed');
+        } else if (index === currentStep) {
+          stepEl.classList.add('active');
+        }
+      });
+    }
+
+    function updateGuide(stepName) {
+      const silhouette = document.getElementById('guide-silhouette');
+      silhouette.className = 'guide-silhouette';
+      
+      if (stepName === 'right' || stepName === 'left') {
+        silhouette.classList.add('profile');
+      } else if (stepName === 'back') {
+        silhouette.classList.add('back');
+      } else if (stepName === 'scalp') {
+        silhouette.classList.add('scalp');
+      }
+      
+      document.getElementById('guide-text').textContent = GUIDE_TEXTS[stepName];
+    }
+
+    function nextStep() {
+      currentStep++;
+      
+      if (currentStep >= PHOTO_STEPS.length) {
+        // All photos captured
+        completeSession();
+      } else {
+        startCurrentStep();
+      }
+    }
+
+    function retakePhoto(stepName) {
+      const stepIndex = PHOTO_STEPS.indexOf(stepName);
+      if (stepIndex === -1) return;
+      
+      photos[stepName] = null;
+      
+      // Update thumbnail
+      const thumb = document.getElementById(`thumb-${stepName}`);
+      thumb.innerHTML = `
+        <div class="thumbnail-empty">
+          <div class="thumbnail-icon"><i class="fas fa-${getStepIcon(stepName)}"></i></div>
+          <div>${stepName.charAt(0).toUpperCase() + stepName.slice(1)}</div>
+        </div>
+      `;
+      thumb.classList.remove('captured');
+      
+      currentStep = stepIndex;
+      startCurrentStep();
+    }
+
+    function getStepIcon(stepName) {
+      const icons = {
+        front: 'user',
+        right: 'arrow-right',
+        left: 'arrow-left',
+        back: 'user',
+        scalp: 'head-side-virus'
+      };
+      return icons[stepName] || 'user';
+    }
+
+    // ========================================
+    // CAMERA
+    // ========================================
+
+    async function initCamera() {
+      try {
+        if (cameraStream) {
+          cameraStream.getTracks().forEach(track => track.stop());
+        }
+        
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: {
+            facingMode: usingFrontCamera ? 'user' : 'environment',
+            width: { ideal: 1280 },
+            height: { ideal: 1920 }
+          },
+          audio: false
+        });
+        
+        cameraStream = stream;
+        document.getElementById('camera-video').srcObject = stream;
+        console.log('✅ Camera initialized');
+      } catch (error) {
+        console.error('❌ Camera error:', error);
+        alert('Impossibile accedere alla camera. Usa il pulsante Upload.');
+      }
+    }
+
+    function toggleCamera() {
+      usingFrontCamera = !usingFrontCamera;
+      initCamera();
+    }
+
+    function stopCamera() {
+      if (cameraStream) {
+        cameraStream.getTracks().forEach(track => track.stop());
+        cameraStream = null;
+      }
+      document.getElementById('camera-section').classList.add('hidden');
+    }
+
+    // ========================================
+    // CAPTURE & COMPRESS
+    // ========================================
+
+    function capturePhoto() {
+      const video = document.getElementById('camera-video');
+      const canvas = document.getElementById('camera-canvas');
+      const ctx = canvas.getContext('2d');
+      
+      // Set canvas size
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      
+      // Draw current frame
+      ctx.drawImage(video, 0, 0);
+      
+      // Compress and convert to base64
+      compressImage(canvas, (compressedBase64) => {
+        const stepName = PHOTO_STEPS[currentStep];
+        photos[stepName] = compressedBase64;
+        
+        // Update thumbnail
+        updateThumbnail(stepName, compressedBase64);
+        
+        // Next step
+        stopCamera();
+        nextStep();
+      });
+    }
+
+    function uploadPhoto(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d');
+          
+          // Calculate size
+          let width = img.width;
+          let height = img.height;
+          const maxDim = 800;
+          
+          if (width > height && width > maxDim) {
+            height = (height / width) * maxDim;
+            width = maxDim;
+          } else if (height > maxDim) {
+            width = (width / height) * maxDim;
+            height = maxDim;
+          }
+          
+          canvas.width = width;
+          canvas.height = height;
+          ctx.drawImage(img, 0, 0, width, height);
+          
+          compressImage(canvas, (compressedBase64) => {
+            const stepName = PHOTO_STEPS[currentStep];
+            photos[stepName] = compressedBase64;
+            updateThumbnail(stepName, compressedBase64);
+            stopCamera();
+            nextStep();
+          });
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function compressImage(canvas, callback) {
+      // Resize if too large
+      let width = canvas.width;
+      let height = canvas.height;
+      const maxDim = 800;
+      
+      if (width > maxDim || height > maxDim) {
+        const scale = maxDim / Math.max(width, height);
+        width *= scale;
+        height *= scale;
+        
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = width;
+        tempCanvas.height = height;
+        const tempCtx = tempCanvas.getContext('2d');
+        tempCtx.drawImage(canvas, 0, 0, width, height);
+        canvas = tempCanvas;
+      }
+      
+      // Convert to JPEG with quality 0.7
+      const base64 = canvas.toDataURL('image/jpeg', 0.7);
+      console.log(`📸 Compressed image: ${(base64.length / 1024).toFixed(2)} KB`);
+      callback(base64);
+    }
+
+    function updateThumbnail(stepName, base64) {
+      const thumb = document.getElementById(`thumb-${stepName}`);
+      thumb.innerHTML = `<img src="${base64}" alt="${stepName}">`;
+      thumb.classList.add('captured');
+    }
+
+    // ========================================
+    // SESSION COMPLETE
+    // ========================================
+
+    function completeSession() {
+      console.log('✅ All photos captured');
+      stopCamera();
+      
+      // Update progress to 100%
+      document.getElementById('progress-fill').style.width = '100%';
+      PHOTO_STEPS.forEach((step, index) => {
+        document.getElementById(`step-${index + 1}`).classList.add('completed');
+      });
+      
+      // Start AI analysis
+      analyzePhotos();
+    }
+
+    // ========================================
+    // AI ANALYSIS
+    // ========================================
+
+    async function analyzePhotos() {
+      showLoader('🤖 Analisi AI in corso...');
+      
+      const urlParams = getURLParams();
+      
+      const payload = {
+        owner: urlParams.owner,
+        token: urlParams.token,
+        photos: photos,
+        timestamp: Date.now()
+      };
+      
+      try {
+        console.log('📤 Sending to AI webhook:', AI_ANALYSIS_URL);
+        
+        const response = await fetch(AI_ANALYSIS_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+        
+        const data = await response.json();
+        console.log('📦 AI Response:', data);
+        
+        if (data.success && data.analysis) {
+          analysisData = data.analysis;
+          displayAnalysis();
+        } else {
+          throw new Error('Invalid response');
+        }
+      } catch (error) {
+        console.error('❌ Analysis error:', error);
+        hideLoader();
+        alert('⚠️ Errore durante l\'analisi. Riprova più tardi.');
+        
+        // Mock data for testing
+        analysisData = generateMockAnalysis();
+        displayAnalysis();
+      }
+    }
+
+    function displayAnalysis() {
+      hideLoader();
+      
+      document.getElementById('camera-section').classList.add('hidden');
+      document.getElementById('analysis-section').classList.remove('hidden');
+      
+      const analysis = analysisData;
+      
+      // Age & Gender
+      document.getElementById('analysis-age').textContent = 
+        `${analysis.age.estimated} anni (${analysis.age.range})`;
+      
+      const genderLabels = { F: 'Donna', M: 'Uomo', X: 'Non Binario' };
+      document.getElementById('analysis-gender').textContent = 
+        genderLabels[analysis.gender.detected] || analysis.gender.detected;
+      
+      // Skin
+      document.getElementById('analysis-skin-tone').textContent = 
+        `${analysis.skinTone.category}`;
+      document.getElementById('analysis-undertone').textContent = 
+        analysis.skinTone.undertone;
+      document.getElementById('skin-tone-preview').style.background = 
+        analysis.skinTone.hex;
+      
+      // Hair
+      document.getElementById('analysis-hair-color').textContent = 
+        `Livello ${analysis.hairAnalysis.naturalColor.level} - ${analysis.hairAnalysis.naturalColor.tone}`;
+      document.getElementById('analysis-hair-texture').textContent = 
+        `${analysis.hairAnalysis.texture.type} (${analysis.hairAnalysis.texture.porosity})`;
+      document.getElementById('analysis-hair-density').textContent = 
+        analysis.hairAnalysis.density;
+      document.getElementById('analysis-grey').textContent = 
+        `${analysis.hairAnalysis.greyPercentage}%`;
+      document.getElementById('analysis-damage').textContent = 
+        `${analysis.hairAnalysis.damage.level}`;
+      
+      // Recommendations
+      const recsHTML = `
+        <ul>
+          <li><strong>Tagli consigliati:</strong> ${analysis.recommendations.suitableHaircuts.join(', ')}</li>
+          <li><strong>Colori suggeriti:</strong> ${analysis.recommendations.colorSuggestions.join(', ')}</li>
+          <li><strong>Da evitare:</strong> ${analysis.recommendations.avoidColors.join(', ')}</li>
+        </ul>
+      `;
+      document.getElementById('ai-recommendations').innerHTML = recsHTML;
+    }
+
+    function generateMockAnalysis() {
+      return {
+        age: { estimated: 34, range: "30-40" },
+        gender: { detected: "F", confidence: 0.95 },
+        skinTone: { category: "Medium", undertone: "Warm", hex: "#d4a891" },
+        hairAnalysis: {
+          naturalColor: { level: 5, tone: "Warm Brown" },
+          texture: { type: "2B", porosity: "Medium" },
+          density: "Medium-High",
+          greyPercentage: 15,
+          damage: { level: "Low", concerns: [] }
+        },
+        faceShape: "Oval",
+        recommendations: {
+          suitableHaircuts: ["Long Bob", "Layered Cut"],
+          colorSuggestions: ["Warm Tones", "Caramel Highlights"],
+          avoidColors: ["Ash Tones", "Cool Platinum"]
+        }
+      };
+    }
+
+    // ========================================
+    // NAVIGATION
+    // ========================================
+
+    function proceedToColorimetry() {
+      const urlParams = getURLParams();
+      
+      // Store analysis data
+      sessionStorage.setItem('photoSessionData', JSON.stringify({
+        photos: photos,
+        analysis: analysisData
+      }));
+      
+      // Navigate to specchio-magico
+      navigateWithParams('./specchio-magico.html', {
+        owner: urlParams.owner,
+        token: urlParams.token,
+        system: urlParams.system || 'standard',
+        gender: analysisData.gender.detected || 'F',
+        fromPhotoSession: 'true'
+      });
+    }
+
+    function goBack() {
+      if (currentStep > 0) {
+        currentStep--;
+        startCurrentStep();
+      } else {
+        navigateWithParams('./index.html', getURLParams());
+      }
+    }
+
+    function getURLParams() {
+      const urlParams = new URLSearchParams(window.location.search);
+      return {
+        owner: urlParams.get('owner') || '',
+        token: urlParams.get('token') || '',
+        system: urlParams.get('system') || 'standard',
+        gender: urlParams.get('gender') || 'F'
+      };
+    }
+
+    function showLoader(text) {
+      document.getElementById('loader-text').textContent = text;
+      document.getElementById('loader').classList.remove('hidden');
+    }
+
+    function hideLoader() {
+      document.getElementById('loader').classList.add('hidden');
+    }
+  </script>
+
+</body>
+</html>
