@@ -63,11 +63,13 @@ async function loadOperatorData() {
     
     const data = await response.json();
     
-    if (data.status === 'success') {
-      operatorData = data.operator;
+    if (data.status === 'success' && data.stakeholder) {
+      // Map stakeholder document to dashboard format
+      operatorData = mapStakeholderToDashboard(data.stakeholder);
       
       // Store in sessionStorage
       sessionStorage.setItem('operator_data', JSON.stringify(operatorData));
+      sessionStorage.setItem('stakeholder_raw', JSON.stringify(data.stakeholder));
       sessionStorage.setItem('operator_chat_id', chatId);
       sessionStorage.setItem('owner_vat', ownerVat);
       
@@ -90,6 +92,183 @@ async function loadOperatorData() {
 }
 
 // ============================================
+// MAPPER: Stakeholder Document → Dashboard Data
+// ============================================
+
+function mapStakeholderToDashboard(stakeholder) {
+  return {
+    // IDENTITY
+    identity: {
+      name: stakeholder.identity?.full_name?.split(' ')[0] || 'Operatore',
+      surname: stakeholder.identity?.full_name?.split(' ').slice(1).join(' ') || '',
+      full_name: stakeholder.identity?.full_name || 'Operatore',
+      email: stakeholder.identity?.primary_contact?.email || '',
+      phone: stakeholder.identity?.primary_contact?.phone || ''
+    },
+    
+    // PROFESSIONAL PROFILE
+    professional_profile: {
+      current_role: stakeholder.identity?.professional_background?.current_role || 'Operatore',
+      years_experience: stakeholder.professional_profile?.years_experience || '0',
+      primary_skills: stakeholder.professional_profile?.hard_skills?.slice(0, 5) || [],
+      secondary_skills: stakeholder.professional_profile?.hard_skills?.slice(5) || [],
+      all_skills: stakeholder.professional_profile?.hard_skills || [],
+      certifications: parseCertifications(stakeholder.professional_profile?.certifications),
+      education: [{ 
+        degree: stakeholder.identity?.professional_background?.education || 'N/A',
+        institution: '',
+        year: ''
+      }]
+    },
+    
+    // SOFT SKILLS
+    soft_skills: {
+      completed_questions: calculateCompletedQuestions(stakeholder.professional_profile?.soft_skills_modules),
+      total_questions: 150,
+      completion_percentage: calculateSoftSkillsCompletion(stakeholder.professional_profile?.soft_skills_modules),
+      modules_completed: getCompletedModules(stakeholder.professional_profile?.soft_skills_modules),
+      learning_history: stakeholder.professional_profile?.learning_history || {
+        videos_completed: [],
+        total_videos_watched: 0,
+        last_learning_activity: null
+      }
+    },
+    
+    // GAMIFICATION (mock - da implementare in stakeholder schema)
+    gamification: {
+      xp: stakeholder.gamification?.xp || 0,
+      level: stakeholder.gamification?.level || 1,
+      streak: stakeholder.gamification?.streak || 0,
+      streak_best: stakeholder.gamification?.streak_best || 0,
+      badges: stakeholder.gamification?.badges || []
+    },
+    
+    // TASKS (mock - da implementare)
+    tasks: {
+      active: stakeholder.tasks?.active || 0,
+      completed_today: stakeholder.tasks?.completed_today || 0,
+      pending: stakeholder.tasks?.pending || 0,
+      overdue: stakeholder.tasks?.overdue || 0
+    },
+    
+    // PERFORMANCE (mock - da implementare)
+    performance: {
+      hours_this_week: stakeholder.performance?.hours_this_week || 0,
+      hours_today: stakeholder.performance?.hours_today || 0,
+      tasks_completed_week: stakeholder.performance?.tasks_completed_week || 0,
+      average_rating: stakeholder.performance?.average_rating || 0
+    },
+    
+    // SYSTEM ACCESS
+    system_access: {
+      telegram_chat_id: stakeholder.system_access?.telegram_chat_id || '',
+      onboarding_completed_at: stakeholder.system_access?.invitation_metadata?.invited_at || stakeholder.metadata?.created_at,
+      linked_owner: {
+        vat_number: stakeholder.system_access?.linked_owner?.vat_number || '',
+        ragione_sociale: stakeholder.system_access?.linked_owner?.company_name || 'Company',
+        logo_url: null // TODO: add to owner
+      }
+    },
+    
+    // NOTIFICATIONS
+    notifications: generateWelcomeNotifications(stakeholder),
+    
+    // METADATA
+    metadata: {
+      status: stakeholder.metadata?.status || 'ACTIVE',
+      stakeholder_type: stakeholder.metadata?.stakeholder_type || 'OPERATOR',
+      created_at: stakeholder.metadata?.created_at
+    }
+  };
+}
+
+// ============================================
+// HELPER FUNCTIONS
+// ============================================
+
+function parseCertifications(certString) {
+  if (!certString) return [];
+  
+  // Parse "Corso HACCP (2017), Corso Tecnico (2015), ..."
+  const certArray = certString.split(',').map(c => c.trim());
+  
+  return certArray.map(cert => {
+    const yearMatch = cert.match(/\((\d{4})\)/);
+    const year = yearMatch ? yearMatch[1] : '';
+    const title = cert.replace(/\(\d{4}\)/, '').trim();
+    
+    return { title, year };
+  }).slice(0, 5); // Max 5 certifications
+}
+
+function calculateCompletedQuestions(softSkillsModules) {
+  if (!softSkillsModules || typeof softSkillsModules !== 'object') return 0;
+  
+  let total = 0;
+  Object.values(softSkillsModules).forEach(module => {
+    if (module?.progress?.questions_answered) {
+      total += module.progress.questions_answered;
+    }
+  });
+  
+  return total;
+}
+
+function calculateSoftSkillsCompletion(softSkillsModules) {
+  const completed = calculateCompletedQuestions(softSkillsModules);
+  return Math.round((completed / 150) * 100);
+}
+
+function getCompletedModules(softSkillsModules) {
+  if (!softSkillsModules) return [];
+  
+  return Object.entries(softSkillsModules)
+    .filter(([key, module]) => module?.completed === true)
+    .map(([key, module]) => ({
+      name: key,
+      score: module?.score || 0
+    }));
+}
+
+function generateWelcomeNotifications(stakeholder) {
+  const notifications = [];
+  
+  // Welcome notification
+  notifications.push({
+    id: 'welcome',
+    icon: '🎉',
+    title: `Benvenuto in ${stakeholder.system_access?.linked_owner?.company_name || 'Team'}!`,
+    time: 'oggi',
+    read: false
+  });
+  
+  // Soft skills invitation
+  const softSkillsProgress = calculateSoftSkillsCompletion(stakeholder.professional_profile?.soft_skills_modules);
+  if (softSkillsProgress < 100) {
+    notifications.push({
+      id: 'softskills',
+      icon: '🎯',
+      title: 'Completa il tuo Profilo Comportamentale',
+      time: 'oggi',
+      read: false
+    });
+  }
+  
+  // Skills profile invitation
+  if (!stakeholder.professional_profile?.hard_skills?.length) {
+    notifications.push({
+      id: 'skills',
+      icon: '🧠',
+      title: 'Aggiungi le tue competenze tecniche',
+      time: 'oggi',
+      read: false
+    });
+  }
+  
+  return notifications;
+}
+
+// ============================================
 // POPULATE DASHBOARD
 // ============================================
 
@@ -97,22 +276,22 @@ function populateDashboard() {
   if (!operatorData) return;
   
   // Header
-  const fullName = `${operatorData.identity?.name || ''} ${operatorData.identity?.surname || ''}`.trim() || 'Operatore';
+  const fullName = operatorData.identity.full_name;
   document.getElementById('operatorName').innerText = fullName;
   
-  const role = operatorData.professional_profile?.current_role || 'Operatore';
+  const role = operatorData.professional_profile.current_role;
   document.getElementById('operatorRole').innerText = role;
   
-  const companyName = operatorData.system_access?.linked_owner?.ragione_sociale || 'Company';
+  const companyName = operatorData.system_access.linked_owner.ragione_sociale;
   document.getElementById('companyName').innerText = companyName;
   
-  const memberSince = operatorData.system_access?.onboarding_completed_at 
+  const memberSince = operatorData.system_access.onboarding_completed_at 
     ? new Date(operatorData.system_access.onboarding_completed_at).toLocaleDateString('it-IT', { day: '2-digit', month: '2-digit', year: '2-digit' })
     : 'oggi';
   document.getElementById('memberSince').innerText = memberSince;
   
   // Avatar initial
-  const initial = (operatorData.identity?.name?.[0] || '👤').toUpperCase();
+  const initial = (operatorData.identity.name?.[0] || '👤').toUpperCase();
   document.getElementById('operator-avatar').innerText = initial;
   
   // Stats
@@ -129,26 +308,26 @@ function populateDashboard() {
 }
 
 function populateStats() {
-  // Task attivi (mock - da implementare)
-  const activeTasks = operatorData.tasks?.active || 0;
+  // Task attivi
+  const activeTasks = operatorData.tasks.active;
   document.getElementById('stat-tasks').innerText = activeTasks;
   document.getElementById('sub-tasks').innerText = `${activeTasks} in corso`;
   
-  // Ore settimana (mock)
-  const hoursWeek = operatorData.performance?.hours_this_week || 0;
+  // Ore settimana
+  const hoursWeek = operatorData.performance.hours_this_week;
   document.getElementById('stat-hours').innerText = `${hoursWeek}h`;
   
   // Level (calcolo da XP)
-  const xp = operatorData.gamification?.xp || 0;
+  const xp = operatorData.gamification.xp;
   const level = calculateLevel(xp);
   document.getElementById('stat-level').innerText = level;
   
   // Streak
-  const streak = operatorData.gamification?.streak || 0;
+  const streak = operatorData.gamification.streak;
   document.getElementById('stat-streak').innerText = streak;
   
   // Badge
-  const badgesUnlocked = operatorData.gamification?.badges?.length || 0;
+  const badgesUnlocked = operatorData.gamification.badges.length;
   document.getElementById('sub-badges').innerText = `${badgesUnlocked}/12 sbloccati`;
 }
 
@@ -159,7 +338,7 @@ function populateGrowth() {
   document.getElementById('percent-skills').innerText = `${skillsProgress}%`;
   
   // Soft skills
-  const softSkillsProgress = calculateSoftSkillsProgress();
+  const softSkillsProgress = operatorData.soft_skills.completion_percentage;
   document.getElementById('progress-softskills').style.width = `${softSkillsProgress}%`;
   document.getElementById('percent-softskills').innerText = `${softSkillsProgress}%`;
   
@@ -173,26 +352,16 @@ function calculateSkillsProgress() {
   
   const profile = operatorData.professional_profile;
   let filled = 0;
-  let total = 6; // fields da valutare
+  let total = 6;
   
-  if (profile.current_role) filled++;
-  if (profile.years_experience) filled++;
+  if (profile.current_role && profile.current_role !== 'Operatore') filled++;
+  if (profile.years_experience && profile.years_experience !== '0') filled++;
   if (profile.primary_skills?.length) filled++;
   if (profile.secondary_skills?.length) filled++;
   if (profile.certifications?.length) filled++;
-  if (profile.education?.length) filled++;
+  if (profile.education?.[0]?.degree !== 'N/A') filled++;
   
   return Math.round((filled / total) * 100);
-}
-
-function calculateSoftSkillsProgress() {
-  if (!operatorData.soft_skills) return 0;
-  
-  const softSkills = operatorData.soft_skills;
-  const totalQuestions = 150; // from softskill system
-  const answeredQuestions = softSkills.completed_questions || 0;
-  
-  return Math.round((answeredQuestions / totalQuestions) * 100);
 }
 
 function calculateLevel(xp) {
@@ -250,7 +419,6 @@ function loadRecommendedModules() {
 function loadNotifications() {
   const container = document.getElementById('notifications-list');
   
-  // Mock notifications
   const notifications = operatorData.notifications || [];
   
   if (notifications.length === 0) {
