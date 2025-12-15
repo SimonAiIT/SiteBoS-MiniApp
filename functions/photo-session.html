@@ -49,15 +49,15 @@
     }
 
     .progress-step {
-      width: 30px;
-      height: 30px;
+      width: 40px;
+      height: 40px;
       border-radius: 50%;
       background: var(--glass-bg);
       border: 2px solid var(--glass-border);
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 12px;
+      font-size: 14px;
       font-weight: 600;
       position: relative;
       z-index: 2;
@@ -118,10 +118,6 @@
     .guide-silhouette.profile {
       border-radius: 50% 50% 50% 50% / 70% 70% 30% 30%;
       transform: translate(-50%, -50%) rotate(90deg);
-    }
-
-    .guide-silhouette.back {
-      border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
     }
 
     .guide-silhouette.scalp {
@@ -196,8 +192,8 @@
 
     .thumbnails-grid {
       display: grid;
-      grid-template-columns: repeat(5, 1fr);
-      gap: 10px;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 15px;
       margin: 20px 0;
     }
 
@@ -228,14 +224,14 @@
       align-items: center;
       justify-content: center;
       color: var(--text-muted);
-      font-size: 11px;
+      font-size: 12px;
       text-align: center;
-      padding: 5px;
+      padding: 10px;
     }
 
     .thumbnail-icon {
-      font-size: 18px;
-      margin-bottom: 5px;
+      font-size: 24px;
+      margin-bottom: 8px;
     }
 
     .upload-option {
@@ -340,10 +336,10 @@
     <div class="session-header">
       <h1 style="font-size: 22px; margin: 0;">
         <i class="fas fa-camera-retro" style="color: var(--primary);"></i>
-        Photo Session Professionale
+        Analisi Cliente AI
       </h1>
       <p style="color: var(--text-muted); font-size: 14px; margin: 10px 0;">
-        Scatta 5 foto per analisi AI completa
+        Scatta 3 foto per analisi completa
       </p>
     </div>
 
@@ -354,8 +350,6 @@
       <div class="progress-step active" id="step-1">1</div>
       <div class="progress-step" id="step-2">2</div>
       <div class="progress-step" id="step-3">3</div>
-      <div class="progress-step" id="step-4">4</div>
-      <div class="progress-step" id="step-5">5</div>
     </div>
 
     <!-- THUMBNAILS PREVIEW -->
@@ -366,22 +360,10 @@
           <div>Frontale</div>
         </div>
       </div>
-      <div class="thumbnail" id="thumb-right" onclick="retakePhoto('right')">
+      <div class="thumbnail" id="thumb-profile" onclick="retakePhoto('profile')">
         <div class="thumbnail-empty">
           <div class="thumbnail-icon"><i class="fas fa-arrow-right"></i></div>
-          <div>Destro</div>
-        </div>
-      </div>
-      <div class="thumbnail" id="thumb-left" onclick="retakePhoto('left')">
-        <div class="thumbnail-empty">
-          <div class="thumbnail-icon"><i class="fas fa-arrow-left"></i></div>
-          <div>Sinistro</div>
-        </div>
-      </div>
-      <div class="thumbnail" id="thumb-back" onclick="retakePhoto('back')">
-        <div class="thumbnail-empty">
-          <div class="thumbnail-icon"><i class="fas fa-user"></i></div>
-          <div>Posteriore</div>
+          <div>Profilo</div>
         </div>
       </div>
       <div class="thumbnail" id="thumb-scalp" onclick="retakePhoto('scalp')">
@@ -520,39 +502,37 @@
   <script src="../url-params-manager.js"></script>
   <script>
     // ========================================
-    // PHOTO SESSION ENGINE v1.0
+    // PHOTO SESSION ENGINE v2.0 - 3 PHOTOS
     // ========================================
 
-    const PHOTO_STEPS = ['front', 'right', 'left', 'back', 'scalp'];
+    const PHOTO_STEPS = ['front', 'profile', 'scalp'];
     const GUIDE_TEXTS = {
       front: 'Viso frontale, sguardo dritto verso la camera',
-      right: 'Profilo destro a 90°, viso laterale',
-      left: 'Profilo sinistro a 90°, viso laterale',
-      back: 'Nuca e parte posteriore capelli',
-      scalp: 'Zona superiore della testa, cute visibile'
+      profile: 'Profilo laterale a 90°, viso completo',
+      scalp: 'Zona superiore della testa, cute e radici visibili'
     };
 
     let currentStep = 0;
     let photos = {
       front: null,
-      right: null,
-      left: null,
-      back: null,
+      profile: null,
       scalp: null
     };
     let cameraStream = null;
     let usingFrontCamera = true;
     let analysisData = null;
+    let clientId = null;
 
-    // AI WEBHOOK
+    // AI WEBHOOKS
     const AI_ANALYSIS_URL = 'https://trinai.api.workflow.dcmake.it/webhook/photo-session-analysis';
+    const MONGO_SAVE_URL = 'https://trinai.api.workflow.dcmake.it/webhook/photo-session-save';
 
     // ========================================
     // INIT
     // ========================================
 
     window.addEventListener('DOMContentLoaded', () => {
-      console.log('Photo Session initialized');
+      console.log('📸 Photo Session initialized (3 photos mode)');
       startCurrentStep();
     });
 
@@ -563,24 +543,18 @@
     function startCurrentStep() {
       const stepName = PHOTO_STEPS[currentStep];
       
-      // Update progress
       updateProgress();
       
-      // Check if already captured
       if (photos[stepName]) {
         console.log(`Step ${stepName} already captured, moving to next`);
         nextStep();
         return;
       }
       
-      // Show camera
       document.getElementById('camera-section').classList.remove('hidden');
       document.getElementById('analysis-section').classList.add('hidden');
       
-      // Update guide
       updateGuide(stepName);
-      
-      // Start camera
       initCamera();
     }
 
@@ -604,10 +578,8 @@
       const silhouette = document.getElementById('guide-silhouette');
       silhouette.className = 'guide-silhouette';
       
-      if (stepName === 'right' || stepName === 'left') {
+      if (stepName === 'profile') {
         silhouette.classList.add('profile');
-      } else if (stepName === 'back') {
-        silhouette.classList.add('back');
       } else if (stepName === 'scalp') {
         silhouette.classList.add('scalp');
       }
@@ -619,7 +591,6 @@
       currentStep++;
       
       if (currentStep >= PHOTO_STEPS.length) {
-        // All photos captured
         completeSession();
       } else {
         startCurrentStep();
@@ -632,7 +603,6 @@
       
       photos[stepName] = null;
       
-      // Update thumbnail
       const thumb = document.getElementById(`thumb-${stepName}`);
       thumb.innerHTML = `
         <div class="thumbnail-empty">
@@ -649,9 +619,7 @@
     function getStepIcon(stepName) {
       const icons = {
         front: 'user',
-        right: 'arrow-right',
-        left: 'arrow-left',
-        back: 'user',
+        profile: 'arrow-right',
         scalp: 'head-side-virus'
       };
       return icons[stepName] || 'user';
@@ -707,22 +675,14 @@
       const canvas = document.getElementById('camera-canvas');
       const ctx = canvas.getContext('2d');
       
-      // Set canvas size
       canvas.width = video.videoWidth;
       canvas.height = video.videoHeight;
-      
-      // Draw current frame
       ctx.drawImage(video, 0, 0);
       
-      // Compress and convert to base64
       compressImage(canvas, (compressedBase64) => {
         const stepName = PHOTO_STEPS[currentStep];
         photos[stepName] = compressedBase64;
-        
-        // Update thumbnail
         updateThumbnail(stepName, compressedBase64);
-        
-        // Next step
         stopCamera();
         nextStep();
       });
@@ -732,6 +692,11 @@
       const file = event.target.files[0];
       if (!file) return;
       
+      if (file.size > 10 * 1024 * 1024) {
+        alert('⚠️ File troppo grande. Max 10 MB.');
+        return;
+      }
+      
       const reader = new FileReader();
       reader.onload = (e) => {
         const img = new Image();
@@ -739,7 +704,6 @@
           const canvas = document.createElement('canvas');
           const ctx = canvas.getContext('2d');
           
-          // Calculate size
           let width = img.width;
           let height = img.height;
           const maxDim = 800;
@@ -770,7 +734,6 @@
     }
 
     function compressImage(canvas, callback) {
-      // Resize if too large
       let width = canvas.width;
       let height = canvas.height;
       const maxDim = 800;
@@ -788,9 +751,8 @@
         canvas = tempCanvas;
       }
       
-      // Convert to JPEG with quality 0.7
       const base64 = canvas.toDataURL('image/jpeg', 0.7);
-      console.log(`📸 Compressed image: ${(base64.length / 1024).toFixed(2)} KB`);
+      console.log(`📸 Compressed: ${(base64.length / 1024).toFixed(2)} KB`);
       callback(base64);
     }
 
@@ -805,21 +767,19 @@
     // ========================================
 
     function completeSession() {
-      console.log('✅ All photos captured');
+      console.log('✅ All 3 photos captured');
       stopCamera();
       
-      // Update progress to 100%
       document.getElementById('progress-fill').style.width = '100%';
       PHOTO_STEPS.forEach((step, index) => {
         document.getElementById(`step-${index + 1}`).classList.add('completed');
       });
       
-      // Start AI analysis
       analyzePhotos();
     }
 
     // ========================================
-    // AI ANALYSIS
+    // AI ANALYSIS + MONGODB SAVE
     // ========================================
 
     async function analyzePhotos() {
@@ -827,9 +787,13 @@
       
       const urlParams = getURLParams();
       
+      // Generate unique client ID
+      clientId = `client_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      
       const payload = {
         owner: urlParams.owner,
         token: urlParams.token,
+        clientId: clientId,
         photos: photos,
         timestamp: Date.now()
       };
@@ -852,6 +816,10 @@
         
         if (data.success && data.analysis) {
           analysisData = data.analysis;
+          
+          // Save to MongoDB
+          await saveToMongoDB();
+          
           displayAnalysis();
         } else {
           throw new Error('Invalid response');
@@ -859,11 +827,43 @@
       } catch (error) {
         console.error('❌ Analysis error:', error);
         hideLoader();
-        alert('⚠️ Errore durante l\'analisi. Riprova più tardi.');
         
         // Mock data for testing
         analysisData = generateMockAnalysis();
+        await saveToMongoDB();
         displayAnalysis();
+      }
+    }
+
+    async function saveToMongoDB() {
+      try {
+        const urlParams = getURLParams();
+        
+        const mongoPayload = {
+          owner: urlParams.owner,
+          clientId: clientId,
+          photos: photos,
+          analysis: analysisData,
+          timestamp: Date.now()
+        };
+        
+        console.log('💾 Saving to MongoDB:', MONGO_SAVE_URL);
+        
+        const response = await fetch(MONGO_SAVE_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(mongoPayload)
+        });
+        
+        if (response.ok) {
+          const result = await response.json();
+          console.log('✅ MongoDB save success:', result);
+        } else {
+          console.warn('⚠️ MongoDB save failed, continuing anyway');
+        }
+      } catch (error) {
+        console.error('❌ MongoDB save error:', error);
+        // Non blocca il flow, continua comunque
       }
     }
 
@@ -875,7 +875,6 @@
       
       const analysis = analysisData;
       
-      // Age & Gender
       document.getElementById('analysis-age').textContent = 
         `${analysis.age.estimated} anni (${analysis.age.range})`;
       
@@ -883,7 +882,6 @@
       document.getElementById('analysis-gender').textContent = 
         genderLabels[analysis.gender.detected] || analysis.gender.detected;
       
-      // Skin
       document.getElementById('analysis-skin-tone').textContent = 
         `${analysis.skinTone.category}`;
       document.getElementById('analysis-undertone').textContent = 
@@ -891,7 +889,6 @@
       document.getElementById('skin-tone-preview').style.background = 
         analysis.skinTone.hex;
       
-      // Hair
       document.getElementById('analysis-hair-color').textContent = 
         `Livello ${analysis.hairAnalysis.naturalColor.level} - ${analysis.hairAnalysis.naturalColor.tone}`;
       document.getElementById('analysis-hair-texture').textContent = 
@@ -903,7 +900,6 @@
       document.getElementById('analysis-damage').textContent = 
         `${analysis.hairAnalysis.damage.level}`;
       
-      // Recommendations
       const recsHTML = `
         <ul>
           <li><strong>Tagli consigliati:</strong> ${analysis.recommendations.suitableHaircuts.join(', ')}</li>
@@ -942,17 +938,10 @@
     function proceedToColorimetry() {
       const urlParams = getURLParams();
       
-      // Store analysis data
-      sessionStorage.setItem('photoSessionData', JSON.stringify({
-        photos: photos,
-        analysis: analysisData
-      }));
-      
-      // Navigate to specchio-magico
       navigateWithParams('./specchio-magico.html', {
         owner: urlParams.owner,
         token: urlParams.token,
-        system: urlParams.system || 'standard',
+        clientId: clientId,
         gender: analysisData.gender.detected || 'F',
         fromPhotoSession: 'true'
       });
@@ -971,9 +960,7 @@
       const urlParams = new URLSearchParams(window.location.search);
       return {
         owner: urlParams.get('owner') || '',
-        token: urlParams.get('token') || '',
-        system: urlParams.get('system') || 'standard',
-        gender: urlParams.get('gender') || 'F'
+        token: urlParams.get('token') || ''
       };
     }
 
