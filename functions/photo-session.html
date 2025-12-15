@@ -285,18 +285,12 @@
       margin-bottom: 8px;
     }
 
-    .upload-option {
-      text-align: center;
-      margin: 15px 0;
-      font-size: 14px;
-      color: var(--text-muted);
-    }
-
     .upload-btn {
-      display: inline-flex;
+      display: flex;
       align-items: center;
+      justify-content: center;
       gap: 8px;
-      padding: 10px 20px;
+      padding: 12px 24px;
       background: var(--glass-bg);
       border: 2px dashed var(--glass-border);
       border-radius: 8px;
@@ -304,6 +298,8 @@
       transition: all 0.2s ease;
       font-size: 14px;
       color: var(--text-primary);
+      margin: 15px auto;
+      max-width: 250px;
     }
 
     .upload-btn:hover {
@@ -506,14 +502,11 @@
         </button>
       </div>
 
-      <div class="upload-option">
-        <span style="margin-right: 10px;">oppure</span>
-        <label class="upload-btn">
-          <i class="fas fa-upload"></i>
-          <span>Carica da Galleria</span>
-          <input type="file" accept="image/*" onchange="uploadPhoto(event)" style="display: none;">
-        </label>
-      </div>
+      <label class="upload-btn">
+        <i class="fas fa-upload"></i>
+        <span>Carica da Galleria</span>
+        <input type="file" accept="image/*" onchange="uploadPhoto(event)" style="display: none;">
+      </label>
     </div>
 
     <div id="analysis-section" class="hidden"></div>
