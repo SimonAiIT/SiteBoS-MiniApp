@@ -8,7 +8,7 @@
 
 ## 🎯 Obiettivo
 
-Il **Photo Session** è un sistema di acquisizione fotografica professionale a **3 angolazioni** che precede lo Specchio Magico AI. Permette di catturare dati visivi essenziali del cliente per un'analisi AI completa che restituisce una **scheda diagnostica dettagliata** salvata in MongoDB.
+Il **Photo Session** è un sistema di acquisizione fotografica professionale a **3 angolazioni** che precede lo Specchio Magico AI. Permette di catturare dati visivi essenziali del cliente per un'analisi AI completa che restituisce una **scheda diagnostica dettagliata** salvata temporaneamente in **sessionStorage**.
 
 ### Caratteristiche Chiave
 
@@ -18,7 +18,7 @@ Il **Photo Session** è un sistema di acquisizione fotografica professionale a *
 - 📱 **Upload alternativo**: possibilità di caricare da galleria per ogni scatto
 - 🔒 **Single permission**: richiesta camera una sola volta (persistente)
 - 🤖 **Analisi AI completa**: età, genere, pelle, capelli, consigli personalizzati
-- 🗄️ **MongoDB persistent**: salvataggio automatico con clientId univoco
+- ⚡ **SessionStorage**: dati volatili, auto-expire dopo sessione
 - 🔗 **Integrazione seamless**: dati pre-compilati in Specchio Magico
 
 ---
@@ -32,10 +32,10 @@ graph TD
     C -->|Next| D[Profilo]
     D -->|Next| E[Cute/Radici]
     E -->|Complete| F[AI Analysis Webhook]
-    F -->|Success| G[MongoDB Save]
-    G -->|clientId| H[Scheda Cliente Display]
+    F -->|Response| G[sessionStorage.setItem]
+    G -->|Display| H[Scheda Cliente]
     H -->|Procedi| I[Specchio Magico]
-    I -->|Load da MongoDB| J[Brand + Gender Selection]
+    I -->|sessionStorage.getItem| J[Brand + Gender Selection]
     J -->|Pre-filled Data| K[Colorimetria Config]
     
     style B fill:#5b6fed,color:#fff
@@ -43,6 +43,12 @@ graph TD
     style G fill:#10b981,color:#fff
     style H fill:#4cd964,color:#fff
 ```
+
+**Perché NO MongoDB?**
+- ⚡ Dati troppo volatili (età cambia, capelli crescono)
+- 💰 Storage cost inutile per dati temporanei
+- 🔄 Ogni sessione è fresh (30 secondi per 3 foto)
+- 🧹 Auto-cleanup garantito (browser expiry)
 
 ---
 
@@ -130,23 +136,50 @@ function compressImage(canvas, callback) {
 **Risultato**:
 - Original 1920x1080 (1.2 MB) → Compressed 800x450 (~80 KB)
 - **Riduzione 93%** mantenendo qualità visiva
-- **Payload totale 3 foto**: ~240 KB (vs ~400 KB con 5 foto)
+- **Payload totale 3 foto**: ~240 KB
 
 ---
 
-### Client ID Generation
+### SessionStorage Architecture
 
 ```javascript
-// Genera ID univoco per tracking cliente
-clientId = `client_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-// Esempio: client_1734284400123_k7j3n9m2x
+// photo-session.html - Dopo AI response
+function saveToSessionStorage() {
+  const sessionData = {
+    clientId: clientId,
+    photos: {
+      front: photos.front,
+      profile: photos.profile,
+      scalp: photos.scalp
+    },
+    analysis: analysisData,
+    timestamp: Date.now()
+  };
+  
+  sessionStorage.setItem('photoSessionData', JSON.stringify(sessionData));
+  console.log('💾 Saved to sessionStorage');
+}
+
+// specchio-magico.html - All'init
+if (urlParams.get('fromPhotoSession') === 'true') {
+  const sessionData = sessionStorage.getItem('photoSessionData');
+  
+  if (sessionData) {
+    const data = JSON.parse(sessionData);
+    
+    // Pre-fill tutto
+    clientPhotoData = data.photos.front;
+    autoFillFromAnalysis(data.analysis);
+    selectedGender = data.analysis.gender.detected;
+  }
+}
 ```
 
-**Uso**:
-- Chiave primaria MongoDB
-- Tracking sessioni multiple stesso cliente
-- Storico analisi nel tempo
-- Link tra Photo Session e Specchio Magico
+**Vantaggi**:
+- ⚡ Zero latency (localStorage in-browser)
+- 🔒 Privacy-first (nessun dato server-side)
+- 🧹 Auto-cleanup (expiry chiusura tab)
+- 💰 Zero costi storage
 
 ---
 
@@ -155,16 +188,16 @@ clientId = `client_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 ### Endpoint
 
 ```
-POST https://trinai.api.workflow.dcmake.it/webhook/photo-session-analysis
+POST https://trinai.api.workflow.dcmake.it/webhook/5364bb15-4186-4246-8d00-c82218f5e407
 ```
 
-### Request Payload (3 foto)
+### Request Payload
 
 ```json
 {
+  "action": "analyze",
   "owner": "telegram_user_id",
   "token": "session_token",
-  "clientId": "client_1734284400123_k7j3n9m2x",
   "photos": {
     "front": "data:image/jpeg;base64,/9j/4AAQSkZJRg...",
     "profile": "data:image/jpeg;base64,/9j/4AAQSkZJRg...",
@@ -174,7 +207,7 @@ POST https://trinai.api.workflow.dcmake.it/webhook/photo-session-analysis
 }
 ```
 
-**Dimensione payload**: ~240 KB (vs ~400 KB con 5 foto)
+**Dimensione payload**: ~240 KB (3 foto compresse)
 
 ---
 
@@ -233,95 +266,34 @@ POST https://trinai.api.workflow.dcmake.it/webhook/photo-session-analysis
 }
 ```
 
+**Note**:
+- ❌ **NO** foto nel response (già salvate client-side)
+- ✅ Solo `analysis` object
+- Frontend riusa foto da variabile `photos`
+
 ---
 
-## 🗄️ MongoDB Save Endpoint
-
-### Endpoint
-
-```
-POST https://trinai.api.workflow.dcmake.it/webhook/photo-session-save
-```
-
-### Request Payload
+### Response (Error)
 
 ```json
 {
-  "owner": "telegram_user_id",
-  "clientId": "client_1734284400123_k7j3n9m2x",
-  "photos": {
-    "front": "data:image/jpeg;base64,...",
-    "profile": "data:image/jpeg;base64,...",
-    "scalp": "data:image/jpeg;base64,..."
-  },
-  "analysis": {
-    // Oggetto completo da AI response
-  },
-  "timestamp": 1734284400000
+  "success": false,
+  "error": {
+    "code": "FACE_NOT_DETECTED",
+    "message": "Viso non rilevato in foto frontale",
+    "photo": "front"
+  }
 }
 ```
 
-### MongoDB Schema
+**Error Codes**:
 
-```javascript
-{
-  _id: ObjectId("..."),
-  owner: "telegram_user_id",
-  clientId: "client_1734284400123_k7j3n9m2x",
-  timestamp: ISODate("2025-12-15T15:00:00.000Z"),
-  
-  photos: {
-    front: "data:image/jpeg;base64,...",
-    profile: "data:image/jpeg;base64,...",
-    scalp: "data:image/jpeg;base64,..."
-  },
-  
-  analysis: {
-    age: { estimated: 34, range: "30-40" },
-    gender: { detected: "F", confidence: 0.95 },
-    skinTone: { category: "Medium", undertone: "Warm", hex: "#d4a891" },
-    hairAnalysis: {
-      naturalColor: { level: 5, tone: "Warm Brown" },
-      texture: { type: "2B", porosity: "Medium" },
-      density: "Medium-High",
-      greyPercentage: 15,
-      damage: { level: "Low", concerns: [] }
-    },
-    faceShape: "Oval",
-    recommendations: {
-      suitableHaircuts: ["Long Bob", "Layered Cut"],
-      colorSuggestions: ["Warm Tones", "Caramel Highlights"],
-      avoidColors: ["Ash Tones", "Cool Platinum"]
-    }
-  },
-  
-  sessionHistory: [
-    {
-      sessionId: "session_1734284500456_xyz",
-      date: ISODate("2025-12-15T15:05:00.000Z"),
-      service: "colorimetria",
-      formula: "7.2",
-      technique: "balayage",
-      photos: {
-        before: "data:image/jpeg;base64,...",
-        after: "data:image/jpeg;base64,..."
-      }
-    }
-  ],
-  
-  createdAt: ISODate("2025-12-15T15:00:00.000Z"),
-  updatedAt: ISODate("2025-12-15T15:05:00.000Z")
-}
-```
-
-### Indexes
-
-```javascript
-db.clients.createIndex({ owner: 1, clientId: 1 }, { unique: true });
-db.clients.createIndex({ owner: 1, "analysis.age.estimated": 1 });
-db.clients.createIndex({ owner: 1, "analysis.gender.detected": 1 });
-db.clients.createIndex({ createdAt: -1 });
-```
+| Codice | Causa | Fix |
+|--------|-------|-----|
+| `FACE_NOT_DETECTED` | Viso non riconosciuto | Ri-scattare frontale |
+| `LOW_QUALITY` | Foto sfocata/scura | Migliorare illuminazione |
+| `INVALID_PAYLOAD` | Payload malformato | Check base64 encoding |
+| `API_QUOTA_EXCEEDED` | Rate limit AI | Attendere 60s |
 
 ---
 
@@ -336,78 +308,53 @@ function proceedToColorimetry() {
   navigateWithParams('./specchio-magico.html', {
     owner: urlParams.owner,
     token: urlParams.token,
-    clientId: clientId, // <<< KEY PARAMETER
     gender: analysisData.gender.detected || 'F',
-    fromPhotoSession: 'true'
+    fromPhotoSession: 'true' // <<< FLAG
   });
 }
 ```
 
-### Specchio Magico Load da MongoDB
+### Specchio Magico Load
 
 ```javascript
 // specchio-magico.js - All'init
-window.addEventListener('DOMContentLoaded', async () => {
+window.addEventListener('DOMContentLoaded', () => {
   const urlParams = new URLSearchParams(window.location.search);
   
   if (urlParams.get('fromPhotoSession') === 'true') {
-    const clientId = urlParams.get('clientId');
+    const sessionData = sessionStorage.getItem('photoSessionData');
     
-    if (clientId) {
-      // Load da MongoDB
-      const clientData = await loadClientData(clientId);
+    if (sessionData) {
+      const data = JSON.parse(sessionData);
       
-      if (clientData) {
-        // Pre-fill tutti i campi
-        autoFillFromAnalysis(clientData.analysis);
-        
-        // Usa foto frontale come preview
-        clientPhotoData = clientData.photos.front;
-        
-        // Auto-select gender
-        selectedGender = clientData.analysis.gender.detected;
-        
-        // Skip brand selection se già configurato
-        // skipToBrandSelection();
+      // 1. Usa foto frontale come preview cliente
+      clientPhotoData = data.photos.front;
+      document.getElementById('client-photo').src = clientPhotoData;
+      
+      // 2. Pre-fill gender
+      selectedGender = data.analysis.gender.detected;
+      
+      // 3. Auto-fill texture capelli
+      document.getElementById('hair-texture').value = 
+        data.analysis.hairAnalysis.texture.type;
+      
+      // 4. Set tono base da colore naturale
+      currentBaseTone = data.analysis.hairAnalysis.naturalColor.level;
+      document.getElementById('base-tone').value = currentBaseTone;
+      
+      // 5. Blocca tecniche pericolose se damage = High
+      if (data.analysis.hairAnalysis.damage.level === 'High') {
+        blockDangerousTechniques();
       }
+      
+      // 6. Mostra consigli AI
+      displayAISuggestions(data.analysis.recommendations);
+      
+      // 7. Skip brand selection se preferito
+      // skipToBrandSelection();
     }
   }
 });
-
-async function loadClientData(clientId) {
-  try {
-    const response = await fetch(
-      `https://trinai.api.workflow.dcmake.it/webhook/client-data?clientId=${clientId}`
-    );
-    
-    if (response.ok) {
-      return await response.json();
-    }
-  } catch (error) {
-    console.error('Load client data error:', error);
-  }
-  return null;
-}
-
-function autoFillFromAnalysis(analysis) {
-  // Texture capelli
-  const textureEl = document.getElementById('hair-texture');
-  if (textureEl) {
-    textureEl.value = analysis.hairAnalysis.texture.type;
-  }
-  
-  // Tono base
-  currentBaseTone = analysis.hairAnalysis.naturalColor.level;
-  document.getElementById('base-tone').value = currentBaseTone;
-  
-  // Blocca bleach se damage = High
-  if (analysis.hairAnalysis.damage.level === 'High') {
-    blockDangerousTechniques();
-  }
-  
-  // Mostra consigli AI
-  displayAISuggestions(analysis.recommendations);
-}
 ```
 
 ---
@@ -416,22 +363,23 @@ function autoFillFromAnalysis(analysis) {
 
 ### Performance Targets
 
-| Metrica | Target (3 foto) | Precedente (5 foto) |
-|---------|-----------------|---------------------|
-| **Tempo sessione** | < 1 min | < 2 min |
-| **Tempo per scatto** | < 5s | < 5s |
-| **AI Analysis** | < 4s | < 5s |
-| **MongoDB Save** | < 1s | - |
-| **Dimensione foto** | ~80 KB | ~80 KB |
-| **Payload totale** | ~240 KB | ~400 KB |
-| **Completion Rate** | 90% | 85% |
+| Metrica | Target | Note |
+|---------|--------|------|
+| **Tempo sessione** | < 1 min | 3 foto + AI |
+| **Tempo per scatto** | < 5s | Include posizionamento |
+| **AI Analysis** | < 4s | Webhook processing |
+| **Dimensione foto** | ~80 KB | Per foto |
+| **Payload totale** | ~240 KB | 3 foto base64 |
+| **Completion Rate** | 90% | Target vs 85% con 5 foto |
+| **SessionStorage size** | ~250 KB | Foto + analysis |
 
 ### Business KPIs
 
-- **Completion Rate**: % sessioni completate (target 90%, +5% vs 5 foto)
+- **Completion Rate**: % sessioni completate (target 90%)
 - **Photo Quality**: % foto accettate da AI (target 95%)
-- **Retake Rate**: % foto ri-scattate (target < 12%, -3% vs 5 foto)
-- **Time to First Service**: tempo medio da photo session a primo servizio (target < 3 min)
+- **Retake Rate**: % foto ri-scattate (target < 12%)
+- **Time to First Service**: da photo session a colorimetria (target < 3 min)
+- **AI Accuracy**: precision età ±5 anni (target 85%)
 
 ---
 
@@ -467,6 +415,16 @@ function autoFillFromAnalysis(analysis) {
 
 ---
 
+### 💾 SessionStorage Vuoto in Specchio Magico
+
+**Causa**: Tab chiuso e riaperto, sessionStorage cleared
+
+**Fix**:
+- Mostra alert: "Dati analisi scaduti. Ripeti photo session."
+- Redirect automatico a photo-session.html
+
+---
+
 ## 🚀 Roadmap
 
 ### Q1 2025 ✅
@@ -474,20 +432,20 @@ function autoFillFromAnalysis(analysis) {
 - [x] Compressione JPEG ottimizzata
 - [x] Upload da galleria alternativo
 - [x] AI analysis webhook
-- [x] MongoDB save integration
-- [x] clientId tracking
+- [x] SessionStorage integration
+- [x] Correct webhook URL
 
 ### Q2 2025 🚧
 - [ ] **Auto-capture**: rileva posizionamento corretto e scatta automaticamente
 - [ ] **Mirror mode**: flip orizzontale per selfie
 - [ ] **Grid overlay**: linee guida rule of thirds
-- [ ] **Client history**: lista clienti precedenti con ricerca
+- [ ] **Client history**: lista ultimi 10 clienti analizzati (localStorage)
 
 ### Q3 2025 📋
 - [ ] **Batch photos**: carica tutte 3 foto insieme
 - [ ] **Hair length measurement**: misura automatica cm capelli
 - [ ] **Scalp health score**: punteggio 0-100
-- [ ] **Before/After gallery**: galleria storico trasformazioni
+- [ ] **Before/After comparison**: side-by-side in results
 
 ---
 
@@ -504,6 +462,8 @@ function autoFillFromAnalysis(analysis) {
 **Photo Session - Powered by TrinAI**
 
 *Analisi AI professionale in 1 minuto con 3 foto*
+
+*SessionStorage-only • Zero persistence • Privacy-first*
 
 ---
 
