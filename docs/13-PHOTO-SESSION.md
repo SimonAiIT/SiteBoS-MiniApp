@@ -1,4 +1,4 @@
-# 📸 Photo Session - Sistema Acquisizione Multi-Angolo
+# 📸 Photo Session - Sistema Acquisizione 3 Angolazioni
 
 > **Ultima revisione**: 15 Dicembre 2025  
 > **Path**: `/functions/photo-session.html`  
@@ -8,16 +8,17 @@
 
 ## 🎯 Obiettivo
 
-Il **Photo Session** è un sistema di acquisizione fotografica professionale a **5 angolazioni** che precede lo Specchio Magico AI. Permette di catturare dati visivi completi del cliente per un'analisi AI approfondita che restituisce una **scheda diagnostica dettagliata**.
+Il **Photo Session** è un sistema di acquisizione fotografica professionale a **3 angolazioni** che precede lo Specchio Magico AI. Permette di catturare dati visivi essenziali del cliente per un'analisi AI completa che restituisce una **scheda diagnostica dettagliata** salvata in MongoDB.
 
 ### Caratteristiche Chiave
 
-- 📷 **5 scatti obbligatori**: frontale, destro, sinistro, posteriore, cute
+- 📷 **3 scatti essenziali**: frontale, profilo, cute
 - 👁️ **Guide visive overlay**: sagome posizionamento per ogni angolazione
 - 💾 **Compressione intelligente**: JPEG quality 0.7, max 800px lato lungo
 - 📱 **Upload alternativo**: possibilità di caricare da galleria per ogni scatto
 - 🔒 **Single permission**: richiesta camera una sola volta (persistente)
 - 🤖 **Analisi AI completa**: età, genere, pelle, capelli, consigli personalizzati
+- 🗄️ **MongoDB persistent**: salvataggio automatico con clientId univoco
 - 🔗 **Integrazione seamless**: dati pre-compilati in Specchio Magico
 
 ---
@@ -26,27 +27,26 @@ Il **Photo Session** è un sistema di acquisizione fotografica professionale a *
 
 ```mermaid
 graph TD
-    A[Functions Hub] -->|Click Specchio Magico| B[Brand Selection]
-    B -->|Seleziona Sistema| C[Gender Selection]
-    C -->|Seleziona Genere| D[Photo Session Start]
-    D -->|Scatto 1/5| E[Frontale]
-    E -->|Next| F[Destro]
-    F -->|Next| G[Sinistro]
-    G -->|Next| H[Posteriore]
-    H -->|Next| I[Cute/Top]
-    I -->|Complete| J[AI Analysis Webhook]
-    J -->|Response| K[Scheda Cliente Display]
-    K -->|Procedi| L[Specchio Magico Config]
-    L -->|Pre-filled Data| M[Colorimetria]
+    A[Functions Hub] -->|Click Specchio Magico| B[Photo Session Start]
+    B -->|Scatto 1/3| C[Frontale]
+    C -->|Next| D[Profilo]
+    D -->|Next| E[Cute/Radici]
+    E -->|Complete| F[AI Analysis Webhook]
+    F -->|Success| G[MongoDB Save]
+    G -->|clientId| H[Scheda Cliente Display]
+    H -->|Procedi| I[Specchio Magico]
+    I -->|Load da MongoDB| J[Brand + Gender Selection]
+    J -->|Pre-filled Data| K[Colorimetria Config]
     
-    style D fill:#5b6fed,color:#fff
-    style J fill:#f59e0b,color:#fff
-    style K fill:#4cd964,color:#fff
+    style B fill:#5b6fed,color:#fff
+    style F fill:#f59e0b,color:#fff
+    style G fill:#10b981,color:#fff
+    style H fill:#4cd964,color:#fff
 ```
 
 ---
 
-## 📸 Le 5 Angolazioni
+## 📸 Le 3 Angolazioni Essenziali
 
 ### 1. **Frontale** 👤
 
@@ -57,16 +57,17 @@ graph TD
 **Dati estratti**:
 - Età stimata (range)
 - Genere rilevato (confidence %)
-- Tono pelle + sottotono
-- Forma viso
+- Tono pelle + sottotono (hex color)
+- Forma viso (oval, square, heart, round)
 - Colore occhi
 - Lunghezza capelli frontale
+- Features facciali (cheekbones, lip shape)
 
 ---
 
-### 2. **Laterale Destro** ➡️
+### 2. **Profilo** ↗️
 
-**Obiettivo**: Profilo 90°, linea mandibola, orecchio visibile
+**Obiettivo**: Laterale 90°, linea mandibola visibile, orecchio inquadrato
 
 **Guide Overlay**: Ovale orizzontale (rotazione 90°)
 
@@ -74,49 +75,26 @@ graph TD
 - Profilo naso
 - Linea mandibola
 - Volume capelli laterale
-- Attaccatura frontale
+- Attaccatura frontale/temporale
+- Texture capelli (ricci/lisci/ondulati)
+- Lunghezza effettiva capelli
 
 ---
 
-### 3. **Laterale Sinistro** ⬅️
+### 3. **Cute/Radici** 🔍
 
-**Obiettivo**: Profilo 90° opposto (per simmetria)
-
-**Guide Overlay**: Ovale orizzontale (rotazione -90°)
-
-**Dati estratti**:
-- Conferma simmetria viso
-- Volume capelli lato opposto
-- Coerenza texture
-
----
-
-### 4. **Posteriore** 👤
-
-**Obiettivo**: Nuca, lunghezza capelli, linea spalle
-
-**Guide Overlay**: Ovale verticale (più largo in basso)
-
-**Dati estratti**:
-- Lunghezza capelli reale
-- Densità nuca
-- Presenza diradamento
-- Colore capelli (luce naturale)
-
----
-
-### 5. **Cute/Top** 🧑‍🦲
-
-**Obiettivo**: Zona superiore testa, radici, cute visibile
+**Obiettivo**: Zona superiore testa, radici ben visibili, cute inquadrata
 
 **Guide Overlay**: Cerchio (60% dimensione)
 
 **Dati estratti**:
 - Salute cute (secca, grassa, normale)
 - Densità capelli (bassa, media, alta)
-- % bianchi (rilevazione automatica)
+- % bianchi (rilevazione automatica pixel saturation)
 - Presenza forfora/dermatiti
-- Colore radici vs lunghezze
+- Colore naturale radici
+- Contrasto radici/lunghezze (ricrescita)
+- Porosità stimata
 
 ---
 
@@ -126,10 +104,9 @@ graph TD
 
 ```javascript
 function compressImage(canvas, callback) {
-  // Resize se troppo grande
   let width = canvas.width;
   let height = canvas.height;
-  const maxDim = 800; // MAX 800px lato lungo
+  const maxDim = 800;
   
   if (width > maxDim || height > maxDim) {
     const scale = maxDim / Math.max(width, height);
@@ -144,7 +121,6 @@ function compressImage(canvas, callback) {
     canvas = tempCanvas;
   }
   
-  // Convert to JPEG quality 0.7
   const base64 = canvas.toDataURL('image/jpeg', 0.7);
   console.log(`📸 Compressed: ${(base64.length / 1024).toFixed(2)} KB`);
   callback(base64);
@@ -154,56 +130,23 @@ function compressImage(canvas, callback) {
 **Risultato**:
 - Original 1920x1080 (1.2 MB) → Compressed 800x450 (~80 KB)
 - **Riduzione 93%** mantenendo qualità visiva
+- **Payload totale 3 foto**: ~240 KB (vs ~400 KB con 5 foto)
 
 ---
 
-### Camera Permission Strategy
-
-**Problema**: Ogni volta che apri la camera, browser chiede consenso → esperienza pessima
-
-**Soluzione**: Single permission request, stream persistente
+### Client ID Generation
 
 ```javascript
-let cameraStream = null;
-
-async function initCamera() {
-  try {
-    // Se stream già attivo, riusa
-    if (cameraStream) {
-      document.getElementById('camera-video').srcObject = cameraStream;
-      return;
-    }
-    
-    // Altrimenti richiedi UNA VOLTA
-    const stream = await navigator.mediaDevices.getUserMedia({
-      video: {
-        facingMode: usingFrontCamera ? 'user' : 'environment',
-        width: { ideal: 1280 },
-        height: { ideal: 1920 }
-      },
-      audio: false
-    });
-    
-    cameraStream = stream;
-    document.getElementById('camera-video').srcObject = stream;
-  } catch (error) {
-    console.error('❌ Camera error:', error);
-    alert('Usa il pulsante Upload da Galleria');
-  }
-}
-
-function stopCamera() {
-  if (cameraStream) {
-    cameraStream.getTracks().forEach(track => track.stop());
-    cameraStream = null;
-  }
-}
+// Genera ID univoco per tracking cliente
+clientId = `client_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+// Esempio: client_1734284400123_k7j3n9m2x
 ```
 
-**Best Practice**:
-1. Stream rimane attivo tra gli step (solo `display: none` su video)
-2. Stop definitivo solo su completamento sessione o cancel
-3. Fallback automatico a upload se permesso negato
+**Uso**:
+- Chiave primaria MongoDB
+- Tracking sessioni multiple stesso cliente
+- Storico analisi nel tempo
+- Link tra Photo Session e Specchio Magico
 
 ---
 
@@ -215,22 +158,23 @@ function stopCamera() {
 POST https://trinai.api.workflow.dcmake.it/webhook/photo-session-analysis
 ```
 
-### Request Payload
+### Request Payload (3 foto)
 
 ```json
 {
   "owner": "telegram_user_id",
   "token": "session_token",
+  "clientId": "client_1734284400123_k7j3n9m2x",
   "photos": {
     "front": "data:image/jpeg;base64,/9j/4AAQSkZJRg...",
-    "right": "data:image/jpeg;base64,/9j/4AAQSkZJRg...",
-    "left": "data:image/jpeg;base64,/9j/4AAQSkZJRg...",
-    "back": "data:image/jpeg;base64,/9j/4AAQSkZJRg...",
+    "profile": "data:image/jpeg;base64,/9j/4AAQSkZJRg...",
     "scalp": "data:image/jpeg;base64,/9j/4AAQSkZJRg..."
   },
   "timestamp": 1734284400000
 }
 ```
+
+**Dimensione payload**: ~240 KB (vs ~400 KB con 5 foto)
 
 ---
 
@@ -263,225 +207,205 @@ POST https://trinai.api.workflow.dcmake.it/webhook/photo-session-analysis
         "porosity": "Medium"
       },
       "density": "Medium-High",
-      "length": {
-        "front": "chin",
-        "back": "shoulder",
-        "estimatedCm": 35
-      },
       "greyPercentage": 15,
       "damage": {
         "level": "Low",
         "concerns": []
-      },
-      "scalpHealth": {
-        "condition": "Normal",
-        "oiliness": "Balanced",
-        "issues": []
       }
     },
     "faceShape": "Oval",
-    "facialFeatures": {
-      "eyeColor": "Brown",
-      "lipShape": "Full",
-      "cheekbones": "High"
-    },
     "recommendations": {
       "suitableHaircuts": [
         "Long Bob",
-        "Layered Cut",
-        "Shag"
+        "Layered Cut"
       ],
       "colorSuggestions": [
         "Warm Tones",
-        "Caramel Highlights",
-        "Balayage Naturale"
+        "Caramel Highlights"
       ],
       "avoidColors": [
         "Ash Tones",
         "Cool Platinum"
-      ],
-      "stylingTips": [
-        "Prodotti volumizzanti su radici",
-        "Evitare piastre sopra 180°C"
       ]
     }
   },
-  "processingTime": 4.2
+  "processingTime": 3.8
 }
 ```
 
 ---
 
-### Response (Error)
+## 🗄️ MongoDB Save Endpoint
+
+### Endpoint
+
+```
+POST https://trinai.api.workflow.dcmake.it/webhook/photo-session-save
+```
+
+### Request Payload
 
 ```json
 {
-  "success": false,
-  "error": {
-    "code": "ANALYSIS_FAILED",
-    "message": "Foto frontale non valida: viso non rilevato",
-    "details": {
-      "photo": "front",
-      "reason": "face_not_detected"
-    }
-  }
+  "owner": "telegram_user_id",
+  "clientId": "client_1734284400123_k7j3n9m2x",
+  "photos": {
+    "front": "data:image/jpeg;base64,...",
+    "profile": "data:image/jpeg;base64,...",
+    "scalp": "data:image/jpeg;base64,..."
+  },
+  "analysis": {
+    // Oggetto completo da AI response
+  },
+  "timestamp": 1734284400000
 }
 ```
 
-**Errori Possibili**:
+### MongoDB Schema
 
-| Codice | Causa | Fix |
-|--------|-------|-----|
-| `FACE_NOT_DETECTED` | Viso non riconosciuto | Ri-scattare foto frontale |
-| `LOW_QUALITY` | Foto sfocata/scura | Migliorare illuminazione |
-| `INCOMPLETE_SESSION` | Meno di 5 foto | Completare tutti gli scatti |
-| `API_QUOTA_EXCEEDED` | Rate limit AI | Attendere 60 secondi |
-
----
-
-## 📊 Scheda Cliente Display
-
-### UI Card Structure
-
-```html
-<div class="analysis-card">
-  <h3>🤖 Analisi AI Cliente</h3>
+```javascript
+{
+  _id: ObjectId("..."),
+  owner: "telegram_user_id",
+  clientId: "client_1734284400123_k7j3n9m2x",
+  timestamp: ISODate("2025-12-15T15:00:00.000Z"),
   
-  <!-- DATI ANAGRAFICI -->
-  <div class="analysis-grid">
-    <div>
-      <label>Età Stimata</label>
-      <value>34 anni (30-40)</value>
-    </div>
-    <div>
-      <label>Genere Rilevato</label>
-      <value>Donna (95% confidence)</value>
-    </div>
-    <div>
-      <label>Tono Pelle</label>
-      <value>Medium <span class="skin-preview" style="background: #d4a891;"></span></value>
-    </div>
-    <div>
-      <label>Sottotono</label>
-      <value>Warm</value>
-    </div>
-  </div>
+  photos: {
+    front: "data:image/jpeg;base64,...",
+    profile: "data:image/jpeg;base64,...",
+    scalp: "data:image/jpeg;base64,..."
+  },
   
-  <!-- ANALISI CAPELLI -->
-  <div class="hair-analysis">
-    <h4>✏️ Analisi Capelli</h4>
-    <div class="analysis-grid">
-      <div>
-        <label>Colore Naturale</label>
-        <value>Livello 5 - Warm Brown</value>
-      </div>
-      <div>
-        <label>Texture</label>
-        <value>2B (Medium Porosity)</value>
-      </div>
-      <div>
-        <label>Densità</label>
-        <value>Medium-High</value>
-      </div>
-      <div>
-        <label>% Bianchi</label>
-        <value>15%</value>
-      </div>
-    </div>
-    <div>
-      <label>Livello Danno</label>
-      <value>Low (nessun concern)</value>
-    </div>
-  </div>
+  analysis: {
+    age: { estimated: 34, range: "30-40" },
+    gender: { detected: "F", confidence: 0.95 },
+    skinTone: { category: "Medium", undertone: "Warm", hex: "#d4a891" },
+    hairAnalysis: {
+      naturalColor: { level: 5, tone: "Warm Brown" },
+      texture: { type: "2B", porosity: "Medium" },
+      density: "Medium-High",
+      greyPercentage: 15,
+      damage: { level: "Low", concerns: [] }
+    },
+    faceShape: "Oval",
+    recommendations: {
+      suitableHaircuts: ["Long Bob", "Layered Cut"],
+      colorSuggestions: ["Warm Tones", "Caramel Highlights"],
+      avoidColors: ["Ash Tones", "Cool Platinum"]
+    }
+  },
   
-  <!-- CONSIGLI AI -->
-  <div class="recommendations">
-    <h4>💡 Consigli AI</h4>
-    <ul>
-      <li><strong>Tagli consigliati:</strong> Long Bob, Layered Cut, Shag</li>
-      <li><strong>Colori suggeriti:</strong> Warm Tones, Caramel Highlights</li>
-      <li><strong>Da evitare:</strong> Ash Tones, Cool Platinum</li>
-    </ul>
-  </div>
+  sessionHistory: [
+    {
+      sessionId: "session_1734284500456_xyz",
+      date: ISODate("2025-12-15T15:05:00.000Z"),
+      service: "colorimetria",
+      formula: "7.2",
+      technique: "balayage",
+      photos: {
+        before: "data:image/jpeg;base64,...",
+        after: "data:image/jpeg;base64,..."
+      }
+    }
+  ],
   
-  <button onclick="proceedToColorimetry()">Procedi a Colorimetria</button>
-</div>
+  createdAt: ISODate("2025-12-15T15:00:00.000Z"),
+  updatedAt: ISODate("2025-12-15T15:05:00.000Z")
+}
+```
+
+### Indexes
+
+```javascript
+db.clients.createIndex({ owner: 1, clientId: 1 }, { unique: true });
+db.clients.createIndex({ owner: 1, "analysis.age.estimated": 1 });
+db.clients.createIndex({ owner: 1, "analysis.gender.detected": 1 });
+db.clients.createIndex({ createdAt: -1 });
 ```
 
 ---
 
 ## 🔗 Integrazione con Specchio Magico
 
-### Data Transfer via SessionStorage
+### Navigation URL
 
 ```javascript
-// photo-session.html - Al completamento
 function proceedToColorimetry() {
-  sessionStorage.setItem('photoSessionData', JSON.stringify({
-    photos: photos, // tutte e 5 le foto base64
-    analysis: analysisData // oggetto completo AI response
-  }));
+  const urlParams = getURLParams();
   
   navigateWithParams('./specchio-magico.html', {
     owner: urlParams.owner,
     token: urlParams.token,
-    system: urlParams.system || 'standard',
+    clientId: clientId, // <<< KEY PARAMETER
     gender: analysisData.gender.detected || 'F',
     fromPhotoSession: 'true'
   });
 }
 ```
 
+### Specchio Magico Load da MongoDB
+
 ```javascript
 // specchio-magico.js - All'init
-window.addEventListener('DOMContentLoaded', () => {
+window.addEventListener('DOMContentLoaded', async () => {
   const urlParams = new URLSearchParams(window.location.search);
   
   if (urlParams.get('fromPhotoSession') === 'true') {
-    const sessionData = sessionStorage.getItem('photoSessionData');
+    const clientId = urlParams.get('clientId');
     
-    if (sessionData) {
-      const data = JSON.parse(sessionData);
+    if (clientId) {
+      // Load da MongoDB
+      const clientData = await loadClientData(clientId);
       
-      // Pre-fill campi da analisi AI
-      autoFillFromAnalysis(data.analysis);
-      
-      // Usa foto frontale come client photo
-      clientPhotoData = data.photos.front;
-      
-      // Skip brand/gender selection, vai diretto a config
-      skipToConfig();
+      if (clientData) {
+        // Pre-fill tutti i campi
+        autoFillFromAnalysis(clientData.analysis);
+        
+        // Usa foto frontale come preview
+        clientPhotoData = clientData.photos.front;
+        
+        // Auto-select gender
+        selectedGender = clientData.analysis.gender.detected;
+        
+        // Skip brand selection se già configurato
+        // skipToBrandSelection();
+      }
     }
   }
 });
 
+async function loadClientData(clientId) {
+  try {
+    const response = await fetch(
+      `https://trinai.api.workflow.dcmake.it/webhook/client-data?clientId=${clientId}`
+    );
+    
+    if (response.ok) {
+      return await response.json();
+    }
+  } catch (error) {
+    console.error('Load client data error:', error);
+  }
+  return null;
+}
+
 function autoFillFromAnalysis(analysis) {
-  // Genere
-  selectedGender = analysis.gender.detected;
-  
   // Texture capelli
   const textureEl = document.getElementById('hair-texture');
   if (textureEl) {
     textureEl.value = analysis.hairAnalysis.texture.type;
   }
   
-  // Tono base (dal colore naturale)
+  // Tono base
   currentBaseTone = analysis.hairAnalysis.naturalColor.level;
   document.getElementById('base-tone').value = currentBaseTone;
   
-  // Blocca scelte pericolose se damage = High
+  // Blocca bleach se damage = High
   if (analysis.hairAnalysis.damage.level === 'High') {
-    const techniqueEl = document.getElementById('color-technique');
-    // Disabilita bleach-tone se capelli danneggiati
-    Array.from(techniqueEl.options).forEach(opt => {
-      if (opt.value === 'bleach-tone') {
-        opt.disabled = true;
-        opt.textContent += ' (⚠️ Sconsigliato - Capelli Danneggiati)';
-      }
-    });
+    blockDangerousTechniques();
   }
   
-  // Suggerimenti colore
+  // Mostra consigli AI
   displayAISuggestions(analysis.recommendations);
 }
 ```
@@ -492,20 +416,22 @@ function autoFillFromAnalysis(analysis) {
 
 ### Performance Targets
 
-| Metrica | Target | Note |
-|---------|--------|------|
-| **Tempo per scatto** | < 5s | Include posizionamento + capture |
-| **Sessione completa** | < 2 min | 5 scatti + AI analysis |
-| **AI Analysis** | < 5s | Webhook processing time |
-| **Dimensione foto** | ~80 KB | JPEG compressed, per foto |
-| **Payload totale** | ~400 KB | 5 foto base64 |
+| Metrica | Target (3 foto) | Precedente (5 foto) |
+|---------|-----------------|---------------------|
+| **Tempo sessione** | < 1 min | < 2 min |
+| **Tempo per scatto** | < 5s | < 5s |
+| **AI Analysis** | < 4s | < 5s |
+| **MongoDB Save** | < 1s | - |
+| **Dimensione foto** | ~80 KB | ~80 KB |
+| **Payload totale** | ~240 KB | ~400 KB |
+| **Completion Rate** | 90% | 85% |
 
 ### Business KPIs
 
-- **Completion Rate**: % sessioni completate (target 85%)
+- **Completion Rate**: % sessioni completate (target 90%, +5% vs 5 foto)
 - **Photo Quality**: % foto accettate da AI (target 95%)
-- **Retake Rate**: % foto ri-scattate (target < 15%)
-- **Skip Rate**: % utenti che skippano photo session (target < 5%)
+- **Retake Rate**: % foto ri-scattate (target < 12%, -3% vs 5 foto)
+- **Time to First Service**: tempo medio da photo session a primo servizio (target < 3 min)
 
 ---
 
@@ -513,89 +439,55 @@ function autoFillFromAnalysis(analysis) {
 
 ### ⚠️ Camera Permission Denied
 
-**Sintomo**: Alert "Impossibile accedere alla camera"
-
-**Cause**:
-1. Utente ha negato permesso
-2. Browser non supporta getUserMedia
-3. HTTPS non attivo (richiesto per camera API)
+**Causa**: Utente ha negato permesso browser
 
 **Fix**:
-- Mostra messaggio: "Usa il pulsante Upload da Galleria"
-- Fallback automatico a upload mode
-- Guide utente per resettare permessi browser
+- Mostra fallback automatico: "Usa Upload da Galleria"
+- Guide per resettare permessi (Settings → Privacy)
 
 ---
 
-### 📸 Foto Sfocate/Scure
+### 📸 Foto Sfocate
 
-**Sintomo**: AI ritorna `LOW_QUALITY` error
-
-**Cause**:
-1. Illuminazione insufficiente
-2. Mano tremante durante scatto
-3. Camera low-res su device vecchi
+**Causa**: Illuminazione insufficiente, mano tremante
 
 **Fix**:
-- Mostra tip pre-scatto: "💡 Assicurati di avere buona luce"
-- Attiva flash se disponibile
-- Permetti retake illimitati senza penali
+- Tip pre-scatto: "💡 Assicurati di avere buona luce"
+- Retake illimitati
 
 ---
 
-### 🔄 Upload da Galleria Non Funziona
+### 🔴 AI Returns "FACE_NOT_DETECTED"
 
-**Sintomo**: File selector non si apre o foto non carica
-
-**Cause**:
-1. iOS bug con `<input type="file">`
-2. Permessi storage negati
-3. File troppo grande (> 10 MB)
+**Causa**: Viso non riconosciuto in foto frontale
 
 **Fix**:
-```javascript
-// Aggiungi validazione size
-function uploadPhoto(event) {
-  const file = event.target.files[0];
-  if (!file) return;
-  
-  // Max 10 MB
-  if (file.size > 10 * 1024 * 1024) {
-    alert('⚠️ File troppo grande. Max 10 MB.');
-    return;
-  }
-  
-  // iOS: trigger click programmatically
-  const input = event.target;
-  input.click();
-  
-  // ... resto del codice
-}
-```
+- Mostra errore specifico: "Viso non rilevato. Ri-scatta foto frontale."
+- Auto-jump a step 1 (frontale)
 
 ---
 
 ## 🚀 Roadmap
 
 ### Q1 2025 ✅
-- [x] Sistema 5 scatti con guide overlay
+- [x] Sistema 3 scatti con guide overlay
 - [x] Compressione JPEG ottimizzata
 - [x] Upload da galleria alternativo
-- [x] AI analysis webhook integration
-- [x] Scheda cliente display
+- [x] AI analysis webhook
+- [x] MongoDB save integration
+- [x] clientId tracking
 
 ### Q2 2025 🚧
-- [ ] **Video tutorial** in-app per ogni angolazione
-- [ ] **Auto-capture**: rileva viso correttamente posizionato e scatta auto
-- [ ] **Mirror mode**: effetto specchio per selfie (flip orizzontale)
-- [ ] **Beauty mode OFF**: disabilita filtri beauty nativi device
-- [ ] **Grid overlay**: linee guida thirds rule
+- [ ] **Auto-capture**: rileva posizionamento corretto e scatta automaticamente
+- [ ] **Mirror mode**: flip orizzontale per selfie
+- [ ] **Grid overlay**: linee guida rule of thirds
+- [ ] **Client history**: lista clienti precedenti con ricerca
 
 ### Q3 2025 📋
-- [ ] **Batch upload**: carica tutte 5 foto insieme da galleria
-- [ ] **AR try-on preview**: anteprima colori in real-time (AR.js)
-- [ ] **Hair length detector**: misura automatica cm capelli
-- [ ] **Scalp health score**: punteggio 0-100 salute cute
+- [ ] **Batch photos**: carica tutte 3 foto insieme
+- [ ] **Hair length measurement**: misura automatica cm capelli
+- [ ] **Scalp health score**: punteggio 0-100
+- [ ] **Before/After gallery**: galleria storico trasformazioni
 
 ---
 
@@ -611,7 +503,7 @@ function uploadPhoto(event) {
 
 **Photo Session - Powered by TrinAI**
 
-*Analisi AI professionale in 2 minuti*
+*Analisi AI professionale in 1 minuto con 3 foto*
 
 ---
 
