@@ -14,6 +14,7 @@ Il **Photo Session** è un sistema di acquisizione fotografica professionale a *
 
 - 📷 **3 scatti essenziali**: frontale, **dettaglio capelli**, cute
 - 👁️ **Guide visive overlay**: sagome posizionamento per ogni angolazione
+- 🎯 **Tap-to-focus**: tocca lo schermo per mettere a fuoco manualmente
 - 💾 **Compressione intelligente**: JPEG quality 0.7, max 800px lato lungo
 - 📱 **Upload alternativo**: possibilità di caricare da galleria per ogni scatto
 - 🔒 **Single permission**: richiesta camera una sola volta (persistente)
@@ -79,6 +80,8 @@ graph TD
 
 **Guide Overlay**: Rettangolo arrotondato (70% larghezza, 60% altezza)
 
+**Tap-to-Focus**: 🎯 Tocca la ciocca sullo schermo per mettere a fuoco
+
 **Dati estratti**:
 - Texture capelli dettagliata (1A-4C classification)
 - Porosità visibile (low, medium, high)
@@ -92,6 +95,7 @@ graph TD
 - ✅ Texture rilevabile con precisione
 - ✅ Damage level oggettivo (frizz, split ends visibili)
 - ✅ Colore reale senza ombre viso
+- ✅ Tap-to-focus per messa a fuoco perfetta
 
 ---
 
@@ -112,6 +116,163 @@ graph TD
 ---
 
 ## 🛠️ Implementazione Tecnica
+
+### Tap-to-Focus 🎯
+
+```javascript
+// --- TAP-TO-FOCUS IMPLEMENTATION ---
+
+let videoElement;
+let currentStream;
+
+// Init camera con focus mode manual
+async function initCamera() {
+  const constraints = {
+    video: {
+      facingMode: 'user',
+      width: { ideal: 1920 },
+      height: { ideal: 1080 },
+      focusMode: 'manual' // <<< IMPORTANTE
+    }
+  };
+  
+  currentStream = await navigator.mediaDevices.getUserMedia(constraints);
+  videoElement = document.getElementById('camera-preview');
+  videoElement.srcObject = currentStream;
+  
+  // Aggiungi listener per tap-to-focus
+  videoElement.addEventListener('click', handleTapToFocus);
+}
+
+// Handler tap-to-focus
+function handleTapToFocus(event) {
+  const rect = videoElement.getBoundingClientRect();
+  
+  // Calcola coordinate relative (0-1)
+  const x = (event.clientX - rect.left) / rect.width;
+  const y = (event.clientY - rect.top) / rect.height;
+  
+  // Applica focus point
+  applyFocusPoint(x, y);
+  
+  // Mostra feedback visivo
+  showFocusIndicator(event.clientX, event.clientY);
+}
+
+// Applica focus al punto selezionato
+async function applyFocusPoint(x, y) {
+  const track = currentStream.getVideoTracks()[0];
+  const capabilities = track.getCapabilities();
+  
+  // Check se device supporta manual focus
+  if (capabilities.focusMode && capabilities.focusMode.includes('manual')) {
+    try {
+      await track.applyConstraints({
+        advanced: [{
+          focusMode: 'manual',
+          focusDistance: calculateFocusDistance(x, y),
+          pointsOfInterest: [{ x: x, y: y }]
+        }]
+      });
+      
+      console.log(`🎯 Focus applicato a: (${x.toFixed(2)}, ${y.toFixed(2)})`);
+    } catch (err) {
+      console.warn('Focus manual non supportato, uso continuous:', err);
+      // Fallback a continuous autofocus
+      await track.applyConstraints({
+        advanced: [{ focusMode: 'continuous' }]
+      });
+    }
+  }
+}
+
+// Calcola distanza focus (0 = vicino, 1 = lontano)
+function calculateFocusDistance(x, y) {
+  // Per foto dettaglio capelli (close-up), usa focus ravvicinato
+  return 0.2; // 20% = macro focus
+}
+
+// Mostra indicatore visivo tap
+function showFocusIndicator(x, y) {
+  // Crea cerchio focus
+  const indicator = document.createElement('div');
+  indicator.className = 'focus-indicator';
+  indicator.style.left = `${x}px`;
+  indicator.style.top = `${y}px`;
+  
+  document.body.appendChild(indicator);
+  
+  // Animazione
+  setTimeout(() => {
+    indicator.classList.add('focused');
+  }, 10);
+  
+  // Rimuovi dopo 1 secondo
+  setTimeout(() => {
+    indicator.remove();
+  }, 1000);
+}
+
+// CSS per focus indicator
+const focusIndicatorCSS = `
+.focus-indicator {
+  position: absolute;
+  width: 80px;
+  height: 80px;
+  border: 2px solid #4cd964;
+  border-radius: 50%;
+  transform: translate(-50%, -50%) scale(1.5);
+  opacity: 0;
+  transition: all 0.3s ease;
+  pointer-events: none;
+  box-shadow: 0 0 0 2px rgba(76, 217, 100, 0.3);
+}
+
+.focus-indicator.focused {
+  transform: translate(-50%, -50%) scale(1);
+  opacity: 1;
+}
+`;
+```
+
+---
+
+### UI Hint per Tap-to-Focus
+
+```html
+<!-- Hint visibile durante foto 2 (dettaglio capelli) -->
+<div class="tap-hint" v-if="currentStep === 2">
+  <div class="hint-icon">🎯</div>
+  <p>Tocca sullo schermo per mettere a fuoco la ciocca</p>
+</div>
+
+<style>
+.tap-hint {
+  position: absolute;
+  bottom: 120px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.7);
+  padding: 12px 20px;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  animation: pulse 2s infinite;
+}
+
+.hint-icon {
+  font-size: 24px;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+</style>
+```
+
+---
 
 ### Compressione JPEG Ottimizzata
 
@@ -159,17 +320,20 @@ const photoSteps = [
       type: 'oval-vertical',
       width: '60%',
       height: '80%'
-    }
+    },
+    tapToFocus: false
   },
   {
     id: 2,
     title: '💇‍♀️ Foto 2: Dettaglio Capelli',
-    instruction: 'Inquadra una ciocca da vicino per mostrare texture e condizione',
+    instruction: 'Inquadra una ciocca da vicino. Tocca per mettere a fuoco.',
     overlay: {
       type: 'rounded-rect',
       width: '70%',
       height: '60%'
-    }
+    },
+    tapToFocus: true, // <<< ATTIVA TAP-TO-FOCUS
+    focusDistance: 0.2 // Macro focus
   },
   {
     id: 3,
@@ -178,7 +342,9 @@ const photoSteps = [
     overlay: {
       type: 'circle',
       size: '60%'
-    }
+    },
+    tapToFocus: true,
+    focusDistance: 0.3
   }
 ];
 ```
@@ -370,7 +536,7 @@ POST https://trinai.api.workflow.dcmake.it/webhook/5364bb15-4186-4246-8d00-c8221
 | Codice | Causa | Fix |
 |--------|-------|-----|
 | `FACE_NOT_DETECTED` | Viso non riconosciuto | Ri-scattare frontale |
-| `HAIR_NOT_DETECTABLE` | Dettaglio capelli sfocato | Ri-scattare foto 2 |
+| `HAIR_NOT_DETECTABLE` | Dettaglio capelli sfocato | Usa tap-to-focus e ri-scatta |
 | `LOW_QUALITY` | Foto sfocata/scura | Migliorare illuminazione |
 | `INVALID_PAYLOAD` | Payload malformato | Check base64 encoding |
 | `API_QUOTA_EXCEEDED` | Rate limit AI | Attendere 60s |
@@ -510,12 +676,13 @@ if (urlParams.get('fromPhotoSession') === 'true') {
 | Metrica | Target | Note |
 |---------|--------|------|
 | **Tempo sessione** | < 1 min | 3 foto + AI |
-| **Tempo per scatto** | < 5s | Include posizionamento |
+| **Tempo per scatto** | < 5s | Include posizionamento + focus |
 | **AI Analysis** | < 5s | Webhook processing (3 foto) |
 | **Dimensione foto** | ~80 KB | Per foto |
 | **Payload totale** | ~240 KB | 3 foto base64 |
 | **Completion Rate** | 90% | Target |
 | **SessionStorage size** | ~280 KB | Foto + report completo |
+| **Focus accuracy** | 95% | Tap-to-focus successo |
 
 ### Business KPIs
 
@@ -525,6 +692,7 @@ if (urlParams.get('fromPhotoSession') === 'true') {
 - **Time to First Service**: da photo session a colorimetria (target < 3 min)
 - **AI Accuracy**: precision età ±5 anni (target 85%)
 - **Hair Texture Detection**: accuracy texture classification (target 90%)
+- **Tap-to-Focus Usage**: % utenti che usano tap-to-focus (target 60%)
 
 ---
 
@@ -545,8 +713,9 @@ if (urlParams.get('fromPhotoSession') === 'true') {
 **Causa**: Camera non mette a fuoco da vicino
 
 **Fix**:
-- Tip pre-scatto: "📏 Allontana leggermente il telefono (20-30 cm)"
-- Suggerisci di usare focus tap sullo schermo
+- Mostra hint: "🎯 Tocca sullo schermo per mettere a fuoco"
+- Tap-to-focus automatico sul centro se non usato dopo 3s
+- Suggerisci di allontanare leggermente (20-30 cm)
 - Retake illimitati
 
 ---
@@ -556,8 +725,20 @@ if (urlParams.get('fromPhotoSession') === 'true') {
 **Causa**: Foto 2 troppo sfocata o luce insufficiente
 
 **Fix**:
-- Mostra errore specifico: "Dettaglio capelli non chiaro. Ri-scatta foto 2 con più luce."
+- Mostra errore specifico: "Dettaglio capelli non chiaro. Usa tap-to-focus e ri-scatta."
 - Auto-jump a step 2 (hair detail)
+- Force show tap hint
+
+---
+
+### 🎯 Tap-to-Focus Non Funziona
+
+**Causa**: Device non supporta manual focus mode
+
+**Fix**:
+- Fallback automatico a `focusMode: 'continuous'`
+- Mostra hint: "Focus automatico attivo"
+- Suggerisci di tenere fermo il telefono 2 secondi prima dello scatto
 
 ---
 
@@ -583,18 +764,21 @@ if (urlParams.get('fromPhotoSession') === 'true') {
 - [x] Response structure con HEX colors
 - [x] Multi-lingua support
 - [x] Age clemency per donne
+- [x] **Tap-to-focus implementation**
 
 ### Q1 2026 🚧
-- [ ] **Auto-focus**: tap-to-focus automatico per foto 2
+- [ ] **Auto-focus fallback**: se tap non usato dopo 3s, auto-focus sul centro
 - [ ] **Mirror mode**: flip orizzontale per selfie
 - [ ] **Lighting check**: warning se foto troppo scura
 - [ ] **Client history**: lista ultimi 10 clienti (localStorage)
+- [ ] **Focus lock indicator**: mostra quando focus è locked
 
 ### Q2 2026 📋
 - [ ] **Hair length measurement**: misura automatica cm capelli
 - [ ] **Scalp health score**: punteggio 0-100
 - [ ] **Before/After comparison**: side-by-side in results
 - [ ] **PDF export**: scheda cliente stampabile
+- [ ] **Multi-focus zones**: tap multipli per average focus
 
 ---
 
@@ -614,7 +798,7 @@ if (urlParams.get('fromPhotoSession') === 'true') {
 
 *Frontale • Dettaglio Capelli • Cute*
 
-*SessionStorage-only • Zero persistence • Privacy-first • Multi-lingua*
+*SessionStorage-only • Zero persistence • Privacy-first • Multi-lingua • Tap-to-Focus*
 
 ---
 
