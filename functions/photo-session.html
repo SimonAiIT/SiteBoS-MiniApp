@@ -763,16 +763,16 @@
       showLoader('🤖 Analisi AI in corso...');
       
       const urlParams = getURLParams();
+      
+      // PAYLOAD FLAT - NO NESTED BODY
       const payload = {
         action: 'analyze',
         owner: urlParams.owner,
         token: urlParams.token,
-        body: {
-          photos: {
-            front: { base64: photos.front.split(',')[1], mimeType: 'image/jpeg', size: Math.round(photos.front.length / 1024) },
-            hairDetail: { base64: photos.hairDetail.split(',')[1], mimeType: 'image/jpeg', size: Math.round(photos.hairDetail.length / 1024) },
-            scalp: { base64: photos.scalp.split(',')[1], mimeType: 'image/jpeg', size: Math.round(photos.scalp.length / 1024) }
-          }
+        photos: {
+          front: { base64: photos.front.split(',')[1], mimeType: 'image/jpeg', size: Math.round(photos.front.length / 1024) },
+          hairDetail: { base64: photos.hairDetail.split(',')[1], mimeType: 'image/jpeg', size: Math.round(photos.hairDetail.length / 1024) },
+          scalp: { base64: photos.scalp.split(',')[1], mimeType: 'image/jpeg', size: Math.round(photos.scalp.length / 1024) }
         },
         timestamp: Date.now()
       };
