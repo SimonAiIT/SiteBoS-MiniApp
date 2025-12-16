@@ -1,7 +1,7 @@
 // ========================================
-// SPECCHIO MAGICO AI - MAIN ENGINE v4.6
+// SPECCHIO MAGICO AI - MAIN ENGINE v4.7
 // Sistema Colorimetria Professionale + MULTI-BOWL SYSTEM + AI WEBHOOK + FULLSCREEN VIEWER
-// 🔧 FIX CRITICO: selectSystem() null-safe per photo-session flow
+// 🔥 FIX DEFINITIVO: Rimosso completamente fallback camera da photo-session
 // ========================================
 
 let currentSystem = null;
@@ -24,7 +24,7 @@ const AI_WEBHOOK_URL = 'https://trinai.api.workflow.dcmake.it/webhook/5364bb15-4
 
 // ========================================
 // PHASE 1: BRAND SYSTEM SELECTION
-// 🔧 FIX: Gestione null-safe per gender-section rimossa da auto-gender
+// 🔥 FIX: Rimosso completamente fallback camera - solo config diretta
 // ========================================
 
 function selectSystem(system) {
@@ -39,44 +39,47 @@ function selectSystem(system) {
   if (genderSection) {
     // Flusso normale: mostra la selezione genere
     genderSection.classList.remove('hidden');
+    console.log('👥 Flusso NORMALE: selezione genere attiva');
   } else {
-    // Flusso da photo-session: genere già selezionato, sezione rimossa
-    console.log('⚠️ gender-section NON trovato (auto-gender attivo). Procedo con flusso photo-session.');
+    // Flusso da photo-session: genere già selezionato, vai DIRETTO a config
+    console.log('📸 Flusso PHOTO-SESSION: auto-gender attivo, vado DIRETTO a config');
     
-    if (clientPhotoData) {
-      // Foto già caricata dalla sessione → vai diretto alla config
-      console.log('✅ clientPhotoData presente, salto camera e vado diretto a config.');
-      
-      const classicPhoto = document.querySelector('#config-section #client-photo');
-      const fluidPhoto = document.querySelector('#fluid-config-section #client-photo');
-      if (classicPhoto) classicPhoto.src = clientPhotoData;
-      if (fluidPhoto) fluidPhoto.src = clientPhotoData;
-      
-      if (window.isFluidMode) {
-        document.getElementById('fluid-config-section').classList.remove('hidden');
-        if (typeof populateFluidUI === 'function') populateFluidUI();
-      } else {
-        document.getElementById('config-section').classList.remove('hidden');
-        populateHaircuts();
-        renderReflectPalette();
-        
-        if (selectedGender === 'F') {
-          const makeupSection = document.getElementById('makeup-section');
-          if (makeupSection) makeupSection.classList.remove('hidden');
-          renderLipColors();
-        }
-        
-        if (selectedGender === 'M' || selectedGender === 'X') {
-          const beardSection = document.getElementById('beard-section');
-          if (beardSection) beardSection.classList.remove('hidden');
-          renderBeardColors();
-        }
-      }
+    if (!clientPhotoData) {
+      console.error('❌ ERRORE CRITICO: clientPhotoData MANCANTE nel flusso photo-session!');
+      alert('⚠️ ERRORE: Foto cliente non trovata. Ritorna alla sessione fotografica.');
+      window.location.href = 'photo-session.html';
+      return;
+    }
+    
+    // 🎯 FOTO PRESENTE → VAI DIRETTO ALLA CONFIG
+    console.log('✅ clientPhotoData presente, carico CONFIG immediata.');
+    
+    const classicPhoto = document.querySelector('#config-section #client-photo');
+    const fluidPhoto = document.querySelector('#fluid-config-section #client-photo');
+    if (classicPhoto) classicPhoto.src = clientPhotoData;
+    if (fluidPhoto) fluidPhoto.src = clientPhotoData;
+    
+    if (window.isFluidMode) {
+      console.log('🌈 Modalità FLUID: carico fluid-config-section');
+      document.getElementById('fluid-config-section').classList.remove('hidden');
+      if (typeof populateFluidUI === 'function') populateFluidUI();
     } else {
-      // Nessuna foto presente → apri camera
-      console.log('📸 Nessuna foto trovata, apro camera-section.');
-      const cameraSection = document.getElementById('camera-section');
-      if (cameraSection) cameraSection.classList.remove('hidden');
+      console.log('🎭 Modalità CLASSIC: carico config-section');
+      document.getElementById('config-section').classList.remove('hidden');
+      populateHaircuts();
+      renderReflectPalette();
+      
+      if (selectedGender === 'F') {
+        const makeupSection = document.getElementById('makeup-section');
+        if (makeupSection) makeupSection.classList.remove('hidden');
+        renderLipColors();
+      }
+      
+      if (selectedGender === 'M' || selectedGender === 'X') {
+        const beardSection = document.getElementById('beard-section');
+        if (beardSection) beardSection.classList.remove('hidden');
+        renderBeardColors();
+      }
     }
   }
   
