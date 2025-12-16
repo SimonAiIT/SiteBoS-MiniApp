@@ -14,6 +14,32 @@ let cameraStream = null;
 let currentFacingMode = 'user';
 let selectedCreativeColor = null;
 
+// URL params
+const urlParams = new URLSearchParams(window.location.search);
+const owner = urlParams.get('owner') || '';
+const fromPhotoSession = urlParams.get('fromPhotoSession') === 'true';
+
+// ========================================
+// LOAD PHOTOS FROM SESSION STORAGE
+// ========================================
+
+if (fromPhotoSession) {
+  console.log('📸 Loading photos from Photo Session...');
+  
+  const storedPhoto = sessionStorage.getItem('photo_front');
+  if (storedPhoto) {
+    // Convert base64 back to blob
+    fetch(storedPhoto)
+      .then(res => res.blob())
+      .then(blob => {
+        capturedPhotoBlob = blob;
+        console.log('✅ Photo loaded from sessionStorage');
+      });
+  } else {
+    console.warn('⚠️ No photo found in sessionStorage');
+  }
+}
+
 // ========================================
 // REFLECTS DATABASE (COMPLETE)
 // ========================================
@@ -59,7 +85,15 @@ function selectSystem(system) {
   console.log('✅ Sistema selezionato:', system);
   
   document.getElementById('brand-selection').classList.add('hidden');
-  document.getElementById('gender-section').classList.remove('hidden');
+  
+  // If coming from photo session with photo already captured, skip directly to config
+  if (fromPhotoSession && capturedPhotoBlob && selectedGender) {
+    console.log('🚀 Photo exists - proceeding to config');
+    proceedToConfig();
+  } else {
+    // Normal flow - show gender selection
+    document.getElementById('gender-section').classList.remove('hidden');
+  }
 }
 
 // ========================================
@@ -71,11 +105,14 @@ function selectGender(gender) {
   console.log('✅ Genere selezionato:', gender);
   
   // Highlight selected
-  document.querySelectorAll('.gender-btn').forEach(btn => btn.classList.remove('active'));
-  document.getElementById('gender-' + gender.toLowerCase()).classList.add('active');
+  const genderBtns = document.querySelectorAll('.gender-btn');
+  genderBtns.forEach(btn => btn.classList.remove('active'));
+  const selectedBtn = document.getElementById('gender-' + gender.toLowerCase());
+  if (selectedBtn) selectedBtn.classList.add('active');
   
   // Enable camera button
-  document.getElementById('btn-start-camera').disabled = false;
+  const cameraBtn = document.getElementById('btn-start-camera');
+  if (cameraBtn) cameraBtn.disabled = false;
   
   // Init pillars if available
   if (typeof initPillars === 'function') {
@@ -148,6 +185,7 @@ function capturePhoto() {
 
 function proceedToConfig() {
   document.getElementById('camera-section').classList.add('hidden');
+  document.getElementById('brand-selection').classList.add('hidden');
   
   if (selectedGender === 'X') {
     // Fluid -> Creative colors
@@ -166,6 +204,8 @@ function proceedToConfig() {
 function initConfigSection() {
   // Populate levels 1-10
   const levelSelector = document.getElementById('level-selector');
+  if (!levelSelector) return;
+  
   levelSelector.innerHTML = '';
   
   for (let i = 1; i <= 10; i++) {
@@ -193,6 +233,8 @@ function selectLevel(level) {
 
 function populateReflects(type) {
   const grid = document.getElementById(type + '-reflect-grid');
+  if (!grid) return;
+  
   grid.innerHTML = '';
   
   let reflectsToShow = [];
@@ -241,8 +283,11 @@ function selectReflect(type, code) {
       console.log('✅ Riflesso primario:', code);
       
       // Show secondary section
-      document.getElementById('secondary-section').classList.remove('hidden');
-      populateReflects('secondary');
+      const secondarySection = document.getElementById('secondary-section');
+      if (secondarySection) {
+        secondarySection.classList.remove('hidden');
+        populateReflects('secondary');
+      }
     }
     
     // Highlight
@@ -261,10 +306,14 @@ function selectReflect(type, code) {
 }
 
 function updateFormula() {
-  if (!selectedLevel || !primaryReflect) {
-    document.getElementById('formula-code').textContent = '--.--';
-    document.getElementById('formula-description').textContent = '';
-    document.getElementById('btn-generate').disabled = true;
+  const formulaCode = document.getElementById('formula-code');
+  const formulaDesc = document.getElementById('formula-description');
+  const btnGenerate = document.getElementById('btn-generate');
+  
+  if (!formulaCode || !selectedLevel || !primaryReflect) {
+    if (formulaCode) formulaCode.textContent = '--.--';
+    if (formulaDesc) formulaDesc.textContent = '';
+    if (btnGenerate) btnGenerate.disabled = true;
     return;
   }
   
@@ -310,9 +359,9 @@ function updateFormula() {
     }
   }
   
-  document.getElementById('formula-code').textContent = formula;
-  document.getElementById('formula-description').textContent = description;
-  document.getElementById('btn-generate').disabled = false;
+  formulaCode.textContent = formula;
+  formulaDesc.textContent = description;
+  if (btnGenerate) btnGenerate.disabled = false;
 }
 
 // ========================================
@@ -321,14 +370,18 @@ function updateFormula() {
 
 function loadCreativeColors() {
   const category = document.getElementById('creative-category').value;
-  if (!category) {
-    document.getElementById('creative-colors-container').classList.add('hidden');
+  const container = document.getElementById('creative-colors-container');
+  
+  if (!category || !container) {
+    if (container) container.classList.add('hidden');
     return;
   }
   
-  document.getElementById('creative-colors-container').classList.remove('hidden');
+  container.classList.remove('hidden');
   
   const grid = document.getElementById('creative-colors-grid');
+  if (!grid) return;
+  
   grid.innerHTML = '';
   
   if (typeof getCreativeColorsByCategory !== 'function') {
@@ -367,17 +420,22 @@ function selectCreativeColor(id, name, hex) {
   document.querySelectorAll('#creative-colors-grid .reflect-btn').forEach(btn => btn.classList.remove('active'));
   event.target.closest('.reflect-btn').classList.add('active');
   
-  document.getElementById('creative-formula-code').textContent = name;
-  document.getElementById('creative-formula-description').textContent = 'Colore fantasy puro';
-  document.getElementById('btn-generate-creative').disabled = false;
+  const formulaCode = document.getElementById('creative-formula-code');
+  const formulaDesc = document.getElementById('creative-formula-description');
+  const btnGenerate = document.getElementById('btn-generate-creative');
+  
+  if (formulaCode) formulaCode.textContent = name;
+  if (formulaDesc) formulaDesc.textContent = 'Colore fantasy puro';
+  if (btnGenerate) btnGenerate.disabled = false;
 }
 
 function generateCreativeAI() {
-  if (!selectedCreativeColor) return;
+  if (!selectedCreativeColor || !capturedPhotoBlob) return;
   
   showLoader('Generazione AI in corso...');
   
-  // Mock AI generation per creative
+  // TODO: Call backend webhook here
+  // For now, mock AI generation
   setTimeout(() => {
     hideLoader();
     
@@ -385,24 +443,29 @@ function generateCreativeAI() {
     document.getElementById('results-section').classList.remove('hidden');
     
     // Show result
-    document.getElementById('result-photo').src = URL.createObjectURL(capturedPhotoBlob);
-    document.getElementById('result-title').textContent = selectedCreativeColor.name;
-    document.getElementById('result-subtitle').textContent = 'Colore creativo applicato';
+    const resultPhoto = document.getElementById('result-photo');
+    const resultTitle = document.getElementById('result-title');
+    const resultSubtitle = document.getElementById('result-subtitle');
+    const aiResultImg = document.getElementById('ai-result-img');
     
-    // Mock AI image
-    document.getElementById('ai-result-img').src = URL.createObjectURL(capturedPhotoBlob);
+    if (resultPhoto) resultPhoto.src = URL.createObjectURL(capturedPhotoBlob);
+    if (resultTitle) resultTitle.textContent = selectedCreativeColor.name;
+    if (resultSubtitle) resultSubtitle.textContent = 'Colore creativo applicato';
+    if (aiResultImg) aiResultImg.src = URL.createObjectURL(capturedPhotoBlob);
     
     const details = document.getElementById('result-details');
-    details.innerHTML = `
-      <div class="detail-item">
-        <div class="detail-label">Colore</div>
-        <div class="detail-value">${selectedCreativeColor.name}</div>
-      </div>
-      <div class="detail-item">
-        <div class="detail-label">Categoria</div>
-        <div class="detail-value">${document.getElementById('creative-category').selectedOptions[0].text}</div>
-      </div>
-    `;
+    if (details) {
+      details.innerHTML = `
+        <div class="detail-item">
+          <div class="detail-label">Colore</div>
+          <div class="detail-value">${selectedCreativeColor.name}</div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-label">Categoria</div>
+          <div class="detail-value">${document.getElementById('creative-category').selectedOptions[0].text}</div>
+        </div>
+      `;
+    }
   }, 2000);
 }
 
@@ -411,41 +474,91 @@ function generateCreativeAI() {
 // ========================================
 
 function generateAIResult() {
-  if (!selectedLevel || !primaryReflect) return;
+  if (!selectedLevel || !primaryReflect || !capturedPhotoBlob) {
+    console.error('❌ Missing required data for AI generation');
+    return;
+  }
   
   showLoader('Generazione AI in corso...');
   
-  // Mock AI generation
-  setTimeout(() => {
-    hideLoader();
+  // Convert blob to base64
+  const reader = new FileReader();
+  reader.onloadend = async () => {
+    const photoBase64 = reader.result;
     
-    document.getElementById('config-section').classList.add('hidden');
-    document.getElementById('results-section').classList.remove('hidden');
+    const payload = {
+      action: 'generate_hair_color_ai',
+      owner: owner,
+      photo: photoBase64,
+      formula: {
+        code: document.getElementById('formula-code').textContent,
+        system: selectedBrandSystem,
+        level: selectedLevel,
+        primary_reflect: primaryReflect,
+        primary_intensified: primaryIntensified,
+        secondary_reflect: secondaryReflect
+      },
+      gender: selectedGender
+    };
     
-    // Show result
-    document.getElementById('result-photo').src = URL.createObjectURL(capturedPhotoBlob);
-    document.getElementById('result-title').textContent = document.getElementById('formula-code').textContent;
-    document.getElementById('result-subtitle').textContent = document.getElementById('formula-description').textContent;
+    console.log('🚀 Calling backend webhook...', payload.action);
     
-    // Mock AI image (in realtà qui chiameresti l'API)
-    document.getElementById('ai-result-img').src = URL.createObjectURL(capturedPhotoBlob);
+    // TODO: Replace with actual webhook URL
+    const WEBHOOK_URL = 'https://your-webhook-url.com/endpoint';
     
-    const details = document.getElementById('result-details');
-    details.innerHTML = `
-      <div class="detail-item">
-        <div class="detail-label">Formula</div>
-        <div class="detail-value">${document.getElementById('formula-code').textContent}</div>
-      </div>
-      <div class="detail-item">
-        <div class="detail-label">Sistema</div>
-        <div class="detail-value">${selectedBrandSystem}</div>
-      </div>
-      <div class="detail-item">
-        <div class="detail-label">Livello</div>
-        <div class="detail-value">${selectedLevel}</div>
-      </div>
-    `;
-  }, 2000);
+    try {
+      // For now, mock the API call
+      // const response = await fetch(WEBHOOK_URL, {
+      //   method: 'POST',
+      //   headers: { 'Content-Type': 'application/json' },
+      //   body: JSON.stringify(payload)
+      // });
+      // const data = await response.json();
+      
+      // Mock response
+      setTimeout(() => {
+        hideLoader();
+        
+        document.getElementById('config-section').classList.add('hidden');
+        document.getElementById('results-section').classList.remove('hidden');
+        
+        const resultPhoto = document.getElementById('result-photo');
+        const resultTitle = document.getElementById('result-title');
+        const resultSubtitle = document.getElementById('result-subtitle');
+        const aiResultImg = document.getElementById('ai-result-img');
+        
+        if (resultPhoto) resultPhoto.src = URL.createObjectURL(capturedPhotoBlob);
+        if (resultTitle) resultTitle.textContent = payload.formula.code;
+        if (resultSubtitle) resultSubtitle.textContent = document.getElementById('formula-description').textContent;
+        if (aiResultImg) aiResultImg.src = URL.createObjectURL(capturedPhotoBlob);
+        
+        const details = document.getElementById('result-details');
+        if (details) {
+          details.innerHTML = `
+            <div class="detail-item">
+              <div class="detail-label">Formula</div>
+              <div class="detail-value">${payload.formula.code}</div>
+            </div>
+            <div class="detail-item">
+              <div class="detail-label">Sistema</div>
+              <div class="detail-value">${selectedBrandSystem}</div>
+            </div>
+            <div class="detail-item">
+              <div class="detail-label">Livello</div>
+              <div class="detail-value">${selectedLevel}</div>
+            </div>
+          `;
+        }
+      }, 2000);
+      
+    } catch (error) {
+      hideLoader();
+      console.error('❌ Backend error:', error);
+      alert('Errore durante la generazione AI. Riprova.');
+    }
+  };
+  
+  reader.readAsDataURL(capturedPhotoBlob);
 }
 
 // ========================================
@@ -453,12 +566,15 @@ function generateAIResult() {
 // ========================================
 
 function showLoader(text) {
-  document.getElementById('loader-text').textContent = text || 'Caricamento...';
-  document.getElementById('loader').classList.remove('hidden');
+  const loader = document.getElementById('loader');
+  const loaderText = document.getElementById('loader-text');
+  if (loaderText) loaderText.textContent = text || 'Caricamento...';
+  if (loader) loader.classList.remove('hidden');
 }
 
 function hideLoader() {
-  document.getElementById('loader').classList.add('hidden');
+  const loader = document.getElementById('loader');
+  if (loader) loader.classList.add('hidden');
 }
 
 function resetApp() {
@@ -471,11 +587,18 @@ function resetApp() {
   capturedPhotoBlob = null;
   selectedCreativeColor = null;
   
-  document.querySelectorAll('.hidden').forEach(el => el.classList.remove('hidden'));
-  document.getElementById('brand-selection').classList.remove('hidden');
-  document.querySelectorAll('.card > div').forEach(section => {
-    if (section.id !== 'brand-selection') section.classList.add('hidden');
+  // Clear sessionStorage
+  sessionStorage.removeItem('photo_front');
+  sessionStorage.removeItem('photo_profile');
+  sessionStorage.removeItem('photo_back');
+  
+  // Reset UI
+  document.querySelectorAll('[id$="-section"]').forEach(section => {
+    section.classList.add('hidden');
   });
+  
+  const brandSection = document.getElementById('brand-selection');
+  if (brandSection) brandSection.classList.remove('hidden');
   
   console.log('🔄 App reset');
 }
@@ -486,6 +609,8 @@ function resetApp() {
 
 window.addEventListener('DOMContentLoaded', () => {
   console.log('✅ Specchio Magico AI initialized');
+  console.log('📋 Owner:', owner);
+  console.log('📸 From Photo Session:', fromPhotoSession);
   hideLoader();
 });
 
