@@ -134,6 +134,15 @@ function mapStakeholderToDashboard(stakeholder) {
       }
     },
     
+    // BIG FIVE (from behavioral_profile)
+    big_five: {
+      openness_to_experience: stakeholder.behavioral_profile?.big_five?.openness_to_experience || null,
+      conscientiousness: stakeholder.behavioral_profile?.big_five?.conscientiousness || null,
+      extraversion: stakeholder.behavioral_profile?.big_five?.extraversion || null,
+      agreeableness: stakeholder.behavioral_profile?.big_five?.agreeableness || null,
+      neuroticism: stakeholder.behavioral_profile?.big_five?.neuroticism || null
+    },
+    
     // GAMIFICATION (mock - da implementare in stakeholder schema)
     gamification: {
       xp: stakeholder.gamification?.xp || 0,
@@ -289,6 +298,9 @@ function populateDashboard() {
   // Avatar con logo owner
   loadOwnerLogo();
   
+  // Big Five
+  populateBigFive();
+  
   // Stats
   populateStats();
   
@@ -333,20 +345,53 @@ function loadOwnerLogo() {
   tryLoadLogo();
 }
 
+function populateBigFive() {
+  const bigFive = operatorData.big_five;
+  
+  // Openness
+  const opennessEl = document.getElementById('big5-openness');
+  if (bigFive.openness_to_experience !== null) {
+    opennessEl.innerText = `${bigFive.openness_to_experience}%`;
+  } else {
+    opennessEl.innerText = '-';
+  }
+  
+  // Conscientiousness
+  const conscientiousnessEl = document.getElementById('big5-conscientiousness');
+  if (bigFive.conscientiousness !== null) {
+    conscientiousnessEl.innerText = `${bigFive.conscientiousness}%`;
+  } else {
+    conscientiousnessEl.innerText = '-';
+  }
+  
+  // Extraversion
+  const extraversionEl = document.getElementById('big5-extraversion');
+  if (bigFive.extraversion !== null) {
+    extraversionEl.innerText = `${bigFive.extraversion}%`;
+  } else {
+    extraversionEl.innerText = '-';
+  }
+  
+  // Agreeableness
+  const agreeablenessEl = document.getElementById('big5-agreeableness');
+  if (bigFive.agreeableness !== null) {
+    agreeablenessEl.innerText = `${bigFive.agreeableness}%`;
+  } else {
+    agreeablenessEl.innerText = '-';
+  }
+  
+  // Neuroticism
+  const neuroticismEl = document.getElementById('big5-neuroticism');
+  if (bigFive.neuroticism !== null) {
+    neuroticismEl.innerText = `${bigFive.neuroticism}%`;
+  } else {
+    neuroticismEl.innerText = '-';
+  }
+}
+
 function populateStats() {
   const activeTasks = operatorData.tasks.active;
-  document.getElementById('stat-tasks').innerText = activeTasks;
   document.getElementById('sub-tasks').innerText = `${activeTasks} in corso`;
-  
-  const hoursWeek = operatorData.performance.hours_this_week;
-  document.getElementById('stat-hours').innerText = `${hoursWeek}h`;
-  
-  const xp = operatorData.gamification.xp;
-  const level = calculateLevel(xp);
-  document.getElementById('stat-level').innerText = level;
-  
-  const streak = operatorData.gamification.streak;
-  document.getElementById('stat-streak').innerText = streak;
   
   const badgesUnlocked = operatorData.gamification.badges.length;
   document.getElementById('sub-badges').innerText = `${badgesUnlocked}/12 sbloccati`;
@@ -360,9 +405,6 @@ function populateGrowth() {
   const softSkillsProgress = operatorData.soft_skills.completion_percentage;
   document.getElementById('progress-softskills').style.width = `${softSkillsProgress}%`;
   document.getElementById('percent-softskills').innerText = `${softSkillsProgress}%`;
-  
-  const avgProgress = Math.round((skillsProgress + softSkillsProgress) / 2);
-  document.getElementById('sub-growth').innerText = `Profilo: ${avgProgress}%`;
 }
 
 function calculateSkillsProgress() {
