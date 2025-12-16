@@ -123,8 +123,8 @@ function mapStakeholderToDashboard(stakeholder) {
     
     // SOFT SKILLS
     soft_skills: {
-      completed_questions: calculateCompletedQuestions(stakeholder.professional_profile?.soft_skills_modules),
-      total_questions: 150,
+      completed_modules_count: countCompletedModules(stakeholder.professional_profile?.soft_skills_modules),
+      total_modules: 4,
       completion_percentage: calculateSoftSkillsCompletion(stakeholder.professional_profile?.soft_skills_modules),
       modules_completed: getCompletedModules(stakeholder.professional_profile?.soft_skills_modules),
       learning_history: stakeholder.professional_profile?.learning_history || {
@@ -192,7 +192,7 @@ function mapStakeholderToDashboard(stakeholder) {
 }
 
 // ============================================
-// HELPER FUNCTIONS
+// HELPER FUNCTIONS - FIX SOFT SKILLS COMPLETION
 // ============================================
 
 function parseCertifications(certString) {
@@ -209,22 +209,35 @@ function parseCertifications(certString) {
   }).slice(0, 5);
 }
 
-function calculateCompletedQuestions(softSkillsModules) {
+function countCompletedModules(softSkillsModules) {
   if (!softSkillsModules || typeof softSkillsModules !== 'object') return 0;
   
-  let total = 0;
+  let completedCount = 0;
+  
   Object.values(softSkillsModules).forEach(module => {
-    if (module?.progress?.questions_answered) {
-      total += module.progress.questions_answered;
+    if (module?.completed === true) {
+      completedCount++;
     }
   });
   
-  return total;
+  return completedCount;
 }
 
 function calculateSoftSkillsCompletion(softSkillsModules) {
-  const completed = calculateCompletedQuestions(softSkillsModules);
-  return Math.round((completed / 150) * 100);
+  if (!softSkillsModules || typeof softSkillsModules !== 'object') return 0;
+  
+  let completedCount = 0;
+  const totalModules = 4; // modulo1, modulo2, modulo3, modulo4
+  
+  Object.values(softSkillsModules).forEach(module => {
+    if (module?.completed === true) {
+      completedCount++;
+    }
+  });
+  
+  // Percentuale: (moduli completati / 4) * 100
+  // Ogni modulo vale 25%
+  return Math.round((completedCount / totalModules) * 100);
 }
 
 function getCompletedModules(softSkillsModules) {
@@ -234,7 +247,8 @@ function getCompletedModules(softSkillsModules) {
     .filter(([key, module]) => module?.completed === true)
     .map(([key, module]) => ({
       name: key,
-      score: module?.score || 0
+      completion_date: module?.completion_date || null,
+      evaluation: module?.evaluation || null
     }));
 }
 
