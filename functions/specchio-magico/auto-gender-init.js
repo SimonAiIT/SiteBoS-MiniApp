@@ -27,16 +27,20 @@
     // Auto-select gender programmatically
     if (typeof selectGender === 'function') {
       setTimeout(() => {
+        // Set global selectedGender variable
         selectGender(gender);
         console.log(`🎯 Gender auto-selected: ${gender}`);
         
         // If coming from photo session:
         // - Photos are already in sessionStorage
         // - Skip gender section
-        // - Skip camera section
+        // - Skip camera section  
         // - Go directly to brand-selection
+        // - When user selects brand, selectSystem() will automatically go to config
         if (fromPhotoSession) {
-          console.log('📸 From Photo Session - skipping camera, using stored photos');
+          console.log('📸 From Photo Session detected');
+          console.log('🚀 Fast-track: Skip gender/camera, go to brand selection');
+          console.log('📄 Photos in sessionStorage, ready to use');
           
           const genderSection = document.getElementById('gender-section');
           const cameraSection = document.getElementById('camera-section');
@@ -46,10 +50,12 @@
           if (genderSection) genderSection.classList.add('hidden');
           if (cameraSection) cameraSection.classList.add('hidden');
           
-          // Show brand selection
-          if (brandSection) brandSection.classList.remove('hidden');
-          
-          console.log('✅ Ready for brand selection (photos already captured)');
+          // Show brand selection immediately
+          if (brandSection) {
+            brandSection.classList.remove('hidden');
+            console.log('✅ Brand selection shown - user must choose system');
+            console.log('💡 After brand selection, will auto-proceed to config');
+          }
         }
       }, 100);
     } else {
