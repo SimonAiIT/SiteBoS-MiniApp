@@ -537,7 +537,7 @@
     </div>
 
     <div class="fab-container">
-        <button class="fab-btn fab-secondary" onclick="goBackToTeam()" title="Torna al Team Manager">
+        <button class="fab-btn fab-secondary" onclick="goBack()" title="Torna Indietro">
             <i class="fas fa-arrow-left"></i>
         </button>
         <button class="fab-btn fab-primary" onclick="openHelp()" title="Come leggere i punteggi">
@@ -710,19 +710,35 @@
             if (e.key === 'Escape') closeHelp();
         });
         
-        function goBackToTeam() {
+        // 🔥 FIX: Gestione back button per role
+        function goBack() {
             const urlParams = new URLSearchParams(window.location.search);
-            const params = new URLSearchParams();
+            const role = urlParams.get('role');
             
-            if (urlParams.get('vat')) params.set('vat', urlParams.get('vat'));
-            if (urlParams.get('token')) params.set('token', urlParams.get('token'));
-            
-            const ownerId = urlParams.get('user_id') || urlParams.get('owner');
-            if (ownerId) params.set('owner', ownerId);
-            
-            if (urlParams.get('ragione_sociale')) params.set('ragione_sociale', urlParams.get('ragione_sociale'));
-            
-            window.location.href = `../team/team.html?${params.toString()}`;
+            if (role === 'operator') {
+                // Operator: torna alla dashboard operator
+                const params = new URLSearchParams();
+                const chatId = urlParams.get('user_id');
+                const vat = urlParams.get('vat');
+                
+                if (chatId) params.set('chat_id', chatId);
+                if (vat) params.set('vat', vat);
+                
+                window.location.href = `../operators/operator_dashboard.html?${params.toString()}`;
+            } else {
+                // Owner: torna alla team dashboard
+                const params = new URLSearchParams();
+                
+                if (urlParams.get('vat')) params.set('vat', urlParams.get('vat'));
+                if (urlParams.get('token')) params.set('token', urlParams.get('token'));
+                
+                const ownerId = urlParams.get('user_id') || urlParams.get('owner');
+                if (ownerId) params.set('owner', ownerId);
+                
+                if (urlParams.get('ragione_sociale')) params.set('ragione_sociale', urlParams.get('ragione_sociale'));
+                
+                window.location.href = `../team/team.html?${params.toString()}`;
+            }
         }
         
         async function loadDashboard() {
@@ -872,6 +888,7 @@
             if (urlParams.get('token')) params.set('token', urlParams.get('token'));
             if (urlParams.get('owner')) params.set('owner', urlParams.get('owner'));
             if (urlParams.get('ragione_sociale')) params.set('ragione_sociale', urlParams.get('ragione_sociale'));
+            if (urlParams.get('role')) params.set('role', urlParams.get('role'));
             
             window.location.href = `index.html?${params.toString()}`;
         }
@@ -898,6 +915,7 @@
                 if (urlParams.get('token')) params.set('token', urlParams.get('token'));
                 if (urlParams.get('owner')) params.set('owner', urlParams.get('owner'));
                 if (urlParams.get('ragione_sociale')) params.set('ragione_sociale', urlParams.get('ragione_sociale'));
+                if (urlParams.get('role')) params.set('role', urlParams.get('role'));
                 
                 window.location.href = `complete-profile.html?${params.toString()}`;
             };
