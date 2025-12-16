@@ -536,7 +536,7 @@
     const AI_WEBHOOK = 'https://trinai.api.workflow.dcmake.it/webhook/5364bb15-4186-4246-8d00-c82218f5e407';
 
     window.addEventListener('DOMContentLoaded', () => {
-      console.log('📸 Photo Session v5.0 - FIXED');
+      console.log('📸 Photo Session v5.1 - FIXED: Solo foto front');
       clientId = `client_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
       startCurrentStep();
     });
@@ -882,26 +882,20 @@
 
     function proceedToSpecchioMagico() {
       console.log('🚀 PROCEEDING TO SPECCHIO MAGICO');
-      console.log('💾 SAVING PHOTOS TO SESSIONSTORAGE **BEFORE** NAVIGATION');
+      console.log('💾 SAVING **ONLY FRONT PHOTO** TO SESSIONSTORAGE');
       
-      // CRITICAL FIX: SAVE PHOTOS **BEFORE** NAVIGATING
+      // ✅ FIX DEFINITIVO: SALVA SOLO LA FOTO FRONTALE
       sessionStorage.setItem('photo_front', photos.front);
-      sessionStorage.setItem('photo_profile', photos.hairDetail);
-      sessionStorage.setItem('photo_back', photos.scalp);
       
-      // VERIFY THEY WERE SAVED
+      // VERIFY IT WAS SAVED
       const frontSaved = sessionStorage.getItem('photo_front');
-      const profileSaved = sessionStorage.getItem('photo_profile');
-      const backSaved = sessionStorage.getItem('photo_back');
       
-      console.log('✅ PHOTOS SAVED:');
+      console.log('✅ PHOTO SAVED:');
       console.log(`  - photo_front: ${frontSaved ? (frontSaved.length / 1024).toFixed(2) + ' KB' : 'NULL'}`);
-      console.log(`  - photo_profile: ${profileSaved ? (profileSaved.length / 1024).toFixed(2) + ' KB' : 'NULL'}`);
-      console.log(`  - photo_back: ${backSaved ? (backSaved.length / 1024).toFixed(2) + ' KB' : 'NULL'}`);
       
-      if (!frontSaved || !profileSaved || !backSaved) {
-        console.error('❌ PHOTOS NOT SAVED! CANNOT PROCEED!');
-        alert('Errore: foto non caricate. Riprova.');
+      if (!frontSaved) {
+        console.error('❌ PHOTO NOT SAVED! CANNOT PROCEED!');
+        alert('Errore: foto non caricata. Riprova.');
         return;
       }
       
