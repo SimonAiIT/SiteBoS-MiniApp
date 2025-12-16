@@ -1,7 +1,7 @@
 // ========================================
-// SPECCHIO MAGICO AI - MAIN ENGINE v4.5
+// SPECCHIO MAGICO AI - MAIN ENGINE v4.6
 // Sistema Colorimetria Professionale + MULTI-BOWL SYSTEM + AI WEBHOOK + FULLSCREEN VIEWER
-// 🔧 FIX: AI Image Display + Debug Logging
+// 🔧 FIX CRITICO: selectSystem() null-safe per photo-session flow
 // ========================================
 
 let currentSystem = null;
@@ -24,14 +24,61 @@ const AI_WEBHOOK_URL = 'https://trinai.api.workflow.dcmake.it/webhook/5364bb15-4
 
 // ========================================
 // PHASE 1: BRAND SYSTEM SELECTION
+// 🔧 FIX: Gestione null-safe per gender-section rimossa da auto-gender
 // ========================================
 
 function selectSystem(system) {
   currentSystem = system;
   console.log('✅ Sistema selezionato:', system);
   
-  document.getElementById('brand-selection').classList.add('hidden');
-  document.getElementById('gender-section').classList.remove('hidden');
+  const brandSelection = document.getElementById('brand-selection');
+  if (brandSelection) brandSelection.classList.add('hidden');
+  
+  const genderSection = document.getElementById('gender-section');
+  
+  if (genderSection) {
+    // Flusso normale: mostra la selezione genere
+    genderSection.classList.remove('hidden');
+  } else {
+    // Flusso da photo-session: genere già selezionato, sezione rimossa
+    console.log('⚠️ gender-section NON trovato (auto-gender attivo). Procedo con flusso photo-session.');
+    
+    if (clientPhotoData) {
+      // Foto già caricata dalla sessione → vai diretto alla config
+      console.log('✅ clientPhotoData presente, salto camera e vado diretto a config.');
+      
+      const classicPhoto = document.querySelector('#config-section #client-photo');
+      const fluidPhoto = document.querySelector('#fluid-config-section #client-photo');
+      if (classicPhoto) classicPhoto.src = clientPhotoData;
+      if (fluidPhoto) fluidPhoto.src = clientPhotoData;
+      
+      if (window.isFluidMode) {
+        document.getElementById('fluid-config-section').classList.remove('hidden');
+        if (typeof populateFluidUI === 'function') populateFluidUI();
+      } else {
+        document.getElementById('config-section').classList.remove('hidden');
+        populateHaircuts();
+        renderReflectPalette();
+        
+        if (selectedGender === 'F') {
+          const makeupSection = document.getElementById('makeup-section');
+          if (makeupSection) makeupSection.classList.remove('hidden');
+          renderLipColors();
+        }
+        
+        if (selectedGender === 'M' || selectedGender === 'X') {
+          const beardSection = document.getElementById('beard-section');
+          if (beardSection) beardSection.classList.remove('hidden');
+          renderBeardColors();
+        }
+      }
+    } else {
+      // Nessuna foto presente → apri camera
+      console.log('📸 Nessuna foto trovata, apro camera-section.');
+      const cameraSection = document.getElementById('camera-section');
+      if (cameraSection) cameraSection.classList.remove('hidden');
+    }
+  }
   
   const systemLabels = {
     'standard': 'Standard (IT/FR)',
