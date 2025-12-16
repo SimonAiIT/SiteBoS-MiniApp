@@ -536,7 +536,7 @@
     const AI_WEBHOOK = 'https://trinai.api.workflow.dcmake.it/webhook/5364bb15-4186-4246-8d00-c82218f5e407';
 
     window.addEventListener('DOMContentLoaded', () => {
-      console.log('📸 Photo Session v4.0 initialized');
+      console.log('📸 Photo Session v4.1 initialized');
       clientId = `client_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
       startCurrentStep();
     });
@@ -822,6 +822,7 @@
     }
 
     function saveToSessionStorage() {
+      // Save full session data
       const sessionData = {
         clientId: clientId,
         photos: photos,
@@ -829,7 +830,14 @@
         timestamp: Date.now()
       };
       sessionStorage.setItem('photoSessionData', JSON.stringify(sessionData));
+      
+      // CRITICAL: Also save individual photos for Specchio Magico compatibility
+      sessionStorage.setItem('photo_front', photos.front);
+      sessionStorage.setItem('photo_profile', photos.hairDetail); // Hairdetail = profile equivalent
+      sessionStorage.setItem('photo_back', photos.scalp); // Scalp = back equivalent
+      
       console.log('💾 Saved to sessionStorage:', clientId);
+      console.log('✅ Individual photos saved for Specchio Magico');
     }
 
     function displayReport() {
@@ -894,8 +902,22 @@
     }
 
     function proceedToSpecchioMagico() {
+      console.log('🚀 Proceeding to Specchio Magico...');
+      
+      // CRITICAL: Save photos BEFORE navigating
+      console.log('💾 Saving photos to sessionStorage...');
+      sessionStorage.setItem('photo_front', photos.front);
+      sessionStorage.setItem('photo_profile', photos.hairDetail);
+      sessionStorage.setItem('photo_back', photos.scalp);
+      
+      console.log('✅ Photos saved:');
+      console.log('- photo_front:', sessionStorage.getItem('photo_front') ? 'EXISTS' : 'NULL');
+      console.log('- photo_profile:', sessionStorage.getItem('photo_profile') ? 'EXISTS' : 'NULL');
+      console.log('- photo_back:', sessionStorage.getItem('photo_back') ? 'EXISTS' : 'NULL');
+      
+      // Navigate with params
       const urlParams = getURLParams();
-      navigateWithParams('./specchio-magico.html', {
+      navigateWithParams('./specchio-magico/index.html', {
         owner: urlParams.owner,
         token: urlParams.token,
         gender: reportData.gender.detected || 'F',
