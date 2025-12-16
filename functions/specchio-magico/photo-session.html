@@ -1,0 +1,929 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Photo Session - SiteBoS</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="../../styles.css">
+  <style>
+    .photo-session-container {
+      padding: 20px;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .session-header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .session-progress {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin: 20px 0;
+      position: relative;
+    }
+
+    .progress-line {
+      position: absolute;
+      top: 15px;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: var(--glass-border);
+      z-index: 0;
+    }
+
+    .progress-line-filled {
+      position: absolute;
+      top: 15px;
+      left: 0;
+      height: 2px;
+      background: var(--primary);
+      z-index: 1;
+      transition: width 0.3s ease;
+    }
+
+    .progress-step {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: var(--glass-bg);
+      border: 2px solid var(--glass-border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: 600;
+      position: relative;
+      z-index: 2;
+      transition: all 0.3s ease;
+    }
+
+    .progress-step.active {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: white;
+      transform: scale(1.2);
+    }
+
+    .progress-step.completed {
+      background: var(--success);
+      border-color: var(--success);
+      color: white;
+    }
+
+    .camera-guide {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 3/4;
+      background: #000;
+      border-radius: 12px;
+      overflow: hidden;
+      margin: 20px 0;
+    }
+
+    .camera-video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      cursor: crosshair;
+    }
+
+    .guide-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      pointer-events: none;
+      z-index: 10;
+    }
+
+    .guide-silhouette {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 70%;
+      height: 80%;
+      border: 3px dashed rgba(255, 255, 255, 0.5);
+      border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    .guide-silhouette.hairDetail {
+      width: 70%;
+      height: 60%;
+      border-radius: 16px;
+    }
+
+    .guide-silhouette.scalp {
+      width: 60%;
+      height: 60%;
+      border-radius: 50%;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 0.5; }
+      50% { opacity: 1; }
+    }
+
+    .guide-text {
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0, 0, 0, 0.8);
+      padding: 10px 20px;
+      border-radius: 20px;
+      color: white;
+      font-size: 14px;
+      font-weight: 600;
+      text-align: center;
+      backdrop-filter: blur(10px);
+      max-width: 90%;
+    }
+
+    .focus-indicator {
+      position: absolute;
+      width: 80px;
+      height: 80px;
+      border: 2px solid #4cd964;
+      border-radius: 50%;
+      transform: translate(-50%, -50%) scale(1.5);
+      opacity: 0;
+      transition: all 0.3s ease;
+      pointer-events: none;
+      box-shadow: 0 0 0 2px rgba(76, 217, 100, 0.3);
+      z-index: 100;
+    }
+
+    .focus-indicator.focused {
+      transform: translate(-50%, -50%) scale(1);
+      opacity: 1;
+    }
+
+    .tap-hint {
+      position: absolute;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(76, 217, 100, 0.9);
+      padding: 12px 20px;
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      animation: pulseHint 2s infinite;
+      z-index: 15;
+      pointer-events: none;
+      font-size: 13px;
+      font-weight: 600;
+      color: white;
+    }
+
+    .tap-hint.hidden {
+      display: none;
+    }
+
+    @keyframes pulseHint {
+      0%, 100% { opacity: 1; transform: translateX(-50%) scale(1); }
+      50% { opacity: 0.7; transform: translateX(-50%) scale(0.95); }
+    }
+
+    .camera-controls {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 15px;
+      margin: 20px 0;
+    }
+
+    .capture-btn {
+      width: 70px;
+      height: 70px;
+      border-radius: 50%;
+      background: var(--primary);
+      border: 4px solid white;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .capture-btn:active {
+      transform: scale(0.95);
+    }
+
+    .control-btn {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(10px);
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .control-btn:hover {
+      background: rgba(255, 255, 255, 0.3);
+    }
+
+    .thumbnails-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 15px;
+      margin: 20px 0;
+    }
+
+    .thumbnail {
+      aspect-ratio: 3/4;
+      background: var(--glass-bg);
+      border: 2px solid var(--glass-border);
+      border-radius: 8px;
+      overflow: hidden;
+      position: relative;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .thumbnail.captured {
+      border-color: var(--success);
+    }
+
+    .thumbnail img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .thumbnail-empty {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-muted);
+      font-size: 12px;
+      text-align: center;
+      padding: 10px;
+      height: 100%;
+    }
+
+    .thumbnail-icon {
+      font-size: 24px;
+      margin-bottom: 8px;
+    }
+
+    .upload-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 12px 24px;
+      background: var(--glass-bg);
+      border: 2px dashed var(--glass-border);
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-size: 14px;
+      color: var(--text-primary);
+      margin: 15px auto;
+      max-width: 250px;
+    }
+
+    .upload-btn:hover {
+      border-color: var(--primary);
+      background: rgba(91, 111, 237, 0.1);
+    }
+
+    .client-card {
+      background: linear-gradient(135deg, var(--glass-bg), rgba(91, 111, 237, 0.1));
+      border: 1px solid var(--glass-border);
+      border-radius: 12px;
+      padding: 20px;
+      margin: 20px 0;
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      margin-bottom: 20px;
+      padding-bottom: 15px;
+      border-bottom: 1px solid var(--glass-border);
+    }
+
+    .card-photo {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 3px solid var(--primary);
+    }
+
+    .card-info h2 {
+      margin: 0;
+      font-size: 18px;
+    }
+
+    .card-info p {
+      margin: 5px 0 0 0;
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+
+    .card-section {
+      margin: 20px 0;
+    }
+
+    .section-title {
+      font-size: 16px;
+      font-weight: 600;
+      margin: 0 0 15px 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 15px;
+    }
+
+    .info-item {
+      background: rgba(255, 255, 255, 0.05);
+      padding: 12px;
+      border-radius: 8px;
+    }
+
+    .info-label {
+      font-size: 11px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      font-weight: 600;
+      margin-bottom: 5px;
+    }
+
+    .info-value {
+      font-size: 14px;
+      color: var(--text-primary);
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .color-swatch {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      border: 2px solid white;
+      display: inline-block;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+
+    .color-palette {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .color-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .color-item .swatch {
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      border: 2px solid white;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+
+    .color-item span {
+      font-size: 10px;
+      color: var(--text-muted);
+      text-align: center;
+      max-width: 60px;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="loader" class="hidden" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+    <div class="spinner-ring"></div>
+    <div style="margin-top:15px; opacity:0.8; text-align:center; font-size: 14px;" id="loader-text">Analisi AI in corso...</div>
+  </div>
+
+  <div class="photo-session-container">
+    
+    <div class="session-header">
+      <h1 style="font-size: 22px; margin: 0;">
+        <i class="fas fa-camera-retro" style="color: var(--primary);"></i>
+        Analisi Cliente AI
+      </h1>
+      <p style="color: var(--text-muted); font-size: 14px; margin: 10px 0;">
+        Scatta 3 foto per analisi completa
+      </p>
+    </div>
+
+    <div class="session-progress">
+      <div class="progress-line"></div>
+      <div class="progress-line-filled" id="progress-fill" style="width: 0%;"></div>
+      <div class="progress-step active" id="step-1">1</div>
+      <div class="progress-step" id="step-2">2</div>
+      <div class="progress-step" id="step-3">3</div>
+    </div>
+
+    <div class="thumbnails-grid">
+      <div class="thumbnail" id="thumb-front" onclick="retakePhoto('front')">
+        <div class="thumbnail-empty">
+          <div class="thumbnail-icon"><i class="fas fa-user"></i></div>
+          <div>Frontale</div>
+        </div>
+      </div>
+      <div class="thumbnail" id="thumb-hairDetail" onclick="retakePhoto('hairDetail')">
+        <div class="thumbnail-empty">
+          <div class="thumbnail-icon"><i class="fas fa-cut"></i></div>
+          <div>Capelli</div>
+        </div>
+      </div>
+      <div class="thumbnail" id="thumb-scalp" onclick="retakePhoto('scalp')">
+        <div class="thumbnail-empty">
+          <div class="thumbnail-icon"><i class="fas fa-head-side-virus"></i></div>
+          <div>Cute</div>
+        </div>
+      </div>
+    </div>
+
+    <div id="camera-section" class="hidden">
+      <div class="camera-guide">
+        <video id="camera-video" class="camera-video" autoplay playsinline></video>
+        <canvas id="camera-canvas" style="display: none;"></canvas>
+        
+        <div class="guide-overlay">
+          <div class="tap-hint hidden" id="tap-hint">
+            <span>🎯</span>
+            <span>Tocca per mettere a fuoco</span>
+          </div>
+          
+          <div class="guide-silhouette" id="guide-silhouette"></div>
+          <div class="guide-text" id="guide-text">Posiziona il viso al centro</div>
+        </div>
+      </div>
+
+      <div class="camera-controls">
+        <button class="control-btn" onclick="toggleCamera()" title="Cambia Camera">
+          <i class="fas fa-sync-alt" style="font-size: 18px; color: white;"></i>
+        </button>
+        
+        <button class="capture-btn" onclick="capturePhoto()">
+          <i class="fas fa-camera" style="font-size: 28px; color: white;"></i>
+        </button>
+        
+        <button class="control-btn" onclick="stopCamera()" title="Chiudi">
+          <i class="fas fa-times" style="font-size: 18px; color: white;"></i>
+        </button>
+      </div>
+
+      <label class="upload-btn">
+        <i class="fas fa-upload"></i>
+        <span>Carica da Galleria</span>
+        <input type="file" accept="image/*" onchange="uploadPhoto(event)" style="display: none;">
+      </label>
+    </div>
+
+    <div id="analysis-section" class="hidden"></div>
+
+  </div>
+
+  <button class="fab-btn fab-secondary" onclick="goBack()" style="position: fixed; bottom: 20px; left: 20px; width: 56px; height: 56px; border-radius: 50%; background: var(--secondary); border: none; box-shadow: 0 4px 12px rgba(0,0,0,0.3); cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 1000;">
+    <i class="fas fa-arrow-left" style="color: white; font-size: 20px;"></i>
+  </button>
+
+  <script src="../../url-params-manager.js"></script>
+  <script>
+    const PHOTO_STEPS = ['front', 'hairDetail', 'scalp'];
+    const GUIDE_CONFIG = {
+      front: { text: 'Viso frontale, sguardo dritto', class: '', tapToFocus: false },
+      hairDetail: { text: 'Inquadra una ciocca da vicino. Tocca per mettere a fuoco.', class: 'hairDetail', tapToFocus: true },
+      scalp: { text: 'Cute e radici, zona superiore testa', class: 'scalp', tapToFocus: true }
+    };
+
+    let currentStep = 0;
+    let photos = { front: null, hairDetail: null, scalp: null };
+    let cameraStream = null;
+    let usingFrontCamera = true;
+    let reportData = null;
+    let clientId = null;
+
+    const AI_WEBHOOK = 'https://trinai.api.workflow.dcmake.it/webhook/5364bb15-4186-4246-8d00-c82218f5e407';
+
+    window.addEventListener('DOMContentLoaded', () => {
+      console.log('📸 Photo Session v4.0 initialized');
+      clientId = `client_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      startCurrentStep();
+    });
+
+    function startCurrentStep() {
+      const stepName = PHOTO_STEPS[currentStep];
+      updateProgress();
+      
+      if (photos[stepName]) {
+        console.log(`Step ${stepName} already captured`);
+        nextStep();
+        return;
+      }
+      
+      document.getElementById('camera-section').classList.remove('hidden');
+      document.getElementById('analysis-section').classList.add('hidden');
+      updateGuide(stepName);
+      initCamera();
+    }
+
+    function updateProgress() {
+      const progress = (currentStep / PHOTO_STEPS.length) * 100;
+      document.getElementById('progress-fill').style.width = `${progress}%`;
+      
+      PHOTO_STEPS.forEach((step, index) => {
+        const stepEl = document.getElementById(`step-${index + 1}`);
+        stepEl.classList.remove('active', 'completed');
+        if (index < currentStep) stepEl.classList.add('completed');
+        else if (index === currentStep) stepEl.classList.add('active');
+      });
+    }
+
+    function updateGuide(stepName) {
+      const config = GUIDE_CONFIG[stepName];
+      document.getElementById('guide-silhouette').className = 'guide-silhouette ' + config.class;
+      document.getElementById('guide-text').textContent = config.text;
+      document.getElementById('tap-hint').classList.toggle('hidden', !config.tapToFocus);
+    }
+
+    function nextStep() {
+      currentStep++;
+      if (currentStep >= PHOTO_STEPS.length) completeSession();
+      else startCurrentStep();
+    }
+
+    function retakePhoto(stepName) {
+      const stepIndex = PHOTO_STEPS.indexOf(stepName);
+      if (stepIndex === -1) return;
+      
+      photos[stepName] = null;
+      const icons = { front: 'user', hairDetail: 'cut', scalp: 'head-side-virus' };
+      const labels = { front: 'Frontale', hairDetail: 'Capelli', scalp: 'Cute' };
+      
+      const thumb = document.getElementById(`thumb-${stepName}`);
+      thumb.innerHTML = `<div class="thumbnail-empty"><div class="thumbnail-icon"><i class="fas fa-${icons[stepName]}"></i></div><div>${labels[stepName]}</div></div>`;
+      thumb.classList.remove('captured');
+      
+      currentStep = stepIndex;
+      startCurrentStep();
+    }
+
+    async function initCamera() {
+      try {
+        if (cameraStream) cameraStream.getTracks().forEach(track => track.stop());
+        
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: usingFrontCamera ? 'user' : 'environment', width: { ideal: 1280 }, height: { ideal: 1920 }, focusMode: 'manual' },
+          audio: false
+        });
+        
+        cameraStream = stream;
+        const video = document.getElementById('camera-video');
+        video.srcObject = stream;
+        
+        const stepName = PHOTO_STEPS[currentStep];
+        if (GUIDE_CONFIG[stepName].tapToFocus) {
+          video.addEventListener('click', handleTapToFocus);
+        }
+        
+        console.log('✅ Camera initialized');
+      } catch (error) {
+        console.error('❌ Camera error:', error);
+        alert('Impossibile accedere alla camera. Usa il pulsante Upload.');
+      }
+    }
+
+    function handleTapToFocus(event) {
+      const video = event.target;
+      const rect = video.getBoundingClientRect();
+      const x = (event.clientX - rect.left) / rect.width;
+      const y = (event.clientY - rect.top) / rect.height;
+      
+      applyFocusPoint(x, y);
+      showFocusIndicator(event.clientX, event.clientY);
+    }
+
+    async function applyFocusPoint(x, y) {
+      if (!cameraStream) return;
+      
+      const track = cameraStream.getVideoTracks()[0];
+      const capabilities = track.getCapabilities();
+      
+      if (capabilities.focusMode && capabilities.focusMode.includes('manual')) {
+        try {
+          await track.applyConstraints({
+            advanced: [{ focusMode: 'manual', focusDistance: 0.2, pointsOfInterest: [{ x: x, y: y }] }]
+          });
+          console.log(`🎯 Focus applied at (${x.toFixed(2)}, ${y.toFixed(2)})`);
+        } catch (err) {
+          console.warn('Manual focus not supported, fallback to continuous:', err);
+          await track.applyConstraints({ advanced: [{ focusMode: 'continuous' }] });
+        }
+      }
+    }
+
+    function showFocusIndicator(clientX, clientY) {
+      const indicator = document.createElement('div');
+      indicator.className = 'focus-indicator';
+      indicator.style.left = `${clientX}px`;
+      indicator.style.top = `${clientY}px`;
+      document.body.appendChild(indicator);
+      setTimeout(() => indicator.classList.add('focused'), 10);
+      setTimeout(() => indicator.remove(), 1000);
+    }
+
+    function toggleCamera() {
+      usingFrontCamera = !usingFrontCamera;
+      initCamera();
+    }
+
+    function stopCamera() {
+      if (cameraStream) {
+        cameraStream.getTracks().forEach(track => track.stop());
+        cameraStream = null;
+      }
+      document.getElementById('camera-video').removeEventListener('click', handleTapToFocus);
+      document.getElementById('camera-section').classList.add('hidden');
+    }
+
+    function capturePhoto() {
+      const video = document.getElementById('camera-video');
+      const canvas = document.getElementById('camera-canvas');
+      const ctx = canvas.getContext('2d');
+      
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      ctx.drawImage(video, 0, 0);
+      
+      compressImage(canvas, (compressedBase64) => {
+        const stepName = PHOTO_STEPS[currentStep];
+        photos[stepName] = compressedBase64;
+        updateThumbnail(stepName, compressedBase64);
+        stopCamera();
+        nextStep();
+      });
+    }
+
+    function uploadPhoto(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      if (file.size > 10 * 1024 * 1024) { alert('⚠️ File troppo grande. Max 10 MB.'); return; }
+      
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d');
+          let width = img.width, height = img.height, maxDim = 800;
+          
+          if (width > height && width > maxDim) { height = (height / width) * maxDim; width = maxDim; }
+          else if (height > maxDim) { width = (width / height) * maxDim; height = maxDim; }
+          
+          canvas.width = width; canvas.height = height;
+          ctx.drawImage(img, 0, 0, width, height);
+          
+          compressImage(canvas, (compressedBase64) => {
+            const stepName = PHOTO_STEPS[currentStep];
+            photos[stepName] = compressedBase64;
+            updateThumbnail(stepName, compressedBase64);
+            stopCamera();
+            nextStep();
+          });
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function compressImage(canvas, callback) {
+      let width = canvas.width, height = canvas.height, maxDim = 800;
+      
+      if (width > maxDim || height > maxDim) {
+        const scale = maxDim / Math.max(width, height);
+        width *= scale; height *= scale;
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = width; tempCanvas.height = height;
+        tempCanvas.getContext('2d').drawImage(canvas, 0, 0, width, height);
+        canvas = tempCanvas;
+      }
+      
+      const base64 = canvas.toDataURL('image/jpeg', 0.7);
+      console.log(`📸 Compressed: ${(base64.length / 1024).toFixed(2)} KB`);
+      callback(base64);
+    }
+
+    function updateThumbnail(stepName, base64) {
+      const thumb = document.getElementById(`thumb-${stepName}`);
+      thumb.innerHTML = `<img src="${base64}" alt="${stepName}">`;
+      thumb.classList.add('captured');
+    }
+
+    function completeSession() {
+      console.log('✅ All 3 photos captured');
+      stopCamera();
+      document.getElementById('progress-fill').style.width = '100%';
+      PHOTO_STEPS.forEach((step, index) => {
+        document.getElementById(`step-${index + 1}`).classList.add('completed');
+      });
+      analyzePhotos();
+    }
+
+    async function analyzePhotos() {
+      showLoader('🤖 Analisi AI in corso...');
+      
+      const urlParams = getURLParams();
+      
+      const payload = {
+        action: 'analyze',
+        owner: urlParams.owner,
+        token: urlParams.token,
+        photos: {
+          front: { base64: photos.front.split(',')[1], mimeType: 'image/jpeg', size: Math.round(photos.front.length / 1024) },
+          hairDetail: { base64: photos.hairDetail.split(',')[1], mimeType: 'image/jpeg', size: Math.round(photos.hairDetail.length / 1024) },
+          scalp: { base64: photos.scalp.split(',')[1], mimeType: 'image/jpeg', size: Math.round(photos.scalp.length / 1024) }
+        },
+        timestamp: Date.now()
+      };
+      
+      try {
+        console.log('📤 Calling AI webhook:', AI_WEBHOOK);
+        console.log('📦 Payload size:', JSON.stringify(payload).length / 1024, 'KB');
+        
+        const response = await fetch(AI_WEBHOOK, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+        console.log('📦 AI Response:', data);
+        
+        if (!data.success) {
+          throw new Error(data.error?.message || 'Analisi fallita');
+        }
+        
+        if (!data.report) {
+          throw new Error('Report mancante nella response');
+        }
+        
+        reportData = data.report;
+        saveToSessionStorage();
+        displayReport();
+        
+      } catch (error) {
+        console.error('❌ Analysis error:', error);
+        hideLoader();
+        
+        if (confirm(`Errore analisi AI: ${error.message}\n\nRitentare?`)) {
+          analyzePhotos();
+        } else {
+          alert('Analisi fallita. Torna indietro e riprova.');
+        }
+        return;
+      }
+      
+      hideLoader();
+    }
+
+    function saveToSessionStorage() {
+      const sessionData = {
+        clientId: clientId,
+        photos: photos,
+        report: reportData,
+        timestamp: Date.now()
+      };
+      sessionStorage.setItem('photoSessionData', JSON.stringify(sessionData));
+      console.log('💾 Saved to sessionStorage:', clientId);
+    }
+
+    function displayReport() {
+      document.getElementById('camera-section').classList.add('hidden');
+      const section = document.getElementById('analysis-section');
+      section.classList.remove('hidden');
+      
+      const report = reportData;
+      const genderLabels = { F: 'Donna', M: 'Uomo', X: 'Non Binario' };
+      
+      section.innerHTML = `
+        <div class="client-card">
+          <div class="card-header">
+            <img src="${photos.front}" class="card-photo" alt="Client">
+            <div class="card-info">
+              <h2>Analisi Completa</h2>
+              <p>${report.age.range} • ${genderLabels[report.gender.detected] || report.gender.detected}</p>
+            </div>
+          </div>
+
+          <div class="card-section">
+            <h3 class="section-title"><i class="fas fa-palette" style="color: var(--warning);"></i> Pelle & Viso</h3>
+            <div class="info-grid">
+              <div class="info-item"><div class="info-label">Tono Pelle</div><div class="info-value">${report.skinTone.category}<span class="color-swatch" style="background: ${report.skinTone.hex}"></span></div></div>
+              <div class="info-item"><div class="info-label">Sottotono</div><div class="info-value">${report.skinTone.undertone}</div></div>
+              <div class="info-item"><div class="info-label">Forma Viso</div><div class="info-value">${report.faceShape}</div></div>
+              <div class="info-item"><div class="info-label">Colore Occhi</div><div class="info-value">${report.eyeColor.color}<span class="color-swatch" style="background: ${report.eyeColor.hex}"></span></div></div>
+            </div>
+          </div>
+
+          <div class="card-section">
+            <h3 class="section-title"><i class="fas fa-cut" style="color: var(--primary);"></i> Analisi Capelli</h3>
+            <div class="info-grid">
+              <div class="info-item"><div class="info-label">Colore Naturale</div><div class="info-value">Liv. ${report.hairAnalysis.naturalColor.level}<span class="color-swatch" style="background: ${report.hairAnalysis.naturalColor.hex}"></span></div></div>
+              <div class="info-item"><div class="info-label">Texture</div><div class="info-value">${report.hairAnalysis.texture.type}</div></div>
+              <div class="info-item"><div class="info-label">Densità</div><div class="info-value">${report.hairAnalysis.density}</div></div>
+              <div class="info-item"><div class="info-label">Bianchi</div><div class="info-value">${report.hairAnalysis.greyPercentage}%</div></div>
+              <div class="info-item"><div class="info-label">Danno</div><div class="info-value">${report.hairAnalysis.damage.level}</div></div>
+              <div class="info-item"><div class="info-label">Cute</div><div class="info-value">${report.hairAnalysis.scalpHealth.condition}</div></div>
+            </div>
+          </div>
+
+          <div class="card-section">
+            <h3 class="section-title"><i class="fas fa-spa" style="color: var(--success);"></i> Trattamenti Consigliati</h3>
+            <ul style="padding-left: 20px; margin: 10px 0;">${report.recommendations.salonTreatments.map(t => `<li style="margin: 8px 0; font-size: 14px;">${t}</li>`).join('')}</ul>
+          </div>
+
+          <div class="card-section">
+            <h3 class="section-title"><i class="fas fa-shopping-bag" style="color: var(--warning);"></i> Prodotti Retail</h3>
+            <ul style="padding-left: 20px; margin: 10px 0;">${report.recommendations.retailProducts.map(p => `<li style="margin: 8px 0; font-size: 14px;">${p}</li>`).join('')}</ul>
+          </div>
+
+          <div class="card-section">
+            <h3 class="section-title"><i class="fas fa-paint-brush" style="color: var(--primary);"></i> Palette Makeup</h3>
+            <div style="margin-bottom: 15px;"><div class="info-label" style="margin-bottom: 8px;">Ombretti</div><div class="color-palette">${report.recommendations.makeupColors.eyeshadows.map(c => `<div class="color-item"><div class="swatch" style="background: ${c.hex}"></div><span>${c.name}</span></div>`).join('')}</div></div>
+            <div style="margin-bottom: 15px;"><div class="info-label" style="margin-bottom: 8px;">Rossetti</div><div class="color-palette">${report.recommendations.makeupColors.lipsticks.map(c => `<div class="color-item"><div class="swatch" style="background: ${c.hex}"></div><span>${c.name}</span></div>`).join('')}</div></div>
+            <div><div class="info-label" style="margin-bottom: 8px;">Blush</div><div class="color-palette">${report.recommendations.makeupColors.blush.map(c => `<div class="color-item"><div class="swatch" style="background: ${c.hex}"></div><span>${c.name}</span></div>`).join('')}</div></div>
+          </div>
+        </div>
+        <button class="btn" onclick="proceedToSpecchioMagico()" style="width: 100%; margin-top: 20px;"><i class="fas fa-arrow-right"></i> Procedi a Specchio Magico</button>
+      `;
+    }
+
+    function proceedToSpecchioMagico() {
+      const urlParams = getURLParams();
+      navigateWithParams('./index.html', {
+        owner: urlParams.owner,
+        token: urlParams.token,
+        gender: reportData.gender.detected || 'F',
+        fromPhotoSession: 'true'
+      });
+    }
+
+    function goBack() {
+      if (currentStep > 0 && !photos[PHOTO_STEPS[currentStep]]) { 
+        currentStep--; 
+        startCurrentStep(); 
+      } else { 
+        navigateWithParams('../index.html', getURLParams()); 
+      }
+    }
+
+    function getURLParams() {
+      const urlParams = new URLSearchParams(window.location.search);
+      return { owner: urlParams.get('owner') || '', token: urlParams.get('token') || '' };
+    }
+
+    function showLoader(text) {
+      document.getElementById('loader-text').textContent = text;
+      document.getElementById('loader').classList.remove('hidden');
+    }
+
+    function hideLoader() {
+      document.getElementById('loader').classList.add('hidden');
+    }
+  </script>
+</body>
+</html>
