@@ -536,7 +536,7 @@
     const AI_WEBHOOK = 'https://trinai.api.workflow.dcmake.it/webhook/5364bb15-4186-4246-8d00-c82218f5e407';
 
     window.addEventListener('DOMContentLoaded', () => {
-      console.log('📸 Photo Session v4.0 initialized');
+      console.log('📸 Photo Session v5.0 - FIXED');
       clientId = `client_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
       startCurrentStep();
     });
@@ -802,7 +802,6 @@
         }
         
         reportData = data.report;
-        saveToSessionStorage();
         displayReport();
         
       } catch (error) {
@@ -818,17 +817,6 @@
       }
       
       hideLoader();
-    }
-
-    function saveToSessionStorage() {
-      const sessionData = {
-        clientId: clientId,
-        photos: photos,
-        report: reportData,
-        timestamp: Date.now()
-      };
-      sessionStorage.setItem('photoSessionData', JSON.stringify(sessionData));
-      console.log('💾 Saved to sessionStorage:', clientId);
     }
 
     function displayReport() {
@@ -893,11 +881,43 @@
     }
 
     function proceedToSpecchioMagico() {
+      console.log('🚀 PROCEEDING TO SPECCHIO MAGICO');
+      console.log('💾 SAVING PHOTOS TO SESSIONSTORAGE **BEFORE** NAVIGATION');
+      
+      // CRITICAL FIX: SAVE PHOTOS **BEFORE** NAVIGATING
+      sessionStorage.setItem('photo_front', photos.front);
+      sessionStorage.setItem('photo_profile', photos.hairDetail);
+      sessionStorage.setItem('photo_back', photos.scalp);
+      
+      // VERIFY THEY WERE SAVED
+      const frontSaved = sessionStorage.getItem('photo_front');
+      const profileSaved = sessionStorage.getItem('photo_profile');
+      const backSaved = sessionStorage.getItem('photo_back');
+      
+      console.log('✅ PHOTOS SAVED:');
+      console.log(`  - photo_front: ${frontSaved ? (frontSaved.length / 1024).toFixed(2) + ' KB' : 'NULL'}`);
+      console.log(`  - photo_profile: ${profileSaved ? (profileSaved.length / 1024).toFixed(2) + ' KB' : 'NULL'}`);
+      console.log(`  - photo_back: ${backSaved ? (backSaved.length / 1024).toFixed(2) + ' KB' : 'NULL'}`);
+      
+      if (!frontSaved || !profileSaved || !backSaved) {
+        console.error('❌ PHOTOS NOT SAVED! CANNOT PROCEED!');
+        alert('Errore: foto non caricate. Riprova.');
+        return;
+      }
+      
+      // NOW NAVIGATE
       const urlParams = getURLParams();
+      const gender = reportData.gender.detected || 'F';
+      
+      console.log(`🔗 Navigating to ./index.html with params:`);
+      console.log(`  - owner: ${urlParams.owner}`);
+      console.log(`  - gender: ${gender}`);
+      console.log(`  - fromPhotoSession: true`);
+      
       navigateWithParams('./index.html', {
         owner: urlParams.owner,
         token: urlParams.token,
-        gender: reportData.gender.detected || 'F',
+        gender: gender,
         fromPhotoSession: 'true'
       });
     }
