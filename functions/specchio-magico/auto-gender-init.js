@@ -24,27 +24,32 @@
   }
   
   function autoSelectGender(gender, fromPhotoSession) {
-    // Hide brand-selection and show gender-section briefly
-    const brandSection = document.getElementById('brand-selection');
-    const genderSection = document.getElementById('gender-section');
-    
-    if (brandSection) brandSection.classList.add('hidden');
-    if (genderSection) genderSection.classList.remove('hidden');
-    
     // Auto-select gender programmatically
     if (typeof selectGender === 'function') {
       setTimeout(() => {
         selectGender(gender);
         console.log(`🎯 Gender auto-selected: ${gender}`);
         
-        // If coming from photo session, auto-proceed to camera
+        // If coming from photo session:
+        // - Photos are already in sessionStorage
+        // - Skip gender section
+        // - Skip camera section
+        // - Go directly to brand-selection
         if (fromPhotoSession) {
-          console.log('📸 From Photo Session - proceeding to camera...');
-          setTimeout(() => {
-            if (typeof startCamera === 'function') {
-              startCamera();
-            }
-          }, 500);
+          console.log('📸 From Photo Session - skipping camera, using stored photos');
+          
+          const genderSection = document.getElementById('gender-section');
+          const cameraSection = document.getElementById('camera-section');
+          const brandSection = document.getElementById('brand-selection');
+          
+          // Hide sections we want to skip
+          if (genderSection) genderSection.classList.add('hidden');
+          if (cameraSection) cameraSection.classList.add('hidden');
+          
+          // Show brand selection
+          if (brandSection) brandSection.classList.remove('hidden');
+          
+          console.log('✅ Ready for brand selection (photos already captured)');
         }
       }, 100);
     } else {
