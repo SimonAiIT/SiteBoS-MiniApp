@@ -33,12 +33,16 @@ if (fromPhotoSession) {
   
   const storedPhoto = sessionStorage.getItem('photo_front');
   if (storedPhoto) {
-    // Convert base64 back to blob
+    // Convert base64 back to blob - THIS IS ASYNC!
     fetch(storedPhoto)
       .then(res => res.blob())
       .then(blob => {
         capturedPhotoBlob = blob;
-        console.log('✅ Photo loaded from sessionStorage');
+        console.log('✅ Photo loaded from sessionStorage:', blob.size, 'bytes');
+        console.log('👍 Photo ready for use');
+      })
+      .catch(err => {
+        console.error('❌ Error loading photo from sessionStorage:', err);
       });
   } else {
     console.warn('⚠️ No photo found in sessionStorage');
@@ -89,15 +93,42 @@ function selectSystem(system) {
   selectedBrandSystem = system;
   console.log('✅ Sistema selezionato:', system);
   
-  document.getElementById('brand-selection').classList.add('hidden');
+  const brandSection = document.getElementById('brand-selection');
+  if (brandSection) brandSection.classList.add('hidden');
   
-  // If coming from photo session with photo already captured, skip directly to config
+  // If coming from photo session with photo already captured AND gender set, skip directly to config
   if (fromPhotoSession && capturedPhotoBlob && selectedGender) {
-    console.log('🚀 Photo exists - proceeding to config');
+    console.log('🚀 FromPhotoSession=true, photo exists, gender set - proceeding to config');
     proceedToConfig();
+  } else if (fromPhotoSession && selectedGender) {
+    // Photo not loaded yet - wait for it
+    console.log('⏳ Waiting for photo to load before proceeding...');
+    const checkInterval = setInterval(() => {
+      if (capturedPhotoBlob) {
+        clearInterval(checkInterval);
+        console.log('✅ Photo ready - proceeding to config');
+        proceedToConfig();
+      }
+    }, 100);
+    
+    // Timeout after 5s
+    setTimeout(() => {
+      clearInterval(checkInterval);
+      if (!capturedPhotoBlob) {
+        console.error('❌ Photo not loaded after 5s - cannot proceed');
+        alert('Errore: foto non caricata. Riprova.');
+        const brandSection = document.getElementById('brand-selection');
+        if (brandSection) brandSection.classList.remove('hidden');
+      }
+    }, 5000);
   } else {
-    // Normal flow - show gender selection
-    document.getElementById('gender-section').classList.remove('hidden');
+    // Normal flow - show gender selection (if it exists)
+    const genderSection = document.getElementById('gender-section');
+    if (genderSection) {
+      genderSection.classList.remove('hidden');
+    } else {
+      console.warn('⚠️ gender-section not found (might be removed)');
+    }
   }
 }
 
@@ -130,10 +161,14 @@ function selectGender(gender) {
 // ========================================
 
 function startCamera() {
-  document.getElementById('gender-section').classList.add('hidden');
-  document.getElementById('camera-section').classList.remove('hidden');
+  const genderSection = document.getElementById('gender-section');
+  const cameraSection = document.getElementById('camera-section');
+  
+  if (genderSection) genderSection.classList.add('hidden');
+  if (cameraSection) cameraSection.classList.remove('hidden');
   
   const video = document.getElementById('camera-video');
+  if (!video) return;
   
   navigator.mediaDevices.getUserMedia({ 
     video: { facingMode: currentFacingMode, width: { ideal: 1280 }, height: { ideal: 1920 } },
@@ -160,13 +195,17 @@ function stopCamera() {
     cameraStream.getTracks().forEach(track => track.stop());
     cameraStream = null;
   }
-  document.getElementById('camera-section').classList.add('hidden');
-  document.getElementById('gender-section').classList.remove('hidden');
+  const cameraSection = document.getElementById('camera-section');
+  const genderSection = document.getElementById('gender-section');
+  if (cameraSection) cameraSection.classList.add('hidden');
+  if (genderSection) genderSection.classList.remove('hidden');
 }
 
 function capturePhoto() {
   const video = document.getElementById('camera-video');
   const canvas = document.getElementById('camera-canvas');
+  if (!video || !canvas) return;
+  
   const ctx = canvas.getContext('2d');
   
   canvas.width = video.videoWidth;
@@ -176,8 +215,11 @@ function capturePhoto() {
   canvas.toBlob(blob => {
     capturedPhotoBlob = blob;
     const url = URL.createObjectURL(blob);
-    document.getElementById('preview-img').src = url;
-    document.getElementById('captured-preview').classList.remove('hidden');
+    const previewImg = document.getElementById('preview-img');
+    const capturedPreview = document.getElementById('captured-preview');
+    
+    if (previewImg) previewImg.src = url;
+    if (capturedPreview) capturedPreview.classList.remove('hidden');
     
     // Stop camera
     if (cameraStream) {
@@ -189,16 +231,31 @@ function capturePhoto() {
 }
 
 function proceedToConfig() {
-  document.getElementById('camera-section').classList.add('hidden');
-  document.getElementById('brand-selection').classList.add('hidden');
+  console.log('📎 proceedToConfig() called');
+  console.log('- selectedGender:', selectedGender);
+  console.log('- capturedPhotoBlob:', capturedPhotoBlob ? 'exists' : 'null');
+  console.log('- selectedBrandSystem:', selectedBrandSystem);
+  
+  const cameraSection = document.getElementById('camera-section');
+  const brandSection = document.getElementById('brand-selection');
+  const fluidConfig = document.getElementById('fluid-config-section');
+  const standardConfig = document.getElementById('config-section');
+  
+  // Hide previous sections (if they exist)
+  if (cameraSection) cameraSection.classList.add('hidden');
+  if (brandSection) brandSection.classList.add('hidden');
   
   if (selectedGender === 'X') {
     // Fluid -> Creative colors
-    document.getElementById('fluid-config-section').classList.remove('hidden');
+    console.log('🌈 Gender X - showing fluid-config-section');
+    if (fluidConfig) fluidConfig.classList.remove('hidden');
   } else {
     // F/M -> Standard config
-    document.getElementById('config-section').classList.remove('hidden');
-    initConfigSection();
+    console.log('⚙️ Gender F/M - showing config-section');
+    if (standardConfig) {
+      standardConfig.classList.remove('hidden');
+      initConfigSection();
+    }
   }
 }
 
@@ -439,8 +496,11 @@ function generateCreativeAI() {
   setTimeout(() => {
     hideLoader();
     
-    document.getElementById('fluid-config-section').classList.add('hidden');
-    document.getElementById('results-section').classList.remove('hidden');
+    const fluidConfig = document.getElementById('fluid-config-section');
+    const resultsSection = document.getElementById('results-section');
+    
+    if (fluidConfig) fluidConfig.classList.add('hidden');
+    if (resultsSection) resultsSection.classList.remove('hidden');
     
     const resultPhoto = document.getElementById('result-photo');
     const resultTitle = document.getElementById('result-title');
@@ -453,7 +513,8 @@ function generateCreativeAI() {
     if (aiResultImg) aiResultImg.src = URL.createObjectURL(capturedPhotoBlob);
     
     const details = document.getElementById('result-details');
-    if (details) {
+    const creativeCategory = document.getElementById('creative-category');
+    if (details && creativeCategory) {
       details.innerHTML = `
         <div class="detail-item">
           <div class="detail-label">Colore</div>
@@ -461,7 +522,7 @@ function generateCreativeAI() {
         </div>
         <div class="detail-item">
           <div class="detail-label">Categoria</div>
-          <div class="detail-value">${document.getElementById('creative-category').selectedOptions[0].text}</div>
+          <div class="detail-value">${creativeCategory.selectedOptions[0].text}</div>
         </div>
       `;
     }
@@ -478,6 +539,9 @@ function generateCreativeAI() {
 function generateAIResult() {
   if (!selectedLevel || !primaryReflect || !capturedPhotoBlob) {
     console.error('❌ Missing required data for AI generation');
+    console.log('- selectedLevel:', selectedLevel);
+    console.log('- primaryReflect:', primaryReflect);
+    console.log('- capturedPhotoBlob:', capturedPhotoBlob);
     return;
   }
   
@@ -486,13 +550,14 @@ function generateAIResult() {
   const reader = new FileReader();
   reader.onloadend = async () => {
     const photoBase64 = reader.result;
+    const formulaCodeEl = document.getElementById('formula-code');
     
     const payload = {
       action: 'generate_hair_color_ai',
       owner: owner,
       photo: photoBase64,
       formula: {
-        code: document.getElementById('formula-code').textContent,
+        code: formulaCodeEl ? formulaCodeEl.textContent : '',
         system: selectedBrandSystem,
         level: selectedLevel,
         primary_reflect: primaryReflect,
@@ -517,17 +582,21 @@ function generateAIResult() {
       setTimeout(() => {
         hideLoader();
         
-        document.getElementById('config-section').classList.add('hidden');
-        document.getElementById('results-section').classList.remove('hidden');
+        const configSection = document.getElementById('config-section');
+        const resultsSection = document.getElementById('results-section');
+        
+        if (configSection) configSection.classList.add('hidden');
+        if (resultsSection) resultsSection.classList.remove('hidden');
         
         const resultPhoto = document.getElementById('result-photo');
         const resultTitle = document.getElementById('result-title');
         const resultSubtitle = document.getElementById('result-subtitle');
         const aiResultImg = document.getElementById('ai-result-img');
+        const formulaDesc = document.getElementById('formula-description');
         
         if (resultPhoto) resultPhoto.src = URL.createObjectURL(capturedPhotoBlob);
         if (resultTitle) resultTitle.textContent = payload.formula.code;
-        if (resultSubtitle) resultSubtitle.textContent = document.getElementById('formula-description').textContent;
+        if (resultSubtitle && formulaDesc) resultSubtitle.textContent = formulaDesc.textContent;
         if (aiResultImg) aiResultImg.src = URL.createObjectURL(capturedPhotoBlob);
         
         const details = document.getElementById('result-details');
@@ -669,6 +738,8 @@ async function selectClient(customerId) {
   const reader = new FileReader();
   reader.onloadend = async () => {
     const photoBase64 = reader.result;
+    const formulaCodeEl = document.getElementById('formula-code');
+    const creativeFormulaEl = document.getElementById('creative-formula-code');
     
     const payload = {
       action: 'save_simulation',
@@ -676,7 +747,7 @@ async function selectClient(customerId) {
       customer_id: customerId,
       photo: photoBase64,
       formula: {
-        code: document.getElementById('formula-code')?.textContent || document.getElementById('creative-formula-code')?.textContent,
+        code: formulaCodeEl ? formulaCodeEl.textContent : (creativeFormulaEl ? creativeFormulaEl.textContent : ''),
         system: selectedBrandSystem,
         level: selectedLevel,
         reflects: { primary: primaryReflect, secondary: secondaryReflect, intensified: primaryIntensified },
@@ -720,10 +791,15 @@ function closeNewClientModal() {
   if (modal) modal.classList.add('hidden');
   
   // Clear form
-  document.getElementById('new-client-firstname').value = '';
-  document.getElementById('new-client-lastname').value = '';
-  document.getElementById('new-client-email').value = '';
-  document.getElementById('new-client-phone').value = '';
+  const firstname = document.getElementById('new-client-firstname');
+  const lastname = document.getElementById('new-client-lastname');
+  const email = document.getElementById('new-client-email');
+  const phone = document.getElementById('new-client-phone');
+  
+  if (firstname) firstname.value = '';
+  if (lastname) lastname.value = '';
+  if (email) email.value = '';
+  if (phone) phone.value = '';
 }
 
 function generateUniqueId() {
@@ -733,10 +809,15 @@ function generateUniqueId() {
 }
 
 async function createNewClient() {
-  const firstname = document.getElementById('new-client-firstname').value.trim();
-  const lastname = document.getElementById('new-client-lastname').value.trim();
-  const email = document.getElementById('new-client-email').value.trim();
-  const phone = document.getElementById('new-client-phone').value.trim();
+  const firstnameEl = document.getElementById('new-client-firstname');
+  const lastnameEl = document.getElementById('new-client-lastname');
+  const emailEl = document.getElementById('new-client-email');
+  const phoneEl = document.getElementById('new-client-phone');
+  
+  const firstname = firstnameEl ? firstnameEl.value.trim() : '';
+  const lastname = lastnameEl ? lastnameEl.value.trim() : '';
+  const email = emailEl ? emailEl.value.trim() : '';
+  const phone = phoneEl ? phoneEl.value.trim() : '';
   
   if (!firstname || !lastname) {
     alert('Nome e Cognome sono obbligatori!');
@@ -779,8 +860,11 @@ async function createNewClient() {
       currentInviteLink = onboardingLink;
       
       // Show invite link modal
-      document.getElementById('invite-link-text').textContent = onboardingLink;
-      document.getElementById('invite-link-modal').classList.remove('hidden');
+      const inviteLinkText = document.getElementById('invite-link-text');
+      const inviteLinkModal = document.getElementById('invite-link-modal');
+      
+      if (inviteLinkText) inviteLinkText.textContent = onboardingLink;
+      if (inviteLinkModal) inviteLinkModal.classList.remove('hidden');
       
       console.log('✅ Client created:', customerId);
       console.log('🔗 Onboarding link:', onboardingLink);
