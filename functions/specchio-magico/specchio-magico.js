@@ -13,11 +13,16 @@ let capturedPhotoBlob = null;
 let cameraStream = null;
 let currentFacingMode = 'user';
 let selectedCreativeColor = null;
+let allClients = []; // Store all clients for filtering
+let currentInviteLink = '';
 
 // URL params
 const urlParams = new URLSearchParams(window.location.search);
 const owner = urlParams.get('owner') || '';
 const fromPhotoSession = urlParams.get('fromPhotoSession') === 'true';
+
+// Webhook URL - TODO: Replace with actual URL
+const WEBHOOK_URL = 'https://hook.eu2.make.com/your-webhook-id';
 
 // ========================================
 // LOAD PHOTOS FROM SESSION STORAGE
@@ -321,7 +326,6 @@ function updateFormula() {
   let description = '';
   
   if (selectedBrandSystem === 'alphabetic') {
-    // 7G or 7GC
     formula = selectedLevel + primaryReflect;
     if (secondaryReflect) formula += secondaryReflect;
     
@@ -332,7 +336,6 @@ function updateFormula() {
       description += ` + ${secondary.name}`;
     }
   } else if (selectedBrandSystem === 'german') {
-    // 7/6 or 7/66
     formula = selectedLevel + '/' + primaryReflect;
     if (primaryIntensified) formula += primaryReflect;
     else if (secondaryReflect) formula += secondaryReflect;
@@ -345,7 +348,6 @@ function updateFormula() {
       description += ` + ${secondary.name}`;
     }
   } else {
-    // Standard: 7.2 or 7.22
     formula = selectedLevel + '.' + primaryReflect;
     if (primaryIntensified) formula += primaryReflect;
     else if (secondaryReflect) formula += secondaryReflect;
@@ -434,15 +436,12 @@ function generateCreativeAI() {
   
   showLoader('Generazione AI in corso...');
   
-  // TODO: Call backend webhook here
-  // For now, mock AI generation
   setTimeout(() => {
     hideLoader();
     
     document.getElementById('fluid-config-section').classList.add('hidden');
     document.getElementById('results-section').classList.remove('hidden');
     
-    // Show result
     const resultPhoto = document.getElementById('result-photo');
     const resultTitle = document.getElementById('result-title');
     const resultSubtitle = document.getElementById('result-subtitle');
@@ -466,6 +465,9 @@ function generateCreativeAI() {
         </div>
       `;
     }
+    
+    // Load client list
+    loadClientList();
   }, 2000);
 }
 
@@ -481,7 +483,6 @@ function generateAIResult() {
   
   showLoader('Generazione AI in corso...');
   
-  // Convert blob to base64
   const reader = new FileReader();
   reader.onloadend = async () => {
     const photoBase64 = reader.result;
@@ -503,11 +504,8 @@ function generateAIResult() {
     
     console.log('🚀 Calling backend webhook...', payload.action);
     
-    // TODO: Replace with actual webhook URL
-    const WEBHOOK_URL = 'https://your-webhook-url.com/endpoint';
-    
     try {
-      // For now, mock the API call
+      // TODO: Uncomment when webhook is ready
       // const response = await fetch(WEBHOOK_URL, {
       //   method: 'POST',
       //   headers: { 'Content-Type': 'application/json' },
@@ -549,6 +547,9 @@ function generateAIResult() {
             </div>
           `;
         }
+        
+        // Load client list
+        loadClientList();
       }, 2000);
       
     } catch (error) {
@@ -559,6 +560,270 @@ function generateAIResult() {
   };
   
   reader.readAsDataURL(capturedPhotoBlob);
+}
+
+// ========================================
+// CLIENT MANAGEMENT
+// ========================================
+
+async function loadClientList() {
+  console.log('📄 Loading client list...');
+  
+  const clientList = document.getElementById('client-list');
+  if (!clientList) return;
+  
+  clientList.innerHTML = '<div style="text-align: center; padding: 20px; color: var(--text-muted);"><i class="fas fa-spinner fa-spin"></i> Caricamento...</div>';
+  
+  try {
+    const payload = {
+      action: 'get_clients',
+      owner: owner
+    };
+    
+    // TODO: Uncomment when webhook is ready
+    // const response = await fetch(WEBHOOK_URL, {
+    //   method: 'POST',
+    //   headers: { 'Content-Type': 'application/json' },
+    //   body: JSON.stringify(payload)
+    // });
+    // const data = await response.json();
+    // allClients = data.clients || [];
+    
+    // Mock data
+    allClients = [
+      { customer_id: 'CUST_001', first_name: 'Mario', last_name: 'Rossi', email: 'mario@email.com' },
+      { customer_id: 'CUST_002', first_name: 'Laura', last_name: 'Bianchi', email: 'laura@email.com' },
+      { customer_id: 'CUST_003', first_name: 'Giuseppe', last_name: 'Verdi', email: null }
+    ];
+    
+    renderClientList(allClients);
+    
+  } catch (error) {
+    console.error('❌ Error loading clients:', error);
+    clientList.innerHTML = '<div style="text-align: center; padding: 20px; color: var(--error);"><i class="fas fa-exclamation-triangle"></i> Errore caricamento</div>';
+  }
+}
+
+function renderClientList(clients) {
+  const clientList = document.getElementById('client-list');
+  if (!clientList) return;
+  
+  if (clients.length === 0) {
+    clientList.innerHTML = '<div style="text-align: center; padding: 20px; color: var(--text-muted);">Nessun cliente trovato</div>';
+    return;
+  }
+  
+  clientList.innerHTML = clients.map(client => `
+    <div 
+      class="client-item" 
+      onclick="selectClient('${client.customer_id}')"
+      style="
+        padding: 15px;
+        margin-bottom: 10px;
+        background: var(--glass-bg);
+        border: 2px solid var(--glass-border);
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      "
+      onmouseover="this.style.borderColor='var(--primary)'; this.style.transform='translateY(-2px)'"
+      onmouseout="this.style.borderColor='var(--glass-border)'; this.style.transform='translateY(0)'"
+    >
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <i class="fas fa-user-circle" style="font-size: 32px; color: var(--primary);"></i>
+        <div style="flex: 1;">
+          <div style="font-weight: 600; font-size: 16px;">${client.first_name} ${client.last_name}</div>
+          ${client.email ? `<div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">${client.email}</div>` : ''}
+        </div>
+        <i class="fas fa-chevron-right" style="color: var(--text-muted);"></i>
+      </div>
+    </div>
+  `).join('');
+}
+
+function filterClients(searchTerm) {
+  if (!searchTerm) {
+    renderClientList(allClients);
+    return;
+  }
+  
+  const filtered = allClients.filter(client => {
+    const fullName = `${client.first_name} ${client.last_name}`.toLowerCase();
+    const email = (client.email || '').toLowerCase();
+    const term = searchTerm.toLowerCase();
+    
+    return fullName.includes(term) || email.includes(term);
+  });
+  
+  renderClientList(filtered);
+}
+
+async function selectClient(customerId) {
+  console.log('✅ Client selected:', customerId);
+  
+  const client = allClients.find(c => c.customer_id === customerId);
+  if (!client) return;
+  
+  showLoader(`Salvando simulazione per ${client.first_name} ${client.last_name}...`);
+  
+  const reader = new FileReader();
+  reader.onloadend = async () => {
+    const photoBase64 = reader.result;
+    
+    const payload = {
+      action: 'save_simulation',
+      owner: owner,
+      customer_id: customerId,
+      photo: photoBase64,
+      formula: {
+        code: document.getElementById('formula-code')?.textContent || document.getElementById('creative-formula-code')?.textContent,
+        system: selectedBrandSystem,
+        level: selectedLevel,
+        reflects: { primary: primaryReflect, secondary: secondaryReflect, intensified: primaryIntensified },
+        creative_color: selectedCreativeColor
+      },
+      gender: selectedGender,
+      ai_result_image: photoBase64 // TODO: Replace with actual AI generated image
+    };
+    
+    try {
+      // TODO: Uncomment when webhook is ready
+      // const response = await fetch(WEBHOOK_URL, {
+      //   method: 'POST',
+      //   headers: { 'Content-Type': 'application/json' },
+      //   body: JSON.stringify(payload)
+      // });
+      // const data = await response.json();
+      
+      setTimeout(() => {
+        hideLoader();
+        alert(`✅ Simulazione salvata per ${client.first_name} ${client.last_name}!`);
+      }, 1000);
+      
+    } catch (error) {
+      hideLoader();
+      console.error('❌ Save error:', error);
+      alert('Errore durante il salvataggio. Riprova.');
+    }
+  };
+  
+  reader.readAsDataURL(capturedPhotoBlob);
+}
+
+function showNewClientForm() {
+  const modal = document.getElementById('new-client-modal');
+  if (modal) modal.classList.remove('hidden');
+}
+
+function closeNewClientModal() {
+  const modal = document.getElementById('new-client-modal');
+  if (modal) modal.classList.add('hidden');
+  
+  // Clear form
+  document.getElementById('new-client-firstname').value = '';
+  document.getElementById('new-client-lastname').value = '';
+  document.getElementById('new-client-email').value = '';
+  document.getElementById('new-client-phone').value = '';
+}
+
+function generateUniqueId() {
+  const timestamp = Date.now();
+  const random = Math.random().toString(36).substring(2, 8).toUpperCase();
+  return `CUST_${timestamp}_${random}`;
+}
+
+async function createNewClient() {
+  const firstname = document.getElementById('new-client-firstname').value.trim();
+  const lastname = document.getElementById('new-client-lastname').value.trim();
+  const email = document.getElementById('new-client-email').value.trim();
+  const phone = document.getElementById('new-client-phone').value.trim();
+  
+  if (!firstname || !lastname) {
+    alert('Nome e Cognome sono obbligatori!');
+    return;
+  }
+  
+  showLoader('Creando nuovo cliente...');
+  
+  const customerId = generateUniqueId();
+  
+  const payload = {
+    action: 'create_client',
+    owner: owner,
+    customer_id: customerId,
+    client: {
+      first_name: firstname,
+      last_name: lastname,
+      email: email || null,
+      phone: phone || null
+    }
+  };
+  
+  try {
+    // TODO: Uncomment when webhook is ready
+    // const response = await fetch(WEBHOOK_URL, {
+    //   method: 'POST',
+    //   headers: { 'Content-Type': 'application/json' },
+    //   body: JSON.stringify(payload)
+    // });
+    // const data = await response.json();
+    // const customerId = data.customer_id;
+    
+    setTimeout(async () => {
+      hideLoader();
+      closeNewClientModal();
+      
+      // Generate onboarding link
+      const baseUrl = window.location.origin;
+      const onboardingLink = `${baseUrl}/customer/onboarding.html?owner=${owner}&customer_id=${customerId}`;
+      currentInviteLink = onboardingLink;
+      
+      // Show invite link modal
+      document.getElementById('invite-link-text').textContent = onboardingLink;
+      document.getElementById('invite-link-modal').classList.remove('hidden');
+      
+      console.log('✅ Client created:', customerId);
+      console.log('🔗 Onboarding link:', onboardingLink);
+      
+      // Reload client list
+      await loadClientList();
+      
+      // Auto-save simulation for new client
+      await selectClient(customerId);
+      
+    }, 1500);
+    
+  } catch (error) {
+    hideLoader();
+    console.error('❌ Create client error:', error);
+    alert('Errore durante la creazione del cliente. Riprova.');
+  }
+}
+
+function copyInviteLink() {
+  if (!currentInviteLink) return;
+  
+  navigator.clipboard.writeText(currentInviteLink)
+    .then(() => {
+      alert('✅ Link copiato negli appunti!');
+    })
+    .catch(err => {
+      console.error('Copy error:', err);
+      // Fallback
+      const textArea = document.createElement('textarea');
+      textArea.value = currentInviteLink;
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textArea);
+      alert('✅ Link copiato!');
+    });
+}
+
+function closeInviteLinkModal() {
+  const modal = document.getElementById('invite-link-modal');
+  if (modal) modal.classList.add('hidden');
+  currentInviteLink = '';
 }
 
 // ========================================
@@ -586,13 +851,13 @@ function resetApp() {
   secondaryReflect = null;
   capturedPhotoBlob = null;
   selectedCreativeColor = null;
+  allClients = [];
+  currentInviteLink = '';
   
-  // Clear sessionStorage
   sessionStorage.removeItem('photo_front');
   sessionStorage.removeItem('photo_profile');
   sessionStorage.removeItem('photo_back');
   
-  // Reset UI
   document.querySelectorAll('[id$="-section"]').forEach(section => {
     section.classList.add('hidden');
   });
