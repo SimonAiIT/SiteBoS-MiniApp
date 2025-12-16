@@ -295,10 +295,10 @@ function populateDashboard() {
   // Growth section
   populateGrowth();
   
-  // Recommended modules
+  // Recommended modules (only if real data exists)
   loadRecommendedModules();
   
-  // Notifications
+  // Notifications (only if real data exists)
   loadNotifications();
 }
 
@@ -408,14 +408,16 @@ function calculateLevel(xp) {
 function loadRecommendedModules() {
   const container = document.getElementById('recommended-modules');
   
-  const modules = [
-    { title: 'Comunicazione Efficace', duration: '30 min', icon: '🗣️' },
-    { title: 'Problem Solving', duration: '25 min', icon: '🧩' },
-    { title: 'Team Leadership', duration: '45 min', icon: '👥' }
-  ];
+  // 🔥 NO PLACEHOLDER - Solo moduli reali
+  const modules = [];
+  
+  // TODO: Quando arrivano moduli reali dal backend, riempire qui
+  // modules = operatorData.training_modules || [];
   
   if (modules.length === 0) {
-    container.innerHTML = '<div style="text-align:center; padding:20px; color:var(--text-muted); font-size:13px;">Nessun modulo disponibile al momento</div>';
+    // 🔥 Se non ci sono moduli, NASCONDI tutta la sezione
+    const card = container.closest('.card');
+    if (card) card.style.display = 'none';
     return;
   }
   
@@ -439,7 +441,9 @@ function loadNotifications() {
   const notifications = operatorData.notifications || [];
   
   if (notifications.length === 0) {
-    container.innerHTML = '<div style="text-align:center; padding:20px; color:var(--text-muted); font-size:13px;">Nessuna notifica</div>';
+    // 🔥 Se non ci sono notifiche, NASCONDI tutta la sezione
+    const card = container.closest('.card');
+    if (card) card.style.display = 'none';
     return;
   }
   
