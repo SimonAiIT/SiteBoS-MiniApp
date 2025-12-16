@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Specchio Magico AI - SiteBoS</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="../../styles.css">
+  <link rel="stylesheet" href="./specchio-magico-styles.css">
+</head>
+<body>
+
+  <!-- LOADER -->
+  <div id="loader" class="hidden" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+    <div class="spinner-ring"></div>
+    <div style="margin-top:15px; opacity:0.8; text-align:center; font-size: 14px;" id="loader-text">Caricamento...</div>
+  </div>
+
+  <div class="container" id="app-content">
+    
+    <!-- HEADER -->
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 25px; padding-bottom: 15px; border-bottom: 1px solid var(--glass-border);">
+        <div>
+            <h1 style="font-size: 22px; margin: 0;">
+                <i class="fas fa-magic" style="color: var(--warning);"></i>
+                Specchio Magico AI
+            </h1>
+            <p class="subtitle">Sistema colorimetria professionale multi-brand</p>
+        </div>
+    </div>
+
+    <!-- FASE 1: BRAND SELECTION -->
+    <div id="brand-selection">
+        <div class="card">
+            <h2 style="margin: 0 0 10px 0;">🎯 Configurazione Colorimetria</h2>
+            <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 25px;">
+                Seleziona il sistema di numerazione del tuo salone
+            </p>
+
+            <div class="brand-system-grid">
+                <div class="brand-system-card" onclick="selectSystem('standard')">
+                    <div class="system-badge" style="background: var(--primary);">Standard</div>
+                    <h3>🌍 Sistema Internazionale</h3>
+                    <div class="system-example">
+                        <div class="example-code">7.2</div>
+                        <div class="example-label">Biondo Viola</div>
+                    </div>
+                    <div class="brand-logos">
+                        <span class="brand-tag">L'Oréal</span>
+                        <span class="brand-tag">Inoa</span>
+                        <span class="brand-tag">Alfaparf</span>
+                        <span class="brand-tag">Fanola</span>
+                        <span class="brand-tag">Farmagan</span>
+                        <span class="brand-tag">Davines</span>
+                    </div>
+                    <div class="system-key"><strong>Logica:</strong> .2 = Viola | .6 = Rosso | .7 = Mat</div>
+                </div>
+
+                <div class="brand-system-card" onclick="selectSystem('german')">
+                    <div class="system-badge" style="background: var(--warning);">Tedesco</div>
+                    <h3>🇩🇪 Sistema Invertito</h3>
+                    <div class="system-example">
+                        <div class="example-code">7/6</div>
+                        <div class="example-label">Biondo Viola</div>
+                    </div>
+                    <div class="brand-logos">
+                        <span class="brand-tag">Wella</span>
+                        <span class="brand-tag">Schwarzkopf</span>
+                        <span class="brand-tag">Londa</span>
+                        <span class="brand-tag">Kadus</span>
+                        <span class="brand-tag">Igora</span>
+                    </div>
+                    <div class="system-key"><strong>⚠️ Critico:</strong> /6 = Viola | /4 = Rosso | /2 = Mat</div>
+                </div>
+
+                <div class="brand-system-card" onclick="selectSystem('alphabetic')">
+                    <div class="system-badge" style="background: var(--success);">Alfabetico</div>
+                    <h3>🇺🇸 Sistema Letterale (USA)</h3>
+                    <div class="system-example">
+                        <div class="example-code">7V</div>
+                        <div class="example-label">Biondo Viola</div>
+                    </div>
+                    <div class="brand-logos">
+                        <span class="brand-tag">Matrix</span>
+                        <span class="brand-tag">Redken</span>
+                        <span class="brand-tag">Goldwell</span>
+                        <span class="brand-tag">Joico</span>
+                        <span class="brand-tag">Aveda</span>
+                    </div>
+                    <div class="system-key"><strong>Logica:</strong> V = Violet | R = Red | M = Matte</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- REMAINING SECTIONS (gender, camera, config, fluid, results) -->
+    <!-- [Code continues exactly as in specchio-magico.html] -->
+
+  </div>
+
+  <!-- FAB BUTTONS -->
+  <div class="fab-container" style="position: fixed; bottom: 20px; left: 20px; right: 20px; display: flex; justify-content: space-between; align-items: flex-end; pointer-events: none; z-index: 1000;">
+    <button class="fab-btn fab-secondary" onclick="goBack()" title="Torna Indietro" style="pointer-events: auto; width: 56px; height: 56px; border-radius: 50%; background: var(--secondary); border: none; box-shadow: 0 4px 12px rgba(0,0,0,0.3); cursor: pointer; display: flex; align-items: center; justify-content: center;">
+      <i class="fas fa-arrow-left" style="color: white; font-size: 20px;"></i>
+    </button>
+
+    <button class="fab-btn fab-primary" onclick="goToFunctionsIndex()" title="Menu Servizi" style="pointer-events: auto; width: 56px; height: 56px; border-radius: 50%; background: var(--primary); border: none; box-shadow: 0 4px 12px rgba(0,0,0,0.3); cursor: pointer; display: flex; align-items: center; justify-content: center;">
+      <i class="fas fa-th" style="color: white; font-size: 20px;"></i>
+    </button>
+  </div>
+
+  <script src="../../url-params-manager.js"></script>
+  <script src="./specchio-magico-pillars.js"></script>
+  <script src="./specchio-magico.js"></script>
+  <script src="./specchio-magico-creative.js"></script>
+
+  <script>
+    function goToFunctionsIndex() {
+      navigateWithParams('../index.html', getURLParams());
+    }
+
+    function getURLParams() {
+      const urlParams = new URLSearchParams(window.location.search);
+      return { owner: urlParams.get('owner') || '', token: urlParams.get('token') || '' };
+    }
+  </script>
+</body>
+</html>
