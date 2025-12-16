@@ -18,67 +18,175 @@
   </div>
 
   <div class="container" id="app-content">
+    
     <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 25px; padding-bottom: 15px; border-bottom: 1px solid var(--glass-border);">
-        <div>
-            <h1 style="font-size: 22px; margin: 0;">
-                <i class="fas fa-magic" style="color: var(--warning);"></i>
-                Specchio Magico AI
-            </h1>
-            <p class="subtitle">Sistema colorimetria professionale multi-brand</p>
-        </div>
+      <div>
+        <h1 style="font-size: 22px; margin: 0;"><i class="fas fa-magic" style="color: var(--warning);"></i> Specchio Magico AI</h1>
+        <p class="subtitle">Sistema colorimetria professionale multi-brand</p>
+      </div>
     </div>
 
     <!-- BRAND SELECTION -->
     <div id="brand-selection">
-        <div class="card">
-            <h2 style="margin: 0 0 10px 0;">🎯 Configurazione Colorimetria</h2>
-            <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 25px;">
-                Seleziona il sistema di numerazione del tuo salone
-            </p>
-            <div class="brand-system-grid">
-                <div class="brand-system-card" onclick="selectSystem('standard')">
-                    <div class="system-badge" style="background: var(--primary);">Standard</div>
-                    <h3>🌍 Sistema Internazionale</h3>
-                    <div class="system-example"><div class="example-code">7.2</div><div class="example-label">Biondo Viola</div></div>
-                    <div class="brand-logos"><span class="brand-tag">L'Oréal</span><span class="brand-tag">Inoa</span><span class="brand-tag">Alfaparf</span></div>
-                    <div class="system-key"><strong>Logica:</strong> .2 = Viola | .6 = Rosso | .7 = Mat</div>
-                </div>
-                <div class="brand-system-card" onclick="selectSystem('german')">
-                    <div class="system-badge" style="background: var(--warning);">Tedesco</div>
-                    <h3>🇩🇪 Sistema Invertito</h3>
-                    <div class="system-example"><div class="example-code">7/6</div><div class="example-label">Biondo Viola</div></div>
-                    <div class="brand-logos"><span class="brand-tag">Wella</span><span class="brand-tag">Schwarzkopf</span></div>
-                    <div class="system-key"><strong>⚠️ Critico:</strong> /6 = Viola | /4 = Rosso</div>
-                </div>
-                <div class="brand-system-card" onclick="selectSystem('alphabetic')">
-                    <div class="system-badge" style="background: var(--success);">Alfabetico</div>
-                    <h3>🇺🇸 Sistema Letterale (USA)</h3>
-                    <div class="system-example"><div class="example-code">7V</div><div class="example-label">Biondo Viola</div></div>
-                    <div class="brand-logos"><span class="brand-tag">Matrix</span><span class="brand-tag">Redken</span></div>
-                    <div class="system-key"><strong>Logica:</strong> V = Violet | R = Red</div>
-                </div>
-            </div>
+      <div class="card">
+        <h2>🎯 Configurazione Colorimetria</h2>
+        <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 25px;">Seleziona il sistema di numerazione del tuo salone</p>
+        <div class="brand-system-grid">
+          <div class="brand-system-card" onclick="selectSystem('standard')">
+            <div class="system-badge" style="background: var(--primary);">Standard</div>
+            <h3>🌍 Sistema Internazionale</h3>
+            <div class="system-example"><div class="example-code">7.2</div><div class="example-label">Biondo Viola</div></div>
+            <div class="brand-logos"><span class="brand-tag">L'Oréal</span><span class="brand-tag">Inoa</span><span class="brand-tag">Alfaparf</span></div>
+            <div class="system-key"><strong>Logica:</strong> .2 = Viola | .6 = Rosso | .7 = Mat</div>
+          </div>
+          <div class="brand-system-card" onclick="selectSystem('german')">
+            <div class="system-badge" style="background: var(--warning);">Tedesco</div>
+            <h3>🇩🇪 Sistema Invertito</h3>
+            <div class="system-example"><div class="example-code">7/6</div><div class="example-label">Biondo Viola</div></div>
+            <div class="brand-logos"><span class="brand-tag">Wella</span><span class="brand-tag">Schwarzkopf</span></div>
+            <div class="system-key"><strong>⚠️ Critico:</strong> /6 = Viola | /4 = Rosso</div>
+          </div>
+          <div class="brand-system-card" onclick="selectSystem('alphabetic')">
+            <div class="system-badge" style="background: var(--success);">Alfabetico</div>
+            <h3>🇺🇸 Sistema Letterale (USA)</h3>
+            <div class="system-example"><div class="example-code">7V</div><div class="example-label">Biondo Viola</div></div>
+            <div class="brand-logos"><span class="brand-tag">Matrix</span><span class="brand-tag">Redken</span></div>
+            <div class="system-key"><strong>Logica:</strong> V = Violet | R = Red</div>
+          </div>
         </div>
+      </div>
     </div>
 
-    <!-- GENDER SELECTION (Hidden when auto-detected) -->
+    <!-- GENDER SELECTION -->
     <div id="gender-section" class="hidden">
-        <div class="card">
-            <h3>👤 Seleziona Genere Cliente</h3>
-            <div class="gender-grid">
-                <div class="gender-btn" onclick="selectGender('F')" id="gender-f"><i class="fas fa-venus"></i><span>Donna</span></div>
-                <div class="gender-btn" onclick="selectGender('M')" id="gender-m"><i class="fas fa-mars"></i><span>Uomo</span></div>
-                <div class="gender-btn" onclick="selectGender('X')" id="gender-x"><i class="fas fa-rainbow"></i><span>Fluid</span></div>
-            </div>
-            <button class="btn" onclick="startCamera()" id="btn-start-camera" disabled>Scatta Foto Cliente</button>
+      <div class="card">
+        <h3>👤 Seleziona Genere Cliente</h3>
+        <div class="gender-grid">
+          <div class="gender-btn" onclick="selectGender('F')" id="gender-f"><i class="fas fa-venus"></i><span>Donna</span></div>
+          <div class="gender-btn" onclick="selectGender('M')" id="gender-m"><i class="fas fa-mars"></i><span>Uomo</span></div>
+          <div class="gender-btn" onclick="selectGender('X')" id="gender-x"><i class="fas fa-rainbow"></i><span>Fluid</span></div>
         </div>
+        <button class="btn" onclick="startCamera()" id="btn-start-camera" disabled>Scatta Foto Cliente</button>
+      </div>
     </div>
 
-    <!-- CAMERA, CONFIG, RESULTS sections... (truncated for brevity) -->
-    <!-- Full HTML would be too long - these sections remain unchanged -->
+    <!-- CAMERA SECTION -->
+    <div id="camera-section" class="hidden">
+      <div class="card">
+        <h3>📸 Scatta Foto Cliente</h3>
+        <div class="camera-container">
+          <video id="camera-video" class="camera-video" autoplay playsinline></video>
+          <canvas id="camera-canvas" style="display: none;"></canvas>
+          <div class="camera-overlay">
+            <div class="capture-guide"></div>
+            <div class="camera-hint">Centra il viso nel riquadro</div>
+          </div>
+        </div>
+        <div class="camera-controls">
+          <button class="camera-switch-btn" onclick="switchCamera()"><i class="fas fa-sync-alt"></i></button>
+          <button class="capture-button" onclick="capturePhoto()"><i class="fas fa-camera"></i></button>
+          <button class="camera-switch-btn" onclick="stopCamera()"><i class="fas fa-times"></i></button>
+        </div>
+        <div id="captured-preview" class="hidden" style="margin-top: 20px; text-align: center;">
+          <img id="preview-img" style="max-width: 300px; border-radius: 12px; border: 3px solid var(--primary);">
+          <p style="margin-top: 15px; color: var(--text-muted);">Foto acquisita ✓</p>
+          <button class="btn" onclick="proceedToConfig()">Continua alla Configurazione</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- CONFIG SECTION (Standard Gender F/M) -->
+    <div id="config-section" class="hidden">
+      <div class="card">
+        <h3>⚙️ Configurazione Colore</h3>
+        
+        <div class="config-grid">
+          <div class="config-item">
+            <div class="config-label"><i class="fas fa-layer-group"></i> Livello Base</div>
+            <div class="level-selector" id="level-selector"></div>
+          </div>
+
+          <div class="config-item">
+            <div class="config-label"><i class="fas fa-palette"></i> Riflesso Primario</div>
+            <div class="reflect-grid" id="primary-reflect-grid"></div>
+          </div>
+
+          <div class="config-item" id="secondary-section" class="hidden">
+            <div class="config-label"><i class="fas fa-palette"></i> Riflesso Secondario</div>
+            <div class="reflect-grid" id="secondary-reflect-grid"></div>
+          </div>
+        </div>
+
+        <div class="formula-display">
+          <div class="formula-label">Formula Risultante</div>
+          <div class="formula-code" id="formula-code">--.--</div>
+          <div class="formula-description" id="formula-description"></div>
+        </div>
+
+        <button class="btn" onclick="generateAIResult()" id="btn-generate">Genera Anteprima AI</button>
+      </div>
+    </div>
+
+    <!-- FLUID CONFIG (Gender X) -->
+    <div id="fluid-config-section" class="hidden">
+      <div class="card">
+        <h3>🌈 Configurazione Creative Colors</h3>
+        <p style="color: var(--text-muted); margin-bottom: 20px;">Seleziona categoria e colore fantasy</p>
+        
+        <div class="config-item">
+          <div class="config-label"><i class="fas fa-rainbow"></i> Categoria</div>
+          <select id="creative-category" class="form-control" onchange="loadCreativeColors()" style="width: 100%; padding: 12px; background: var(--glass-bg); border: 2px solid var(--glass-border); border-radius: 8px; color: var(--text-primary); font-size: 14px;">
+            <option value="">Seleziona...</option>
+            <option value="pastel">🌸 Pastelli</option>
+            <option value="vivid">🔥 Vivaci</option>
+            <option value="neon">⚡ Neon</option>
+            <option value="metallic">✨ Metallici</option>
+          </select>
+        </div>
+
+        <div class="config-item" id="creative-colors-container" class="hidden">
+          <div class="config-label"><i class="fas fa-paint-brush"></i> Colore</div>
+          <div class="reflect-grid" id="creative-colors-grid"></div>
+        </div>
+
+        <div class="formula-display">
+          <div class="formula-label">Colore Selezionato</div>
+          <div class="formula-code" id="creative-formula-code" style="font-size: 36px;">-</div>
+          <div class="formula-description" id="creative-formula-description"></div>
+        </div>
+
+        <button class="btn" onclick="generateCreativeAI()" id="btn-generate-creative" disabled>Genera Anteprima AI</button>
+      </div>
+    </div>
+
+    <!-- RESULTS SECTION -->
+    <div id="results-section" class="hidden">
+      <div class="card">
+        <h3>✨ Risultato AI</h3>
+        <div class="results-container">
+          <div class="result-card">
+            <div class="result-header">
+              <img id="result-photo" class="result-photo" src="" alt="Cliente">
+              <div class="result-info">
+                <h3 id="result-title">Anteprima Generata</h3>
+                <p id="result-subtitle">Formula applicata</p>
+              </div>
+            </div>
+            <div id="ai-generated-image" style="text-align: center; margin: 20px 0;">
+              <img id="ai-result-img" style="max-width: 100%; border-radius: 12px; border: 2px solid var(--primary);" alt="Risultato AI">
+            </div>
+            <div class="result-details" id="result-details">
+              <!-- Popolato dinamicamente -->
+            </div>
+          </div>
+        </div>
+        <button class="btn" onclick="resetApp()">Nuova Simulazione</button>
+      </div>
+    </div>
 
   </div>
 
+  <!-- FAB BUTTONS -->
   <div class="fab-container" style="position: fixed; bottom: 20px; left: 20px; right: 20px; display: flex; justify-content: space-between; pointer-events: none; z-index: 1000;">
     <button class="fab-btn fab-secondary" onclick="goBack()" style="pointer-events: auto; width: 56px; height: 56px; border-radius: 50%; background: var(--secondary); border: none; box-shadow: 0 4px 12px rgba(0,0,0,0.3); cursor: pointer; display: flex; align-items: center; justify-content: center;">
       <i class="fas fa-arrow-left" style="color: white; font-size: 20px;"></i>
@@ -92,8 +200,6 @@
   <script src="./specchio-magico-pillars.js"></script>
   <script src="./specchio-magico.js"></script>
   <script src="./specchio-magico-creative.js"></script>
-  
-  <!-- ✅ AUTO-GENDER DETECTION -->
   <script src="./auto-gender-init.js"></script>
 
   <script>
@@ -106,7 +212,6 @@
     }
 
     function goBack() {
-      // Navigate back through the flow or to Functions Hub
       const sections = ['results-section', 'config-section', 'fluid-config-section', 'camera-section', 'gender-section', 'brand-selection'];
       
       for (let i = 0; i < sections.length; i++) {
@@ -117,7 +222,6 @@
           if (i + 1 < sections.length) {
             document.getElementById(sections[i + 1]).classList.remove('hidden');
           } else {
-            // At the start - go back to photo session or functions hub
             const urlParams = new URLSearchParams(window.location.search);
             const fromPhotoSession = urlParams.get('fromPhotoSession') === 'true';
             
