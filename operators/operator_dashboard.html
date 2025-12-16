@@ -45,30 +45,45 @@
       </div>
     </div>
 
-    <!-- QUICK STATS GAMIFICATI -->
-    <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:10px; margin-bottom:20px;">
-      <div class="stat-box" style="text-align:center; background:rgba(255,255,255,0.05); padding:12px; border-radius:12px; border:1px solid var(--glass-border);">
-        <div style="font-size:20px; margin-bottom:4px;">🎯</div>
-        <div id="stat-tasks" style="font-size:20px; font-weight:700; color:var(--primary);">0</div>
-        <div style="font-size:9px; color:var(--text-muted); text-transform:uppercase; margin-top:2px;">Task</div>
-      </div>
+    <!-- BIG FIVE PERSONALITY TRAITS -->
+    <div style="margin-bottom:20px;">
+      <h4 style="opacity:0.7; text-transform:uppercase; font-size:12px; letter-spacing:1px; margin-bottom:12px;">🧠 Profilo Personalità (Big Five)</h4>
       
-      <div class="stat-box" style="text-align:center; background:rgba(255,255,255,0.05); padding:12px; border-radius:12px; border:1px solid var(--glass-border);">
-        <div style="font-size:20px; margin-bottom:4px;">⏱️</div>
-        <div id="stat-hours" style="font-size:20px; font-weight:700; color:var(--success);">0h</div>
-        <div style="font-size:9px; color:var(--text-muted); text-transform:uppercase; margin-top:2px;">Ore</div>
-      </div>
-      
-      <div class="stat-box" style="text-align:center; background:rgba(255,255,255,0.05); padding:12px; border-radius:12px; border:1px solid var(--glass-border);">
-        <div style="font-size:20px; margin-bottom:4px;">🏆</div>
-        <div id="stat-level" style="font-size:20px; font-weight:700; color:var(--warning);">1</div>
-        <div style="font-size:9px; color:var(--text-muted); text-transform:uppercase; margin-top:2px;">Livello</div>
-      </div>
-      
-      <div class="stat-box" style="text-align:center; background:rgba(255,255,255,0.05); padding:12px; border-radius:12px; border:1px solid var(--glass-border);">
-        <div style="font-size:20px; margin-bottom:4px;">🔥</div>
-        <div id="stat-streak" style="font-size:20px; font-weight:700; color:var(--danger);">0</div>
-        <div style="font-size:9px; color:var(--text-muted); text-transform:uppercase; margin-top:2px;">Streak</div>
+      <div style="display:grid; grid-template-columns:repeat(5, 1fr); gap:8px;">
+        <!-- Openness -->
+        <div class="stat-box" style="text-align:center; background:rgba(255,255,255,0.05); padding:10px; border-radius:12px; border:1px solid var(--glass-border);">
+          <div style="font-size:18px; margin-bottom:4px;">🌈</div>
+          <div id="big5-openness" style="font-size:18px; font-weight:700; color:#a78bfa;">-</div>
+          <div style="font-size:8px; color:var(--text-muted); text-transform:uppercase; margin-top:2px;">Apertura</div>
+        </div>
+        
+        <!-- Conscientiousness -->
+        <div class="stat-box" style="text-align:center; background:rgba(255,255,255,0.05); padding:10px; border-radius:12px; border:1px solid var(--glass-border);">
+          <div style="font-size:18px; margin-bottom:4px;">📋</div>
+          <div id="big5-conscientiousness" style="font-size:18px; font-weight:700; color:#34d399;">-</div>
+          <div style="font-size:8px; color:var(--text-muted); text-transform:uppercase; margin-top:2px;">Coscienz.</div>
+        </div>
+        
+        <!-- Extraversion -->
+        <div class="stat-box" style="text-align:center; background:rgba(255,255,255,0.05); padding:10px; border-radius:12px; border:1px solid var(--glass-border);">
+          <div style="font-size:18px; margin-bottom:4px;">🎉</div>
+          <div id="big5-extraversion" style="font-size:18px; font-weight:700; color:#fbbf24;">-</div>
+          <div style="font-size:8px; color:var(--text-muted); text-transform:uppercase; margin-top:2px;">Estrovers.</div>
+        </div>
+        
+        <!-- Agreeableness -->
+        <div class="stat-box" style="text-align:center; background:rgba(255,255,255,0.05); padding:10px; border-radius:12px; border:1px solid var(--glass-border);">
+          <div style="font-size:18px; margin-bottom:4px;">🤝</div>
+          <div id="big5-agreeableness" style="font-size:18px; font-weight:700; color:#60a5fa;">-</div>
+          <div style="font-size:8px; color:var(--text-muted); text-transform:uppercase; margin-top:2px;">Amichez.</div>
+        </div>
+        
+        <!-- Neuroticism -->
+        <div class="stat-box" style="text-align:center; background:rgba(255,255,255,0.05); padding:10px; border-radius:12px; border:1px solid var(--glass-border);">
+          <div style="font-size:18px; margin-bottom:4px;">⚡</div>
+          <div id="big5-neuroticism" style="font-size:18px; font-weight:700; color:#f87171;">-</div>
+          <div style="font-size:8px; color:var(--text-muted); text-transform:uppercase; margin-top:2px;">Nevrotic.</div>
+        </div>
       </div>
     </div>
 
