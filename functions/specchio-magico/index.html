@@ -26,7 +26,9 @@
       </div>
     </div>
 
-    <!-- BRAND SELECTION -->
+    <!-- ========================================
+         BRAND SELECTION
+         ======================================== -->
     <div id="brand-selection">
       <div class="card">
         <h2>🎯 Configurazione Colorimetria</h2>
@@ -57,7 +59,9 @@
       </div>
     </div>
 
-    <!-- GENDER SELECTION -->
+    <!-- ========================================
+         GENDER SELECTION
+         ======================================== -->
     <div id="gender-section" class="hidden">
       <div class="card">
         <h3>👤 Seleziona Genere Cliente</h3>
@@ -70,213 +74,329 @@
       </div>
     </div>
 
-    <!-- CAMERA SECTION -->
+    <!-- ========================================
+         CAMERA SECTION
+         ======================================== -->
     <div id="camera-section" class="hidden">
       <div class="card">
         <h3>📸 Scatta Foto Cliente</h3>
         <div class="camera-container">
-          <video id="camera-video" class="camera-video" autoplay playsinline></video>
-          <canvas id="camera-canvas" style="display: none;"></canvas>
+          <video id="video-preview" class="camera-video" autoplay playsinline></video>
+          <canvas id="canvas-preview" style="display: none;"></canvas>
           <div class="camera-overlay">
             <div class="capture-guide"></div>
             <div class="camera-hint">Centra il viso nel riquadro</div>
           </div>
         </div>
         <div class="camera-controls">
-          <button class="camera-switch-btn" onclick="switchCamera()"><i class="fas fa-sync-alt"></i></button>
+          <button class="camera-switch-btn" onclick="toggleCamera()"><i class="fas fa-sync-alt"></i></button>
           <button class="capture-button" onclick="capturePhoto()"><i class="fas fa-camera"></i></button>
-          <button class="camera-switch-btn" onclick="stopCamera()"><i class="fas fa-times"></i></button>
-        </div>
-        <div id="captured-preview" class="hidden" style="margin-top: 20px; text-align: center;">
-          <img id="preview-img" style="max-width: 300px; border-radius: 12px; border: 3px solid var(--primary);">
-          <p style="margin-top: 15px; color: var(--text-muted);">Foto acquisita ✓</p>
-          <button class="btn" onclick="proceedToConfig()">Continua alla Configurazione</button>
+          <button class="camera-switch-btn" onclick="cancelCamera()"><i class="fas fa-times"></i></button>
         </div>
       </div>
     </div>
 
-    <!-- CONFIG SECTION (Standard Gender F/M) -->
+    <!-- ========================================
+         CONFIG SECTION (Standard - F/M)
+         ======================================== -->
     <div id="config-section" class="hidden">
       <div class="card">
-        <h3>⚙️ Configurazione Colore</h3>
-        
-        <div class="config-grid">
-          <div class="config-item">
-            <div class="config-label"><i class="fas fa-layer-group"></i> Livello Base</div>
-            <div class="level-selector" id="level-selector"></div>
-          </div>
-
-          <div class="config-item">
-            <div class="config-label"><i class="fas fa-palette"></i> Riflesso Primario</div>
-            <div class="reflect-grid" id="primary-reflect-grid"></div>
-          </div>
-
-          <div class="config-item" id="secondary-section" class="hidden">
-            <div class="config-label"><i class="fas fa-palette"></i> Riflesso Secondario</div>
-            <div class="reflect-grid" id="secondary-reflect-grid"></div>
-          </div>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+          <h3 style="margin: 0;">⚙️ Configurazione Colore</h3>
+          <img id="client-photo" src="" alt="Cliente" style="width: 60px; height: 60px; border-radius: 50%; object-fit: cover; border: 2px solid var(--primary);">
         </div>
-
-        <div class="formula-display">
-          <div class="formula-label">Formula Risultante</div>
-          <div class="formula-code" id="formula-code">--.--</div>
-          <div class="formula-description" id="formula-description"></div>
-        </div>
-
-        <button class="btn" onclick="generateAIResult()" id="btn-generate">Genera Anteprima AI</button>
-      </div>
-    </div>
-
-    <!-- FLUID CONFIG (Gender X) -->
-    <div id="fluid-config-section" class="hidden">
-      <div class="card">
-        <h3>🌈 Configurazione Creative Colors</h3>
-        <p style="color: var(--text-muted); margin-bottom: 20px;">Seleziona categoria e colore fantasy</p>
         
-        <div class="config-item">
-          <div class="config-label"><i class="fas fa-rainbow"></i> Categoria</div>
-          <select id="creative-category" class="form-control" onchange="loadCreativeColors()" style="width: 100%; padding: 12px; background: var(--glass-bg); border: 2px solid var(--glass-border); border-radius: 8px; color: var(--text-primary); font-size: 14px;">
-            <option value="">Seleziona...</option>
-            <option value="pastel">🌸 Pastelli</option>
-            <option value="vivid">🔥 Vivaci</option>
-            <option value="neon">⚡ Neon</option>
-            <option value="metallic">✨ Metallici</option>
+        <!-- HAIRCUT -->
+        <div class="config-item" style="margin-bottom: 20px;">
+          <div class="config-label"><i class="fas fa-cut"></i> Taglio Capelli</div>
+          <select id="haircut" class="form-control" style="width: 100%; padding: 12px; background: var(--glass-bg); border: 2px solid var(--glass-border); border-radius: 8px; color: var(--text-primary); font-size: 14px;">
+            <option value="">Seleziona taglio...</option>
           </select>
         </div>
 
-        <div class="config-item" id="creative-colors-container" class="hidden">
-          <div class="config-label"><i class="fas fa-paint-brush"></i> Colore</div>
-          <div class="reflect-grid" id="creative-colors-grid"></div>
+        <!-- HAIR TEXTURE -->
+        <div class="config-item" style="margin-bottom: 20px;">
+          <div class="config-label"><i class="fas fa-water"></i> Texture Capelli</div>
+          <select id="hair-texture" class="form-control" style="width: 100%; padding: 12px; background: var(--glass-bg); border: 2px solid var(--glass-border); border-radius: 8px; color: var(--text-primary); font-size: 14px;">
+            <option value="">Seleziona texture...</option>
+          </select>
         </div>
 
-        <div class="formula-display">
-          <div class="formula-label">Colore Selezionato</div>
-          <div class="formula-code" id="creative-formula-code" style="font-size: 36px;">-</div>
-          <div class="formula-description" id="creative-formula-description"></div>
+        <!-- PROTECTIVE STYLES (Afro) -->
+        <div id="protective-styles-section" class="config-item hidden" style="margin-bottom: 20px;">
+          <div class="config-label"><i class="fas fa-shield-alt"></i> Protective Style</div>
+          <select id="protective-style" class="form-control" style="width: 100%; padding: 12px; background: var(--glass-bg); border: 2px solid var(--glass-border); border-radius: 8px; color: var(--text-primary); font-size: 14px;">
+            <option value="none">Nessuno</option>
+          </select>
         </div>
 
-        <button class="btn" onclick="generateCreativeAI()" id="btn-generate-creative" disabled>Genera Anteprima AI</button>
+        <!-- BASE TONE SLIDER -->
+        <div class="config-item" style="margin-bottom: 20px;">
+          <div class="config-label"><i class="fas fa-layer-group"></i> Livello Base: <span id="tone-display" style="font-size: 18px; font-weight: 700; color: var(--primary);">7</span></div>
+          <input type="range" id="base-tone" min="1" max="10" value="7" oninput="updateToneDisplay()" style="width: 100%; height: 8px; border-radius: 4px; background: linear-gradient(to right, #1a1a1a, #f0e6d2); outline: none; cursor: pointer;">
+        </div>
+
+        <!-- REFLECT PALETTE -->
+        <div class="config-item" style="margin-bottom: 20px;">
+          <div class="config-label"><i class="fas fa-palette"></i> Riflessi (Click = Primario, Double-Click = Intensifica, 2° Click = Secondario)</div>
+          <div id="reflect-palette" class="reflect-grid"></div>
+        </div>
+
+        <!-- FORMULA DISPLAY -->
+        <div class="formula-display" style="margin: 25px 0;">
+          <div class="formula-label">Formula Risultante</div>
+          <div class="formula-code" id="formula-code">7.0</div>
+          <div style="display: flex; justify-content: center; align-items: center; gap: 15px; margin-top: 10px;">
+            <span id="formula-temp" class="temp-badge temp-neutral">NEUTRO</span>
+            <span id="formula-name" style="font-size: 14px; color: var(--text-primary);">Naturale</span>
+          </div>
+        </div>
+
+        <!-- COLOR TECHNIQUE -->
+        <div class="config-item" style="margin-bottom: 20px;">
+          <div class="config-label"><i class="fas fa-brush"></i> Tecnica di Colorazione</div>
+          <select id="color-technique" class="form-control" style="width: 100%; padding: 12px; background: var(--glass-bg); border: 2px solid var(--glass-border); border-radius: 8px; color: var(--text-primary); font-size: 14px;">
+            <option value="global">Tinta Globale</option>
+          </select>
+        </div>
+
+        <!-- STYLING FINISH -->
+        <div class="config-item" style="margin-bottom: 20px;">
+          <div class="config-label"><i class="fas fa-star"></i> Piega / Styling</div>
+          <select id="styling-finish" class="form-control" style="width: 100%; padding: 12px; background: var(--glass-bg); border: 2px solid var(--glass-border); border-radius: 8px; color: var(--text-primary); font-size: 14px;">
+            <option value="natural">Naturale</option>
+          </select>
+        </div>
+
+        <!-- EXTENSIONS -->
+        <div class="config-item" style="margin-bottom: 20px;">
+          <div class="config-label"><i class="fas fa-puzzle-piece"></i> Extension</div>
+          <select id="extensions-type" class="form-control" style="width: 100%; padding: 12px; background: var(--glass-bg); border: 2px solid var(--glass-border); border-radius: 8px; color: var(--text-primary); font-size: 14px;">
+            <option value="none">Nessuno</option>
+          </select>
+        </div>
+
+        <!-- MAKEUP SECTION (Female) -->
+        <div id="makeup-section" class="hidden" style="margin-top: 25px;">
+          <div class="card" style="background: rgba(255, 105, 180, 0.1);">
+            <h4 style="margin: 0 0 15px 0;"><i class="fas fa-heart"></i> Make-up</h4>
+            
+            <div class="config-item" style="margin-bottom: 15px;">
+              <div class="config-label">Occhi</div>
+              <select id="eye-makeup" class="form-control" style="width: 100%; padding: 12px; background: var(--glass-bg); border: 2px solid var(--glass-border); border-radius: 8px; color: var(--text-primary); font-size: 14px;">
+                <option value="Nessuno">Nessuno</option>
+                <option value="Natural">Natural</option>
+                <option value="Smokey Eye">Smokey Eye</option>
+                <option value="Cat Eye">Cat Eye</option>
+                <option value="Glam">Glam</option>
+              </select>
+            </div>
+
+            <div class="config-item">
+              <div class="config-label">Labbra</div>
+              <div id="lip-colors" style="display: flex; flex-wrap: wrap; gap: 10px;"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- BEARD SECTION (Male/Fluid) -->
+        <div id="beard-section" class="hidden" style="margin-top: 25px;">
+          <div class="card" style="background: rgba(91, 111, 237, 0.1);">
+            <h4 style="margin: 0 0 15px 0;"><i class="fas fa-user"></i> Barba</h4>
+            
+            <div class="config-item" style="margin-bottom: 15px;">
+              <div class="config-label">Stile</div>
+              <select id="beard-style" class="form-control" style="width: 100%; padding: 12px; background: var(--glass-bg); border: 2px solid var(--glass-border); border-radius: 8px; color: var(--text-primary); font-size: 14px;">
+                <option value="none">Nessuna</option>
+                <option value="Full Beard">Full Beard</option>
+                <option value="Goatee">Goatee</option>
+                <option value="Stubble">Stubble (3 giorni)</option>
+                <option value="Van Dyke">Van Dyke</option>
+                <option value="Soul Patch">Soul Patch</option>
+              </select>
+            </div>
+
+            <div class="config-item" id="fade-section" style="margin-bottom: 15px;">
+              <div class="config-label">Fade / Sfumatura</div>
+              <select id="fade-type" class="form-control" style="width: 100%; padding: 12px; background: var(--glass-bg); border: 2px solid var(--glass-border); border-radius: 8px; color: var(--text-primary); font-size: 14px;">
+                <option value="none">Nessuno</option>
+              </select>
+            </div>
+
+            <div class="config-item">
+              <div class="config-label">Colore Barba</div>
+              <div id="beard-colors" style="display: flex; flex-wrap: wrap; gap: 10px;"></div>
+            </div>
+          </div>
+        </div>
+
+        <button class="btn" onclick="generatePreview()" style="width: 100%; margin-top: 25px; padding: 15px; font-size: 16px; font-weight: 600;">🎨 Genera Anteprima AI</button>
       </div>
     </div>
 
-    <!-- RESULTS SECTION -->
+    <!-- ========================================
+         FLUID CONFIG SECTION (Gender X - Creative Colors)
+         ======================================== -->
+    <div id="fluid-config-section" class="hidden">
+      <div class="card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+          <h3 style="margin: 0;">🌈 Creative Colors</h3>
+          <img id="client-photo" src="" alt="Cliente" style="width: 60px; height: 60px; border-radius: 50%; object-fit: cover; border: 2px solid var(--primary);">
+        </div>
+
+        <p style="color: var(--text-muted); margin-bottom: 20px;">Seleziona uno o più colori fantasy per creare il tuo mix personalizzato</p>
+
+        <!-- CATEGORY TABS -->
+        <div style="display: flex; gap: 10px; margin-bottom: 20px; overflow-x: auto;">
+          <button class="category-tab active" data-category="all" style="padding: 10px 20px; background: var(--glass-bg); border: 2px solid var(--primary); border-radius: 20px; color: var(--text-primary); font-size: 14px; font-weight: 600; cursor: pointer; white-space: nowrap; transition: all 0.2s;">Tutti</button>
+          <button class="category-tab" data-category="pastel" style="padding: 10px 20px; background: var(--glass-bg); border: 2px solid var(--glass-border); border-radius: 20px; color: var(--text-muted); font-size: 14px; font-weight: 600; cursor: pointer; white-space: nowrap; transition: all 0.2s;">🌸 Pastelli</button>
+          <button class="category-tab" data-category="vivid" style="padding: 10px 20px; background: var(--glass-bg); border: 2px solid var(--glass-border); border-radius: 20px; color: var(--text-muted); font-size: 14px; font-weight: 600; cursor: pointer; white-space: nowrap; transition: all 0.2s;">🔥 Vivaci</button>
+          <button class="category-tab" data-category="metallic" style="padding: 10px 20px; background: var(--glass-bg); border: 2px solid var(--glass-border); border-radius: 20px; color: var(--text-muted); font-size: 14px; font-weight: 600; cursor: pointer; white-space: nowrap; transition: all 0.2s;">✨ Metallici</button>
+          <button class="category-tab" data-category="dark" style="padding: 10px 20px; background: var(--glass-bg); border: 2px solid var(--glass-border); border-radius: 20px; color: var(--text-muted); font-size: 14px; font-weight: 600; cursor: pointer; white-space: nowrap; transition: all 0.2s;">🖤 Dark</button>
+        </div>
+
+        <!-- CREATIVE COLORS PALETTE -->
+        <div id="creative-colors-palette" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 12px; margin-bottom: 20px;"></div>
+
+        <!-- SELECTED COLORS DISPLAY (Multi-Select with Sliders) -->
+        <div id="selected-colors-display" class="hidden" style="margin: 25px 0; padding: 20px; background: rgba(0,0,0,0.3); border-radius: 12px; border: 2px solid var(--primary);">
+          <h4 style="margin: 0 0 15px 0; font-size: 16px;">🎨 Colori Selezionati (Regola percentuali)</h4>
+          <div id="selected-colors-list" style="display: grid; gap: 15px;"></div>
+        </div>
+
+        <!-- BASE HAIR COLOR FOR CREATIVE -->
+        <div class="config-item" style="margin-bottom: 20px;">
+          <div class="config-label"><i class="fas fa-tint"></i> Base Capelli</div>
+          <select id="base-hair-color-fluid" class="form-control" style="width: 100%; padding: 12px; background: var(--glass-bg); border: 2px solid var(--glass-border); border-radius: 8px; color: var(--text-primary); font-size: 14px;">
+            <option value="bleached">Pre-decolorati (9-10)</option>
+            <option value="virgin-light">Naturali Chiari (7-8)</option>
+            <option value="virgin-medium">Naturali Medi (5-6)</option>
+            <option value="virgin-dark">Naturali Scuri (1-4)</option>
+            <option value="colored">Già Colorati</option>
+          </select>
+        </div>
+
+        <!-- CREATIVE PLACEMENT TECHNIQUE -->
+        <div class="config-item" style="margin-bottom: 20px;">
+          <div class="config-label"><i class="fas fa-map-marked-alt"></i> Tecnica Applicazione</div>
+          <select id="creative-placement-technique" class="form-control" style="width: 100%; padding: 12px; background: var(--glass-bg); border: 2px solid var(--glass-border); border-radius: 8px; color: var(--text-primary); font-size: 14px;">
+            <option value="full">Full Head (Tutta la Testa)</option>
+          </select>
+        </div>
+
+        <!-- FLUID MAKEUP SECTION -->
+        <div id="fluid-makeup-section" class="hidden" style="margin-top: 25px;">
+          <div class="card" style="background: rgba(255, 105, 180, 0.1);">
+            <h4 style="margin: 0 0 15px 0;"><i class="fas fa-heart"></i> Make-up</h4>
+            
+            <div class="config-item" style="margin-bottom: 15px;">
+              <div class="config-label">Occhi</div>
+              <select id="eye-makeup-fluid" class="form-control" style="width: 100%; padding: 12px; background: var(--glass-bg); border: 2px solid var(--glass-border); border-radius: 8px; color: var(--text-primary); font-size: 14px;">
+                <option value="Nessuno">Nessuno</option>
+                <option value="Natural">Natural</option>
+                <option value="Smokey Eye">Smokey Eye</option>
+                <option value="Cat Eye">Cat Eye</option>
+                <option value="Glam">Glam</option>
+              </select>
+            </div>
+
+            <div class="config-item">
+              <div class="config-label">Labbra</div>
+              <div id="fluid-lip-colors" style="display: flex; flex-wrap: wrap; gap: 10px;"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- FLUID BEARD SECTION -->
+        <div id="fluid-beard-section" class="hidden" style="margin-top: 25px;">
+          <div class="card" style="background: rgba(91, 111, 237, 0.1);">
+            <h4 style="margin: 0 0 15px 0;"><i class="fas fa-user"></i> Barba</h4>
+            
+            <div class="config-item" style="margin-bottom: 15px;">
+              <div class="config-label">Stile</div>
+              <select id="beard-style-fluid" class="form-control" style="width: 100%; padding: 12px; background: var(--glass-bg); border: 2px solid var(--glass-border); border-radius: 8px; color: var(--text-primary); font-size: 14px;">
+                <option value="none">Nessuna</option>
+                <option value="Full Beard">Full Beard</option>
+                <option value="Goatee">Goatee</option>
+                <option value="Stubble">Stubble (3 giorni)</option>
+              </select>
+            </div>
+
+            <div class="config-item">
+              <div class="config-label">Colore Barba</div>
+              <div id="fluid-beard-colors" style="display: flex; flex-wrap: wrap; gap: 10px;"></div>
+            </div>
+          </div>
+        </div>
+
+        <button class="btn" onclick="generateFluidPreview()" style="width: 100%; margin-top: 25px; padding: 15px; font-size: 16px; font-weight: 600;">🌈 Genera Anteprima Creative</button>
+      </div>
+    </div>
+
+    <!-- ========================================
+         RESULTS SECTION
+         ======================================== -->
     <div id="results-section" class="hidden">
       <div class="card">
         <h3>✨ Risultato AI</h3>
-        <div class="results-container">
-          <div class="result-card">
-            <div class="result-header">
-              <img id="result-photo" class="result-photo" src="" alt="Cliente">
-              <div class="result-info">
-                <h3 id="result-title">Anteprima Generata</h3>
-                <p id="result-subtitle">Formula applicata</p>
-              </div>
-            </div>
-            <div id="ai-generated-image" style="text-align: center; margin: 20px 0;">
-              <img id="ai-result-img" style="max-width: 100%; border-radius: 12px; border: 2px solid var(--primary);" alt="Risultato AI">
-            </div>
-            <div class="result-details" id="result-details">
-              <!-- Popolato dinamicamente -->
-            </div>
+        
+        <!-- BEFORE/AFTER COMPARISON -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin: 20px 0;">
+          <div style="text-align: center;">
+            <p style="font-size: 12px; font-weight: 600; text-transform: uppercase; color: var(--text-muted); margin-bottom: 10px;">PRIMA</p>
+            <img id="before-img" src="" alt="Prima" style="width: 100%; aspect-ratio: 3/4; object-fit: cover; border-radius: 12px; border: 2px solid var(--glass-border);">
+          </div>
+          <div style="text-align: center;">
+            <p style="font-size: 12px; font-weight: 600; text-transform: uppercase; color: var(--primary); margin-bottom: 10px;">DOPO</p>
+            <img id="after-img" src="" alt="Dopo" style="width: 100%; aspect-ratio: 3/4; object-fit: cover; border-radius: 12px; border: 2px solid var(--primary); box-shadow: 0 4px 20px rgba(91, 111, 237, 0.4);">
           </div>
         </div>
 
-        <!-- CLIENT SAVE SECTION -->
-        <div class="card" style="margin-top: 20px;">
-          <h3>💾 Salva Simulazione</h3>
-          
-          <!-- Search + New Client Button -->
-          <div style="display: flex; gap: 10px; margin-bottom: 20px;">
-            <div style="flex: 1; position: relative;">
-              <i class="fas fa-search" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-muted);"></i>
-              <input 
-                type="text" 
-                id="client-search" 
-                placeholder="Cerca cliente..." 
-                oninput="filterClients(this.value)"
-                style="width: 100%; padding: 12px 12px 12px 40px; background: var(--glass-bg); border: 2px solid var(--glass-border); border-radius: 8px; color: var(--text-primary); font-size: 14px;"
-              >
-            </div>
-            <button 
-              class="btn" 
-              onclick="showNewClientForm()" 
-              style="padding: 12px 20px; background: var(--success); white-space: nowrap;"
-            >
-              <i class="fas fa-plus"></i> Nuovo Cliente
-            </button>
-          </div>
-
-          <!-- Client List -->
-          <div id="client-list-container" style="max-height: 300px; overflow-y: auto; border: 1px solid var(--glass-border); border-radius: 8px; padding: 10px;">
-            <div id="client-list">
-              <!-- Populated dynamically by loadClientList() -->
-              <div style="text-align: center; padding: 20px; color: var(--text-muted);">
-                <i class="fas fa-spinner fa-spin" style="font-size: 24px; margin-bottom: 10px;"></i>
-                <p>Caricamento clienti...</p>
-              </div>
-            </div>
-          </div>
+        <!-- SUMMARY -->
+        <div class="card" style="background: rgba(91, 111, 237, 0.1); margin: 20px 0;">
+          <h4 style="margin: 0 0 15px 0;">📋 Riepilogo</h4>
+          <div id="summary-content" style="display: grid; gap: 10px;"></div>
         </div>
 
-        <button class="btn" onclick="resetApp()" style="margin-top: 20px;">Nuova Simulazione</button>
+        <!-- DIAGNOSIS CARD (Injected by JS) -->
+        <!-- MIXING CALCULATOR CARD (Injected by JS) -->
+
+        <div class="btn-container" style="display: flex; gap: 10px; margin-top: 25px;">
+          <button class="btn" onclick="translateFormula()" style="flex: 1; background: var(--secondary);"><i class="fas fa-language"></i> Traduci</button>
+          <button class="btn" onclick="saveLook()" style="flex: 1; background: var(--success);"><i class="fas fa-save"></i> Salva</button>
+          <button class="btn" onclick="shareLook()" style="flex: 1; background: var(--warning);"><i class="fas fa-share-alt"></i> Condividi</button>
+        </div>
+
+        <button class="btn" onclick="backToConfig()" style="width: 100%; margin-top: 15px; background: var(--glass-bg); color: var(--text-primary);"><i class="fas fa-arrow-left"></i> Torna alla Configurazione</button>
       </div>
     </div>
 
   </div>
 
-  <!-- NEW CLIENT MODAL -->
-  <div id="new-client-modal" class="hidden" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 10000; display: flex; align-items: center; justify-content: center; padding: 20px;">
+  <!-- ========================================
+       TRANSLATION MODAL
+       ======================================== -->
+  <div id="translation-modal" class="hidden" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 10000; display: flex; align-items: center; justify-content: center; padding: 20px;">
     <div class="card" style="max-width: 500px; width: 100%; margin: 0;">
-      <h3>➕ Nuovo Cliente</h3>
-      <p style="color: var(--text-muted); margin-bottom: 20px;">Compila i dati del nuovo cliente</p>
+      <h3>🌍 Traduzione Formula</h3>
       
-      <div style="display: grid; gap: 15px;">
-        <div>
-          <label style="display: block; margin-bottom: 5px; font-size: 14px; font-weight: 600;">Nome *</label>
-          <input type="text" id="new-client-firstname" placeholder="Mario" style="width: 100%; padding: 12px; background: var(--glass-bg); border: 2px solid var(--glass-border); border-radius: 8px; color: var(--text-primary);">
-        </div>
-        <div>
-          <label style="display: block; margin-bottom: 5px; font-size: 14px; font-weight: 600;">Cognome *</label>
-          <input type="text" id="new-client-lastname" placeholder="Rossi" style="width: 100%; padding: 12px; background: var(--glass-bg); border: 2px solid var(--glass-border); border-radius: 8px; color: var(--text-primary);">
-        </div>
-        <div>
-          <label style="display: block; margin-bottom: 5px; font-size: 14px; font-weight: 600;">Email (opzionale)</label>
-          <input type="email" id="new-client-email" placeholder="mario.rossi@email.com" style="width: 100%; padding: 12px; background: var(--glass-bg); border: 2px solid var(--glass-border); border-radius: 8px; color: var(--text-primary);">
-        </div>
-        <div>
-          <label style="display: block; margin-bottom: 5px; font-size: 14px; font-weight: 600;">Telefono (opzionale)</label>
-          <input type="tel" id="new-client-phone" placeholder="+39 123 456 7890" style="width: 100%; padding: 12px; background: var(--glass-bg); border: 2px solid var(--glass-border); border-radius: 8px; color: var(--text-primary);">
-        </div>
+      <div style="background: rgba(0,0,0,0.3); padding: 15px; border-radius: 8px; margin: 15px 0;">
+        <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 5px;">Formula Attuale (<span id="your-system"></span>):</p>
+        <p id="your-formula" style="font-size: 24px; font-weight: 700; color: var(--primary); font-family: monospace;"></p>
       </div>
 
-      <div style="display: flex; gap: 10px; margin-top: 20px;">
-        <button class="btn" onclick="closeNewClientModal()" style="flex: 1; background: var(--secondary);">Annulla</button>
-        <button class="btn" onclick="createNewClient()" style="flex: 1; background: var(--success);">Crea Cliente</button>
+      <div style="background: rgba(0,0,0,0.3); padding: 15px; border-radius: 8px; margin: 15px 0;">
+        <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 5px;">Descrizione Universale:</p>
+        <p id="universal-desc" style="font-size: 14px; color: var(--text-primary); line-height: 1.6; white-space: pre-line;"></p>
       </div>
+
+      <button class="btn" onclick="closeTranslationModal()" style="width: 100%;">Chiudi</button>
     </div>
   </div>
 
-  <!-- INVITE LINK MODAL -->
-  <div id="invite-link-modal" class="hidden" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 10000; display: flex; align-items: center; justify-content: center; padding: 20px;">
-    <div class="card" style="max-width: 500px; width: 100%; margin: 0;">
-      <h3>✅ Cliente Creato!</h3>
-      <p style="color: var(--text-muted); margin-bottom: 20px;">Link registrazione generato</p>
-      
-      <div style="background: rgba(0,0,0,0.3); padding: 15px; border-radius: 8px; margin-bottom: 20px;">
-        <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 8px;">Link Onboarding:</p>
-        <p id="invite-link-text" style="font-size: 14px; word-break: break-all; font-family: monospace; color: var(--primary);"></p>
-      </div>
-
-      <button class="btn" onclick="copyInviteLink()" style="width: 100%; margin-bottom: 10px;">
-        <i class="fas fa-copy"></i> Copia Link
-      </button>
-      <button class="btn" onclick="closeInviteLinkModal()" style="width: 100%; background: var(--secondary);">
-        Chiudi
-      </button>
-    </div>
-  </div>
-
-  <!-- FAB BUTTONS -->
+  <!-- ========================================
+       FAB NAVIGATION
+       ======================================== -->
   <div class="fab-container" style="position: fixed; bottom: 20px; left: 20px; right: 20px; display: flex; justify-content: space-between; pointer-events: none; z-index: 1000;">
     <button class="fab-btn fab-secondary" onclick="goBack()" style="pointer-events: auto; width: 56px; height: 56px; border-radius: 50%; background: var(--secondary); border: none; box-shadow: 0 4px 12px rgba(0,0,0,0.3); cursor: pointer; display: flex; align-items: center; justify-content: center;">
       <i class="fas fa-arrow-left" style="color: white; font-size: 20px;"></i>
@@ -286,6 +406,9 @@
     </button>
   </div>
 
+  <!-- ========================================
+       SCRIPTS
+       ======================================== -->
   <script src="../../url-params-manager.js"></script>
   <script src="./specchio-magico-pillars.js"></script>
   <script src="./specchio-magico.js"></script>
@@ -332,5 +455,273 @@
       }
     }
   </script>
+
+  <style>
+    /* Category Tabs Styling */
+    .category-tab.active {
+      background: linear-gradient(135deg, var(--primary), rgba(91, 111, 237, 0.7)) !important;
+      border-color: var(--primary) !important;
+      color: white !important;
+    }
+
+    .category-tab:hover {
+      border-color: var(--primary);
+      transform: translateY(-2px);
+    }
+
+    /* Creative Color Button */
+    .creative-color-btn {
+      padding: 12px;
+      background: var(--glass-bg);
+      border: 2px solid var(--glass-border);
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-align: center;
+    }
+
+    .creative-color-btn:hover {
+      transform: translateY(-2px);
+      border-color: var(--primary);
+    }
+
+    .creative-color-btn.active {
+      border-color: var(--primary);
+      background: rgba(91, 111, 237, 0.2);
+      box-shadow: 0 0 20px rgba(91, 111, 237, 0.4);
+    }
+
+    .creative-color-btn .color-swatch {
+      width: 100%;
+      height: 60px;
+      border-radius: 8px;
+      margin-bottom: 8px;
+    }
+
+    .creative-color-btn .color-name {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 5px;
+    }
+
+    .creative-color-btn .color-category-badge {
+      font-size: 10px;
+      padding: 3px 8px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+    }
+
+    /* Selected Colors Item */
+    .selected-color-item {
+      display: grid;
+      grid-template-columns: 30px 1fr 150px 50px 30px;
+      align-items: center;
+      gap: 10px;
+      padding: 12px;
+      background: rgba(0,0,0,0.3);
+      border-radius: 8px;
+      border: 1px solid var(--glass-border);
+    }
+
+    .color-swatch-mini {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      border: 2px solid white;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    }
+
+    .color-name-mini {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .percentage-slider {
+      width: 100%;
+      height: 6px;
+      border-radius: 3px;
+      background: var(--glass-border);
+      outline: none;
+      cursor: pointer;
+    }
+
+    .percentage-slider::-webkit-slider-thumb {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--primary);
+      cursor: pointer;
+    }
+
+    .percentage-value {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--primary);
+      text-align: center;
+    }
+
+    .btn-remove {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background: var(--danger);
+      border: none;
+      color: white;
+      font-size: 18px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .btn-remove:hover {
+      transform: scale(1.1);
+      box-shadow: 0 2px 8px rgba(220, 38, 38, 0.5);
+    }
+
+    /* Temp Badge */
+    .temp-badge {
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .temp-neutral {
+      background: rgba(120, 113, 108, 0.3);
+      color: #78716c;
+      border: 2px solid #78716c;
+    }
+
+    .temp-warm {
+      background: rgba(234, 88, 12, 0.3);
+      color: #ea580c;
+      border: 2px solid #ea580c;
+    }
+
+    .temp-cold {
+      background: rgba(59, 130, 246, 0.3);
+      color: #3b82f6;
+      border: 2px solid #3b82f6;
+    }
+
+    /* Makeup Swatch */
+    .makeup-swatch {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      border: 3px solid var(--glass-border);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .makeup-swatch:hover {
+      transform: scale(1.1);
+      border-color: var(--primary);
+    }
+
+    .makeup-swatch.active {
+      border-color: var(--primary);
+      box-shadow: 0 0 20px rgba(91, 111, 237, 0.6);
+      transform: scale(1.15);
+    }
+
+    /* Diagnosis Card */
+    .diagnosis-card {
+      background: linear-gradient(135deg, rgba(0,0,0,0.4), rgba(91, 111, 237, 0.15));
+      border: 2px solid var(--primary);
+      border-radius: 12px;
+      padding: 20px;
+      margin: 20px 0;
+    }
+
+    .diagnosis-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 15px;
+      margin-bottom: 20px;
+      border-bottom: 1px solid var(--glass-border);
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .diagnosis-section {
+      margin: 20px 0;
+    }
+
+    .diagnosis-section h4 {
+      margin: 0 0 15px 0;
+      font-size: 16px;
+      color: var(--text-primary);
+    }
+
+    .diagnosis-section.highlight {
+      background: rgba(91, 111, 237, 0.1);
+      padding: 15px;
+      border-radius: 8px;
+      border-left: 4px solid var(--primary);
+    }
+
+    .diagnosis-section ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .diagnosis-section ul li {
+      padding: 8px 0;
+      font-size: 14px;
+      color: var(--text-primary);
+      border-bottom: 1px dashed var(--glass-border);
+    }
+
+    .diagnosis-section ul li:last-child {
+      border-bottom: none;
+    }
+
+    .rainbow-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .color-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .color-dot {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      border: 2px solid white;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    }
+
+    .summary-item {
+      padding: 10px 15px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 8px;
+      font-size: 14px;
+      color: var(--text-primary);
+    }
+
+    .summary-item strong {
+      color: var(--primary);
+      font-weight: 600;
+    }
+  </style>
 </body>
 </html>
