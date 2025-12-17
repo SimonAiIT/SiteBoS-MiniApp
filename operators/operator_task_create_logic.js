@@ -1,5 +1,6 @@
 // ============================================
 // OPERATOR TASK CREATE - LOGIC
+// ✅ FIX: Use operator session data from URL!
 // ============================================
 
 const tg = window.Telegram.WebApp;
@@ -15,12 +16,24 @@ let currentStep = 'target';
 let capturedPhoto = null;
 let currentSmartLink = null;
 let currentSessionId = null;
+let operatorSession = null; // ✅ Store operator session here!
 
 // ============================================
 // INIT
 // ============================================
 
 document.addEventListener('DOMContentLoaded', () => {
+    // ✅ CRITICAL: Initialize operator session from URL
+    operatorSession = initOperatorSession();
+    
+    if (!operatorSession) {
+        console.error('No operator session found! Missing chat_id or vat in URL.');
+        tg.showAlert('Sessione non valida. Parametri URL mancanti.');
+        // Continue anyway for testing
+    } else {
+        console.log('✅ Operator session loaded in task_create:', operatorSession);
+    }
+    
     setupEventListeners();
     showStep('target');
 });
@@ -106,19 +119,19 @@ function handleTargetSelection(type) {
 }
 
 // ============================================
-// HANDSHAKE FLOW - FIXED VERSION
+// HANDSHAKE FLOW - ✅ FIXED VERSION WITH REAL DATA!
 // ============================================
 
 function generateInviteToken() {
-    // Retrieve operator data from sessionStorage
-    const companyData = JSON.parse(sessionStorage.getItem('companyData') || '{}');
-    const vatId = companyData.vat_id || 'DEMO_VAT';
-    const operatorId = tg.initDataUnsafe?.user?.id || 'demo_operator';
+    // ✅ FIX: Use operator session data (from URL!)
+    const vatId = operatorSession?.vat || 'DEMO_VAT';
+    const operatorId = operatorSession?.chat_id || tg.initDataUnsafe?.user?.id || 'demo_operator';
     const timestamp = Date.now();
     const randomStr = Math.random().toString(36).substring(2, 10);
     
-    // Generate unique token: VAT_ID + OP_ID + TIMESTAMP + RANDOM
+    // Generate unique token: VAT + _ + OP_ID + _ + TIMESTAMP + _ + RANDOM
     const token = `${vatId}_${operatorId}_${timestamp}_${randomStr}`;
+    console.log('✅ Generated invite token:', token);
     return token;
 }
 
@@ -129,11 +142,13 @@ function buildSmartLink(token) {
 
 async function initHandshake() {
     try {
-        // Generate unique token and URL
+        // Generate unique token and URL using REAL operator data
         const inviteToken = generateInviteToken();
         const smartLink = buildSmartLink(inviteToken);
         currentSmartLink = smartLink;
         currentSessionId = inviteToken;
+        
+        console.log('✅ Smart Link generated:', smartLink);
         
         // Display Smart Link in UI
         const linkDisplay = document.getElementById('smart-link-display');
@@ -173,7 +188,8 @@ async function initHandshake() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     action: 'create_handshake',
-                    operator_id: tg.initDataUnsafe?.user?.id || 'demo_user',
+                    operator_id: operatorSession?.chat_id || tg.initDataUnsafe?.user?.id || 'demo_user',
+                    vat: operatorSession?.vat || null,
                     session_id: inviteToken,
                     smart_link: smartLink
                 })
@@ -283,7 +299,8 @@ async function handleClientSearch(e) {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 action: 'search_clients',
-                query: query
+                query: query,
+                vat: operatorSession?.vat || null
             })
         });
 
@@ -395,7 +412,7 @@ async function generateReport() {
     showLoading(true, 'Analisi AI in corso...');
 
     try {
-        const userId = tg.initDataUnsafe?.user?.id || 'demo_user';
+        const userId = operatorSession?.chat_id || tg.initDataUnsafe?.user?.id || 'demo_user';
         
         const response = await fetch(WEBHOOK_URL, {
             method: 'POST',
@@ -403,6 +420,7 @@ async function generateReport() {
             body: JSON.stringify({
                 action: 'generate_report',
                 operator_id: userId,
+                vat: operatorSession?.vat || null,
                 target: selectedTarget,
                 photo: capturedPhoto,
                 context: selectedTargetType
@@ -416,9 +434,9 @@ async function generateReport() {
         // Download or send report
         tg.showAlert('Report generato con successo!');
         
-        // Redirect back to task list
+        // ✅ FIX: Redirect back WITH context!
         setTimeout(() => {
-            window.location.href = 'operator_tasks.html';
+            navigateOperatorWithContext('operator_tasks.html');
         }, 1500);
 
     } catch (error) {
@@ -481,10 +499,11 @@ function goBack() {
     if (backSteps[currentStep]) {
         showStep(backSteps[currentStep]);
     } else {
+        // ✅ FIX: Navigate back WITH context!
         if (window.history.length > 1) {
             window.history.back();
         } else {
-            window.location.href = 'operator_tasks.html';
+            navigateOperatorWithContext('operator_tasks.html');
         }
     }
 }
