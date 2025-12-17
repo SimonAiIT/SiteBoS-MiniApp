@@ -1,6 +1,6 @@
 // ============================================
 // OPERATOR TASK CREATE - LOGIC
-// ✅ FIX: AGGRESSIVE DATA EXTRACTION FROM URL!
+// ✅ 2-STAGE HANDSHAKE POLLING
 // ============================================
 
 const tg = window.Telegram.WebApp;
@@ -11,12 +11,13 @@ const WEBHOOK_URL = 'https://trinai.api.workflow.dcmake.it/webhook/d253f855-ce1a
 const BASE_URL = 'https://simonaiit.github.io/SiteBoS-MiniApp';
 
 let selectedTarget = null;
-let selectedTargetType = null; // 'person', 'asset', 'internal'
+let selectedTargetType = null;
 let currentStep = 'target';
 let capturedPhoto = null;
 let currentSmartLink = null;
 let currentSessionId = null;
 let operatorSession = null;
+let pollingInterval = null;
 
 // ✅ CRITICAL: Extract URL params DIRECTLY on load
 const urlParams = new URLSearchParams(window.location.search);
@@ -25,10 +26,8 @@ const URL_VAT = urlParams.get('vat');
 
 console.group('🔍 OPERATOR TASK CREATE - DEBUG');
 console.log('Current URL:', window.location.href);
-console.log('URL Params:', window.location.search);
 console.log('Extracted chat_id:', URL_CHAT_ID);
 console.log('Extracted vat:', URL_VAT);
-console.log('Telegram User ID:', tg.initDataUnsafe?.user?.id);
 console.groupEnd();
 
 // ============================================
@@ -36,19 +35,14 @@ console.groupEnd();
 // ============================================
 
 document.addEventListener('DOMContentLoaded', () => {
-    // ✅ CRITICAL: Initialize operator session from URL
     operatorSession = initOperatorSession();
     
-    // ✅ AGGRESSIVE FALLBACK: If session init failed, build manually from URL
     if (!operatorSession || !operatorSession.chat_id || !operatorSession.vat) {
-        console.warn('⚠️ Session init failed or incomplete, building manually from URL...');
-        
+        console.warn('⚠️ Session init failed, building manually from URL...');
         operatorSession = {
             chat_id: URL_CHAT_ID || tg.initDataUnsafe?.user?.id?.toString() || 'demo_operator',
             vat: URL_VAT || 'DEMO_VAT'
         };
-        
-        // Persist manually built session
         persistOperatorSession(operatorSession);
     }
     
@@ -63,21 +57,17 @@ document.addEventListener('DOMContentLoaded', () => {
 // ============================================
 
 function setupEventListeners() {
-    // Target Selection
     document.querySelectorAll('.target-option').forEach(option => {
         option.addEventListener('click', () => {
-            const type = option.dataset.option;
-            handleTargetSelection(type);
+            handleTargetSelection(option.dataset.option);
         });
     });
 
-    // Handshake Copy Link
     const copyLinkBtn = document.getElementById('copy-link-btn');
     if (copyLinkBtn) {
         copyLinkBtn.addEventListener('click', copySmartLink);
     }
 
-    // Proceed with connected client
     const proceedBtn = document.getElementById('proceed-with-client');
     if (proceedBtn) {
         proceedBtn.addEventListener('click', () => {
@@ -85,13 +75,11 @@ function setupEventListeners() {
         });
     }
 
-    // Client Search
     const searchInput = document.getElementById('client-search');
     if (searchInput) {
         searchInput.addEventListener('input', debounce(handleClientSearch, 300));
     }
 
-    // Asset Buttons
     const scanAssetBtn = document.getElementById('scan-asset-btn');
     if (scanAssetBtn) {
         scanAssetBtn.addEventListener('click', scanAssetQR);
@@ -102,21 +90,17 @@ function setupEventListeners() {
         setInternalBtn.addEventListener('click', setInternalTarget);
     }
 
-    // Mission Type Selection
     document.querySelectorAll('.mission-option').forEach(option => {
         option.addEventListener('click', () => {
-            const type = option.dataset.type;
-            handleMissionTypeSelection(type);
+            handleMissionTypeSelection(option.dataset.type);
         });
     });
 
-    // Photo Upload
     const photoInput = document.getElementById('photo-input');
     if (photoInput) {
         photoInput.addEventListener('change', handlePhotoUpload);
     }
 
-    // Generate Report
     const generateReportBtn = document.getElementById('generate-report-btn');
     if (generateReportBtn) {
         generateReportBtn.addEventListener('click', generateReport);
@@ -139,16 +123,10 @@ function handleTargetSelection(type) {
 }
 
 // ============================================
-// HANDSHAKE FLOW - ✅ FIXED WITH REAL DATA!
+// HANDSHAKE FLOW - 2-STAGE POLLING
 // ============================================
 
 function generateInviteToken() {
-    // ✅ PRIORITY ORDER:
-    // 1. operatorSession (from URL or storage)
-    // 2. Direct URL params
-    // 3. Telegram WebApp data
-    // 4. Demo fallback
-    
     const vatId = operatorSession?.vat || URL_VAT || 'DEMO_VAT';
     const operatorId = operatorSession?.chat_id || URL_CHAT_ID || tg.initDataUnsafe?.user?.id?.toString() || 'demo_operator';
     const timestamp = Date.now();
@@ -157,10 +135,8 @@ function generateInviteToken() {
     const token = `${vatId}_${operatorId}_${timestamp}_${randomStr}`;
     
     console.group('✅ TOKEN GENERATION');
-    console.log('VAT used:', vatId);
-    console.log('Operator ID used:', operatorId);
-    console.log('Timestamp:', timestamp);
-    console.log('Random string:', randomStr);
+    console.log('VAT:', vatId);
+    console.log('Operator ID:', operatorId);
     console.log('FULL TOKEN:', token);
     console.groupEnd();
     
@@ -180,7 +156,7 @@ async function initHandshake() {
         
         console.log('✅ Smart Link generated:', smartLink);
         
-        // Display Smart Link in UI
+        // Display Smart Link
         const linkDisplay = document.getElementById('smart-link-display');
         if (linkDisplay) {
             linkDisplay.textContent = smartLink.replace('https://', '');
@@ -226,6 +202,7 @@ async function initHandshake() {
             console.warn('Webhook notification failed (non-critical):', webhookError);
         }
 
+        // Start 2-stage polling
         pollHandshakeStatus(inviteToken);
 
     } catch (error) {
@@ -234,15 +211,17 @@ async function initHandshake() {
     }
 }
 
+// 🔔 2-STAGE POLLING: arrived → connected
 async function pollHandshakeStatus(sessionId) {
     let attempts = 0;
-    const maxAttempts = 60;
+    const maxAttempts = 120; // 10 minutes (5s interval)
+    let customerArrived = false;
 
-    const interval = setInterval(async () => {
+    pollingInterval = setInterval(async () => {
         attempts++;
 
         if (attempts > maxAttempts) {
-            clearInterval(interval);
+            clearInterval(pollingInterval);
             tg.showAlert('Timeout: nessun cliente connesso');
             return;
         }
@@ -259,31 +238,94 @@ async function pollHandshakeStatus(sessionId) {
 
             const data = await response.json();
 
-            if (data.connected) {
-                clearInterval(interval);
-                handleClientConnected(data.client);
+            // STAGE 1: Customer arrived at page
+            if (data.arrived && !customerArrived) {
+                customerArrived = true;
+                handleCustomerArrived(data);
             }
+
+            // STAGE 2: Customer completed OAuth
+            if (data.connected) {
+                clearInterval(pollingInterval);
+                handleClientConnected(data.customer);
+            }
+
         } catch (error) {
             console.error('Polling error:', error);
         }
     }, 5000);
 }
 
-function handleClientConnected(client) {
+// 👀 STAGE 1: Customer scanned QR and landed on page
+function handleCustomerArrived(data) {
+    console.log('👀 Customer arrived at handshake page:', data);
+    
+    // Vibrate short
+    if (navigator.vibrate) {
+        navigator.vibrate(100);
+    }
+
+    // Update radar animation text
+    const radarEl = document.getElementById('radar-animation');
+    if (radarEl) {
+        const statusText = radarEl.querySelector('p');
+        if (statusText) {
+            statusText.innerHTML = `
+                <i class="fas fa-eye" style="color: var(--info);"></i><br>
+                Cliente in arrivo...<br>
+                <small style="font-size: 11px; color: var(--text-secondary);">In attesa di autenticazione</small>
+            `;
+        }
+    }
+
+    // Optional: show toast notification
+    tg.showPopup({
+        title: '👀 Cliente in Arrivo',
+        message: 'Il cliente ha aperto il link di invito',
+        buttons: [{ type: 'close' }]
+    });
+}
+
+// ✅ STAGE 2: Customer completed OAuth
+function handleClientConnected(customer) {
+    console.log('✅ Customer connected:', customer);
+    
+    // Vibrate success pattern
     if (navigator.vibrate) {
         navigator.vibrate([200, 100, 200]);
     }
 
+    // Hide radar and QR
     document.getElementById('radar-animation').classList.add('hidden');
     document.getElementById('qr-container').classList.add('hidden');
     document.getElementById('connected-state').classList.remove('hidden');
     
-    document.getElementById('connected-name').textContent = client.name || 'Cliente Connesso';
+    // Display customer info
+    const nameEl = document.getElementById('connected-name');
+    const fullName = `${customer.firstName} ${customer.lastName || ''}`.trim();
+    nameEl.textContent = fullName;
     
-    selectedTarget = client;
+    // Show photo if available
+    if (customer.photoUrl) {
+        const photoHTML = `
+            <img src="${customer.photoUrl}" 
+                 style="width: 60px; height: 60px; border-radius: 50%; margin: 10px auto; display: block; border: 2px solid var(--success);" 
+                 alt="${fullName}">
+        `;
+        nameEl.insertAdjacentHTML('beforebegin', photoHTML);
+    }
+    
+    // Show username if available
+    if (customer.username) {
+        nameEl.insertAdjacentHTML('afterend', `
+            <p style="font-size: 13px; color: var(--text-muted); margin-top: 5px;">@${customer.username}</p>
+        `);
+    }
+    
+    selectedTarget = customer;
     selectedTargetType = 'person';
 
-    tg.showAlert(`✅ Connesso: ${client.name}`);
+    tg.showAlert(`✅ Connesso: ${fullName}`);
 }
 
 function copySmartLink() {
@@ -294,7 +336,7 @@ function copySmartLink() {
     
     if (navigator.clipboard) {
         navigator.clipboard.writeText(currentSmartLink).then(() => {
-            tg.showAlert('✅ Link copiato! Invialo al cliente su WhatsApp.');
+            tg.showAlert('✅ Link copiato! Invialo al cliente.');
         }).catch(err => {
             console.error('Copy failed:', err);
             tg.showAlert('Link: ' + currentSmartLink);
@@ -371,7 +413,6 @@ function selectClient(id, name) {
 
 function scanAssetQR() {
     tg.showAlert('Scansione QR non disponibile in demo');
-    
     setTimeout(() => {
         selectedTarget = { id: 'asset_123', name: 'Caldaia ABC', type: 'asset' };
         selectedTargetType = 'asset';
@@ -400,7 +441,7 @@ function handleMissionTypeSelection(type) {
 }
 
 // ============================================
-// PHOTO CAPTURE & REPORT GENERATION
+// PHOTO & REPORT
 // ============================================
 
 function handlePhotoUpload(e) {
@@ -463,6 +504,11 @@ async function generateReport() {
 // ============================================
 
 function showStep(step) {
+    // Clear polling if leaving handshake
+    if (step !== 'handshake' && pollingInterval) {
+        clearInterval(pollingInterval);
+    }
+    
     document.querySelectorAll('.step-container').forEach(container => {
         container.classList.add('hidden');
     });
