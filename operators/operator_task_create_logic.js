@@ -1,6 +1,6 @@
 // ============================================
 // OPERATOR TASK CREATE - LOGIC
-// ✅ SIMPLE POLLING UNTIL DATA READY
+// ✅ ZERO POLLING - SOLO EVENT LISTENER
 // ============================================
 
 const tg = window.Telegram.WebApp;
@@ -17,18 +17,12 @@ let capturedPhoto = null;
 let currentSmartLink = null;
 let currentSessionId = null;
 let operatorSession = null;
-let checkInterval = null;
 
-// ✅ CRITICAL: Extract URL params DIRECTLY on load
 const urlParams = new URLSearchParams(window.location.search);
 const URL_CHAT_ID = urlParams.get('chat_id');
 const URL_VAT = urlParams.get('vat');
 
-console.group('🔍 OPERATOR TASK CREATE - DEBUG');
-console.log('Current URL:', window.location.href);
-console.log('Extracted chat_id:', URL_CHAT_ID);
-console.log('Extracted vat:', URL_VAT);
-console.groupEnd();
+console.log('✅ Operator session:', { chat_id: URL_CHAT_ID, vat: URL_VAT });
 
 // ============================================
 // INIT
@@ -38,7 +32,6 @@ document.addEventListener('DOMContentLoaded', () => {
     operatorSession = initOperatorSession();
     
     if (!operatorSession || !operatorSession.chat_id || !operatorSession.vat) {
-        console.warn('⚠️ Session init failed, building manually from URL...');
         operatorSession = {
             chat_id: URL_CHAT_ID || tg.initDataUnsafe?.user?.id?.toString() || 'demo_operator',
             vat: URL_VAT || 'DEMO_VAT'
@@ -46,11 +39,26 @@ document.addEventListener('DOMContentLoaded', () => {
         persistOperatorSession(operatorSession);
     }
     
-    console.log('✅ Final operator session:', operatorSession);
-    
     setupEventListeners();
     showStep('target');
 });
+
+// ============================================
+// EVENT LISTENER per customerReady
+// ============================================
+
+window.addEventListener('customerReady', (event) => {
+    console.log('✅ Event customerReady ricevuto:', event.detail);
+    handleCustomerReady(event.detail.customer);
+});
+
+// Funzione chiamata dal webhook
+window.notifyCustomerReady = function(customerData) {
+    const event = new CustomEvent('customerReady', {
+        detail: { customer: customerData }
+    });
+    window.dispatchEvent(event);
+};
 
 // ============================================
 // EVENT LISTENERS
@@ -123,7 +131,7 @@ function handleTargetSelection(type) {
 }
 
 // ============================================
-// HANDSHAKE FLOW - SIMPLE CHECK EVERY 3s
+// HANDSHAKE FLOW - ZERO POLLING
 // ============================================
 
 function generateInviteToken() {
@@ -133,7 +141,6 @@ function generateInviteToken() {
     const randomStr = Math.random().toString(36).substring(2, 10);
     
     const token = `${vatId}_${operatorId}_${timestamp}_${randomStr}`;
-    
     console.log('✅ TOKEN:', token);
     return token;
 }
@@ -150,14 +157,13 @@ async function initHandshake() {
         currentSessionId = inviteToken;
         
         console.log('✅ Smart Link:', smartLink);
+        console.log('⏳ Waiting for customerReady event...');
         
-        // Display Smart Link
         const linkDisplay = document.getElementById('smart-link-display');
         if (linkDisplay) {
             linkDisplay.textContent = smartLink.replace('https://', '');
         }
 
-        // Generate QR Code
         const qrContainer = document.getElementById('qr-code');
         qrContainer.innerHTML = '';
         
@@ -172,55 +178,24 @@ async function initHandshake() {
             });
         }
 
-        // Start checking every 3 seconds
-        startCheckingForCustomer();
+        // FATTO. Ora aspetta evento.
 
     } catch (error) {
-        console.error('Error initializing handshake:', error);
-        tg.showAlert('Errore nella creazione del link. Riprova.');
+        console.error('Error:', error);
+        tg.showAlert('Errore nella creazione del link.');
     }
 }
 
-function startCheckingForCustomer() {
-    console.log('⏳ Checking for customer every 3s...');
-    
-    checkInterval = setInterval(async () => {
-        try {
-            const response = await fetch(WEBHOOK_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    action: 'check_customer',
-                    session_id: currentSessionId
-                })
-            });
-
-            const data = await response.json();
-            
-            // Se ha i dati completi
-            if (data.ready && data.customer) {
-                console.log('✅ Customer data ready!', data.customer);
-                clearInterval(checkInterval);
-                handleCustomerReady(data.customer);
-            }
-
-        } catch (error) {
-            console.error('Check error:', error);
-        }
-    }, 3000); // Ogni 3 secondi
-}
-
 function handleCustomerReady(customer) {
-    // Vibrate
+    console.log('✅ Customer ready:', customer);
+    
     if (navigator.vibrate) {
         navigator.vibrate([200, 100, 200]);
     }
 
-    // Hide radar and QR
     document.getElementById('radar-animation').classList.add('hidden');
     document.getElementById('qr-container').classList.add('hidden');
     
-    // Save customer
     selectedTarget = customer;
     selectedTargetType = 'person';
     
@@ -228,7 +203,6 @@ function handleCustomerReady(customer) {
     
     tg.showAlert(`✅ ${fullName} connesso!`);
     
-    // Auto-proceed to mission type
     setTimeout(() => {
         showStep('mission-type');
     }, 1000);
@@ -236,14 +210,14 @@ function handleCustomerReady(customer) {
 
 function copySmartLink() {
     if (!currentSmartLink) {
-        tg.showAlert('Link non ancora generato');
+        tg.showAlert('Link non generato');
         return;
     }
     
     if (navigator.clipboard) {
         navigator.clipboard.writeText(currentSmartLink).then(() => {
             tg.showAlert('✅ Link copiato!');
-        }).catch(err => {
+        }).catch(() => {
             tg.showAlert('Link: ' + currentSmartLink);
         });
     } else {
@@ -317,7 +291,7 @@ function selectClient(id, name) {
 // ============================================
 
 function scanAssetQR() {
-    tg.showAlert('Scansione QR non disponibile in demo');
+    tg.showAlert('Scansione QR non disponibile');
     setTimeout(() => {
         selectedTarget = { id: 'asset_123', name: 'Caldaia ABC', type: 'asset' };
         selectedTargetType = 'asset';
@@ -365,11 +339,11 @@ function handlePhotoUpload(e) {
 
 async function generateReport() {
     if (!capturedPhoto) {
-        tg.showAlert('Nessuna foto caricata');
+        tg.showAlert('Nessuna foto');
         return;
     }
 
-    showLoading(true, 'Analisi AI in corso...');
+    showLoading(true, 'Analisi AI...');
 
     try {
         const userId = operatorSession?.chat_id || URL_CHAT_ID || tg.initDataUnsafe?.user?.id || 'demo_user';
@@ -387,18 +361,17 @@ async function generateReport() {
             })
         });
 
-        if (!response.ok) throw new Error('Errore generazione report');
+        if (!response.ok) throw new Error('Errore');
 
-        const data = await response.json();
-        tg.showAlert('Report generato con successo!');
+        tg.showAlert('Report generato!');
         
         setTimeout(() => {
             navigateOperatorWithContext('operator_tasks.html');
         }, 1500);
 
     } catch (error) {
-        console.error('Error generating report:', error);
-        tg.showAlert('Errore nella generazione del report. Riprova.');
+        console.error('Error:', error);
+        tg.showAlert('Errore generazione report.');
     } finally {
         showLoading(false);
     }
@@ -409,11 +382,6 @@ async function generateReport() {
 // ============================================
 
 function showStep(step) {
-    // Stop checking when leaving handshake
-    if (step !== 'handshake' && checkInterval) {
-        clearInterval(checkInterval);
-    }
-    
     document.querySelectorAll('.step-container').forEach(container => {
         container.classList.add('hidden');
     });
@@ -434,11 +402,11 @@ function showStep(step) {
 
     const indicators = {
         'target': 'Chi è il beneficiario?',
-        'handshake': 'In attesa di connessione...',
-        'search': 'Cerca il cliente',
-        'asset': 'Scansiona o seleziona',
+        'handshake': 'In attesa...',
+        'search': 'Cerca cliente',
+        'asset': 'Scansiona',
         'mission-type': 'Cosa vuoi fare?',
-        'photo': 'Cattura il report'
+        'photo': 'Cattura report'
     };
 
     document.getElementById('step-indicator').textContent = indicators[step] || '';
@@ -450,7 +418,7 @@ function goBack() {
         'handshake': 'target',
         'search': 'target',
         'asset': 'target',
-        'mission-type': selectedTargetType === 'person' ? 'target' : 'asset',
+        'mission-type': 'target',
         'photo': 'asset'
     };
 
@@ -483,20 +451,15 @@ function showLoading(show, text = 'Elaborazione...') {
 
 function debounce(func, wait) {
     let timeout;
-    return function executedFunction(...args) {
-        const later = () => {
-            clearTimeout(timeout);
-            func(...args);
-        };
+    return function(...args) {
         clearTimeout(timeout);
-        timeout = setTimeout(later, wait);
+        timeout = setTimeout(() => func(...args), wait);
     };
 }
 
 function getDemoClients() {
     return [
         { id: '1', name: 'Mario Rossi', email: 'mario@example.com' },
-        { id: '2', name: 'Anna Verdi', phone: '+393331234567' },
-        { id: '3', name: 'Giuseppe Bianchi', email: 'giuseppe@example.com' }
+        { id: '2', name: 'Anna Verdi', phone: '+393331234567' }
     ];
 }
