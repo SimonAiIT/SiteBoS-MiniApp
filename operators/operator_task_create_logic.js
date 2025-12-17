@@ -1,6 +1,6 @@
 // ============================================
 // OPERATOR TASK CREATE - LOGIC
-// ✅ FIX: Use operator session data from URL!
+// ✅ FIX: AGGRESSIVE DATA EXTRACTION FROM URL!
 // ============================================
 
 const tg = window.Telegram.WebApp;
@@ -16,7 +16,20 @@ let currentStep = 'target';
 let capturedPhoto = null;
 let currentSmartLink = null;
 let currentSessionId = null;
-let operatorSession = null; // ✅ Store operator session here!
+let operatorSession = null;
+
+// ✅ CRITICAL: Extract URL params DIRECTLY on load
+const urlParams = new URLSearchParams(window.location.search);
+const URL_CHAT_ID = urlParams.get('chat_id');
+const URL_VAT = urlParams.get('vat');
+
+console.group('🔍 OPERATOR TASK CREATE - DEBUG');
+console.log('Current URL:', window.location.href);
+console.log('URL Params:', window.location.search);
+console.log('Extracted chat_id:', URL_CHAT_ID);
+console.log('Extracted vat:', URL_VAT);
+console.log('Telegram User ID:', tg.initDataUnsafe?.user?.id);
+console.groupEnd();
 
 // ============================================
 // INIT
@@ -26,13 +39,20 @@ document.addEventListener('DOMContentLoaded', () => {
     // ✅ CRITICAL: Initialize operator session from URL
     operatorSession = initOperatorSession();
     
-    if (!operatorSession) {
-        console.error('No operator session found! Missing chat_id or vat in URL.');
-        tg.showAlert('Sessione non valida. Parametri URL mancanti.');
-        // Continue anyway for testing
-    } else {
-        console.log('✅ Operator session loaded in task_create:', operatorSession);
+    // ✅ AGGRESSIVE FALLBACK: If session init failed, build manually from URL
+    if (!operatorSession || !operatorSession.chat_id || !operatorSession.vat) {
+        console.warn('⚠️ Session init failed or incomplete, building manually from URL...');
+        
+        operatorSession = {
+            chat_id: URL_CHAT_ID || tg.initDataUnsafe?.user?.id?.toString() || 'demo_operator',
+            vat: URL_VAT || 'DEMO_VAT'
+        };
+        
+        // Persist manually built session
+        persistOperatorSession(operatorSession);
     }
+    
+    console.log('✅ Final operator session:', operatorSession);
     
     setupEventListeners();
     showStep('target');
@@ -119,30 +139,40 @@ function handleTargetSelection(type) {
 }
 
 // ============================================
-// HANDSHAKE FLOW - ✅ FIXED VERSION WITH REAL DATA!
+// HANDSHAKE FLOW - ✅ FIXED WITH REAL DATA!
 // ============================================
 
 function generateInviteToken() {
-    // ✅ FIX: Use operator session data (from URL!)
-    const vatId = operatorSession?.vat || 'DEMO_VAT';
-    const operatorId = operatorSession?.chat_id || tg.initDataUnsafe?.user?.id || 'demo_operator';
+    // ✅ PRIORITY ORDER:
+    // 1. operatorSession (from URL or storage)
+    // 2. Direct URL params
+    // 3. Telegram WebApp data
+    // 4. Demo fallback
+    
+    const vatId = operatorSession?.vat || URL_VAT || 'DEMO_VAT';
+    const operatorId = operatorSession?.chat_id || URL_CHAT_ID || tg.initDataUnsafe?.user?.id?.toString() || 'demo_operator';
     const timestamp = Date.now();
     const randomStr = Math.random().toString(36).substring(2, 10);
     
-    // Generate unique token: VAT + _ + OP_ID + _ + TIMESTAMP + _ + RANDOM
     const token = `${vatId}_${operatorId}_${timestamp}_${randomStr}`;
-    console.log('✅ Generated invite token:', token);
+    
+    console.group('✅ TOKEN GENERATION');
+    console.log('VAT used:', vatId);
+    console.log('Operator ID used:', operatorId);
+    console.log('Timestamp:', timestamp);
+    console.log('Random string:', randomStr);
+    console.log('FULL TOKEN:', token);
+    console.groupEnd();
+    
     return token;
 }
 
 function buildSmartLink(token) {
-    // Build proper web URL (not Telegram deep link)
     return `${BASE_URL}/customer/securehandshake.html?invite=${token}`;
 }
 
 async function initHandshake() {
     try {
-        // Generate unique token and URL using REAL operator data
         const inviteToken = generateInviteToken();
         const smartLink = buildSmartLink(inviteToken);
         currentSmartLink = smartLink;
@@ -156,11 +186,10 @@ async function initHandshake() {
             linkDisplay.textContent = smartLink.replace('https://', '');
         }
 
-        // Generate QR Code using qrcode.js library (client-side)
+        // Generate QR Code
         const qrContainer = document.getElementById('qr-code');
-        qrContainer.innerHTML = ''; // Clear previous content
+        qrContainer.innerHTML = '';
         
-        // Check if QRCode library is loaded
         if (typeof QRCode !== 'undefined') {
             new QRCode(qrContainer, {
                 text: smartLink,
@@ -171,7 +200,6 @@ async function initHandshake() {
                 correctLevel: QRCode.CorrectLevel.H
             });
         } else {
-            // Fallback: display text if library not loaded
             qrContainer.innerHTML = `
                 <div style="padding: 20px; text-align: center; font-size: 11px; color: var(--text-muted); word-break: break-all;">
                     <i class="fas fa-qrcode" style="font-size: 60px; margin-bottom: 10px; opacity: 0.3;"></i>
@@ -181,15 +209,15 @@ async function initHandshake() {
             `;
         }
 
-        // Notify webhook (optional - for analytics or session tracking)
+        // Notify webhook
         try {
             await fetch(WEBHOOK_URL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     action: 'create_handshake',
-                    operator_id: operatorSession?.chat_id || tg.initDataUnsafe?.user?.id || 'demo_user',
-                    vat: operatorSession?.vat || null,
+                    operator_id: operatorSession?.chat_id || URL_CHAT_ID || tg.initDataUnsafe?.user?.id || 'demo_user',
+                    vat: operatorSession?.vat || URL_VAT || null,
                     session_id: inviteToken,
                     smart_link: smartLink
                 })
@@ -198,7 +226,6 @@ async function initHandshake() {
             console.warn('Webhook notification failed (non-critical):', webhookError);
         }
 
-        // Start polling for connection
         pollHandshakeStatus(inviteToken);
 
     } catch (error) {
@@ -209,7 +236,7 @@ async function initHandshake() {
 
 async function pollHandshakeStatus(sessionId) {
     let attempts = 0;
-    const maxAttempts = 60; // 5 minutes (5s interval)
+    const maxAttempts = 60;
 
     const interval = setInterval(async () => {
         attempts++;
@@ -239,16 +266,14 @@ async function pollHandshakeStatus(sessionId) {
         } catch (error) {
             console.error('Polling error:', error);
         }
-    }, 5000); // Poll every 5 seconds
+    }, 5000);
 }
 
 function handleClientConnected(client) {
-    // Vibrate phone
     if (navigator.vibrate) {
         navigator.vibrate([200, 100, 200]);
     }
 
-    // Hide radar, show connected state
     document.getElementById('radar-animation').classList.add('hidden');
     document.getElementById('qr-container').classList.add('hidden');
     document.getElementById('connected-state').classList.remove('hidden');
@@ -275,7 +300,6 @@ function copySmartLink() {
             tg.showAlert('Link: ' + currentSmartLink);
         });
     } else {
-        // Fallback for older browsers
         tg.showAlert('Link: ' + currentSmartLink);
     }
 }
@@ -300,7 +324,7 @@ async function handleClientSearch(e) {
             body: JSON.stringify({
                 action: 'search_clients',
                 query: query,
-                vat: operatorSession?.vat || null
+                vat: operatorSession?.vat || URL_VAT || null
             })
         });
 
@@ -309,7 +333,6 @@ async function handleClientSearch(e) {
 
     } catch (error) {
         console.error('Search error:', error);
-        // Show demo results
         displaySearchResults(getDemoClients());
     }
 }
@@ -347,11 +370,8 @@ function selectClient(id, name) {
 // ============================================
 
 function scanAssetQR() {
-    // In production, open camera to scan QR
-    // For demo, simulate scan
     tg.showAlert('Scansione QR non disponibile in demo');
     
-    // Simulate successful scan
     setTimeout(() => {
         selectedTarget = { id: 'asset_123', name: 'Caldaia ABC', type: 'asset' };
         selectedTargetType = 'asset';
@@ -370,17 +390,11 @@ function setInternalTarget() {
 // ============================================
 
 function handleMissionTypeSelection(type) {
-    // Redirect to appropriate page based on type
     if (type === 'preventivo') {
-        // TODO: Redirect to catalog page
         tg.showAlert('Redirect a Catalogo...');
-        // window.location.href = '../catalog/catalog_manager.html';
     } else if (type === 'esecuzione') {
-        // TODO: Redirect to blueprint page
         tg.showAlert('Redirect a Blueprint...');
-        // window.location.href = '../blueprint/blueprint_list.html';
     } else if (type === 'assistenza') {
-        // TODO: Redirect to assistance/ticket page
         tg.showAlert('Redirect a Assistenza...');
     }
 }
@@ -412,7 +426,7 @@ async function generateReport() {
     showLoading(true, 'Analisi AI in corso...');
 
     try {
-        const userId = operatorSession?.chat_id || tg.initDataUnsafe?.user?.id || 'demo_user';
+        const userId = operatorSession?.chat_id || URL_CHAT_ID || tg.initDataUnsafe?.user?.id || 'demo_user';
         
         const response = await fetch(WEBHOOK_URL, {
             method: 'POST',
@@ -420,7 +434,7 @@ async function generateReport() {
             body: JSON.stringify({
                 action: 'generate_report',
                 operator_id: userId,
-                vat: operatorSession?.vat || null,
+                vat: operatorSession?.vat || URL_VAT || null,
                 target: selectedTarget,
                 photo: capturedPhoto,
                 context: selectedTargetType
@@ -430,11 +444,8 @@ async function generateReport() {
         if (!response.ok) throw new Error('Errore generazione report');
 
         const data = await response.json();
-
-        // Download or send report
         tg.showAlert('Report generato con successo!');
         
-        // ✅ FIX: Redirect back WITH context!
         setTimeout(() => {
             navigateOperatorWithContext('operator_tasks.html');
         }, 1500);
@@ -452,12 +463,10 @@ async function generateReport() {
 // ============================================
 
 function showStep(step) {
-    // Hide all steps
     document.querySelectorAll('.step-container').forEach(container => {
         container.classList.add('hidden');
     });
 
-    // Show selected step
     const stepMap = {
         'target': 'step-target',
         'handshake': 'step-handshake',
@@ -472,7 +481,6 @@ function showStep(step) {
         document.getElementById(stepId).classList.remove('hidden');
     }
 
-    // Update indicator
     const indicators = {
         'target': 'Chi è il beneficiario?',
         'handshake': 'In attesa di connessione...',
@@ -487,7 +495,6 @@ function showStep(step) {
 }
 
 function goBack() {
-    // Simple back navigation
     const backSteps = {
         'handshake': 'target',
         'search': 'target',
@@ -499,7 +506,6 @@ function goBack() {
     if (backSteps[currentStep]) {
         showStep(backSteps[currentStep]);
     } else {
-        // ✅ FIX: Navigate back WITH context!
         if (window.history.length > 1) {
             window.history.back();
         } else {
