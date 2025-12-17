@@ -1,18 +1,19 @@
 // ============================================
 // SECURE HANDSHAKE LOGIC
-// REAL Telegram OAuth + Future Google/Apple
+// REAL Telegram OAuth + Double Webhook System
 // ============================================
 
 const WEBHOOK_URL = 'https://trinai.api.workflow.dcmake.it/webhook/9d094742-eaca-41e1-b4e9-ee0627ffa285';
 
 let inviteToken = null;
 let decodedToken = null;
+let arrivedAt = null;
 
 // ============================================
 // INIT
 // ============================================
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     console.group('🔑 SECURE HANDSHAKE - INIT');
     console.log('URL:', window.location.href);
     
@@ -38,6 +39,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     console.log('Decoded Token:', decodedToken);
+    
+    // Record arrival timestamp
+    arrivedAt = new Date().toISOString();
+    
+    // 🔔 CRITICAL: Notify operator IMMEDIATELY that customer arrived
+    await notifyCustomerArrived();
+    
     console.groupEnd();
     
     // Display operator info
@@ -45,10 +53,40 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Show token in debug section
     document.getElementById('invite-token').textContent = inviteToken;
-    
-    // Setup future OAuth buttons (Google/Apple)
-    // Telegram is handled by widget callback
 });
+
+// ============================================
+// WEBHOOK: CUSTOMER ARRIVED (Page Load)
+// ============================================
+
+async function notifyCustomerArrived() {
+    console.log('🔔 Notifying operator: Customer arrived at handshake page');
+    
+    try {
+        const response = await fetch(WEBHOOK_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                action: 'customer_arrived',
+                session_id: decodedToken.fullToken,
+                operator_id: decodedToken.operatorId,
+                vat_id: decodedToken.vatId,
+                arrived_at: arrivedAt,
+                user_agent: navigator.userAgent,
+                referrer: document.referrer || 'direct'
+            })
+        });
+        
+        if (!response.ok) throw new Error('Webhook notification failed');
+        
+        console.log('✅ Operator notified: Customer is viewing handshake page');
+        return true;
+        
+    } catch (error) {
+        console.warn('⚠️ Failed to notify customer arrival (non-critical):', error);
+        return false;
+    }
+}
 
 // ============================================
 // TELEGRAM OAUTH CALLBACK (REAL)
@@ -73,8 +111,8 @@ window.onTelegramAuth = function(user) {
         username: user.username || null,
         photoUrl: user.photo_url || null,
         provider: 'telegram',
-        email: null, // Telegram doesn't provide email
-        phone: null, // Would need additional request
+        email: null,
+        phone: null,
         
         // Telegram auth metadata
         authDate: user.auth_date,
@@ -111,6 +149,7 @@ async function processAuthentication(userIdentity) {
             inviteToken: decodedToken.fullToken,
             
             // Metadata
+            arrivedAt: arrivedAt,
             connectedAt: new Date().toISOString(),
             gdprConsent: true,
             
@@ -124,8 +163,8 @@ async function processAuthentication(userIdentity) {
         // Persist session
         sessionStorage.setItem('customer_session', JSON.stringify(customerSession));
         
-        // Notify webhook
-        await notifyWebhook(customerSession);
+        // 🔔 CRITICAL: Notify operator that customer CONNECTED
+        await notifyCustomerConnected(customerSession);
         
         // Success feedback
         showSuccessFeedback(userIdentity);
@@ -138,6 +177,51 @@ async function processAuthentication(userIdentity) {
     } catch (error) {
         console.error('Authentication processing error:', error);
         alert('Errore durante la connessione. Riprova.');
+    }
+}
+
+// ============================================
+// WEBHOOK: CUSTOMER CONNECTED (After OAuth)
+// ============================================
+
+async function notifyCustomerConnected(customerSession) {
+    console.log('🔔 Notifying operator: Customer authenticated successfully');
+    
+    try {
+        const response = await fetch(WEBHOOK_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                action: 'customer_connected',
+                session_id: customerSession.inviteToken,
+                operator_id: customerSession.linkedOperatorId,
+                vat_id: customerSession.linkedVatId,
+                customer: {
+                    firstName: customerSession.firstName,
+                    lastName: customerSession.lastName,
+                    userId: customerSession.userId,
+                    username: customerSession.username,
+                    photoUrl: customerSession.photoUrl,
+                    provider: customerSession.provider,
+                    email: customerSession.email,
+                    phone: customerSession.phone,
+                    arrivedAt: customerSession.arrivedAt,
+                    connectedAt: customerSession.connectedAt,
+                    gdprConsent: customerSession.gdprConsent,
+                    telegramAuthDate: customerSession.telegramAuthDate,
+                    telegramHash: customerSession.telegramHash
+                }
+            })
+        });
+        
+        if (!response.ok) throw new Error('Webhook failed');
+        
+        console.log('✅ Operator notified: Customer fully connected');
+        return true;
+        
+    } catch (error) {
+        console.warn('⚠️ Webhook notification failed (non-critical):', error);
+        return false;
     }
 }
 
@@ -222,48 +306,6 @@ function showSuccessFeedback(userIdentity) {
         
         <div class="spinner-ring" style="margin: 30px auto;"></div>
     `;
-}
-
-// ============================================
-// WEBHOOK NOTIFICATION
-// ============================================
-
-async function notifyWebhook(customerSession) {
-    try {
-        const response = await fetch(WEBHOOK_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                action: 'customer_connected',
-                session_id: customerSession.inviteToken,
-                operator_id: customerSession.linkedOperatorId,
-                vat_id: customerSession.linkedVatId,
-                customer: {
-                    firstName: customerSession.firstName,
-                    lastName: customerSession.lastName,
-                    userId: customerSession.userId,
-                    username: customerSession.username,
-                    photoUrl: customerSession.photoUrl,
-                    provider: customerSession.provider,
-                    email: customerSession.email,
-                    phone: customerSession.phone,
-                    connectedAt: customerSession.connectedAt,
-                    gdprConsent: customerSession.gdprConsent,
-                    telegramAuthDate: customerSession.telegramAuthDate,
-                    telegramHash: customerSession.telegramHash
-                }
-            })
-        });
-        
-        if (!response.ok) throw new Error('Webhook failed');
-        
-        console.log('✅ Webhook notified successfully');
-        return true;
-        
-    } catch (error) {
-        console.warn('⚠️ Webhook notification failed (non-critical):', error);
-        return false; // Don't block user flow
-    }
 }
 
 // ============================================
@@ -352,6 +394,7 @@ function debugSession() {
     console.group('🔍 Session Debug');
     console.log('Token:', inviteToken);
     console.log('Decoded:', decodedToken);
+    console.log('Arrived At:', arrivedAt);
     console.log('Stored Session:', sessionStorage.getItem('customer_session'));
     console.groupEnd();
 }
