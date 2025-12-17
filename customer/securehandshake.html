@@ -6,6 +6,8 @@
     <title>Connessione Sicura - SiteBoS</title>
     <link rel="stylesheet" href="../styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Session Management Utilities -->
+    <script src="session_utils.js"></script>
 </head>
 <body>
     <div class="container">
@@ -41,167 +43,87 @@
 
     <script>
         // ============================================
-        // URL AS SOURCE OF TRUTH - Data Extraction
+        // HANDSHAKE PAGE - Using Session Utilities
         // ============================================
         
-        const urlParams = new URLSearchParams(window.location.search);
-        const inviteToken = urlParams.get('invite');
-
         const statusContainer = document.getElementById('status-container');
         const tokenDisplay = document.getElementById('invite-token');
         const operatorDisplay = document.getElementById('operator-id');
 
-        // ============================================
-        // PARSE INVITE TOKEN TO EXTRACT DATA
-        // Token format: VAT_ID + OP_ID + TIMESTAMP + RANDOM
-        // Example: DEMO_VAT_123456789_1734423727000_x8k3m9q2
-        // ============================================
-        
-        function parseInviteToken(token) {
-            if (!token) return null;
-            
-            const parts = token.split('_');
-            if (parts.length < 4) return null;
-            
-            return {
-                vatId: parts[0] + '_' + parts[1], // DEMO_VAT
-                operatorId: parts[2],              // 123456789
-                timestamp: parseInt(parts[3]),     // 1734423727000
-                randomStr: parts[4],               // x8k3m9q2
-                fullToken: token
-            };
-        }
+        // Initialize session from URL (source of truth)
+        const session = initSession();
 
-        // ============================================
-        // PERSIST DATA IN SESSION STORAGE
-        // This ensures data survives navigation
-        // ============================================
-        
-        function persistSessionData(sessionData) {
-            sessionStorage.setItem('customer_session', JSON.stringify(sessionData));
-            console.log('✅ Session data persisted:', sessionData);
-        }
-
-        function getPersistedSessionData() {
-            const data = sessionStorage.getItem('customer_session');
-            return data ? JSON.parse(data) : null;
-        }
-
-        // ============================================
-        // BUILD NAVIGATION URLS WITH CONTEXT
-        // All customer page links must include session context
-        // ============================================
-        
-        function buildContextualUrl(basePath, additionalParams = {}) {
-            const sessionData = getPersistedSessionData();
-            if (!sessionData) return basePath;
+        if (session && session.fullToken) {
+            // Valid session initialized from URL
+            tokenDisplay.textContent = session.fullToken;
+            operatorDisplay.textContent = session.operatorId;
             
-            const params = new URLSearchParams({
-                invite: sessionData.fullToken,
-                ...additionalParams
+            // Show processing status
+            statusContainer.innerHTML = `
+                <div class="spinner-ring" style="margin: 20px auto;"></div>
+                <p style="color: var(--text-muted); font-size: 14px;">
+                    Connessione in corso...
+                </p>
+            `;
+
+            // Notify operator via webhook
+            notifyOperator(session).then(success => {
+                if (success) {
+                    // Success - show connected state
+                    statusContainer.innerHTML = `
+                        <div style="padding: 20px; background: rgba(76, 217, 100, 0.15); border-radius: 12px; border: 1px solid var(--success);">
+                            <i class="fas fa-check-circle" style="font-size: 48px; color: var(--success);"></i>
+                            <h3 style="color: var(--success); margin: 15px 0 5px 0;">Connessione Stabilita!</h3>
+                            <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 15px;">
+                                L'operatore è stato notificato.
+                            </p>
+                            <button class="btn btn-primary" onclick="goToHub()">
+                                <i class="fas fa-home"></i> Vai alla Dashboard
+                            </button>
+                        </div>
+                    `;
+                } else {
+                    // Webhook failed but session is valid (offline-first)
+                    statusContainer.innerHTML = `
+                        <div style="padding: 20px; background: rgba(245, 158, 11, 0.15); border-radius: 12px; border: 1px solid var(--warning);">
+                            <i class="fas fa-info-circle" style="font-size: 48px; color: var(--warning);"></i>
+                            <h3 style="color: var(--warning); margin: 15px 0 5px 0;">Modalità Offline</h3>
+                            <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 15px;">
+                                Connessione salvata localmente. Sincronizzazione avverrà quando tornerà la rete.
+                            </p>
+                            <button class="btn btn-secondary" onclick="goToHub()">
+                                <i class="fas fa-home"></i> Continua Offline
+                            </button>
+                        </div>
+                    `;
+                }
             });
             
-            return `${basePath}?${params.toString()}`;
-        }
-
-        // ============================================
-        // MAIN HANDSHAKE FLOW
-        // ============================================
-        
-        if (inviteToken) {
-            const parsedData = parseInviteToken(inviteToken);
-            
-            if (!parsedData) {
-                statusContainer.innerHTML = `
-                    <div class="note note-error">
-                        <i class="fas fa-exclamation-triangle"></i>
-                        <strong>Errore</strong><br>
-                        Token di invito non valido o corrotto.
-                    </div>
-                `;
-                tokenDisplay.textContent = 'INVALID';
-            } else {
-                // Display extracted data
-                tokenDisplay.textContent = parsedData.fullToken;
-                operatorDisplay.textContent = parsedData.operatorId;
-                
-                // Create session object with all context
-                const sessionData = {
-                    fullToken: parsedData.fullToken,
-                    vatId: parsedData.vatId,
-                    operatorId: parsedData.operatorId,
-                    timestamp: parsedData.timestamp,
-                    connectedAt: new Date().toISOString(),
-                    gdprConsent: true // Implicit consent on connection
-                };
-                
-                // PERSIST SESSION DATA - This is the KEY!
-                persistSessionData(sessionData);
-                
-                // Show processing status
-                statusContainer.innerHTML = `
-                    <div class="spinner-ring" style="margin: 20px auto;"></div>
-                    <p style="color: var(--text-muted); font-size: 14px;">
-                        Connessione in corso...
-                    </p>
-                `;
-
-                // Simulate connection process (in production, call webhook)
-                notifyOperator(sessionData).then(success => {
-                    if (success) {
-                        statusContainer.innerHTML = `
-                            <div style="padding: 20px; background: rgba(76, 217, 100, 0.15); border-radius: 12px; border: 1px solid var(--success);">
-                                <i class="fas fa-check-circle" style="font-size: 48px; color: var(--success);"></i>
-                                <h3 style="color: var(--success); margin: 15px 0 5px 0;">Connessione Stabilita!</h3>
-                                <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 15px;">
-                                    L'operatore è stato notificato.
-                                </p>
-                                <button class="btn btn-primary" onclick="navigateToHub()">
-                                    <i class="fas fa-home"></i> Vai alla Dashboard
-                                </button>
-                            </div>
-                        `;
-                    } else {
-                        // Even if webhook fails, allow continuation (offline-first)
-                        statusContainer.innerHTML = `
-                            <div style="padding: 20px; background: rgba(245, 158, 11, 0.15); border-radius: 12px; border: 1px solid var(--warning);">
-                                <i class="fas fa-info-circle" style="font-size: 48px; color: var(--warning);"></i>
-                                <h3 style="color: var(--warning); margin: 15px 0 5px 0;">Modalità Offline</h3>
-                                <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 15px;">
-                                    Connessione salvata localmente. Sincronizzazione avverrà quando tornerà la rete.
-                                </p>
-                                <button class="btn btn-secondary" onclick="navigateToHub()">
-                                    <i class="fas fa-home"></i> Continua Offline
-                                </button>
-                            </div>
-                        `;
-                    }
-                });
-            }
         } else {
-            // No token provided - check if already in session
-            const existingSession = getPersistedSessionData();
+            // No valid session from URL - check if already exists in storage
+            const existingSession = getSession();
             
-            if (existingSession) {
+            if (existingSession && isSessionValid()) {
+                // Session exists and is valid
                 statusContainer.innerHTML = `
                     <div class="note note-success">
                         <i class="fas fa-info-circle"></i>
                         <strong>Sessione Esistente</strong><br>
                         Sei già connesso. 
-                        <button class="btn btn-sm btn-primary" onclick="navigateToHub()" style="margin-top: 10px;">
+                        <button class="btn btn-sm btn-primary" onclick="goToHub()" style="margin-top: 10px;">
                             <i class="fas fa-home"></i> Vai alla Dashboard
                         </button>
                     </div>
                 `;
                 tokenDisplay.textContent = existingSession.fullToken.substring(0, 20) + '...';
-                operatorDisplay.textContent = existingSession.operatorId;
+                operatorDisplay.textContent = existingSession.operatorId || '---';
             } else {
-                // Truly no session
+                // No valid session anywhere
                 statusContainer.innerHTML = `
                     <div class="note note-error">
                         <i class="fas fa-exclamation-triangle"></i>
                         <strong>Errore</strong><br>
-                        Link di invito non valido o mancante.
+                        Link di invito non valido o mancante. Richiedi un nuovo link al tuo operatore.
                     </div>
                 `;
             }
@@ -222,10 +144,10 @@
                         operator_id: sessionData.operatorId,
                         vat_id: sessionData.vatId,
                         client: {
-                            name: 'Cliente da Form', // TODO: Collect from registration form
+                            name: 'Cliente Web', // TODO: Collect from form
                             email: 'temp@example.com',
-                            consent: sessionData.gdprConsent,
-                            connected_at: sessionData.connectedAt
+                            consent: true,
+                            connected_at: new Date().toISOString()
                         }
                     })
                 });
@@ -240,23 +162,16 @@
         }
 
         // ============================================
-        // NAVIGATION WITH CONTEXT PRESERVATION
+        // NAVIGATION (Using session utilities)
         // ============================================
         
-        function navigateToHub() {
-            // Build URL with session context preserved
-            const hubUrl = buildContextualUrl('../customer_hub.html');
-            window.location.href = hubUrl;
+        function goToHub() {
+            // Navigate with session context preserved
+            navigateWithContext('../customer_hub.html');
         }
 
-        // ============================================
-        // UTILITY: Clear session (for logout)
-        // ============================================
-        
-        function clearSession() {
-            sessionStorage.removeItem('customer_session');
-            console.log('🗑️ Session cleared');
-        }
+        // Debug session state (development only)
+        debugSession();
     </script>
 </body>
 </html>
