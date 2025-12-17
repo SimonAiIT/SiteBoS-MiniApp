@@ -1,6 +1,6 @@
 // ============================================
 // OPERATOR TASK CREATE - LOGIC
-// ✅ 2-STAGE HANDSHAKE POLLING
+// ✅ EVENT-DRIVEN HANDSHAKE (NO POLLING)
 // ============================================
 
 const tg = window.Telegram.WebApp;
@@ -17,7 +17,6 @@ let capturedPhoto = null;
 let currentSmartLink = null;
 let currentSessionId = null;
 let operatorSession = null;
-let pollingInterval = null;
 
 // ✅ CRITICAL: Extract URL params DIRECTLY on load
 const urlParams = new URLSearchParams(window.location.search);
@@ -49,8 +48,27 @@ document.addEventListener('DOMContentLoaded', () => {
     console.log('✅ Final operator session:', operatorSession);
     
     setupEventListeners();
+    setupCustomEventListeners();
     showStep('target');
 });
+
+// ============================================
+// CUSTOM EVENT LISTENERS (EVENT-DRIVEN)
+// ============================================
+
+function setupCustomEventListeners() {
+    // Listen for customer arrived event
+    window.addEventListener('customerArrived', (event) => {
+        console.log('👁️ Custom Event: customerArrived', event.detail);
+        handleCustomerArrived(event.detail);
+    });
+    
+    // Listen for customer connected event
+    window.addEventListener('customerConnected', (event) => {
+        console.log('✅ Custom Event: customerConnected', event.detail);
+        handleClientConnected(event.detail.customer);
+    });
+}
 
 // ============================================
 // EVENT LISTENERS
@@ -123,7 +141,7 @@ function handleTargetSelection(type) {
 }
 
 // ============================================
-// HANDSHAKE FLOW - 2-STAGE POLLING
+// HANDSHAKE FLOW - EVENT-DRIVEN (NO POLLING)
 // ============================================
 
 function generateInviteToken() {
@@ -155,6 +173,7 @@ async function initHandshake() {
         currentSessionId = inviteToken;
         
         console.log('✅ Smart Link generated:', smartLink);
+        console.log('🎧 Listening for custom events on session:', currentSessionId);
         
         // Display Smart Link
         const linkDisplay = document.getElementById('smart-link-display');
@@ -185,25 +204,11 @@ async function initHandshake() {
             `;
         }
 
-        // Notify webhook
-        try {
-            await fetch(WEBHOOK_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    action: 'create_handshake',
-                    operator_id: operatorSession?.chat_id || URL_CHAT_ID || tg.initDataUnsafe?.user?.id || 'demo_user',
-                    vat: operatorSession?.vat || URL_VAT || null,
-                    session_id: inviteToken,
-                    smart_link: smartLink
-                })
-            });
-        } catch (webhookError) {
-            console.warn('Webhook notification failed (non-critical):', webhookError);
-        }
+        // Register handshake session with webhook (ONE TIME)
+        await registerHandshakeSession(inviteToken);
 
-        // Start 2-stage polling
-        pollHandshakeStatus(inviteToken);
+        // Now just WAIT for custom event (no polling!)
+        console.log('⏳ Waiting for customerConnected event...');
 
     } catch (error) {
         console.error('Error initializing handshake:', error);
@@ -211,54 +216,29 @@ async function initHandshake() {
     }
 }
 
-// 🔔 2-STAGE POLLING: arrived → connected
-async function pollHandshakeStatus(sessionId) {
-    let attempts = 0;
-    const maxAttempts = 120; // 10 minutes (5s interval)
-    let customerArrived = false;
-
-    pollingInterval = setInterval(async () => {
-        attempts++;
-
-        if (attempts > maxAttempts) {
-            clearInterval(pollingInterval);
-            tg.showAlert('Timeout: nessun cliente connesso');
-            return;
-        }
-
-        try {
-            const response = await fetch(WEBHOOK_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    action: 'check_handshake',
-                    session_id: sessionId
-                })
-            });
-
-            const data = await response.json();
-
-            // STAGE 1: Customer arrived at page
-            if (data.arrived && !customerArrived) {
-                customerArrived = true;
-                handleCustomerArrived(data);
-            }
-
-            // STAGE 2: Customer completed OAuth
-            if (data.connected) {
-                clearInterval(pollingInterval);
-                handleClientConnected(data.customer);
-            }
-
-        } catch (error) {
-            console.error('Polling error:', error);
-        }
-    }, 5000);
+// Register session with webhook (called ONCE)
+async function registerHandshakeSession(sessionId) {
+    try {
+        await fetch(WEBHOOK_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                action: 'register_handshake',
+                operator_id: operatorSession?.chat_id || URL_CHAT_ID || tg.initDataUnsafe?.user?.id || 'demo_user',
+                vat: operatorSession?.vat || URL_VAT || null,
+                session_id: sessionId,
+                smart_link: currentSmartLink
+            })
+        });
+        console.log('✅ Handshake session registered');
+    } catch (error) {
+        console.warn('⚠️ Failed to register session (non-critical):', error);
+    }
 }
 
-// 👀 STAGE 1: Customer scanned QR and landed on page
+// 👁️ STAGE 1: Customer scanned QR and landed on page
 function handleCustomerArrived(data) {
-    console.log('👀 Customer arrived at handshake page:', data);
+    console.log('👁️ Customer arrived at handshake page:', data);
     
     // Vibrate short
     if (navigator.vibrate) {
@@ -278,17 +258,17 @@ function handleCustomerArrived(data) {
         }
     }
 
-    // Optional: show toast notification
+    // Show popup notification
     tg.showPopup({
-        title: '👀 Cliente in Arrivo',
+        title: '👁️ Cliente in Arrivo',
         message: 'Il cliente ha aperto il link di invito',
         buttons: [{ type: 'close' }]
     });
 }
 
-// ✅ STAGE 2: Customer completed OAuth
+// ✅ STAGE 2: Customer completed OAuth (TRIGGERED BY EVENT)
 function handleClientConnected(customer) {
-    console.log('✅ Customer connected:', customer);
+    console.log('✅ Customer connected (via custom event):', customer);
     
     // Vibrate success pattern
     if (navigator.vibrate) {
@@ -301,26 +281,48 @@ function handleClientConnected(customer) {
     document.getElementById('connected-state').classList.remove('hidden');
     
     // Display customer info
-    const nameEl = document.getElementById('connected-name');
+    const connectedState = document.getElementById('connected-state');
     const fullName = `${customer.firstName} ${customer.lastName || ''}`.trim();
-    nameEl.textContent = fullName;
     
-    // Show photo if available
+    // Build connected state HTML
+    let connectedHTML = '';
+    
+    // Photo if available
     if (customer.photoUrl) {
-        const photoHTML = `
+        connectedHTML += `
             <img src="${customer.photoUrl}" 
-                 style="width: 60px; height: 60px; border-radius: 50%; margin: 10px auto; display: block; border: 2px solid var(--success);" 
+                 style="width: 80px; height: 80px; border-radius: 50%; margin: 15px auto; display: block; border: 3px solid var(--success);" 
                  alt="${fullName}">
         `;
-        nameEl.insertAdjacentHTML('beforebegin', photoHTML);
     }
     
-    // Show username if available
+    // Name
+    connectedHTML += `
+        <h3 id="connected-name" style="margin: 15px 0 5px 0; color: var(--success);">
+            ✅ ${fullName}
+        </h3>
+    `;
+    
+    // Username if available
     if (customer.username) {
-        nameEl.insertAdjacentHTML('afterend', `
-            <p style="font-size: 13px; color: var(--text-muted); margin-top: 5px;">@${customer.username}</p>
-        `);
+        connectedHTML += `
+            <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 20px;">@${customer.username}</p>
+        `;
     }
+    
+    // Proceed button
+    connectedHTML += `
+        <button class="btn" id="proceed-with-client" style="margin-top: 20px;">
+            <i class="fas fa-arrow-right"></i> Procedi con Cliente
+        </button>
+    `;
+    
+    connectedState.innerHTML = connectedHTML;
+    
+    // Re-attach proceed button listener
+    document.getElementById('proceed-with-client').addEventListener('click', () => {
+        showStep('mission-type');
+    });
     
     selectedTarget = customer;
     selectedTargetType = 'person';
@@ -504,11 +506,6 @@ async function generateReport() {
 // ============================================
 
 function showStep(step) {
-    // Clear polling if leaving handshake
-    if (step !== 'handshake' && pollingInterval) {
-        clearInterval(pollingInterval);
-    }
-    
     document.querySelectorAll('.step-container').forEach(container => {
         container.classList.add('hidden');
     });
@@ -595,3 +592,23 @@ function getDemoClients() {
         { id: '3', name: 'Giuseppe Bianchi', email: 'giuseppe@example.com' }
     ];
 }
+
+// ============================================
+// GLOBAL: Trigger custom event (called by webhook response or external script)
+// ============================================
+
+window.triggerCustomerConnected = function(customerData) {
+    const event = new CustomEvent('customerConnected', {
+        detail: { customer: customerData }
+    });
+    window.dispatchEvent(event);
+    console.log('🔔 Triggered customerConnected event:', customerData);
+};
+
+window.triggerCustomerArrived = function(data) {
+    const event = new CustomEvent('customerArrived', {
+        detail: data
+    });
+    window.dispatchEvent(event);
+    console.log('🔔 Triggered customerArrived event:', data);
+};
