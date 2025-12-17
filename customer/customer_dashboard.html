@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Cliente - SiteBoS</title>
+    <link rel="stylesheet" href="../styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Session Management Utilities -->
+    <script src="session_utils.js"></script>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="dashboard-header">
+            <div class="header-info">
+                <h1><i class="fas fa-home"></i> Dashboard</h1>
+                <small id="welcome-message">Benvenuto!</small>
+            </div>
+            <div class="header-actions">
+                <button class="btn-icon" onclick="debugCustomerSession()" aria-label="Debug">
+                    <i class="fas fa-bug"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Connection Success Card -->
+        <div class="card" style="text-align: center; background: rgba(76, 217, 100, 0.1); border: 1px solid var(--success);">
+            <div style="font-size: 48px; margin-bottom: 15px;">
+                ✅
+            </div>
+            <h2 style="color: var(--success); margin-bottom: 10px;">Connessione Stabilita!</h2>
+            <p style="color: var(--text-muted); margin-bottom: 20px;">
+                Sei connesso in modo sicuro con il tuo operatore.
+            </p>
+            
+            <!-- User Info -->
+            <div style="background: rgba(0,0,0,0.2); border-radius: 12px; padding: 20px; margin: 20px 0;">
+                <div style="display: flex; align-items: center; justify-content: center; gap: 15px; margin-bottom: 15px;">
+                    <div style="width: 60px; height: 60px; border-radius: 50%; background: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: 700; color: white;" id="user-avatar">
+                        M
+                    </div>
+                    <div style="text-align: left;">
+                        <h3 id="user-name" style="margin: 0; font-size: 20px;">Mario Rossi</h3>
+                        <p id="user-provider" style="margin: 5px 0 0 0; font-size: 13px; color: var(--text-muted);">
+                            <i class="fab fa-telegram"></i> Telegram
+                        </p>
+                    </div>
+                </div>
+                
+                <!-- Operator Linkage -->
+                <div style="padding-top: 15px; border-top: 1px solid var(--glass-border);">
+                    <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 5px;">
+                        Collegato a:
+                    </p>
+                    <p id="operator-link" style="font-size: 14px; color: var(--info); font-weight: 600; margin: 0;">
+                        <i class="fas fa-user-tie"></i> Operatore #1234
+                    </p>
+                </div>
+            </div>
+            
+            <!-- Connection Timestamp -->
+            <p style="font-size: 11px; color: var(--text-secondary);">
+                Connesso il <span id="connected-time">---</span>
+            </p>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="card">
+            <h3 style="margin-bottom: 20px;"><i class="fas fa-bolt"></i> Azioni Rapide</h3>
+            
+            <div style="display: grid; gap: 15px;">
+                <button class="btn btn-block" onclick="alert('Funzionalità in arrivo!')">
+                    <i class="fas fa-file-invoice"></i> I miei Preventivi
+                </button>
+                
+                <button class="btn btn-secondary btn-block" onclick="alert('Funzionalità in arrivo!')">
+                    <i class="fas fa-tasks"></i> Lavori in Corso
+                </button>
+                
+                <button class="btn btn-secondary btn-block" onclick="alert('Funzionalità in arrivo!')">
+                    <i class="fas fa-history"></i> Storico Interventi
+                </button>
+            </div>
+        </div>
+
+        <!-- Session Info (Debug) -->
+        <div class="card" style="background: rgba(0,0,0,0.3);">
+            <h4 style="margin-bottom: 15px; font-size: 14px; color: var(--text-muted);">
+                <i class="fas fa-info-circle"></i> Informazioni Sessione
+            </h4>
+            
+            <div style="font-family: monospace; font-size: 11px; color: var(--text-secondary);">
+                <p style="margin: 5px 0;">Token: <span id="session-token" style="color: var(--primary);">---</span></p>
+                <p style="margin: 5px 0;">VAT: <span id="session-vat" style="color: var(--info);">---</span></p>
+                <p style="margin: 5px 0;">User ID: <span id="session-userid" style="color: var(--success);">---</span></p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ============================================
+        // CUSTOMER DASHBOARD - LOGIC
+        // ============================================
+
+        let customerSession = null;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('🏠 Customer Dashboard - Loading...');
+            
+            // Load session from storage
+            customerSession = loadCustomerSession();
+            
+            if (!customerSession) {
+                alert('Sessione non valida. Richiedi un nuovo link di invito.');
+                window.location.href = '../index.html';
+                return;
+            }
+            
+            console.log('✅ Customer session loaded:', customerSession);
+            
+            // Populate UI with session data
+            displayCustomerInfo(customerSession);
+        });
+
+        function loadCustomerSession() {
+            try {
+                const sessionData = sessionStorage.getItem('customer_session');
+                return sessionData ? JSON.parse(sessionData) : null;
+            } catch (error) {
+                console.error('Error loading session:', error);
+                return null;
+            }
+        }
+
+        function displayCustomerInfo(session) {
+            // User name
+            const fullName = `${session.firstName} ${session.lastName}`;
+            document.getElementById('user-name').textContent = fullName;
+            document.getElementById('welcome-message').textContent = `Benvenuto, ${session.firstName}!`;
+            
+            // Avatar initial
+            const initial = session.firstName.charAt(0).toUpperCase();
+            document.getElementById('user-avatar').textContent = initial;
+            
+            // Provider
+            const providerIcons = {
+                telegram: '<i class="fab fa-telegram"></i> Telegram',
+                google: '<i class="fab fa-google"></i> Google',
+                apple: '<i class="fab fa-apple"></i> Apple'
+            };
+            document.getElementById('user-provider').innerHTML = providerIcons[session.provider] || session.provider;
+            
+            // Operator link
+            const operatorDisplay = `Operatore #${session.linkedOperatorId.slice(-4)}`;
+            document.getElementById('operator-link').innerHTML = `<i class="fas fa-user-tie"></i> ${operatorDisplay}`;
+            
+            // Connection time
+            const connectedDate = new Date(session.connectedAt);
+            const formattedDate = connectedDate.toLocaleString('it-IT', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+            document.getElementById('connected-time').textContent = formattedDate;
+            
+            // Session debug info
+            document.getElementById('session-token').textContent = session.inviteToken.substring(0, 30) + '...';
+            document.getElementById('session-vat').textContent = session.linkedVatId;
+            document.getElementById('session-userid').textContent = session.userId;
+        }
+
+        function debugCustomerSession() {
+            console.group('🔍 Customer Session Debug');
+            console.log('Session Object:', customerSession);
+            console.log('SessionStorage:', sessionStorage.getItem('customer_session'));
+            console.groupEnd();
+            
+            alert('Controlla la console del browser per i dettagli della sessione.');
+        }
+    </script>
+</body>
+</html>
