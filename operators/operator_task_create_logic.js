@@ -1,6 +1,6 @@
 // ============================================
 // OPERATOR TASK CREATE - LOGIC
-// ✅ ZERO POLLING - SOLO EVENT LISTENER
+// ✅ MANUAL VERIFY BUTTON - SINGLE CALL
 // ============================================
 
 const tg = window.Telegram.WebApp;
@@ -44,23 +44,6 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // ============================================
-// EVENT LISTENER per customerReady
-// ============================================
-
-window.addEventListener('customerReady', (event) => {
-    console.log('✅ Event customerReady ricevuto:', event.detail);
-    handleCustomerReady(event.detail.customer);
-});
-
-// Funzione chiamata dal webhook
-window.notifyCustomerReady = function(customerData) {
-    const event = new CustomEvent('customerReady', {
-        detail: { customer: customerData }
-    });
-    window.dispatchEvent(event);
-};
-
-// ============================================
 // EVENT LISTENERS
 // ============================================
 
@@ -76,11 +59,9 @@ function setupEventListeners() {
         copyLinkBtn.addEventListener('click', copySmartLink);
     }
 
-    const proceedBtn = document.getElementById('proceed-with-client');
-    if (proceedBtn) {
-        proceedBtn.addEventListener('click', () => {
-            showStep('mission-type');
-        });
+    const verifyBtn = document.getElementById('btn-verify');
+    if (verifyBtn) {
+        verifyBtn.addEventListener('click', verifyHandshakeManual);
     }
 
     const searchInput = document.getElementById('client-search');
@@ -131,7 +112,7 @@ function handleTargetSelection(type) {
 }
 
 // ============================================
-// HANDSHAKE FLOW - ZERO POLLING
+// HANDSHAKE FLOW - MANUAL VERIFY
 // ============================================
 
 function generateInviteToken() {
@@ -156,8 +137,11 @@ async function initHandshake() {
         currentSmartLink = smartLink;
         currentSessionId = inviteToken;
         
+        // Store invite code in sessionStorage
+        sessionStorage.setItem('current_invite_code', inviteToken);
+        
         console.log('✅ Smart Link:', smartLink);
-        console.log('⏳ Waiting for customerReady event...');
+        console.log('⏳ Waiting for manual verification...');
         
         const linkDisplay = document.getElementById('smart-link-display');
         if (linkDisplay) {
@@ -178,23 +162,74 @@ async function initHandshake() {
             });
         }
 
-        // FATTO. Ora aspetta evento.
-
     } catch (error) {
         console.error('Error:', error);
         tg.showAlert('Errore nella creazione del link.');
     }
 }
 
+// 🔔 MANUAL VERIFY FUNCTION - SINGLE CALL
+async function verifyHandshakeManual() {
+    const inviteCode = sessionStorage.getItem('current_invite_code');
+    const btn = document.getElementById('btn-verify');
+    
+    if (!inviteCode) {
+        tg.showAlert('Codice invito non trovato. Riprova.');
+        return;
+    }
+    
+    // 1. Loading State
+    const originalHTML = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Controllo in corso...';
+    btn.disabled = true;
+
+    try {
+        // 2. Single API Call
+        const response = await fetch(WEBHOOK_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                action: 'check_customer',
+                session_id: inviteCode
+            })
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            
+            if (data.ready && data.customer) {
+                // SUCCESS: Customer data found!
+                console.log('✅ Customer ready:', data.customer);
+                
+                // Haptic Feedback
+                if (window.Telegram?.WebApp?.HapticFeedback) {
+                    window.Telegram.WebApp.HapticFeedback.notificationOccurred('success');
+                } else if (navigator.vibrate) {
+                    navigator.vibrate([200, 100, 200]);
+                }
+                
+                // Show success and proceed
+                handleCustomerReady(data.customer);
+                
+            } else {
+                // WAITING: Data not ready yet
+                tg.showAlert('Il cliente non ha ancora completato la procedura. Riprova tra poco.');
+            }
+        } else {
+            throw new Error('API Error');
+        }
+    } catch (error) {
+        console.error('Verify error:', error);
+        tg.showAlert('Impossibile verificare. Controlla la connessione.');
+    } finally {
+        // 3. Reset Button
+        btn.innerHTML = originalHTML;
+        btn.disabled = false;
+    }
+}
+
 function handleCustomerReady(customer) {
     console.log('✅ Customer ready:', customer);
-    
-    if (navigator.vibrate) {
-        navigator.vibrate([200, 100, 200]);
-    }
-
-    document.getElementById('radar-animation').classList.add('hidden');
-    document.getElementById('qr-container').classList.add('hidden');
     
     selectedTarget = customer;
     selectedTargetType = 'person';
@@ -203,6 +238,7 @@ function handleCustomerReady(customer) {
     
     tg.showAlert(`✅ ${fullName} connesso!`);
     
+    // Auto-proceed to mission type
     setTimeout(() => {
         showStep('mission-type');
     }, 1000);
@@ -402,7 +438,7 @@ function showStep(step) {
 
     const indicators = {
         'target': 'Chi è il beneficiario?',
-        'handshake': 'In attesa...',
+        'handshake': 'In attesa cliente...',
         'search': 'Cerca cliente',
         'asset': 'Scansiona',
         'mission-type': 'Cosa vuoi fare?',
