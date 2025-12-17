@@ -1,6 +1,6 @@
 // ============================================
 // SECURE HANDSHAKE LOGIC
-// OAuth-Style Identity Provider Simulation
+// REAL Telegram OAuth + Future Google/Apple
 // ============================================
 
 const WEBHOOK_URL = 'https://trinai.api.workflow.dcmake.it/webhook/9d094742-eaca-41e1-b4e9-ee0627ffa285';
@@ -46,110 +46,61 @@ document.addEventListener('DOMContentLoaded', () => {
     // Show token in debug section
     document.getElementById('invite-token').textContent = inviteToken;
     
-    // Setup OAuth buttons
-    setupOAuthButtons();
+    // Setup future OAuth buttons (Google/Apple)
+    // Telegram is handled by widget callback
 });
 
 // ============================================
-// TOKEN DECODING
+// TELEGRAM OAUTH CALLBACK (REAL)
+// This function is called by Telegram Widget
 // ============================================
 
-function decodeInviteToken(token) {
-    if (!token || typeof token !== 'string') return null;
+window.onTelegramAuth = function(user) {
+    console.group('✅ TELEGRAM OAUTH - REAL DATA RECEIVED');
+    console.log('Raw Telegram User:', user);
+    console.groupEnd();
     
-    // Token format: VAT_ID + _ + OPERATOR_ID + _ + TIMESTAMP + _ + RANDOM
-    // Example: IT06988830821_2041408875_1734424703000_k7m9x3q1
-    
-    const parts = token.split('_');
-    if (parts.length < 4) return null;
-    
-    return {
-        vatId: parts[0], // IT06988830821
-        operatorId: parts[1], // 2041408875
-        timestamp: parseInt(parts[2]), // 1734424703000
-        randomStr: parts[3], // k7m9x3q1
-        fullToken: token
-    };
-}
-
-// ============================================
-// UI UPDATES
-// ============================================
-
-function displayOperatorInfo(tokenData) {
-    const operatorNameEl = document.getElementById('operator-name');
-    
-    // In production, fetch operator name from API
-    // For now, display operator ID
-    const displayName = `Operatore #${tokenData.operatorId.slice(-4)}`;
-    
-    operatorNameEl.textContent = displayName;
-}
-
-function showError(message) {
-    const container = document.querySelector('.entry-card');
-    container.innerHTML = `
-        <div style="font-size: 64px; margin-bottom: 20px;">
-            ⚠️
-        </div>
-        <h1 style="margin-bottom: 10px;">Errore</h1>
-        <p style="color: var(--text-muted);">${message}</p>
-    `;
-}
-
-// ============================================
-// OAUTH BUTTON HANDLERS
-// ============================================
-
-function setupOAuthButtons() {
-    // Telegram OAuth
-    document.getElementById('btn-telegram').addEventListener('click', () => {
-        handleOAuthFlow('telegram');
-    });
-    
-    // Google OAuth
-    document.getElementById('btn-google').addEventListener('click', () => {
-        handleOAuthFlow('google');
-    });
-    
-    // Apple OAuth
-    document.getElementById('btn-apple').addEventListener('click', () => {
-        handleOAuthFlow('apple');
-    });
-}
-
-async function handleOAuthFlow(provider) {
-    console.log(`🔐 OAuth flow started: ${provider}`);
-    
-    // Visual feedback
-    const button = document.getElementById(`btn-${provider}`);
-    button.classList.add('loading');
-    
-    // Haptic feedback (if supported)
+    // Haptic feedback
     if (navigator.vibrate) {
-        navigator.vibrate(50);
+        navigator.vibrate(100);
     }
     
+    // Extract real identity from Telegram
+    const userIdentity = {
+        firstName: user.first_name,
+        lastName: user.last_name || '',
+        userId: user.id.toString(),
+        username: user.username || null,
+        photoUrl: user.photo_url || null,
+        provider: 'telegram',
+        email: null, // Telegram doesn't provide email
+        phone: null, // Would need additional request
+        
+        // Telegram auth metadata
+        authDate: user.auth_date,
+        hash: user.hash
+    };
+    
+    console.log('✅ Extracted Identity:', userIdentity);
+    
+    // Process authentication
+    processAuthentication(userIdentity);
+};
+
+// ============================================
+// AUTHENTICATION PROCESSING
+// ============================================
+
+async function processAuthentication(userIdentity) {
     try {
-        // Simulate OAuth redirect/popup
-        // In production:
-        // - Telegram: window.Telegram.Login.auth()
-        // - Google: gapi.auth2.getAuthInstance().signIn()
-        // - Apple: AppleID.auth.signIn()
-        
-        await new Promise(resolve => setTimeout(resolve, 1500)); // Simulate network delay
-        
-        // Mock identity extraction
-        const userIdentity = simulateIdentityExtraction(provider);
-        
-        console.log('✅ Identity extracted:', userIdentity);
-        
         // Create customer session
         const customerSession = {
-            // User identity
+            // User identity (REAL from OAuth)
             firstName: userIdentity.firstName,
             lastName: userIdentity.lastName,
             userId: userIdentity.userId,
+            username: userIdentity.username,
+            photoUrl: userIdentity.photoUrl,
             provider: userIdentity.provider,
             email: userIdentity.email,
             phone: userIdentity.phone,
@@ -161,7 +112,11 @@ async function handleOAuthFlow(provider) {
             
             // Metadata
             connectedAt: new Date().toISOString(),
-            gdprConsent: true // Implicit consent
+            gdprConsent: true,
+            
+            // Telegram specific
+            telegramAuthDate: userIdentity.authDate,
+            telegramHash: userIdentity.hash
         };
         
         console.log('💾 Persisting customer session:', customerSession);
@@ -181,47 +136,92 @@ async function handleOAuthFlow(provider) {
         }, 1500);
         
     } catch (error) {
-        console.error('OAuth flow error:', error);
-        button.classList.remove('loading');
+        console.error('Authentication processing error:', error);
         alert('Errore durante la connessione. Riprova.');
     }
 }
 
 // ============================================
-// IDENTITY SIMULATION
+// TOKEN DECODING
 // ============================================
 
-function simulateIdentityExtraction(provider) {
-    // In production, this data comes from the OAuth provider
+function decodeInviteToken(token) {
+    if (!token || typeof token !== 'string') return null;
     
-    const mockIdentities = {
-        telegram: {
-            firstName: 'Mario',
-            lastName: 'Rossi',
-            userId: '999888777',
-            provider: 'telegram',
-            email: null,
-            phone: '+393331234567'
-        },
-        google: {
-            firstName: 'Anna',
-            lastName: 'Verdi',
-            userId: 'google_123456789',
-            provider: 'google',
-            email: 'anna.verdi@gmail.com',
-            phone: null
-        },
-        apple: {
-            firstName: 'Giuseppe',
-            lastName: 'Bianchi',
-            userId: 'apple_987654321',
-            provider: 'apple',
-            email: 'giuseppe.b@icloud.com',
-            phone: null
-        }
+    // Token format: VAT_ID + _ + OPERATOR_ID + _ + TIMESTAMP + _ + RANDOM
+    const parts = token.split('_');
+    if (parts.length < 4) return null;
+    
+    return {
+        vatId: parts[0],
+        operatorId: parts[1],
+        timestamp: parseInt(parts[2]),
+        randomStr: parts[3],
+        fullToken: token
     };
+}
+
+// ============================================
+// UI UPDATES
+// ============================================
+
+function displayOperatorInfo(tokenData) {
+    const operatorNameEl = document.getElementById('operator-name');
     
-    return mockIdentities[provider] || mockIdentities.telegram;
+    // Display operator ID (last 4 digits)
+    const displayName = `Operatore #${tokenData.operatorId.slice(-4)}`;
+    
+    operatorNameEl.textContent = displayName;
+}
+
+function showError(message) {
+    const container = document.querySelector('.entry-card');
+    container.innerHTML = `
+        <div style="font-size: 64px; margin-bottom: 20px;">
+            ⚠️
+        </div>
+        <h1 style="margin-bottom: 10px;">Errore</h1>
+        <p style="color: var(--text-muted);">${message}</p>
+    `;
+}
+
+function showSuccessFeedback(userIdentity) {
+    // Vibrate success pattern
+    if (navigator.vibrate) {
+        navigator.vibrate([100, 50, 100]);
+    }
+    
+    const displayName = userIdentity.firstName + (userIdentity.lastName ? ' ' + userIdentity.lastName : '');
+    
+    const container = document.querySelector('.entry-card');
+    container.innerHTML = `
+        <div style="font-size: 64px; margin-bottom: 20px;">
+            ✅
+        </div>
+        <h1 style="margin-bottom: 10px; color: var(--success);">Connesso!</h1>
+        
+        ${userIdentity.photoUrl ? `
+            <img src="${userIdentity.photoUrl}" 
+                 style="width: 80px; height: 80px; border-radius: 50%; margin: 15px auto; border: 3px solid var(--success);" 
+                 alt="${displayName}">
+        ` : ''}
+        
+        <p style="font-size: 18px; font-weight: 600; margin-bottom: 5px;">
+            ${displayName}
+        </p>
+        
+        ${userIdentity.username ? `
+            <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 15px;">
+                @${userIdentity.username}
+            </p>
+        ` : ''}
+        
+        <p style="color: var(--text-muted); font-size: 14px;">
+            Reindirizzamento alla dashboard...
+        </p>
+        
+        <div class="spinner-ring" style="margin: 30px auto;"></div>
+    `;
 }
 
 // ============================================
@@ -242,11 +242,15 @@ async function notifyWebhook(customerSession) {
                     firstName: customerSession.firstName,
                     lastName: customerSession.lastName,
                     userId: customerSession.userId,
+                    username: customerSession.username,
+                    photoUrl: customerSession.photoUrl,
                     provider: customerSession.provider,
                     email: customerSession.email,
                     phone: customerSession.phone,
                     connectedAt: customerSession.connectedAt,
-                    gdprConsent: customerSession.gdprConsent
+                    gdprConsent: customerSession.gdprConsent,
+                    telegramAuthDate: customerSession.telegramAuthDate,
+                    telegramHash: customerSession.telegramHash
                 }
             })
         });
@@ -263,38 +267,10 @@ async function notifyWebhook(customerSession) {
 }
 
 // ============================================
-// SUCCESS FEEDBACK
-// ============================================
-
-function showSuccessFeedback(userIdentity) {
-    // Vibrate success pattern
-    if (navigator.vibrate) {
-        navigator.vibrate([100, 50, 100]);
-    }
-    
-    const container = document.querySelector('.entry-card');
-    container.innerHTML = `
-        <div style="font-size: 64px; margin-bottom: 20px;">
-            ✅
-        </div>
-        <h1 style="margin-bottom: 10px; color: var(--success);">Connesso!</h1>
-        <p style="font-size: 18px; font-weight: 600; margin-bottom: 5px;">
-            ${userIdentity.firstName} ${userIdentity.lastName}
-        </p>
-        <p style="color: var(--text-muted); font-size: 14px;">
-            Reindirizzamento alla dashboard...
-        </p>
-        
-        <div class="spinner-ring" style="margin: 30px auto;"></div>
-    `;
-}
-
-// ============================================
 // NAVIGATION
 // ============================================
 
 function redirectToDashboard() {
-    // Build dashboard URL with session context
     const session = JSON.parse(sessionStorage.getItem('customer_session'));
     
     if (!session) {
@@ -309,6 +285,64 @@ function redirectToDashboard() {
     console.log('🚀 Redirecting to:', dashboardUrl);
     window.location.href = dashboardUrl;
 }
+
+// ============================================
+// FUTURE: GOOGLE OAUTH
+// ============================================
+
+/*
+function initGoogleOAuth() {
+    gapi.load('auth2', function() {
+        const auth2 = gapi.auth2.init({
+            client_id: 'YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com'
+        });
+        
+        document.getElementById('btn-google').addEventListener('click', () => {
+            auth2.signIn().then(googleUser => {
+                const profile = googleUser.getBasicProfile();
+                const userIdentity = {
+                    firstName: profile.getGivenName(),
+                    lastName: profile.getFamilyName(),
+                    userId: profile.getId(),
+                    provider: 'google',
+                    email: profile.getEmail(),
+                    photoUrl: profile.getImageUrl()
+                };
+                processAuthentication(userIdentity);
+            });
+        });
+    });
+}
+*/
+
+// ============================================
+// FUTURE: APPLE SIGN IN
+// ============================================
+
+/*
+function initAppleSignIn() {
+    AppleID.auth.init({
+        clientId: 'YOUR_APPLE_CLIENT_ID',
+        scope: 'name email',
+        redirectURI: 'https://simonaiit.github.io/SiteBoS-MiniApp/customer/callback.html',
+        usePopup: true
+    });
+    
+    document.getElementById('btn-apple').addEventListener('click', () => {
+        AppleID.auth.signIn().then(response => {
+            const { authorization, user } = response;
+            const userIdentity = {
+                firstName: user.name.firstName,
+                lastName: user.name.lastName,
+                userId: authorization.user,
+                provider: 'apple',
+                email: user.email
+            };
+            processAuthentication(userIdentity);
+        });
+    });
+}
+*/
 
 // ============================================
 // DEBUG UTILITIES
