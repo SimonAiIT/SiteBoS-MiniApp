@@ -33,11 +33,6 @@
             transform: scale(0.98);
         }
 
-        .oauth-button.loading {
-            pointer-events: none;
-            opacity: 0.7;
-        }
-
         .oauth-button.disabled {
             opacity: 0.5;
             cursor: not-allowed;
@@ -49,21 +44,28 @@
             color: white;
             box-shadow: 0 4px 15px rgba(0, 136, 204, 0.3);
             border-radius: 12px;
-            padding: 16px 24px;
+            padding: 20px;
             margin-bottom: 15px;
             transition: all 0.2s ease;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .oauth-telegram-container:hover {
-            background: linear-gradient(135deg, #0077b5, #006699);
             box-shadow: 0 6px 20px rgba(0, 136, 204, 0.4);
-            transform: scale(1.02);
         }
 
-        /* Center Telegram widget inside container */
-        .oauth-telegram-container iframe {
-            margin: 0 auto;
-            display: block;
+        /* Widget error state */
+        .widget-error {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid var(--error);
+            color: var(--error);
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 13px;
+            text-align: left;
         }
 
         /* Google Button (White) */
@@ -153,11 +155,26 @@
 
             <!-- OAuth Buttons Section -->
             <div style="margin-top: 40px;">
-                <!-- Telegram Widget Container (REAL OAuth) -->
-                <div class="oauth-telegram-container" id="telegram-widget-container">
-                    <!-- Telegram Login Widget will be injected here by script -->
-                    <div style="display: flex; align-items: center; justify-content: center; min-height: 46px;">
+                <!-- Telegram Widget Container -->
+                <div class="oauth-telegram-container" id="telegram-container">
+                    <!-- Loading state -->
+                    <div id="telegram-loading">
                         <div class="spinner-ring" style="width: 30px; height: 30px;"></div>
+                        <p style="margin-top: 10px; font-size: 13px; color: white;">Caricamento widget Telegram...</p>
+                    </div>
+                    
+                    <!-- Widget will be injected here -->
+                    <div id="telegram-widget-target"></div>
+                    
+                    <!-- Error state (hidden initially) -->
+                    <div id="telegram-error" class="widget-error" style="display: none;">
+                        <strong>⚠️ Widget Telegram non disponibile</strong>
+                        <p style="margin: 10px 0 0 0; font-size: 12px;">
+                            Il bot deve essere configurato. Esegui:
+                        </p>
+                        <code style="display: block; background: rgba(0,0,0,0.2); padding: 8px; border-radius: 4px; margin-top: 8px; font-size: 11px;">
+                            /setdomain → @TrinAi_Agent_bot → simonaiit.github.io
+                        </code>
                     </div>
                 </div>
 
@@ -190,7 +207,7 @@
                 </div>
             </div>
 
-            <!-- Debug Info (hidden in production) -->
+            <!-- Debug Info -->
             <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid var(--glass-border);" id="debug-section">
                 <p style="font-size: 11px; color: var(--text-secondary);">
                     Token: <span id="invite-token" style="font-family: monospace; color: var(--primary);">---</span>
@@ -199,14 +216,46 @@
         </div>
     </div>
 
-    <!-- Telegram Login Widget Script -->
-    <script async src="https://telegram.org/js/telegram-widget.js?22" 
-            data-telegram-login="TrinAi_Agent_bot" 
-            data-size="large" 
-            data-radius="8"
-            data-onauth="onTelegramAuth(user)" 
-            data-request-access="write"></script>
-
+    <!-- Load logic first, then widget script -->
     <script src="securehandshake_logic.js"></script>
+    
+    <!-- Telegram Widget Script - loaded after logic -->
+    <script>
+        // Inject Telegram widget programmatically
+        (function() {
+            const script = document.createElement('script');
+            script.src = 'https://telegram.org/js/telegram-widget.js?22';
+            script.async = true;
+            script.setAttribute('data-telegram-login', 'TrinAi_Agent_bot');
+            script.setAttribute('data-size', 'large');
+            script.setAttribute('data-radius', '8');
+            script.setAttribute('data-onauth', 'onTelegramAuth(user)');
+            script.setAttribute('data-request-access', 'write');
+            
+            // Append to target container
+            const target = document.getElementById('telegram-widget-target');
+            if (target) {
+                target.appendChild(script);
+                
+                // Hide loading, show widget area
+                setTimeout(() => {
+                    document.getElementById('telegram-loading').style.display = 'none';
+                    target.style.display = 'block';
+                }, 1000);
+                
+                // Timeout: if widget doesn't load in 5 seconds, show error
+                setTimeout(() => {
+                    const widgetIframe = target.querySelector('iframe');
+                    if (!widgetIframe) {
+                        console.error('Telegram widget failed to load');
+                        target.style.display = 'none';
+                        document.getElementById('telegram-error').style.display = 'block';
+                        document.getElementById('telegram-container').style.background = 'transparent';
+                        document.getElementById('telegram-container').style.boxShadow = 'none';
+                    }
+                }, 5000);
+            }
+        })();
+    </script>
 </body>
 </html>
