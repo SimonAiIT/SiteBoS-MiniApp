@@ -245,6 +245,7 @@ input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; accent-
     transition: all 0.2s;
 }
 .btn-mini:hover { background: var(--primary); border-color: var(--primary); }
+.btn-mini:disabled { opacity: 0.4; cursor: not-allowed; }
 
 /* --- Floating Action Buttons (FABs) --- */
 .fab-container {
@@ -999,6 +1000,7 @@ canvas { display: block; width: 100%; height: 100%; }
 .fab-btn.saving .spinner-icon {
     display: inline-block;
 }
+
 /* ========================================
    19. ANIMATIONS
    ======================================== */
@@ -1177,5 +1179,139 @@ canvas { display: block; width: 100%; height: 100%; }
     flex-direction: column;
     align-items: flex-start;
     gap: 8px;
+  }
+}
+
+/* ========================================
+   22. TASKS SYSTEM SPECIFIC
+   ======================================== */
+
+/* --- Task Cards --- */
+.task-card {
+  position: relative;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.task-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 25px rgba(0,0,0,0.2);
+}
+
+.task-card:active {
+  transform: translateY(0);
+}
+
+/* --- Target/Mission Option Cards --- */
+.target-option,
+.mission-option {
+  background: var(--card-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-md);
+  padding: 18px;
+  margin-bottom: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.target-option:hover,
+.mission-option:hover {
+  background: var(--hover-bg);
+  border-color: var(--primary);
+  transform: translateX(5px);
+}
+
+.target-option:active,
+.mission-option:active {
+  transform: translateX(3px) scale(0.98);
+}
+
+/* --- Step Container Navigation --- */
+.step-container {
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* --- Handshake UI Components --- */
+#qr-container {
+  position: relative;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
+#radar-animation {
+  animation: fadeIn 0.5s ease-out;
+}
+
+#connected-state {
+  animation: slideDown 0.5s ease-out;
+}
+
+#connected-state .card {
+  animation: pulse 0.5s ease-out;
+}
+
+/* --- Search Results --- */
+#search-results {
+  max-height: 400px;
+  overflow-y: auto;
+  margin-top: 15px;
+}
+
+#search-results::-webkit-scrollbar {
+  width: 6px;
+}
+
+#search-results::-webkit-scrollbar-track {
+  background: rgba(0,0,0,0.2);
+  border-radius: 3px;
+}
+
+#search-results::-webkit-scrollbar-thumb {
+  background: var(--primary);
+  border-radius: 3px;
+}
+
+/* --- Photo Preview --- */
+#photo-preview {
+  animation: slideDown 0.3s ease-out;
+}
+
+#photo-preview img {
+  box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+}
+
+/* --- Tasks List Specific --- */
+#tasks-container {
+  animation: fadeIn 0.5s ease-out;
+}
+
+/* Urgent task indicator glow effect */
+.task-card[style*="border-left: 4px solid var(--error)"] {
+  animation: urgentGlow 2s ease-in-out infinite;
+}
+
+@keyframes urgentGlow {
+  0%, 100% { box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+  50% { box-shadow: 0 4px 25px rgba(255, 107, 107, 0.3); }
+}
+
+/* --- Responsive Adjustments for Tasks --- */
+@media (max-width: 600px) {
+  .target-option,
+  .mission-option {
+    padding: 15px;
+  }
+  
+  .dash-icon {
+    width: 45px !important;
+    height: 45px !important;
+    font-size: 20px !important;
+  }
+  
+  #qr-code {
+    width: 150px !important;
+    height: 150px !important;
+  }
+  
+  .task-card h3 {
+    font-size: 15px;
   }
 }
