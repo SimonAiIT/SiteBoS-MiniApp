@@ -1,5 +1,6 @@
 // ============================================
 // OPERATOR TASKS - LOGIC
+// URL-as-source-of-truth: chat_id and vat must persist!
 // ============================================
 
 const tg = window.Telegram.WebApp;
@@ -11,12 +12,24 @@ const WEBHOOK_URL = 'https://trinai.api.workflow.dcmake.it/webhook/d253f855-ce1a
 let allTasks = [];
 let currentFilter = 'all';
 let searchQuery = '';
+let operatorSession = null;
 
 // ============================================
 // INIT
 // ============================================
 
 document.addEventListener('DOMContentLoaded', async () => {
+    // ✅ CRITICAL: Initialize operator session from URL
+    operatorSession = initOperatorSession();
+    
+    if (!operatorSession) {
+        console.error('No operator session found in URL!');
+        tg.showAlert('Sessione non valida. Parametri URL mancanti (chat_id, vat).');
+        // Continue anyway for demo purposes
+    } else {
+        console.log('✅ Operator session loaded:', operatorSession);
+    }
+    
     setupEventListeners();
     await loadTasks();
 });
@@ -43,9 +56,9 @@ function setupEventListeners() {
         });
     });
 
-    // FAB Create
+    // FAB Create - ✅ FIX: Navigate WITH context!
     document.getElementById('fab-create').addEventListener('click', () => {
-        window.location.href = 'operator_task_create.html';
+        navigateOperatorWithContext('operator_task_create.html');
     });
 }
 
@@ -57,14 +70,15 @@ async function loadTasks() {
     showLoading(true);
 
     try {
-        const userId = tg.initDataUnsafe?.user?.id || 'demo_user';
+        const userId = tg.initDataUnsafe?.user?.id || operatorSession?.chat_id || 'demo_user';
         
         const response = await fetch(WEBHOOK_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 action: 'get_tasks',
-                operator_id: userId
+                operator_id: userId,
+                vat: operatorSession?.vat || null
             })
         });
 
@@ -272,14 +286,14 @@ function callTarget(phone) {
 
 function openTask(task) {
     // Redirect to specific task detail page based on type
-    // For now, show alert
+    // ✅ FIX: Navigate WITH context!
     tg.showAlert(`Task: ${task.title}\nTarget: ${task.target}\nStatus: ${task.status}`);
     
-    // TODO: Implement task detail pages
+    // TODO: Implement task detail pages with context
     // if (task.type === 'preventivi') {
-    //     window.location.href = `operator_estimate.html?task_id=${task.id}`;
+    //     navigateOperatorWithContext('operator_estimate.html', { task_id: task.id });
     // } else if (task.type === 'in_corso') {
-    //     window.location.href = `operator_checklist.html?task_id=${task.id}`;
+    //     navigateOperatorWithContext('operator_checklist.html', { task_id: task.id });
     // }
 }
 
@@ -293,10 +307,11 @@ function showLoading(show) {
 }
 
 function goBack() {
+    // ✅ FIX: Navigate back WITH context!
     if (window.history.length > 1) {
         window.history.back();
     } else {
-        window.location.href = 'operator_dashboard.html';
+        navigateOperatorWithContext('operator_dashboard.html');
     }
 }
 
