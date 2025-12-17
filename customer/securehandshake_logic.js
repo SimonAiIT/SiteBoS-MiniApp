@@ -1,9 +1,10 @@
 // ============================================
 // SECURE HANDSHAKE LOGIC
-// REAL Telegram OAuth + Double Webhook System
+// Multi-Provider OAuth: Telegram + Google + (Apple)
 // ============================================
 
 const WEBHOOK_URL = 'https://trinai.api.workflow.dcmake.it/webhook/9d094742-eaca-41e1-b4e9-ee0627ffa285';
+const GOOGLE_CLIENT_ID = '42649227972-hi1luhqh2t43bfsblmpunr108v6rtsoi.apps.googleusercontent.com';
 
 let inviteToken = null;
 let decodedToken = null;
@@ -53,7 +54,116 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     // Show token in debug section
     document.getElementById('invite-token').textContent = inviteToken;
+    
+    // Initialize Google OAuth
+    initGoogleOAuth();
 });
+
+// ============================================
+// GOOGLE OAUTH INITIALIZATION (GIS)
+// ============================================
+
+function initGoogleOAuth() {
+    if (typeof google === 'undefined') {
+        console.warn('⚠️ Google Identity Services not loaded');
+        return;
+    }
+    
+    try {
+        google.accounts.id.initialize({
+            client_id: GOOGLE_CLIENT_ID,
+            callback: handleGoogleResponse,
+            auto_select: false,
+            cancel_on_tap_outside: true
+        });
+        
+        // Render Google button
+        google.accounts.id.renderButton(
+            document.getElementById('google-button-target'),
+            {
+                theme: 'outline',
+                size: 'large',
+                width: 352, // Full width
+                text: 'continue_with',
+                shape: 'rectangular',
+                logo_alignment: 'left'
+            }
+        );
+        
+        console.log('✅ Google OAuth initialized');
+        
+    } catch (error) {
+        console.error('Google OAuth init error:', error);
+    }
+}
+
+// ============================================
+// GOOGLE OAUTH CALLBACK
+// ============================================
+
+function handleGoogleResponse(response) {
+    console.group('✅ GOOGLE OAUTH - CREDENTIAL RECEIVED');
+    console.log('Raw Google Response:', response);
+    
+    try {
+        // Decode JWT token from Google
+        const payload = decodeJwtResponse(response.credential);
+        
+        console.log('Decoded Google Profile:', payload);
+        console.groupEnd();
+        
+        // Haptic feedback
+        if (navigator.vibrate) {
+            navigator.vibrate(100);
+        }
+        
+        // Extract identity from Google
+        const userIdentity = {
+            firstName: payload.given_name || payload.name.split(' ')[0],
+            lastName: payload.family_name || payload.name.split(' ').slice(1).join(' '),
+            userId: payload.sub,
+            username: null,
+            photoUrl: payload.picture || null,
+            provider: 'google',
+            email: payload.email,
+            phone: null,
+            
+            // Google specific metadata
+            emailVerified: payload.email_verified,
+            locale: payload.locale
+        };
+        
+        console.log('✅ Extracted Identity:', userIdentity);
+        
+        // Process authentication
+        processAuthentication(userIdentity);
+        
+    } catch (error) {
+        console.error('Google response processing error:', error);
+        alert('Errore durante l\'autenticazione Google. Riprova.');
+    }
+}
+
+// ============================================
+// DECODE GOOGLE JWT TOKEN
+// ============================================
+
+function decodeJwtResponse(token) {
+    try {
+        const base64Url = token.split('.')[1];
+        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+        const jsonPayload = decodeURIComponent(
+            window.atob(base64)
+                .split('')
+                .map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+                .join('')
+        );
+        return JSON.parse(jsonPayload);
+    } catch (error) {
+        console.error('JWT decode error:', error);
+        throw error;
+    }
+}
 
 // ============================================
 // WEBHOOK: CUSTOMER ARRIVED (Page Load)
@@ -126,7 +236,7 @@ window.onTelegramAuth = function(user) {
 };
 
 // ============================================
-// AUTHENTICATION PROCESSING
+// AUTHENTICATION PROCESSING (UNIFIED)
 // ============================================
 
 async function processAuthentication(userIdentity) {
@@ -153,9 +263,11 @@ async function processAuthentication(userIdentity) {
             connectedAt: new Date().toISOString(),
             gdprConsent: true,
             
-            // Telegram specific
+            // Provider specific (optional)
             telegramAuthDate: userIdentity.authDate,
-            telegramHash: userIdentity.hash
+            telegramHash: userIdentity.hash,
+            emailVerified: userIdentity.emailVerified,
+            locale: userIdentity.locale
         };
         
         console.log('💾 Persisting customer session:', customerSession);
@@ -209,7 +321,9 @@ async function notifyCustomerConnected(customerSession) {
                     connectedAt: customerSession.connectedAt,
                     gdprConsent: customerSession.gdprConsent,
                     telegramAuthDate: customerSession.telegramAuthDate,
-                    telegramHash: customerSession.telegramHash
+                    telegramHash: customerSession.telegramHash,
+                    emailVerified: customerSession.emailVerified,
+                    locale: customerSession.locale
                 }
             })
         });
@@ -276,6 +390,7 @@ function showSuccessFeedback(userIdentity) {
     }
     
     const displayName = userIdentity.firstName + (userIdentity.lastName ? ' ' + userIdentity.lastName : '');
+    const providerIcon = userIdentity.provider === 'telegram' ? '📤' : userIdentity.provider === 'google' ? '🌐' : '🔑';
     
     const container = document.querySelector('.entry-card');
     container.innerHTML = `
@@ -295,12 +410,22 @@ function showSuccessFeedback(userIdentity) {
         </p>
         
         ${userIdentity.username ? `
-            <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 15px;">
+            <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 5px;">
                 @${userIdentity.username}
             </p>
         ` : ''}
         
-        <p style="color: var(--text-muted); font-size: 14px;">
+        ${userIdentity.email ? `
+            <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 5px;">
+                ${userIdentity.email}
+            </p>
+        ` : ''}
+        
+        <p style="color: var(--text-muted); font-size: 13px; margin-top: 10px;">
+            ${providerIcon} Autenticato con ${userIdentity.provider.charAt(0).toUpperCase() + userIdentity.provider.slice(1)}
+        </p>
+        
+        <p style="color: var(--text-muted); font-size: 14px; margin-top: 20px;">
             Reindirizzamento alla dashboard...
         </p>
         
@@ -327,64 +452,6 @@ function redirectToDashboard() {
     console.log('🚀 Redirecting to:', dashboardUrl);
     window.location.href = dashboardUrl;
 }
-
-// ============================================
-// FUTURE: GOOGLE OAUTH
-// ============================================
-
-/*
-function initGoogleOAuth() {
-    gapi.load('auth2', function() {
-        const auth2 = gapi.auth2.init({
-            client_id: 'YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com'
-        });
-        
-        document.getElementById('btn-google').addEventListener('click', () => {
-            auth2.signIn().then(googleUser => {
-                const profile = googleUser.getBasicProfile();
-                const userIdentity = {
-                    firstName: profile.getGivenName(),
-                    lastName: profile.getFamilyName(),
-                    userId: profile.getId(),
-                    provider: 'google',
-                    email: profile.getEmail(),
-                    photoUrl: profile.getImageUrl()
-                };
-                processAuthentication(userIdentity);
-            });
-        });
-    });
-}
-*/
-
-// ============================================
-// FUTURE: APPLE SIGN IN
-// ============================================
-
-/*
-function initAppleSignIn() {
-    AppleID.auth.init({
-        clientId: 'YOUR_APPLE_CLIENT_ID',
-        scope: 'name email',
-        redirectURI: 'https://simonaiit.github.io/SiteBoS-MiniApp/customer/callback.html',
-        usePopup: true
-    });
-    
-    document.getElementById('btn-apple').addEventListener('click', () => {
-        AppleID.auth.signIn().then(response => {
-            const { authorization, user } = response;
-            const userIdentity = {
-                firstName: user.name.firstName,
-                lastName: user.name.lastName,
-                userId: authorization.user,
-                provider: 'apple',
-                email: user.email
-            };
-            processAuthentication(userIdentity);
-        });
-    });
-}
-*/
 
 // ============================================
 // DEBUG UTILITIES
