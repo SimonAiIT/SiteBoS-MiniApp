@@ -7,11 +7,14 @@ tg.ready();
 tg.expand();
 
 const WEBHOOK_URL = 'https://trinai.api.workflow.dcmake.it/webhook/d253f855-ce1a-43ee-81aa-38fa11a9d639';
+const BASE_URL = 'https://simonaiit.github.io/SiteBoS-MiniApp';
 
 let selectedTarget = null;
 let selectedTargetType = null; // 'person', 'asset', 'internal'
 let currentStep = 'target';
 let capturedPhoto = null;
+let currentSmartLink = null;
+let currentSessionId = null;
 
 // ============================================
 // INIT
@@ -103,38 +106,84 @@ function handleTargetSelection(type) {
 }
 
 // ============================================
-// HANDSHAKE FLOW
+// HANDSHAKE FLOW - FIXED VERSION
 // ============================================
+
+function generateInviteToken() {
+    // Retrieve operator data from sessionStorage
+    const companyData = JSON.parse(sessionStorage.getItem('companyData') || '{}');
+    const vatId = companyData.vat_id || 'DEMO_VAT';
+    const operatorId = tg.initDataUnsafe?.user?.id || 'demo_operator';
+    const timestamp = Date.now();
+    const randomStr = Math.random().toString(36).substring(2, 10);
+    
+    // Generate unique token: VAT_ID + OP_ID + TIMESTAMP + RANDOM
+    const token = `${vatId}_${operatorId}_${timestamp}_${randomStr}`;
+    return token;
+}
+
+function buildSmartLink(token) {
+    // Build proper web URL (not Telegram deep link)
+    return `${BASE_URL}/customer/securehandshake.html?invite=${token}`;
+}
 
 async function initHandshake() {
     try {
-        const userId = tg.initDataUnsafe?.user?.id || 'demo_user';
+        // Generate unique token and URL
+        const inviteToken = generateInviteToken();
+        const smartLink = buildSmartLink(inviteToken);
+        currentSmartLink = smartLink;
+        currentSessionId = inviteToken;
         
-        // Generate QR Code and Smart Link
-        const response = await fetch(WEBHOOK_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                action: 'create_handshake',
-                operator_id: userId
-            })
-        });
+        // Display Smart Link in UI
+        const linkDisplay = document.getElementById('smart-link-display');
+        if (linkDisplay) {
+            linkDisplay.textContent = smartLink.replace('https://', '');
+        }
 
-        if (!response.ok) throw new Error('Errore creazione handshake');
-
-        const data = await response.json();
-        
-        // Display QR Code (in production, use QRCode.js library)
-        // For now, just show the link
+        // Generate QR Code using qrcode.js library (client-side)
         const qrContainer = document.getElementById('qr-code');
-        qrContainer.innerHTML = `
-            <div style="font-size: 12px; color: #666; padding: 20px; word-break: break-all;">
-                ${data.smart_link || 'https://t.me/YourBot?start=handshake_123'}
-            </div>
-        `;
+        qrContainer.innerHTML = ''; // Clear previous content
+        
+        // Check if QRCode library is loaded
+        if (typeof QRCode !== 'undefined') {
+            new QRCode(qrContainer, {
+                text: smartLink,
+                width: 200,
+                height: 200,
+                colorDark: "#000000",
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.H
+            });
+        } else {
+            // Fallback: display text if library not loaded
+            qrContainer.innerHTML = `
+                <div style="padding: 20px; text-align: center; font-size: 11px; color: var(--text-muted); word-break: break-all;">
+                    <i class="fas fa-qrcode" style="font-size: 60px; margin-bottom: 10px; opacity: 0.3;"></i>
+                    <p>Libreria QR non caricata</p>
+                    <p style="margin-top: 10px;">${smartLink}</p>
+                </div>
+            `;
+        }
+
+        // Notify webhook (optional - for analytics or session tracking)
+        try {
+            await fetch(WEBHOOK_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    action: 'create_handshake',
+                    operator_id: tg.initDataUnsafe?.user?.id || 'demo_user',
+                    session_id: inviteToken,
+                    smart_link: smartLink
+                })
+            });
+        } catch (webhookError) {
+            console.warn('Webhook notification failed (non-critical):', webhookError);
+        }
 
         // Start polling for connection
-        pollHandshakeStatus(data.session_id);
+        pollHandshakeStatus(inviteToken);
 
     } catch (error) {
         console.error('Error initializing handshake:', error);
@@ -197,14 +246,21 @@ function handleClientConnected(client) {
 }
 
 function copySmartLink() {
-    const link = 'https://t.me/YourBot?start=handshake_demo'; // Replace with actual link
+    if (!currentSmartLink) {
+        tg.showAlert('Link non ancora generato');
+        return;
+    }
     
     if (navigator.clipboard) {
-        navigator.clipboard.writeText(link).then(() => {
-            tg.showAlert('Link copiato! Invialo al cliente.');
+        navigator.clipboard.writeText(currentSmartLink).then(() => {
+            tg.showAlert('✅ Link copiato! Invialo al cliente su WhatsApp.');
+        }).catch(err => {
+            console.error('Copy failed:', err);
+            tg.showAlert('Link: ' + currentSmartLink);
         });
     } else {
-        tg.showAlert('Link: ' + link);
+        // Fallback for older browsers
+        tg.showAlert('Link: ' + currentSmartLink);
     }
 }
 
