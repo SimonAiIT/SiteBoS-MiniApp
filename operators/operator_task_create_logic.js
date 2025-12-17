@@ -1,6 +1,6 @@
 // ============================================
 // OPERATOR TASK CREATE - LOGIC
-// ✅ EVENT-DRIVEN HANDSHAKE (NO POLLING)
+// ✅ SIMPLE POLLING UNTIL DATA READY
 // ============================================
 
 const tg = window.Telegram.WebApp;
@@ -17,6 +17,7 @@ let capturedPhoto = null;
 let currentSmartLink = null;
 let currentSessionId = null;
 let operatorSession = null;
+let checkInterval = null;
 
 // ✅ CRITICAL: Extract URL params DIRECTLY on load
 const urlParams = new URLSearchParams(window.location.search);
@@ -48,27 +49,8 @@ document.addEventListener('DOMContentLoaded', () => {
     console.log('✅ Final operator session:', operatorSession);
     
     setupEventListeners();
-    setupCustomEventListeners();
     showStep('target');
 });
-
-// ============================================
-// CUSTOM EVENT LISTENERS (EVENT-DRIVEN)
-// ============================================
-
-function setupCustomEventListeners() {
-    // Listen for customer arrived event
-    window.addEventListener('customerArrived', (event) => {
-        console.log('👁️ Custom Event: customerArrived', event.detail);
-        handleCustomerArrived(event.detail);
-    });
-    
-    // Listen for customer connected event
-    window.addEventListener('customerConnected', (event) => {
-        console.log('✅ Custom Event: customerConnected', event.detail);
-        handleClientConnected(event.detail.customer);
-    });
-}
 
 // ============================================
 // EVENT LISTENERS
@@ -141,7 +123,7 @@ function handleTargetSelection(type) {
 }
 
 // ============================================
-// HANDSHAKE FLOW - EVENT-DRIVEN (NO POLLING)
+// HANDSHAKE FLOW - SIMPLE CHECK EVERY 3s
 // ============================================
 
 function generateInviteToken() {
@@ -152,12 +134,7 @@ function generateInviteToken() {
     
     const token = `${vatId}_${operatorId}_${timestamp}_${randomStr}`;
     
-    console.group('✅ TOKEN GENERATION');
-    console.log('VAT:', vatId);
-    console.log('Operator ID:', operatorId);
-    console.log('FULL TOKEN:', token);
-    console.groupEnd();
-    
+    console.log('✅ TOKEN:', token);
     return token;
 }
 
@@ -172,8 +149,7 @@ async function initHandshake() {
         currentSmartLink = smartLink;
         currentSessionId = inviteToken;
         
-        console.log('✅ Smart Link generated:', smartLink);
-        console.log('🎧 Listening for custom events on session:', currentSessionId);
+        console.log('✅ Smart Link:', smartLink);
         
         // Display Smart Link
         const linkDisplay = document.getElementById('smart-link-display');
@@ -194,21 +170,10 @@ async function initHandshake() {
                 colorLight: "#ffffff",
                 correctLevel: QRCode.CorrectLevel.H
             });
-        } else {
-            qrContainer.innerHTML = `
-                <div style="padding: 20px; text-align: center; font-size: 11px; color: var(--text-muted); word-break: break-all;">
-                    <i class="fas fa-qrcode" style="font-size: 60px; margin-bottom: 10px; opacity: 0.3;"></i>
-                    <p>Libreria QR non caricata</p>
-                    <p style="margin-top: 10px;">${smartLink}</p>
-                </div>
-            `;
         }
 
-        // Register handshake session with webhook (ONE TIME)
-        await registerHandshakeSession(inviteToken);
-
-        // Now just WAIT for custom event (no polling!)
-        console.log('⏳ Waiting for customerConnected event...');
+        // Start checking every 3 seconds
+        startCheckingForCustomer();
 
     } catch (error) {
         console.error('Error initializing handshake:', error);
@@ -216,61 +181,37 @@ async function initHandshake() {
     }
 }
 
-// Register session with webhook (called ONCE)
-async function registerHandshakeSession(sessionId) {
-    try {
-        await fetch(WEBHOOK_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                action: 'register_handshake',
-                operator_id: operatorSession?.chat_id || URL_CHAT_ID || tg.initDataUnsafe?.user?.id || 'demo_user',
-                vat: operatorSession?.vat || URL_VAT || null,
-                session_id: sessionId,
-                smart_link: currentSmartLink
-            })
-        });
-        console.log('✅ Handshake session registered');
-    } catch (error) {
-        console.warn('⚠️ Failed to register session (non-critical):', error);
-    }
-}
-
-// 👁️ STAGE 1: Customer scanned QR and landed on page
-function handleCustomerArrived(data) {
-    console.log('👁️ Customer arrived at handshake page:', data);
+function startCheckingForCustomer() {
+    console.log('⏳ Checking for customer every 3s...');
     
-    // Vibrate short
-    if (navigator.vibrate) {
-        navigator.vibrate(100);
-    }
+    checkInterval = setInterval(async () => {
+        try {
+            const response = await fetch(WEBHOOK_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    action: 'check_customer',
+                    session_id: currentSessionId
+                })
+            });
 
-    // Update radar animation text
-    const radarEl = document.getElementById('radar-animation');
-    if (radarEl) {
-        const statusText = radarEl.querySelector('p');
-        if (statusText) {
-            statusText.innerHTML = `
-                <i class="fas fa-eye" style="color: var(--info);"></i><br>
-                Cliente in arrivo...<br>
-                <small style="font-size: 11px; color: var(--text-secondary);">In attesa di autenticazione</small>
-            `;
+            const data = await response.json();
+            
+            // Se ha i dati completi
+            if (data.ready && data.customer) {
+                console.log('✅ Customer data ready!', data.customer);
+                clearInterval(checkInterval);
+                handleCustomerReady(data.customer);
+            }
+
+        } catch (error) {
+            console.error('Check error:', error);
         }
-    }
-
-    // Show popup notification
-    tg.showPopup({
-        title: '👁️ Cliente in Arrivo',
-        message: 'Il cliente ha aperto il link di invito',
-        buttons: [{ type: 'close' }]
-    });
+    }, 3000); // Ogni 3 secondi
 }
 
-// ✅ STAGE 2: Customer completed OAuth (TRIGGERED BY EVENT)
-function handleClientConnected(customer) {
-    console.log('✅ Customer connected (via custom event):', customer);
-    
-    // Vibrate success pattern
+function handleCustomerReady(customer) {
+    // Vibrate
     if (navigator.vibrate) {
         navigator.vibrate([200, 100, 200]);
     }
@@ -278,56 +219,19 @@ function handleClientConnected(customer) {
     // Hide radar and QR
     document.getElementById('radar-animation').classList.add('hidden');
     document.getElementById('qr-container').classList.add('hidden');
-    document.getElementById('connected-state').classList.remove('hidden');
     
-    // Display customer info
-    const connectedState = document.getElementById('connected-state');
-    const fullName = `${customer.firstName} ${customer.lastName || ''}`.trim();
-    
-    // Build connected state HTML
-    let connectedHTML = '';
-    
-    // Photo if available
-    if (customer.photoUrl) {
-        connectedHTML += `
-            <img src="${customer.photoUrl}" 
-                 style="width: 80px; height: 80px; border-radius: 50%; margin: 15px auto; display: block; border: 3px solid var(--success);" 
-                 alt="${fullName}">
-        `;
-    }
-    
-    // Name
-    connectedHTML += `
-        <h3 id="connected-name" style="margin: 15px 0 5px 0; color: var(--success);">
-            ✅ ${fullName}
-        </h3>
-    `;
-    
-    // Username if available
-    if (customer.username) {
-        connectedHTML += `
-            <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 20px;">@${customer.username}</p>
-        `;
-    }
-    
-    // Proceed button
-    connectedHTML += `
-        <button class="btn" id="proceed-with-client" style="margin-top: 20px;">
-            <i class="fas fa-arrow-right"></i> Procedi con Cliente
-        </button>
-    `;
-    
-    connectedState.innerHTML = connectedHTML;
-    
-    // Re-attach proceed button listener
-    document.getElementById('proceed-with-client').addEventListener('click', () => {
-        showStep('mission-type');
-    });
-    
+    // Save customer
     selectedTarget = customer;
     selectedTargetType = 'person';
-
-    tg.showAlert(`✅ Connesso: ${fullName}`);
+    
+    const fullName = `${customer.firstName} ${customer.lastName || ''}`.trim();
+    
+    tg.showAlert(`✅ ${fullName} connesso!`);
+    
+    // Auto-proceed to mission type
+    setTimeout(() => {
+        showStep('mission-type');
+    }, 1000);
 }
 
 function copySmartLink() {
@@ -338,9 +242,8 @@ function copySmartLink() {
     
     if (navigator.clipboard) {
         navigator.clipboard.writeText(currentSmartLink).then(() => {
-            tg.showAlert('✅ Link copiato! Invialo al cliente.');
+            tg.showAlert('✅ Link copiato!');
         }).catch(err => {
-            console.error('Copy failed:', err);
             tg.showAlert('Link: ' + currentSmartLink);
         });
     } else {
@@ -506,6 +409,11 @@ async function generateReport() {
 // ============================================
 
 function showStep(step) {
+    // Stop checking when leaving handshake
+    if (step !== 'handshake' && checkInterval) {
+        clearInterval(checkInterval);
+    }
+    
     document.querySelectorAll('.step-container').forEach(container => {
         container.classList.add('hidden');
     });
@@ -592,23 +500,3 @@ function getDemoClients() {
         { id: '3', name: 'Giuseppe Bianchi', email: 'giuseppe@example.com' }
     ];
 }
-
-// ============================================
-// GLOBAL: Trigger custom event (called by webhook response or external script)
-// ============================================
-
-window.triggerCustomerConnected = function(customerData) {
-    const event = new CustomEvent('customerConnected', {
-        detail: { customer: customerData }
-    });
-    window.dispatchEvent(event);
-    console.log('🔔 Triggered customerConnected event:', customerData);
-};
-
-window.triggerCustomerArrived = function(data) {
-    const event = new CustomEvent('customerArrived', {
-        detail: data
-    });
-    window.dispatchEvent(event);
-    console.log('🔔 Triggered customerArrived event:', data);
-};
