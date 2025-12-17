@@ -7,9 +7,7 @@
     <link rel="stylesheet" href="../styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <!-- ✅ CRITICAL: Session utilities for URL persistence -->
     <script src="operator_session_utils.js"></script>
-    <!-- QRCode.js Library for client-side QR generation -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 </head>
 <body>
@@ -27,7 +25,6 @@
             <div class="card">
                 <h3 style="margin-bottom: 20px;"><i class="fas fa-crosshairs"></i> Seleziona Target</h3>
                 
-                <!-- Option A: New Client (Digital Handshake) -->
                 <div class="target-option" data-option="new">
                     <div style="display: flex; align-items: center; gap: 15px;">
                         <div class="dash-icon" style="width: 50px; height: 50px; font-size: 24px;">
@@ -43,7 +40,6 @@
                     </div>
                 </div>
 
-                <!-- Option B: Known Client -->
                 <div class="target-option" data-option="known">
                     <div style="display: flex; align-items: center; gap: 15px;">
                         <div class="dash-icon" style="width: 50px; height: 50px; font-size: 24px;">
@@ -59,7 +55,6 @@
                     </div>
                 </div>
 
-                <!-- Option C: Asset / Internal -->
                 <div class="target-option" data-option="asset">
                     <div style="display: flex; align-items: center; gap: 15px;">
                         <div class="dash-icon" style="width: 50px; height: 50px; font-size: 24px;">
@@ -81,12 +76,12 @@
         <div id="step-handshake" class="step-container hidden">
             <div class="card" style="text-align: center;">
                 <h3><i class="fas fa-handshake"></i> Digital Handshake</h3>
-                <p class="subtitle">In attesa che il cliente si connetta...</p>
+                <p class="subtitle">Mostra il QR o invia il link al cliente</p>
 
                 <!-- QR Code Container -->
                 <div id="qr-container" style="background: white; border-radius: 12px; padding: 20px; margin: 20px 0; display: inline-block;">
                     <div id="qr-code" style="margin: 0 auto;">
-                        <!-- QR Code will be generated here by qrcode.js -->
+                        <!-- QR Code generated here -->
                     </div>
                 </div>
 
@@ -106,23 +101,16 @@
                     <p class="hint">Invia il link via WhatsApp/Telegram per clienti remoti</p>
                 </div>
 
-                <!-- Radar Animation -->
-                <div id="radar-animation" style="margin: 20px 0;">
-                    <div class="spinner-ring"></div>
-                    <p style="color: var(--text-muted); font-size: 13px; margin-top: 10px;">In ascolto...</p>
-                </div>
+                <hr style="margin: 30px 0; border: none; border-top: 1px solid var(--glass-border);">
 
-                <!-- Connected State (hidden initially) -->
-                <div id="connected-state" class="hidden">
-                    <div class="card" style="background: rgba(76, 217, 100, 0.15); border-color: var(--success);">
-                        <i class="fas fa-check-circle" style="font-size: 48px; color: var(--success);"></i>
-                        <h4 style="color: var(--success); margin: 15px 0 5px 0;">Connesso!</h4>
-                        <p id="connected-name" style="font-size: 16px; font-weight: 600;"></p>
-                        <p class="hint">GDPR: Consenso acquisito automaticamente</p>
-                        <button class="btn btn-success btn-block" id="proceed-with-client">
-                            Procedi <i class="fas fa-arrow-right"></i>
-                        </button>
-                    </div>
+                <!-- VERIFY BUTTON (Manual Check) -->
+                <div style="margin: 30px 0;">
+                    <button class="btn btn-primary btn-block" id="btn-verify" style="font-size: 16px; padding: 15px;">
+                        <i class="fas fa-sync-alt"></i> VERIFICA CONNESSIONE
+                    </button>
+                    <p class="hint" style="margin-top: 10px; font-size: 12px;">
+                        Premi quando il cliente ha completato la registrazione
+                    </p>
                 </div>
             </div>
         </div>
