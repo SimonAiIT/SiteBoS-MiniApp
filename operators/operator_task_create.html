@@ -7,6 +7,8 @@
     <link rel="stylesheet" href="../styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <!-- QRCode.js Library for client-side QR generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 </head>
 <body>
     <div class="container">
@@ -79,14 +81,22 @@
                 <h3><i class="fas fa-handshake"></i> Digital Handshake</h3>
                 <p class="subtitle">In attesa che il cliente si connetta...</p>
 
-                <!-- QR Code Placeholder -->
-                <div id="qr-container" style="background: white; border-radius: 12px; padding: 20px; margin: 20px 0;">
-                    <div id="qr-code" style="width: 200px; height: 200px; margin: 0 auto; background: #f0f0f0; display: flex; align-items: center; justify-content: center; border-radius: 8px;">
-                        <i class="fas fa-qrcode" style="font-size: 100px; color: #ccc;"></i>
+                <!-- QR Code Container -->
+                <div id="qr-container" style="background: white; border-radius: 12px; padding: 20px; margin: 20px 0; display: inline-block;">
+                    <div id="qr-code" style="margin: 0 auto;">
+                        <!-- QR Code will be generated here by qrcode.js -->
                     </div>
                 </div>
 
-                <!-- Smart Link -->
+                <!-- Smart Link Display -->
+                <div style="margin: 20px 0; padding: 15px; background: rgba(0,0,0,0.2); border-radius: 10px; border: 1px solid var(--glass-border);">
+                    <p style="font-size: 11px; color: var(--text-muted); margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.5px;">Smart Link</p>
+                    <p id="smart-link-display" style="font-size: 13px; color: var(--primary); word-break: break-all; margin: 0; font-weight: 600;">
+                        Generazione in corso...
+                    </p>
+                </div>
+
+                <!-- Copy Link Button -->
                 <div style="margin: 20px 0;">
                     <button class="btn btn-secondary btn-block" id="copy-link-btn">
                         <i class="fas fa-link"></i> Copia Smart Link
