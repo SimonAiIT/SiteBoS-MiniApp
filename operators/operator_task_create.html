@@ -207,7 +207,49 @@
             </div>
         </div>
 
-        <!-- STEP 6: Photo Capture (for Assets) -->
+        <!-- STEP 6: Quote Builder (NEW!) -->
+        <div id="step-quote-builder" class="step-container hidden">
+            <div class="card">
+                <h3><i class="fas fa-shopping-cart"></i> Crea Preventivo</h3>
+                <p class="subtitle">Seleziona servizi dal catalogo</p>
+
+                <!-- Catalog Categories Container -->
+                <div id="catalog-container" style="margin: 20px 0;">
+                    <div style="text-align: center; padding: 40px 20px; color: var(--text-muted);">
+                        <i class="fas fa-spinner fa-spin" style="font-size: 32px; margin-bottom: 15px; display: block;"></i>
+                        <p>Caricamento catalogo...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Floating Cart Summary -->
+            <div id="cart-summary" class="card" style="position: sticky; bottom: 20px; z-index: 100; display: none; background: var(--card-bg); border: 2px solid var(--primary); box-shadow: 0 8px 32px rgba(0,0,0,0.4);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <h4 style="margin: 0;"><i class="fas fa-shopping-cart"></i> Carrello (<span id="cart-count">0</span>)</h4>
+                    <button class="btn-icon" onclick="toggleCart()">
+                        <i class="fas fa-chevron-down" id="cart-chevron"></i>
+                    </button>
+                </div>
+
+                <div id="cart-items" class="hidden">
+                    <!-- Cart items will be populated here -->
+                    <div id="cart-items-list" style="max-height: 200px; overflow-y: auto; margin-bottom: 15px;">
+                        <!-- Dynamic content -->
+                    </div>
+
+                    <div class="form-group">
+                        <label>Note Aggiuntive</label>
+                        <textarea id="quote-notes" rows="3" placeholder="Aggiungi note per il preventivo..."></textarea>
+                    </div>
+
+                    <button class="btn btn-success btn-block" id="generate-quote-btn">
+                        <i class="fas fa-file-invoice"></i> Genera Preventivo
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- STEP 7: Photo Capture (for Assets) -->
         <div id="step-photo" class="step-container hidden">
             <div class="card">
                 <h3><i class="fas fa-camera"></i> Cattura Report</h3>
