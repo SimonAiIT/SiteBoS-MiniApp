@@ -8,7 +8,7 @@ const GOOGLE_CLIENT_ID = '42649227972-hi1luhqh2t43bfsblmpunr108v6rtsoi.apps.goog
 
 let inviteToken = null;
 let decodedToken = null;
-let isOperatorMode = false; // Con ?invite = operatore presente
+let isOperatorMode = false;
 let gdprConsent = false;
 
 // ============================================
@@ -19,22 +19,18 @@ document.addEventListener('DOMContentLoaded', async () => {
     console.group('🔑 SECURE HANDSHAKE - INIT');
     console.log('URL:', window.location.href);
     
-    // Extract invite token from URL
     const urlParams = new URLSearchParams(window.location.search);
     inviteToken = urlParams.get('invite');
     
     console.log('Invite Token:', inviteToken);
     
-    // Determine mode
     isOperatorMode = !!inviteToken;
     console.log('Mode:', isOperatorMode ? 'OPERATOR (full scopes)' : 'SELF-SERVICE (base scopes)');
     
     if (!inviteToken) {
-        // Self-service mode: still valid, just no operator linkage
         console.log('⚠️ No invite token - Self-service registration');
         displaySelfServiceMode();
     } else {
-        // Decode token for operator mode
         decodedToken = decodeInviteToken(inviteToken);
         
         if (!decodedToken) {
@@ -49,10 +45,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     console.groupEnd();
     
-    // Show token in debug section
     document.getElementById('invite-token').textContent = inviteToken || 'Self-service';
     
-    // Initialize Google OAuth (with dynamic scopes)
     initGoogleOAuth();
 });
 
@@ -60,11 +54,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 // GDPR CHECKBOX HANDLER
 // ============================================
 
-function toggleGDPR() {
-    const checkbox = document.getElementById('gdpr-checkbox');
-    checkbox.checked = !checkbox.checked;
-    gdprConsent = checkbox.checked;
-    
+function toggleGDPR(checked) {
+    gdprConsent = checked;
     updateOAuthButtonsState();
 }
 
@@ -82,7 +73,6 @@ function updateOAuthButtonsState() {
     }
 }
 
-// Validate GDPR before allowing OAuth
 function validateGDPR() {
     if (!gdprConsent) {
         const box = document.getElementById('gdpr-consent-box');
@@ -105,7 +95,6 @@ function initGoogleOAuth() {
     }
     
     try {
-        // Dynamic scopes based on mode
         const scopes = isOperatorMode 
             ? 'https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/user.phonenumbers.read https://www.googleapis.com/auth/user.addresses.read'
             : 'https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email';
@@ -119,7 +108,6 @@ function initGoogleOAuth() {
             cancel_on_tap_outside: true
         });
         
-        // Render Google button
         google.accounts.id.renderButton(
             document.getElementById('google-button-target'),
             {
@@ -144,25 +132,21 @@ function initGoogleOAuth() {
 // ============================================
 
 function handleGoogleResponse(response) {
-    // Validate GDPR first
     if (!validateGDPR()) return;
     
     console.group('✅ GOOGLE OAUTH - CREDENTIAL RECEIVED');
     console.log('Raw Google Response:', response);
     
     try {
-        // Decode JWT token from Google
         const payload = decodeJwtResponse(response.credential);
         
         console.log('Decoded Google Profile:', payload);
         console.groupEnd();
         
-        // Haptic feedback
         if (navigator.vibrate) {
             navigator.vibrate(100);
         }
         
-        // Extract identity from Google
         const userIdentity = {
             firstName: payload.given_name || payload.name.split(' ')[0],
             lastName: payload.family_name || payload.name.split(' ').slice(1).join(' '),
@@ -171,17 +155,14 @@ function handleGoogleResponse(response) {
             photoUrl: payload.picture || null,
             provider: 'google',
             email: payload.email,
-            phone: null, // Will be filled if scope granted
-            address: null, // Will be filled if scope granted
-            
-            // Google specific metadata
+            phone: null,
+            address: null,
             emailVerified: payload.email_verified,
             locale: payload.locale
         };
         
         console.log('✅ Extracted Identity:', userIdentity);
         
-        // If operator mode and missing phone/address, show form
         if (isOperatorMode && (!userIdentity.phone || !userIdentity.address)) {
             showExtraDataForm(userIdentity, ['phone', 'address']);
         } else {
@@ -193,10 +174,6 @@ function handleGoogleResponse(response) {
         alert('Errore durante l\'autenticazione Google. Riprova.');
     }
 }
-
-// ============================================
-// DECODE GOOGLE JWT TOKEN
-// ============================================
 
 function decodeJwtResponse(token) {
     try {
@@ -216,24 +193,20 @@ function decodeJwtResponse(token) {
 }
 
 // ============================================
-// TELEGRAM OAUTH CALLBACK (REAL)
-// This function is called by Telegram Widget
+// TELEGRAM OAUTH CALLBACK
 // ============================================
 
 window.onTelegramAuth = function(user) {
-    // Validate GDPR first
     if (!validateGDPR()) return;
     
     console.group('✅ TELEGRAM OAUTH - REAL DATA RECEIVED');
     console.log('Raw Telegram User:', user);
     console.groupEnd();
     
-    // Haptic feedback
     if (navigator.vibrate) {
         navigator.vibrate(100);
     }
     
-    // Extract real identity from Telegram
     const userIdentity = {
         firstName: user.first_name,
         lastName: user.last_name || '',
@@ -243,15 +216,12 @@ window.onTelegramAuth = function(user) {
         provider: 'telegram',
         email: null,
         phone: null,
-        
-        // Telegram auth metadata
         authDate: user.auth_date,
         hash: user.hash
     };
     
     console.log('✅ Extracted Identity:', userIdentity);
     
-    // If operator mode, collect phone + address
     if (isOperatorMode) {
         showExtraDataForm(userIdentity, ['phone', 'address']);
     } else {
@@ -260,7 +230,7 @@ window.onTelegramAuth = function(user) {
 };
 
 // ============================================
-// EXTRA DATA COLLECTION FORM (Operator Mode)
+// EXTRA DATA COLLECTION FORM
 // ============================================
 
 function showExtraDataForm(userIdentity, fields) {
@@ -306,7 +276,6 @@ function showExtraDataForm(userIdentity, fields) {
         </button>
     `;
     
-    // Store userIdentity temporarily
     window.tempUserIdentity = userIdentity;
 }
 
@@ -319,24 +288,20 @@ function submitExtraData() {
         return;
     }
     
-    // Merge extra data
     const userIdentity = window.tempUserIdentity;
     userIdentity.phone = phone;
     userIdentity.address = address;
     
-    // Process authentication
     processAuthentication(userIdentity);
 }
 
 // ============================================
-// AUTHENTICATION PROCESSING (UNIFIED)
+// AUTHENTICATION PROCESSING
 // ============================================
 
 async function processAuthentication(userIdentity) {
     try {
-        // Create customer session
         const customerSession = {
-            // User identity (REAL from OAuth)
             firstName: userIdentity.firstName,
             lastName: userIdentity.lastName,
             userId: userIdentity.userId,
@@ -346,18 +311,12 @@ async function processAuthentication(userIdentity) {
             email: userIdentity.email,
             phone: userIdentity.phone,
             address: userIdentity.address,
-            
-            // Operator linkage (from token)
             linkedOperatorId: decodedToken?.operatorId || null,
             linkedVatId: decodedToken?.vatId || null,
             inviteToken: decodedToken?.fullToken || null,
-            
-            // Metadata
             connectedAt: new Date().toISOString(),
-            gdprConsent: gdprConsent, // TRUE only if checkbox was checked
+            gdprConsent: gdprConsent,
             mode: isOperatorMode ? 'operator' : 'self-service',
-            
-            // Provider specific (optional)
             telegramAuthDate: userIdentity.authDate,
             telegramHash: userIdentity.hash,
             emailVerified: userIdentity.emailVerified,
@@ -366,16 +325,12 @@ async function processAuthentication(userIdentity) {
         
         console.log('💾 Persisting customer session:', customerSession);
         
-        // Persist session
         sessionStorage.setItem('customer_session', JSON.stringify(customerSession));
         
-        // 🔔 CRITICAL: Notify operator that customer CONNECTED (NO customer_arrived)
         await notifyCustomerConnected(customerSession);
         
-        // Success feedback
         showSuccessFeedback(userIdentity);
         
-        // Redirect to dashboard after 1.5s
         setTimeout(() => {
             redirectToDashboard();
         }, 1500);
@@ -385,10 +340,6 @@ async function processAuthentication(userIdentity) {
         alert('Errore durante la connessione. Riprova.');
     }
 }
-
-// ============================================
-// WEBHOOK: CUSTOMER CONNECTED (After OAuth)
-// ============================================
 
 async function notifyCustomerConnected(customerSession) {
     console.log('🔔 Notifying operator: Customer authenticated successfully');
@@ -440,8 +391,6 @@ async function notifyCustomerConnected(customerSession) {
 
 function decodeInviteToken(token) {
     if (!token || typeof token !== 'string') return null;
-    
-    // Token format: VAT_ID + _ + OPERATOR_ID + _ + TIMESTAMP + _ + RANDOM
     const parts = token.split('_');
     if (parts.length < 4) return null;
     
@@ -475,9 +424,7 @@ function displaySelfServiceMode() {
 function showError(message) {
     const container = document.querySelector('.entry-card');
     container.innerHTML = `
-        <div style="font-size: 64px; margin-bottom: 20px;">
-            ⚠️
-        </div>
+        <div style="font-size: 64px; margin-bottom: 20px;">⚠️</div>
         <h1 style="margin-bottom: 10px;">Errore</h1>
         <p style="color: var(--text-muted);">${message}</p>
     `;
@@ -493,9 +440,7 @@ function showSuccessFeedback(userIdentity) {
     
     const container = document.querySelector('.entry-card');
     container.innerHTML = `
-        <div style="font-size: 64px; margin-bottom: 20px;">
-            ✅
-        </div>
+        <div style="font-size: 64px; margin-bottom: 20px;">✅</div>
         <h1 style="margin-bottom: 10px; color: var(--success);">Connesso!</h1>
         
         ${userIdentity.photoUrl ? `
@@ -504,37 +449,20 @@ function showSuccessFeedback(userIdentity) {
                  alt="${displayName}">
         ` : ''}
         
-        <p style="font-size: 18px; font-weight: 600; margin-bottom: 5px;">
-            ${displayName}
-        </p>
+        <p style="font-size: 18px; font-weight: 600; margin-bottom: 5px;">${displayName}</p>
         
-        ${userIdentity.username ? `
-            <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 5px;">
-                @${userIdentity.username}
-            </p>
-        ` : ''}
-        
-        ${userIdentity.email ? `
-            <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 5px;">
-                ${userIdentity.email}
-            </p>
-        ` : ''}
+        ${userIdentity.username ? `<p style="color: var(--text-muted); font-size: 14px; margin-bottom: 5px;">@${userIdentity.username}</p>` : ''}
+        ${userIdentity.email ? `<p style="color: var(--text-muted); font-size: 14px; margin-bottom: 5px;">${userIdentity.email}</p>` : ''}
         
         <p style="color: var(--text-muted); font-size: 13px; margin-top: 10px;">
             ${providerIcon} Autenticato con ${userIdentity.provider.charAt(0).toUpperCase() + userIdentity.provider.slice(1)}
         </p>
         
-        <p style="color: var(--text-muted); font-size: 14px; margin-top: 20px;">
-            Reindirizzamento alla dashboard...
-        </p>
+        <p style="color: var(--text-muted); font-size: 14px; margin-top: 20px;">Reindirizzamento alla dashboard...</p>
         
         <div class="spinner-ring" style="margin: 30px auto;"></div>
     `;
 }
-
-// ============================================
-// NAVIGATION
-// ============================================
 
 function redirectToDashboard() {
     const session = JSON.parse(sessionStorage.getItem('customer_session'));
@@ -552,10 +480,6 @@ function redirectToDashboard() {
     console.log('🚀 Redirecting to:', dashboardUrl);
     window.location.href = dashboardUrl;
 }
-
-// ============================================
-// DEBUG UTILITIES
-// ============================================
 
 function debugSession() {
     console.group('🔍 Session Debug');
