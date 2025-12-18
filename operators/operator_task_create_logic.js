@@ -2,7 +2,7 @@
 // OPERATOR TASK CREATE - LOGIC
 // ✅ MANUAL VERIFY BUTTON - SINGLE CALL
 // ✅ QUOTE BUILDER with CATALOG
-// ✅ QUANTITY & PHOTOS
+// ✅ QUANTITY & PHOTOS with COMPRESSION
 // ============================================
 
 const tg = window.Telegram.WebApp;
@@ -12,6 +12,10 @@ tg.expand();
 const WEBHOOK_URL = 'https://trinai.api.workflow.dcmake.it/webhook/d253f855-ce1a-43ee-81aa-38fa11a9d639';
 const BASE_URL = 'https://simonaiit.github.io/SiteBoS-MiniApp';
 
+const MAX_TOTAL_SIZE_MB = 4; // Max 4MB totale per tutte le foto
+const MAX_IMAGE_DIMENSION = 1024; // Max 1024px per lato
+const IMAGE_QUALITY = 0.7; // Qualità compressione JPEG
+
 let selectedTarget = null;
 let selectedTargetType = null;
 let currentStep = 'target';
@@ -20,7 +24,7 @@ let currentSmartLink = null;
 let currentSessionId = null;
 let operatorSession = null;
 let quoteCart = []; // Cart for quote builder (with quantity)
-let quotePhotos = []; // Array of base64 photos (max 5)
+let quotePhotos = []; // Array of base64 photos (max 5, compressed)
 
 const urlParams = new URLSearchParams(window.location.search);
 const URL_CHAT_ID = urlParams.get('chat_id');
@@ -64,6 +68,71 @@ function showAlert(message, type = 'info', duration = 3000) {
         alert.style.transform = 'translateX(-50%) translateY(-100px)';
         setTimeout(() => alert.remove(), 300);
     }, duration);
+}
+
+// ============================================
+// IMAGE COMPRESSION UTILITIES
+// ============================================
+
+function getBase64Size(base64String) {
+    // Remove data URL prefix if present
+    const base64 = base64String.split(',')[1] || base64String;
+    // Calculate size in bytes (base64 is ~33% larger than binary)
+    return (base64.length * 3) / 4;
+}
+
+function formatBytes(bytes) {
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
+}
+
+function getTotalPhotosSize() {
+    return quotePhotos.reduce((sum, photo) => sum + getBase64Size(photo), 0);
+}
+
+async function compressImage(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        
+        reader.onload = (e) => {
+            const img = new Image();
+            
+            img.onload = () => {
+                // Calculate new dimensions maintaining aspect ratio
+                let width = img.width;
+                let height = img.height;
+                
+                if (width > MAX_IMAGE_DIMENSION || height > MAX_IMAGE_DIMENSION) {
+                    if (width > height) {
+                        height = (height / width) * MAX_IMAGE_DIMENSION;
+                        width = MAX_IMAGE_DIMENSION;
+                    } else {
+                        width = (width / height) * MAX_IMAGE_DIMENSION;
+                        height = MAX_IMAGE_DIMENSION;
+                    }
+                }
+                
+                // Create canvas and compress
+                const canvas = document.createElement('canvas');
+                canvas.width = width;
+                canvas.height = height;
+                
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, width, height);
+                
+                // Convert to JPEG with quality compression
+                const compressedBase64 = canvas.toDataURL('image/jpeg', IMAGE_QUALITY);
+                resolve(compressedBase64);
+            };
+            
+            img.onerror = reject;
+            img.src = e.target.result;
+        };
+        
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+    });
 }
 
 // ============================================
@@ -524,7 +593,6 @@ function toggleCategory(index) {
 // ============================================
 
 function addToCart(service) {
-    // Each item has quantity property
     quoteCart.push({ ...service, quantity: 1 });
     updateCartUI();
     showAlert(`✅ ${service.short_name} aggiunto`, 'success', 2000);
@@ -553,7 +621,6 @@ function updateCartUI() {
     const cartCount = document.getElementById('cart-count');
     const cartItemsList = document.getElementById('cart-items-list');
 
-    // Total items (sum of quantities)
     const totalItems = quoteCart.reduce((sum, item) => sum + item.quantity, 0);
     cartCount.textContent = totalItems;
 
@@ -571,7 +638,6 @@ function updateCartUI() {
                 <div style="font-size: 11px; color: var(--text-muted);">${item.name}</div>
             </div>
             <div style="display: flex; align-items: center; gap: 8px;">
-                <!-- Quantity Controls -->
                 <div style="display: flex; align-items: center; gap: 5px; background: rgba(0,0,0,0.3); border-radius: 8px; padding: 4px 8px;">
                     <button onclick="updateQuantity(${index}, -1)" class="btn-icon" style="width: 24px; height: 24px; font-size: 12px; padding: 0;">
                         <i class="fas fa-minus"></i>
@@ -581,7 +647,6 @@ function updateCartUI() {
                         <i class="fas fa-plus"></i>
                     </button>
                 </div>
-                <!-- Remove Button -->
                 <button class="btn-icon del" onclick="removeFromCart(${index})" style="background: rgba(255,107,107,0.2); color: var(--error);">
                     <i class="fas fa-trash"></i>
                 </button>
@@ -589,7 +654,6 @@ function updateCartUI() {
         </div>
     `).join('');
 
-    // Update photo slots
     updatePhotoSlotsUI();
 }
 
@@ -607,10 +671,10 @@ function toggleCart() {
 }
 
 // ============================================
-// PHOTO MANAGEMENT (MAX 5)
+// PHOTO MANAGEMENT WITH COMPRESSION
 // ============================================
 
-function handleQuotePhotosUpload(e) {
+async function handleQuotePhotosUpload(e) {
     const files = Array.from(e.target.files);
     
     if (quotePhotos.length >= 5) {
@@ -622,20 +686,42 @@ function handleQuotePhotosUpload(e) {
     const availableSlots = 5 - quotePhotos.length;
     const filesToProcess = files.slice(0, availableSlots);
 
-    filesToProcess.forEach(file => {
-        const reader = new FileReader();
-        reader.onload = (event) => {
-            quotePhotos.push(event.target.result);
-            updatePhotoSlotsUI();
-            
-            if (quotePhotos.length === 5) {
-                showAlert('Limite massimo foto raggiunto', 'info');
-            }
-        };
-        reader.readAsDataURL(file);
-    });
+    showLoading(true, 'Compressione immagini...');
 
-    e.target.value = '';
+    try {
+        for (const file of filesToProcess) {
+            // Compress image
+            const compressedBase64 = await compressImage(file);
+            
+            // Check total size limit
+            const currentTotalSize = getTotalPhotosSize();
+            const newPhotoSize = getBase64Size(compressedBase64);
+            const maxSizeBytes = MAX_TOTAL_SIZE_MB * 1024 * 1024;
+            
+            if (currentTotalSize + newPhotoSize > maxSizeBytes) {
+                showAlert(
+                    `Limite dimensione totale raggiunto (${MAX_TOTAL_SIZE_MB}MB). Foto non aggiunta.`,
+                    'warning',
+                    4000
+                );
+                break;
+            }
+            
+            quotePhotos.push(compressedBase64);
+        }
+        
+        updatePhotoSlotsUI();
+        
+        if (quotePhotos.length === 5) {
+            showAlert('Limite massimo foto raggiunto', 'info');
+        }
+    } catch (error) {
+        console.error('Compression error:', error);
+        showAlert('Errore nella compressione delle immagini', 'error');
+    } finally {
+        showLoading(false);
+        e.target.value = '';
+    }
 }
 
 function removeQuotePhoto(index) {
@@ -694,6 +780,44 @@ function updatePhotoSlotsUI() {
         slot.innerHTML = '<i class="fas fa-camera"></i>';
         container.appendChild(slot);
     }
+
+    // Update size indicator
+    updateSizeIndicator();
+}
+
+function updateSizeIndicator() {
+    const totalSize = getTotalPhotosSize();
+    const maxSize = MAX_TOTAL_SIZE_MB * 1024 * 1024;
+    const percentage = (totalSize / maxSize) * 100;
+    
+    let sizeIndicator = document.getElementById('photo-size-indicator');
+    
+    if (!sizeIndicator) {
+        const container = document.getElementById('photo-slots-container');
+        if (!container || !container.parentElement) return;
+        
+        sizeIndicator = document.createElement('div');
+        sizeIndicator.id = 'photo-size-indicator';
+        sizeIndicator.style.cssText = `
+            margin-top: 8px;
+            font-size: 11px;
+            color: var(--text-muted);
+            text-align: center;
+        `;
+        container.parentElement.insertBefore(sizeIndicator, container.nextSibling);
+    }
+    
+    if (quotePhotos.length === 0) {
+        sizeIndicator.innerHTML = '';
+    } else {
+        const color = percentage > 90 ? 'var(--error)' : percentage > 70 ? 'var(--warning)' : 'var(--primary)';
+        sizeIndicator.innerHTML = `
+            <span style="color: ${color}; font-weight: 600;">
+                ${formatBytes(totalSize)} / ${MAX_TOTAL_SIZE_MB}MB
+            </span>
+            <span style="margin-left: 8px;">(${quotePhotos.length}/5 foto)</span>
+        `;
+    }
 }
 
 // ============================================
@@ -719,9 +843,9 @@ async function generateQuote() {
                 vat: operatorSession?.vat || URL_VAT,
                 operator_id: operatorSession?.chat_id || URL_CHAT_ID,
                 customer: selectedTarget,
-                services: quoteCart,  // Now includes quantity
+                services: quoteCart,
                 notes: notes,
-                photos: quotePhotos  // Base64 array
+                photos: quotePhotos
             })
         });
 
