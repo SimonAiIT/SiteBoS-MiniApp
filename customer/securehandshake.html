@@ -151,9 +151,10 @@
             padding: 8px 16px;
             background: rgba(91, 111, 237, 0.1);
             border-radius: 20px;
-            font-size: 13px;
-            color: var(--primary);
+            font-size: 14px;
+            color: #ffffff;
             margin-top: 10px;
+            font-weight: 600;
         }
 
         /* Coming soon badge */
@@ -226,6 +227,32 @@
 
         .gdpr-text a:hover {
             color: var(--primary-light);
+        }
+
+        /* Footer */
+        .footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid var(--glass-border);
+            text-align: center;
+        }
+
+        .footer-logo {
+            width: 120px;
+            height: auto;
+            margin-bottom: 10px;
+            opacity: 0.8;
+        }
+
+        .footer-text {
+            font-size: 11px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        .footer-text strong {
+            color: var(--text-muted);
+            font-weight: 600;
         }
     </style>
 </head>
@@ -304,11 +331,13 @@
                 </button>
             </div>
 
-            <!-- Debug Info -->
-            <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid var(--glass-border);" id="debug-section">
-                <p style="font-size: 11px; color: var(--text-secondary);">
-                    Token: <span id="invite-token" style="font-family: monospace; color: var(--primary);">---</span>
-                </p>
+            <!-- Footer with TrinAI Branding -->
+            <div class="footer">
+                <img src="../images/logo.png" alt="TrinAI" class="footer-logo">
+                <div class="footer-text">
+                    <strong>SiteBoS</strong> è un prodotto <strong>TrinAI</strong><br>
+                    © 2025 TrinAI Solutions - Tutti i diritti riservati
+                </div>
             </div>
         </div>
     </div>
