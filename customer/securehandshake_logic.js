@@ -356,7 +356,7 @@ function showDataCompletionForm(userIdentity, missingFields) {
         `);
     }
     
-    // Address fields (4 separate inputs)
+    // Address fields - NEW LAYOUT: Street → City → ZIP + Province
     if (missingFields.includes('address')) {
         const existingAddress = userIdentity.existingData?.address || {};
         
@@ -366,25 +366,28 @@ function showDataCompletionForm(userIdentity, missingFields) {
                     📍 Indirizzo Completo
                 </label>
                 
+                <!-- Street (full width) -->
                 <div class="form-group" style="margin-bottom: 10px;">
                     <input type="text" id="input-street" placeholder="Via Roma 123" 
                            value="${existingAddress.street || ''}" required
                            style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--glass-border); background: var(--glass); color: var(--text-main); font-size: 14px;">
                 </div>
                 
-                <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                <!-- City (full width) -->
+                <div class="form-group" style="margin-bottom: 10px;">
                     <input type="text" id="input-city" placeholder="Milano" 
                            value="${existingAddress.city || ''}" required
-                           style="flex: 2; padding: 12px; border-radius: 8px; border: 1px solid var(--glass-border); background: var(--glass); color: var(--text-main); font-size: 14px;">
+                           style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--glass-border); background: var(--glass); color: var(--text-main); font-size: 14px;">
+                </div>
+                
+                <!-- ZIP + Province (side by side) -->
+                <div style="display: flex; gap: 10px;">
                     <input type="text" id="input-zip" placeholder="20100" 
                            value="${existingAddress.zip || ''}" required maxlength="5" pattern="[0-9]{5}"
                            style="flex: 1; padding: 12px; border-radius: 8px; border: 1px solid var(--glass-border); background: var(--glass); color: var(--text-main); font-size: 14px;">
-                </div>
-                
-                <div class="form-group">
                     <input type="text" id="input-province" placeholder="Provincia (es. MI)" 
                            value="${existingAddress.province || ''}" required maxlength="2" pattern="[A-Z]{2}"
-                           style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--glass-border); background: var(--glass); color: var(--text-main); font-size: 14px; text-transform: uppercase;">
+                           style="flex: 1; padding: 12px; border-radius: 8px; border: 1px solid var(--glass-border); background: var(--glass); color: var(--text-main); font-size: 14px; text-transform: uppercase;">
                 </div>
             </div>
         `);
