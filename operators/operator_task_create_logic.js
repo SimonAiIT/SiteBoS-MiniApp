@@ -2,6 +2,7 @@
 // OPERATOR TASK CREATE - LOGIC
 // ✅ MANUAL VERIFY BUTTON - SINGLE CALL
 // ✅ QUOTE BUILDER with CATALOG
+// ✅ QUANTITY & PHOTOS
 // ============================================
 
 const tg = window.Telegram.WebApp;
@@ -18,7 +19,8 @@ let capturedPhoto = null;
 let currentSmartLink = null;
 let currentSessionId = null;
 let operatorSession = null;
-let quoteCart = []; // Cart for quote builder
+let quoteCart = []; // Cart for quote builder (with quantity)
+let quotePhotos = []; // Array of base64 photos (max 5)
 
 const urlParams = new URLSearchParams(window.location.search);
 const URL_CHAT_ID = urlParams.get('chat_id');
@@ -139,6 +141,12 @@ function setupEventListeners() {
     if (generateQuoteBtn) {
         generateQuoteBtn.addEventListener('click', generateQuote);
     }
+
+    // Quote photo upload
+    const quotePhotoInput = document.getElementById('quote-photo-input');
+    if (quotePhotoInput) {
+        quotePhotoInput.addEventListener('change', handleQuotePhotosUpload);
+    }
 }
 
 // ============================================
@@ -182,7 +190,6 @@ async function initHandshake() {
         currentSmartLink = smartLink;
         currentSessionId = inviteToken;
         
-        // Store invite code in sessionStorage
         sessionStorage.setItem('current_invite_code', inviteToken);
         
         console.log('✅ Smart Link:', smartLink);
@@ -213,7 +220,6 @@ async function initHandshake() {
     }
 }
 
-// 🔔 MANUAL VERIFY FUNCTION - SINGLE CALL
 async function verifyHandshakeManual() {
     const inviteCode = sessionStorage.getItem('current_invite_code');
     const btn = document.getElementById('btn-verify');
@@ -223,13 +229,11 @@ async function verifyHandshakeManual() {
         return;
     }
     
-    // 1. Loading State
     const originalHTML = btn.innerHTML;
     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Controllo in corso...';
     btn.disabled = true;
 
     try {
-        // 2. Single API Call
         const response = await fetch(WEBHOOK_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -243,21 +247,17 @@ async function verifyHandshakeManual() {
             const data = await response.json();
             
             if (data.ready && data.customer) {
-                // SUCCESS: Customer data found!
                 console.log('✅ Customer ready:', data.customer);
                 
-                // Haptic Feedback
                 if (window.Telegram?.WebApp?.HapticFeedback) {
                     window.Telegram.WebApp.HapticFeedback.notificationOccurred('success');
                 } else if (navigator.vibrate) {
                     navigator.vibrate([200, 100, 200]);
                 }
                 
-                // Show success and proceed
                 handleCustomerReady(data.customer);
                 
             } else {
-                // WAITING: Data not ready yet
                 showAlert('Il cliente non ha ancora completato la procedura. Riprova tra poco.', 'warning');
             }
         } else {
@@ -267,7 +267,6 @@ async function verifyHandshakeManual() {
         console.error('Verify error:', error);
         showAlert('Impossibile verificare. Controlla la connessione.', 'error');
     } finally {
-        // 3. Reset Button
         btn.innerHTML = originalHTML;
         btn.disabled = false;
     }
@@ -276,7 +275,6 @@ async function verifyHandshakeManual() {
 function handleCustomerReady(customer) {
     console.log('✅ Customer ready:', customer);
     
-    // Normalize field names: support both snake_case (backend DB) and camelCase
     const normalizedCustomer = {
         ...customer,
         firstName: customer.firstName || customer.first_name || '',
@@ -290,7 +288,6 @@ function handleCustomerReady(customer) {
     
     showAlert(`✅ ${fullName} connesso!`, 'success');
     
-    // Auto-proceed to mission type
     setTimeout(() => {
         showStep('mission-type');
     }, 1000);
@@ -430,10 +427,6 @@ async function loadCatalog() {
         const data = await response.json();
         console.log('✅ Catalog response:', data);
 
-        // Support multiple response formats:
-        // 1. Direct: { categories: [...] }
-        // 2. Wrapped: { success: true, categories: [...] }
-        // 3. Nested: { success: true, catalog: { categories: [...] } }
         let categories = [];
         
         if (data.categories) {
@@ -448,7 +441,6 @@ async function loadCatalog() {
             throw new Error('No categories found in response');
         }
 
-        // Filter categories with blueprint_ready services
         const filteredCategories = filterBlueprintReadyCategories(categories);
 
         if (filteredCategories.length === 0) {
@@ -528,11 +520,12 @@ function toggleCategory(index) {
 }
 
 // ============================================
-// CART MANAGEMENT
+// CART MANAGEMENT WITH QUANTITY
 // ============================================
 
 function addToCart(service) {
-    quoteCart.push(service);
+    // Each item has quantity property
+    quoteCart.push({ ...service, quantity: 1 });
     updateCartUI();
     showAlert(`✅ ${service.short_name} aggiunto`, 'success', 2000);
     
@@ -545,12 +538,24 @@ function removeFromCart(index) {
     showAlert(`❌ ${removed.short_name} rimosso`, 'info', 2000);
 }
 
+function updateQuantity(index, delta) {
+    const item = quoteCart[index];
+    const newQty = item.quantity + delta;
+    
+    if (newQty < 1 || newQty > 99) return;
+    
+    item.quantity = newQty;
+    updateCartUI();
+}
+
 function updateCartUI() {
     const cartSummary = document.getElementById('cart-summary');
     const cartCount = document.getElementById('cart-count');
     const cartItemsList = document.getElementById('cart-items-list');
 
-    cartCount.textContent = quoteCart.length;
+    // Total items (sum of quantities)
+    const totalItems = quoteCart.reduce((sum, item) => sum + item.quantity, 0);
+    cartCount.textContent = totalItems;
 
     if (quoteCart.length === 0) {
         cartSummary.style.display = 'none';
@@ -565,11 +570,27 @@ function updateCartUI() {
                 <div style="font-size: 13px; font-weight: 600; color: #fff;">${item.short_name}</div>
                 <div style="font-size: 11px; color: var(--text-muted);">${item.name}</div>
             </div>
-            <button class="btn-icon del" onclick="removeFromCart(${index})" style="background: rgba(255,107,107,0.2); color: var(--error);">
-                <i class="fas fa-trash"></i>
-            </button>
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <!-- Quantity Controls -->
+                <div style="display: flex; align-items: center; gap: 5px; background: rgba(0,0,0,0.3); border-radius: 8px; padding: 4px 8px;">
+                    <button onclick="updateQuantity(${index}, -1)" class="btn-icon" style="width: 24px; height: 24px; font-size: 12px; padding: 0;">
+                        <i class="fas fa-minus"></i>
+                    </button>
+                    <span style="font-size: 14px; font-weight: 600; min-width: 24px; text-align: center;">${item.quantity}</span>
+                    <button onclick="updateQuantity(${index}, 1)" class="btn-icon" style="width: 24px; height: 24px; font-size: 12px; padding: 0;">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                </div>
+                <!-- Remove Button -->
+                <button class="btn-icon del" onclick="removeFromCart(${index})" style="background: rgba(255,107,107,0.2); color: var(--error);">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>
         </div>
     `).join('');
+
+    // Update photo slots
+    updatePhotoSlotsUI();
 }
 
 function toggleCart() {
@@ -584,6 +605,100 @@ function toggleCart() {
         chevron.className = 'fas fa-chevron-up';
     }
 }
+
+// ============================================
+// PHOTO MANAGEMENT (MAX 5)
+// ============================================
+
+function handleQuotePhotosUpload(e) {
+    const files = Array.from(e.target.files);
+    
+    if (quotePhotos.length >= 5) {
+        showAlert('Massimo 5 foto', 'warning');
+        e.target.value = '';
+        return;
+    }
+
+    const availableSlots = 5 - quotePhotos.length;
+    const filesToProcess = files.slice(0, availableSlots);
+
+    filesToProcess.forEach(file => {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            quotePhotos.push(event.target.result);
+            updatePhotoSlotsUI();
+            
+            if (quotePhotos.length === 5) {
+                showAlert('Limite massimo foto raggiunto', 'info');
+            }
+        };
+        reader.readAsDataURL(file);
+    });
+
+    e.target.value = '';
+}
+
+function removeQuotePhoto(index) {
+    quotePhotos.splice(index, 1);
+    updatePhotoSlotsUI();
+    showAlert('Foto rimossa', 'info', 1500);
+}
+
+function updatePhotoSlotsUI() {
+    const container = document.getElementById('photo-slots-container');
+    
+    if (!container) return;
+
+    container.innerHTML = '';
+
+    // Show existing photos
+    quotePhotos.forEach((photo, index) => {
+        const slot = document.createElement('div');
+        slot.style.cssText = `
+            position: relative;
+            aspect-ratio: 1;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 2px solid var(--primary);
+            background: #000;
+        `;
+        slot.innerHTML = `
+            <img src="${photo}" style="width: 100%; height: 100%; object-fit: cover;">
+            <button onclick="removeQuotePhoto(${index})" style="
+                position: absolute; top: 4px; right: 4px;
+                width: 24px; height: 24px; border-radius: 50%;
+                background: rgba(255,107,107,0.9); border: none;
+                color: white; font-size: 12px; cursor: pointer;
+                display: flex; align-items: center; justify-content: center;
+            ">
+                <i class="fas fa-times"></i>
+            </button>
+        `;
+        container.appendChild(slot);
+    });
+
+    // Show empty slots
+    for (let i = quotePhotos.length; i < 5; i++) {
+        const slot = document.createElement('div');
+        slot.style.cssText = `
+            aspect-ratio: 1;
+            border-radius: 8px;
+            border: 2px dashed rgba(255,255,255,0.2);
+            background: rgba(255,255,255,0.05);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-muted);
+            font-size: 18px;
+        `;
+        slot.innerHTML = '<i class="fas fa-camera"></i>';
+        container.appendChild(slot);
+    }
+}
+
+// ============================================
+// GENERATE QUOTE WITH PHOTOS & QUANTITY
+// ============================================
 
 async function generateQuote() {
     if (quoteCart.length === 0) {
@@ -604,8 +719,9 @@ async function generateQuote() {
                 vat: operatorSession?.vat || URL_VAT,
                 operator_id: operatorSession?.chat_id || URL_CHAT_ID,
                 customer: selectedTarget,
-                services: quoteCart,
-                notes: notes
+                services: quoteCart,  // Now includes quantity
+                notes: notes,
+                photos: quotePhotos  // Base64 array
             })
         });
 
@@ -629,7 +745,7 @@ async function generateQuote() {
 }
 
 // ============================================
-// PHOTO & REPORT
+// PHOTO & REPORT (ASSET)
 // ============================================
 
 function handlePhotoUpload(e) {
