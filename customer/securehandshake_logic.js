@@ -103,28 +103,17 @@ function showGoogleLoadError() {
 
 function toggleGDPR(checked) {
     gdprConsent = checked;
-    updateOAuthButtonsState();
-}
-
-function updateOAuthButtonsState() {
-    const telegramContainer = document.getElementById('telegram-container');
-    const googleContainer = document.getElementById('google-container');
-    
-    if (gdprConsent) {
-        telegramContainer.classList.remove('disabled');
-        googleContainer.classList.remove('disabled');
-        document.getElementById('gdpr-consent-box').classList.remove('error');
-    } else {
-        telegramContainer.classList.add('disabled');
-        googleContainer.classList.add('disabled');
-    }
+    console.log('📋 GDPR consent:', checked);
+    // Button states are managed by updateButtonStates() in HTML
 }
 
 function validateGDPR() {
     if (!gdprConsent) {
         const box = document.getElementById('gdpr-consent-box');
-        box.classList.add('error');
-        setTimeout(() => box.classList.remove('error'), 500);
+        if (box) {
+            box.classList.add('error');
+            setTimeout(() => box.classList.remove('error'), 500);
+        }
         alert('Devi accettare la Privacy Policy e i Termini di Servizio per continuare.');
         return false;
     }
