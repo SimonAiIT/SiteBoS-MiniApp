@@ -269,10 +269,17 @@ async function verifyHandshakeManual() {
 function handleCustomerReady(customer) {
     console.log('✅ Customer ready:', customer);
     
-    selectedTarget = customer;
+    // Normalize field names: support both snake_case (backend DB) and camelCase
+    const normalizedCustomer = {
+        ...customer,
+        firstName: customer.firstName || customer.first_name || '',
+        lastName: customer.lastName || customer.last_name || ''
+    };
+    
+    selectedTarget = normalizedCustomer;
     selectedTargetType = 'person';
     
-    const fullName = `${customer.firstName} ${customer.lastName || ''}`.trim();
+    const fullName = `${normalizedCustomer.firstName} ${normalizedCustomer.lastName}`.trim();
     
     showAlert(`✅ ${fullName} connesso!`, 'success');
     
