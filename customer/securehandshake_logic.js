@@ -262,7 +262,7 @@ window.onTelegramAuth = function(user) {
         username: user.username || null,
         photoUrl: user.photo_url || null,
         provider: 'telegram',
-        email: null,
+        email: null,  // Telegram doesn't provide email
         phone: null,
         authDate: user.auth_date,
         hash: user.hash
@@ -325,8 +325,11 @@ async function checkCustomerExists(userIdentity) {
         
     } catch (error) {
         console.error('❌ customer_connected webhook failed:', error);
-        // Fallback: assume we need all data
-        showDataCompletionForm(userIdentity, ['phone', 'address']);
+        // Fallback: assume we need all data (including email for Telegram)
+        const defaultMissing = userIdentity.provider === 'telegram' 
+            ? ['email', 'phone', 'address']
+            : ['phone', 'address'];
+        showDataCompletionForm(userIdentity, defaultMissing);
     }
 }
 
@@ -342,6 +345,20 @@ function showDataCompletionForm(userIdentity, missingFields) {
     
     const fieldsHTML = [];
     
+    // Email field (for Telegram users)
+    if (missingFields.includes('email')) {
+        fieldsHTML.push(`
+            <div class="form-group" style="margin-bottom: 15px;">
+                <label style="display: block; text-align: left; margin-bottom: 5px; font-size: 13px; color: var(--text-muted); font-weight: 600;">
+                    ✉️ Email *
+                </label>
+                <input type="email" id="input-email" placeholder="mario.rossi@esempio.it" 
+                       value="${userIdentity.existingData?.email || ''}" required
+                       style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--glass-border); background: var(--glass); color: var(--text-main); font-size: 14px;">
+            </div>
+        `);
+    }
+    
     // Phone field
     if (missingFields.includes('phone')) {
         fieldsHTML.push(`
@@ -356,7 +373,7 @@ function showDataCompletionForm(userIdentity, missingFields) {
         `);
     }
     
-    // Address fields - NEW LAYOUT: Street → City → ZIP + Province
+    // Address fields - Layout: Street → City → ZIP + Province
     if (missingFields.includes('address')) {
         const existingAddress = userIdentity.existingData?.address || {};
         
@@ -436,6 +453,21 @@ async function submitDataCompletion(userIdentity, missingFields) {
     console.log('💾 STEP 3: Submitting completion data...');
     
     const completionData = {};
+    
+    // Collect email (for Telegram users)
+    if (missingFields.includes('email')) {
+        const email = document.getElementById('input-email')?.value.trim();
+        if (!email) {
+            alert('Inserisci un indirizzo email valido.');
+            return;
+        }
+        // Basic email validation
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+            alert('Email non valida.');
+            return;
+        }
+        completionData.email = email;
+    }
     
     // Collect phone
     if (missingFields.includes('phone')) {
@@ -523,7 +555,7 @@ function finishAuthentication(userIdentity, serverData) {
         username: userIdentity.username,
         photoUrl: userIdentity.photoUrl,
         provider: userIdentity.provider,
-        email: userIdentity.email,
+        email: userIdentity.email || serverData.email,
         phone: userIdentity.phone || serverData.phone,
         address: userIdentity.address || serverData.address,
         linkedOperatorId: decodedToken?.operatorId || null,
