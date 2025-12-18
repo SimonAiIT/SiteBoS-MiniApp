@@ -233,10 +233,26 @@
 
                 <div id="cart-items" class="hidden">
                     <!-- Cart items will be populated here -->
-                    <div id="cart-items-list" style="max-height: 200px; overflow-y: auto; margin-bottom: 15px;">
+                    <div id="cart-items-list" style="max-height: 300px; overflow-y: auto; margin-bottom: 15px;">
                         <!-- Dynamic content -->
                     </div>
 
+                    <!-- Photo Upload Section -->
+                    <div style="margin-bottom: 15px;">
+                        <label style="display: block; margin-bottom: 8px; font-size: 13px; font-weight: 600;">
+                            <i class="fas fa-camera"></i> Foto Allegate (max 5)
+                        </label>
+                        <div id="photo-slots-container" style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-bottom: 10px;">
+                            <!-- Photo slots will be populated by JS -->
+                        </div>
+                        <input type="file" id="quote-photo-input" accept="image/*" capture="environment" style="display: none;" multiple>
+                        <button class="btn btn-secondary btn-sm btn-block" onclick="document.getElementById('quote-photo-input').click()">
+                            <i class="fas fa-plus"></i> Aggiungi Foto
+                        </button>
+                        <p class="hint" style="margin-top: 5px; font-size: 11px;">Scatta o carica fino a 5 foto per il preventivo</p>
+                    </div>
+
+                    <!-- Notes -->
                     <div class="form-group">
                         <label>Note Aggiuntive</label>
                         <textarea id="quote-notes" rows="3" placeholder="Aggiungi note per il preventivo..."></textarea>
