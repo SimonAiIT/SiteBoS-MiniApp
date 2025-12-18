@@ -1,6 +1,7 @@
 // ============================================
 // OPERATOR TASK CREATE - LOGIC
 // ✅ MANUAL VERIFY BUTTON - SINGLE CALL
+// ✅ QUOTE BUILDER with CATALOG
 // ============================================
 
 const tg = window.Telegram.WebApp;
@@ -17,6 +18,7 @@ let capturedPhoto = null;
 let currentSmartLink = null;
 let currentSessionId = null;
 let operatorSession = null;
+let quoteCart = []; // Cart for quote builder
 
 const urlParams = new URLSearchParams(window.location.search);
 const URL_CHAT_ID = urlParams.get('chat_id');
@@ -131,6 +133,11 @@ function setupEventListeners() {
     const generateReportBtn = document.getElementById('generate-report-btn');
     if (generateReportBtn) {
         generateReportBtn.addEventListener('click', generateReport);
+    }
+
+    const generateQuoteBtn = document.getElementById('generate-quote-btn');
+    if (generateQuoteBtn) {
+        generateQuoteBtn.addEventListener('click', generateQuote);
     }
 }
 
@@ -392,11 +399,214 @@ function setInternalTarget() {
 
 function handleMissionTypeSelection(type) {
     if (type === 'preventivo') {
-        showAlert('Redirect a Catalogo...', 'info');
+        showStep('quote-builder');
+        loadCatalog();
     } else if (type === 'esecuzione') {
         showAlert('Redirect a Blueprint...', 'info');
     } else if (type === 'assistenza') {
         showAlert('Redirect a Assistenza...', 'info');
+    }
+}
+
+// ============================================
+// QUOTE BUILDER - CATALOG LOADING
+// ============================================
+
+async function loadCatalog() {
+    const container = document.getElementById('catalog-container');
+    
+    try {
+        const response = await fetch(WEBHOOK_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                action: 'get_catalog',
+                vat: operatorSession?.vat || URL_VAT
+            })
+        });
+
+        if (!response.ok) throw new Error('Failed to load catalog');
+
+        const data = await response.json();
+        console.log('✅ Catalog loaded:', data);
+
+        // Filter categories with blueprint_ready services
+        const filteredCategories = filterBlueprintReadyCategories(data.categories || []);
+
+        if (filteredCategories.length === 0) {
+            container.innerHTML = `
+                <div style="text-align: center; padding: 40px 20px; color: var(--text-muted);">
+                    <i class="fas fa-inbox" style="font-size: 48px; margin-bottom: 15px; display: block;"></i>
+                    <p>Nessun servizio disponibile per preventivi</p>
+                </div>
+            `;
+            return;
+        }
+
+        renderCatalogCategories(filteredCategories, container);
+
+    } catch (error) {
+        console.error('Catalog load error:', error);
+        container.innerHTML = `
+            <div style="text-align: center; padding: 40px 20px; color: var(--error);">
+                <i class="fas fa-exclamation-triangle" style="font-size: 48px; margin-bottom: 15px; display: block;"></i>
+                <p>Errore nel caricamento del catalogo</p>
+                <button class="btn btn-secondary btn-sm" onclick="loadCatalog()" style="margin-top: 15px;">
+                    <i class="fas fa-redo"></i> Riprova
+                </button>
+            </div>
+        `;
+    }
+}
+
+function filterBlueprintReadyCategories(categories) {
+    return categories.map(cat => ({
+        ...cat,
+        subcategories: (cat.subcategories || []).filter(sub => sub.blueprint_ready === true)
+    })).filter(cat => cat.subcategories.length > 0);
+}
+
+function renderCatalogCategories(categories, container) {
+    container.innerHTML = categories.map((category, catIndex) => `
+        <div class="cat-card" id="cat-${catIndex}">
+            <div class="cat-header" onclick="toggleCategory(${catIndex})">
+                <div class="cat-title">
+                    ${category.short_name || category.name}
+                    <span class="cat-badge">${category.subcategories.length}</span>
+                </div>
+                <i class="fas fa-chevron-down chevron" id="chevron-${catIndex}"></i>
+            </div>
+            <div class="cat-body" id="cat-body-${catIndex}">
+                ${category.subcategories.map(service => `
+                    <div class="prod-item">
+                        <div class="prod-info" style="flex: 1;">
+                            <div class="prod-name">${service.short_name || service.name}</div>
+                            <div class="prod-desc">${service.name}</div>
+                        </div>
+                        <button class="btn-add" onclick='addToCart(${JSON.stringify(service).replace(/'/g, "&#39;")})' title="Aggiungi al preventivo">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                    </div>
+                `).join('')}
+            </div>
+        </div>
+    `).join('');
+}
+
+function toggleCategory(index) {
+    const card = document.getElementById(`cat-${index}`);
+    const body = document.getElementById(`cat-body-${index}`);
+    const chevron = document.getElementById(`chevron-${index}`);
+    
+    card.classList.toggle('open');
+    
+    if (card.classList.contains('open')) {
+        body.style.display = 'block';
+        chevron.style.transform = 'rotate(180deg)';
+    } else {
+        body.style.display = 'none';
+        chevron.style.transform = 'rotate(0deg)';
+    }
+}
+
+// ============================================
+// CART MANAGEMENT
+// ============================================
+
+function addToCart(service) {
+    quoteCart.push(service);
+    updateCartUI();
+    showAlert(`✅ ${service.short_name} aggiunto`, 'success', 2000);
+    
+    if (navigator.vibrate) navigator.vibrate(50);
+}
+
+function removeFromCart(index) {
+    const removed = quoteCart.splice(index, 1)[0];
+    updateCartUI();
+    showAlert(`❌ ${removed.short_name} rimosso`, 'info', 2000);
+}
+
+function updateCartUI() {
+    const cartSummary = document.getElementById('cart-summary');
+    const cartCount = document.getElementById('cart-count');
+    const cartItemsList = document.getElementById('cart-items-list');
+
+    cartCount.textContent = quoteCart.length;
+
+    if (quoteCart.length === 0) {
+        cartSummary.style.display = 'none';
+        return;
+    }
+
+    cartSummary.style.display = 'block';
+
+    cartItemsList.innerHTML = quoteCart.map((item, index) => `
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 8px; margin-bottom: 8px;">
+            <div style="flex: 1; padding-right: 10px;">
+                <div style="font-size: 13px; font-weight: 600; color: #fff;">${item.short_name}</div>
+                <div style="font-size: 11px; color: var(--text-muted);">${item.name}</div>
+            </div>
+            <button class="btn-icon del" onclick="removeFromCart(${index})" style="background: rgba(255,107,107,0.2); color: var(--error);">
+                <i class="fas fa-trash"></i>
+            </button>
+        </div>
+    `).join('');
+}
+
+function toggleCart() {
+    const cartItems = document.getElementById('cart-items');
+    const chevron = document.getElementById('cart-chevron');
+    
+    cartItems.classList.toggle('hidden');
+    
+    if (cartItems.classList.contains('hidden')) {
+        chevron.className = 'fas fa-chevron-down';
+    } else {
+        chevron.className = 'fas fa-chevron-up';
+    }
+}
+
+async function generateQuote() {
+    if (quoteCart.length === 0) {
+        showAlert('Aggiungi almeno un servizio al preventivo', 'warning');
+        return;
+    }
+
+    const notes = document.getElementById('quote-notes').value.trim();
+
+    showLoading(true, 'Generazione preventivo...');
+
+    try {
+        const response = await fetch(WEBHOOK_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                action: 'generate_quote',
+                vat: operatorSession?.vat || URL_VAT,
+                operator_id: operatorSession?.chat_id || URL_CHAT_ID,
+                customer: selectedTarget,
+                services: quoteCart,
+                notes: notes
+            })
+        });
+
+        if (!response.ok) throw new Error('Quote generation failed');
+
+        const data = await response.json();
+        console.log('✅ Quote generated:', data);
+
+        showAlert('✅ Preventivo generato con successo!', 'success');
+
+        setTimeout(() => {
+            navigateOperatorWithContext('operator_tasks.html');
+        }, 1500);
+
+    } catch (error) {
+        console.error('Quote error:', error);
+        showAlert('Errore nella generazione del preventivo', 'error');
+    } finally {
+        showLoading(false);
     }
 }
 
@@ -473,6 +683,7 @@ function showStep(step) {
         'search': 'step-search',
         'asset': 'step-asset',
         'mission-type': 'step-mission-type',
+        'quote-builder': 'step-quote-builder',
         'photo': 'step-photo'
     };
 
@@ -487,6 +698,7 @@ function showStep(step) {
         'search': 'Cerca cliente',
         'asset': 'Scansiona',
         'mission-type': 'Cosa vuoi fare?',
+        'quote-builder': 'Crea preventivo',
         'photo': 'Cattura report'
     };
 
@@ -500,6 +712,7 @@ function goBack() {
         'search': 'target',
         'asset': 'target',
         'mission-type': 'target',
+        'quote-builder': 'mission-type',
         'photo': 'asset'
     };
 
