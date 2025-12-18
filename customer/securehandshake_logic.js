@@ -313,11 +313,25 @@ async function checkCustomerExists(userIdentity) {
         const result = await response.json();
         console.log('✅ Webhook Response:', result);
         
+        // Auto-detect missing fields based on provider
+        let missingFields = result.missing || [];
+        
+        // SMART: If Telegram and no email, auto-add 'email' to missing fields
+        if (userIdentity.provider === 'telegram' && !userIdentity.email && !missingFields.includes('email')) {
+            missingFields.unshift('email'); // Add email at the beginning
+            console.log('🧠 Auto-detected missing email for Telegram user');
+        }
+        
         // Check if we need to collect more data
-        if (result.status === 'needs_completion' && result.missing && result.missing.length > 0) {
-            console.log('⚠️ Missing data:', result.missing);
+        if (result.status === 'needs_completion' && missingFields.length > 0) {
+            console.log('⚠️ Missing data:', missingFields);
             userIdentity.existingData = result.existing_data || {};
-            showDataCompletionForm(userIdentity, result.missing);
+            showDataCompletionForm(userIdentity, missingFields);
+        } else if (missingFields.length > 0) {
+            // Even if backend says complete, show form if we detected missing fields
+            console.log('⚠️ Frontend-detected missing data:', missingFields);
+            userIdentity.existingData = result.existing_data || {};
+            showDataCompletionForm(userIdentity, missingFields);
         } else {
             console.log('✅ Customer complete, redirecting to dashboard...');
             finishAuthentication(userIdentity, result.existing_data || {});
