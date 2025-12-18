@@ -428,10 +428,28 @@ async function loadCatalog() {
         if (!response.ok) throw new Error('Failed to load catalog');
 
         const data = await response.json();
-        console.log('✅ Catalog loaded:', data);
+        console.log('✅ Catalog response:', data);
+
+        // Support multiple response formats:
+        // 1. Direct: { categories: [...] }
+        // 2. Wrapped: { success: true, categories: [...] }
+        // 3. Nested: { success: true, catalog: { categories: [...] } }
+        let categories = [];
+        
+        if (data.categories) {
+            categories = data.categories;
+        } else if (data.catalog && data.catalog.categories) {
+            categories = data.catalog.categories;
+        } else if (data.success && data.data && data.data.categories) {
+            categories = data.data.categories;
+        }
+
+        if (!Array.isArray(categories) || categories.length === 0) {
+            throw new Error('No categories found in response');
+        }
 
         // Filter categories with blueprint_ready services
-        const filteredCategories = filterBlueprintReadyCategories(data.categories || []);
+        const filteredCategories = filterBlueprintReadyCategories(categories);
 
         if (filteredCategories.length === 0) {
             container.innerHTML = `
