@@ -55,10 +55,16 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            position: relative;
         }
 
         .oauth-telegram-container:hover {
             box-shadow: 0 6px 20px rgba(0, 136, 204, 0.4);
+        }
+
+        .oauth-telegram-container.disabled {
+            opacity: 0.5;
+            pointer-events: none;
         }
 
         /* Widget error state */
@@ -85,10 +91,16 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            position: relative;
         }
 
         .oauth-google-container:hover {
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .oauth-google-container.disabled {
+            opacity: 0.5;
+            pointer-events: none;
         }
 
         /* Apple Button (Black) */
@@ -141,6 +153,61 @@
             font-weight: 700;
             text-transform: uppercase;
         }
+
+        /* GDPR Checkbox */
+        .gdpr-consent {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 15px;
+            background: rgba(91, 111, 237, 0.05);
+            border: 1px solid var(--glass-border);
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .gdpr-consent:hover {
+            background: rgba(91, 111, 237, 0.1);
+        }
+
+        .gdpr-consent.error {
+            border-color: var(--error);
+            background: rgba(239, 68, 68, 0.1);
+            animation: shake 0.3s;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        .gdpr-checkbox {
+            width: 20px;
+            height: 20px;
+            min-width: 20px;
+            cursor: pointer;
+            margin-top: 2px;
+        }
+
+        .gdpr-text {
+            font-size: 12px;
+            color: var(--text-muted);
+            line-height: 1.5;
+        }
+
+        .gdpr-text a {
+            color: var(--primary);
+            text-decoration: underline;
+            font-weight: 600;
+        }
+
+        .gdpr-text a:hover {
+            color: var(--primary-light);
+        }
     </style>
 </head>
 <body>
@@ -163,10 +230,20 @@
                 <span id="operator-name">Caricamento...</span>
             </div>
 
+            <!-- GDPR Consent Checkbox -->
+            <div style="margin-top: 30px;">
+                <div class="gdpr-consent" id="gdpr-consent-box" onclick="toggleGDPR()">
+                    <input type="checkbox" id="gdpr-checkbox" class="gdpr-checkbox">
+                    <label for="gdpr-checkbox" class="gdpr-text">
+                        Accetto la <a href="../legal.html?lang=it" target="_blank" onclick="event.stopPropagation()">Privacy Policy</a> e i <a href="../legal.html?lang=it#terms" target="_blank" onclick="event.stopPropagation()">Termini di Servizio</a>. I miei dati saranno trattati secondo il GDPR.
+                    </label>
+                </div>
+            </div>
+
             <!-- OAuth Buttons Section -->
-            <div style="margin-top: 40px;">
+            <div style="margin-top: 20px;">
                 <!-- Telegram Widget Container -->
-                <div class="oauth-telegram-container" id="telegram-container">
+                <div class="oauth-telegram-container disabled" id="telegram-container">
                     <!-- Loading state -->
                     <div id="telegram-loading">
                         <div class="spinner-ring" style="width: 30px; height: 30px;"></div>
@@ -189,7 +266,7 @@
                 </div>
 
                 <!-- Google Button Container -->
-                <div class="oauth-google-container" id="google-container">
+                <div class="oauth-google-container disabled" id="google-container">
                     <!-- Google renders button here -->
                     <div id="google-button-target"></div>
                 </div>
@@ -200,15 +277,6 @@
                     <span>Continua con Apple</span>
                     <span class="coming-soon">Presto</span>
                 </button>
-            </div>
-
-            <!-- Privacy Notice -->
-            <div class="note note-success" style="margin-top: 40px; text-align: left;">
-                <i class="fas fa-shield-alt"></i>
-                <div style="font-size: 12px;">
-                    <strong>Privacy Garantita</strong><br>
-                    Connettendoti accetti automaticamente i termini GDPR. I tuoi dati sono protetti end-to-end.
-                </div>
             </div>
 
             <!-- Debug Info -->
