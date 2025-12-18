@@ -4,9 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
-    <!-- Content Security Policy for Google OAuth -->
-    <meta http-equiv="Content-Security-Policy" content="frame-ancestors 'self' https://accounts.google.com">
-    
     <title>Accesso Sicuro - SiteBoS</title>
     
     <!-- Favicon -->
@@ -238,16 +235,16 @@
         }
 
         .footer-logo {
-            width: 120px;
+            width: 80px;
             height: auto;
-            margin-bottom: 10px;
-            opacity: 0.8;
+            margin-bottom: 8px;
+            opacity: 0.7;
         }
 
         .footer-text {
-            font-size: 11px;
+            font-size: 10px;
             color: var(--text-secondary);
-            line-height: 1.6;
+            line-height: 1.5;
         }
 
         .footer-text strong {
@@ -335,8 +332,8 @@
             <div class="footer">
                 <img src="../images/logo.png" alt="TrinAI" class="footer-logo">
                 <div class="footer-text">
-                    <strong>SiteBoS</strong> è un prodotto <strong>TrinAI</strong><br>
-                    © 2025 TrinAI Solutions - Tutti i diritti riservati
+                    <strong>SiteBoS</strong> è un prodotto <strong>TrinAI Srl</strong><br>
+                    © 2025 TrinAI - Tutti i diritti riservati
                 </div>
             </div>
         </div>
@@ -356,22 +353,16 @@
         
         // Handle click on checkbox directly
         checkbox.addEventListener('click', function(e) {
-            e.stopPropagation(); // Don't trigger container click
-            // Checkbox state changes automatically
+            e.stopPropagation();
             if (typeof toggleGDPR === 'function') {
                 toggleGDPR(this.checked);
             }
         });
         
-        // Handle click on container (anywhere except links)
+        // Handle click on container
         consentBox.addEventListener('click', function(e) {
-            // Don't toggle if clicking on links or checkbox itself
             if (e.target.tagName === 'A' || e.target === checkbox) return;
-            
-            // Toggle checkbox state
             checkbox.checked = !checkbox.checked;
-            
-            // Trigger the toggle function
             if (typeof toggleGDPR === 'function') {
                 toggleGDPR(checkbox.checked);
             }
