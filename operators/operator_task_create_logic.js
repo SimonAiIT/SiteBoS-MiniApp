@@ -3,6 +3,7 @@
 // ✅ MANUAL VERIFY BUTTON - SINGLE CALL
 // ✅ QUOTE BUILDER with CATALOG
 // ✅ QUANTITY & PHOTOS with COMPRESSION
+// ✅ DOCUMENT UPLOAD (max 2, 2MB each)
 // ============================================
 
 const tg = window.Telegram.WebApp;
@@ -15,6 +16,8 @@ const BASE_URL = 'https://simonaiit.github.io/SiteBoS-MiniApp';
 const MAX_TOTAL_SIZE_MB = 4; // Max 4MB totale per tutte le foto
 const MAX_IMAGE_DIMENSION = 1024; // Max 1024px per lato
 const IMAGE_QUALITY = 0.7; // Qualità compressione JPEG
+const MAX_DOCUMENT_SIZE_MB = 2; // Max 2MB per documento
+const MAX_DOCUMENTS = 2; // Max 2 documenti
 
 let selectedTarget = null;
 let selectedTargetType = null;
@@ -25,12 +28,43 @@ let currentSessionId = null;
 let operatorSession = null;
 let quoteCart = []; // Cart for quote builder (with quantity)
 let quotePhotos = []; // Array of base64 photos (max 5, compressed)
+let quoteDocuments = []; // Array of documents (max 2, base64)
 
 const urlParams = new URLSearchParams(window.location.search);
 const URL_CHAT_ID = urlParams.get('chat_id');
 const URL_VAT = urlParams.get('vat');
 
 console.log('✅ Operator session:', { chat_id: URL_CHAT_ID, vat: URL_VAT });
+
+// ============================================
+// FILE UTILITIES
+// ============================================
+
+function getFileIcon(filename) {
+    const ext = filename.split('.').pop().toLowerCase();
+    const icons = {
+        'pdf': 'fa-file-pdf',
+        'doc': 'fa-file-word',
+        'docx': 'fa-file-word',
+        'xls': 'fa-file-excel',
+        'xlsx': 'fa-file-excel',
+        'txt': 'fa-file-alt'
+    };
+    return icons[ext] || 'fa-file';
+}
+
+function getFileColor(filename) {
+    const ext = filename.split('.').pop().toLowerCase();
+    const colors = {
+        'pdf': '#ff6b6b',
+        'doc': '#4a90e2',
+        'docx': '#4a90e2',
+        'xls': '#4caf50',
+        'xlsx': '#4caf50',
+        'txt': '#9e9e9e'
+    };
+    return colors[ext] || '#666';
+}
 
 // ============================================
 // CUSTOM ALERT SYSTEM (Browser Compatible)
@@ -75,9 +109,7 @@ function showAlert(message, type = 'info', duration = 3000) {
 // ============================================
 
 function getBase64Size(base64String) {
-    // Remove data URL prefix if present
     const base64 = base64String.split(',')[1] || base64String;
-    // Calculate size in bytes (base64 is ~33% larger than binary)
     return (base64.length * 3) / 4;
 }
 
@@ -99,7 +131,6 @@ async function compressImage(file) {
             const img = new Image();
             
             img.onload = () => {
-                // Calculate new dimensions maintaining aspect ratio
                 let width = img.width;
                 let height = img.height;
                 
@@ -113,7 +144,6 @@ async function compressImage(file) {
                     }
                 }
                 
-                // Create canvas and compress
                 const canvas = document.createElement('canvas');
                 canvas.width = width;
                 canvas.height = height;
@@ -121,7 +151,6 @@ async function compressImage(file) {
                 const ctx = canvas.getContext('2d');
                 ctx.drawImage(img, 0, 0, width, height);
                 
-                // Convert to JPEG with quality compression
                 const compressedBase64 = canvas.toDataURL('image/jpeg', IMAGE_QUALITY);
                 resolve(compressedBase64);
             };
@@ -215,6 +244,12 @@ function setupEventListeners() {
     const quotePhotoInput = document.getElementById('quote-photo-input');
     if (quotePhotoInput) {
         quotePhotoInput.addEventListener('change', handleQuotePhotosUpload);
+    }
+
+    // Quote document upload
+    const quoteDocumentInput = document.getElementById('quote-document-input');
+    if (quoteDocumentInput) {
+        quoteDocumentInput.addEventListener('change', handleQuoteDocumentsUpload);
     }
 }
 
@@ -655,6 +690,7 @@ function updateCartUI() {
     `).join('');
 
     updatePhotoSlotsUI();
+    updateDocumentsUI();
 }
 
 function toggleCart() {
@@ -690,10 +726,8 @@ async function handleQuotePhotosUpload(e) {
 
     try {
         for (const file of filesToProcess) {
-            // Compress image
             const compressedBase64 = await compressImage(file);
             
-            // Check total size limit
             const currentTotalSize = getTotalPhotosSize();
             const newPhotoSize = getBase64Size(compressedBase64);
             const maxSizeBytes = MAX_TOTAL_SIZE_MB * 1024 * 1024;
@@ -737,7 +771,6 @@ function updatePhotoSlotsUI() {
 
     container.innerHTML = '';
 
-    // Show existing photos
     quotePhotos.forEach((photo, index) => {
         const slot = document.createElement('div');
         slot.style.cssText = `
@@ -763,7 +796,6 @@ function updatePhotoSlotsUI() {
         container.appendChild(slot);
     });
 
-    // Show empty slots
     for (let i = quotePhotos.length; i < 5; i++) {
         const slot = document.createElement('div');
         slot.style.cssText = `
@@ -781,7 +813,6 @@ function updatePhotoSlotsUI() {
         container.appendChild(slot);
     }
 
-    // Update size indicator
     updateSizeIndicator();
 }
 
@@ -821,7 +852,101 @@ function updateSizeIndicator() {
 }
 
 // ============================================
-// GENERATE QUOTE WITH PHOTOS & QUANTITY
+// DOCUMENT MANAGEMENT
+// ============================================
+
+async function handleQuoteDocumentsUpload(e) {
+    const files = Array.from(e.target.files);
+    
+    if (quoteDocuments.length >= MAX_DOCUMENTS) {
+        showAlert(`Massimo ${MAX_DOCUMENTS} documenti`, 'warning');
+        e.target.value = '';
+        return;
+    }
+
+    const availableSlots = MAX_DOCUMENTS - quoteDocuments.length;
+    const filesToProcess = files.slice(0, availableSlots);
+
+    showLoading(true, 'Caricamento documenti...');
+
+    try {
+        for (const file of filesToProcess) {
+            // Check file size
+            const fileSizeMB = file.size / (1024 * 1024);
+            
+            if (fileSizeMB > MAX_DOCUMENT_SIZE_MB) {
+                showAlert(
+                    `${file.name} supera il limite di ${MAX_DOCUMENT_SIZE_MB}MB`,
+                    'warning',
+                    3000
+                );
+                continue;
+            }
+            
+            // Read file as base64
+            const base64 = await new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = (e) => resolve(e.target.result);
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
+            
+            quoteDocuments.push({
+                name: file.name,
+                size: file.size,
+                type: file.type,
+                data: base64
+            });
+        }
+        
+        updateDocumentsUI();
+        
+        if (quoteDocuments.length === MAX_DOCUMENTS) {
+            showAlert('Limite massimo documenti raggiunto', 'info');
+        }
+    } catch (error) {
+        console.error('Document upload error:', error);
+        showAlert('Errore nel caricamento dei documenti', 'error');
+    } finally {
+        showLoading(false);
+        e.target.value = '';
+    }
+}
+
+function removeQuoteDocument(index) {
+    const removed = quoteDocuments.splice(index, 1)[0];
+    updateDocumentsUI();
+    showAlert(`Documento ${removed.name} rimosso`, 'info', 1500);
+}
+
+function updateDocumentsUI() {
+    const container = document.getElementById('documents-list');
+    
+    if (!container) return;
+
+    if (quoteDocuments.length === 0) {
+        container.innerHTML = '<p class="hint" style="margin: 0; font-size: 11px;">Nessun documento caricato</p>';
+        return;
+    }
+
+    container.innerHTML = quoteDocuments.map((doc, index) => `
+        <div style="display: flex; align-items: center; gap: 10px; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 8px; margin-bottom: 8px;">
+            <div style="width: 40px; height: 40px; border-radius: 8px; background: rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; color: ${getFileColor(doc.name)}; font-size: 20px;">
+                <i class="fas ${getFileIcon(doc.name)}"></i>
+            </div>
+            <div style="flex: 1; min-width: 0;">
+                <div style="font-size: 13px; font-weight: 600; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${doc.name}</div>
+                <div style="font-size: 11px; color: var(--text-muted);">${formatBytes(doc.size)}</div>
+            </div>
+            <button class="btn-icon del" onclick="removeQuoteDocument(${index})" style="background: rgba(255,107,107,0.2); color: var(--error); flex-shrink: 0;">
+                <i class="fas fa-trash"></i>
+            </button>
+        </div>
+    `).join('');
+}
+
+// ============================================
+// GENERATE QUOTE WITH PHOTOS, DOCS & QUANTITY
 // ============================================
 
 async function generateQuote() {
@@ -845,7 +970,8 @@ async function generateQuote() {
                 customer: selectedTarget,
                 services: quoteCart,
                 notes: notes,
-                photos: quotePhotos
+                photos: quotePhotos,
+                documents: quoteDocuments
             })
         });
 
