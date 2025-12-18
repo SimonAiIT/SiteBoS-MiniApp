@@ -416,7 +416,7 @@ function showDataCompletionForm(userIdentity, missingFields) {
         </div>
         <h2 style="margin-bottom: 10px; color: var(--success);">Autenticazione Riuscita!</h2>
         <p style="font-size: 14px; color: var(--text-muted); margin-bottom: 25px;">
-            Completa la registrazione con i dati ${isOperatorMode ? 'necessari per l\'intervento' : 'di contatto'}:
+            Completa la registrazione con i dati necessari:
         </p>
         
         <form id="completion-form" style="text-align: left;">
