@@ -38,7 +38,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             return;
         }
         
-        vatNumber = decodedToken.vatId; // Estrai VAT dal token
+        vatNumber = decodedToken.vatId;
         console.log('Mode: OPERATOR (from invite token)');
         console.log('Decoded Token:', decodedToken);
         displayOperatorInfo(vatNumber);
@@ -68,7 +68,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 function waitForGoogleAndInit() {
     let attempts = 0;
-    const maxAttempts = 20; // 20 * 250ms = 5 seconds
+    const maxAttempts = 20;
     
     const checkGoogle = setInterval(() => {
         attempts++;
@@ -132,7 +132,7 @@ function validateGDPR() {
 }
 
 // ============================================
-// GOOGLE OAUTH INITIALIZATION (DYNAMIC SCOPES)
+// GOOGLE OAUTH INITIALIZATION
 // ============================================
 
 function initGoogleOAuth() {
@@ -143,12 +143,6 @@ function initGoogleOAuth() {
     }
     
     try {
-        const scopes = isOperatorMode 
-            ? 'https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/user.phonenumbers.read https://www.googleapis.com/auth/user.addresses.read'
-            : 'https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email';
-        
-        console.log('🔑 Google Scopes:', scopes);
-        
         google.accounts.id.initialize({
             client_id: GOOGLE_CLIENT_ID,
             callback: handleGoogleResponse,
@@ -156,7 +150,6 @@ function initGoogleOAuth() {
             cancel_on_tap_outside: true
         });
         
-        // Clear loading placeholder
         const target = document.getElementById('google-button-target');
         if (!target) {
             console.error('❌ google-button-target not found in DOM');
@@ -165,7 +158,6 @@ function initGoogleOAuth() {
         
         target.innerHTML = '';
         
-        // Render Google button
         google.accounts.id.renderButton(
             target,
             {
@@ -222,11 +214,8 @@ function handleGoogleResponse(response) {
         
         console.log('✅ Extracted Identity:', userIdentity);
         
-        if (isOperatorMode && (!userIdentity.phone || !userIdentity.address)) {
-            showExtraDataForm(userIdentity, ['phone', 'address']);
-        } else {
-            processAuthentication(userIdentity);
-        }
+        // STEP 1: Check if customer exists in DB
+        checkCustomerExists(userIdentity);
         
     } catch (error) {
         console.error('Google response processing error:', error);
@@ -281,127 +270,16 @@ window.onTelegramAuth = function(user) {
     
     console.log('✅ Extracted Identity:', userIdentity);
     
-    if (isOperatorMode) {
-        showExtraDataForm(userIdentity, ['phone', 'address']);
-    } else {
-        processAuthentication(userIdentity);
-    }
+    // STEP 1: Check if customer exists in DB
+    checkCustomerExists(userIdentity);
 };
 
 // ============================================
-// EXTRA DATA COLLECTION FORM
+// STEP 1: CHECK CUSTOMER EXISTS (customer_connected)
 // ============================================
 
-function showExtraDataForm(userIdentity, fields) {
-    const container = document.querySelector('.entry-card');
-    
-    const fieldsHTML = fields.map(field => {
-        if (field === 'phone') {
-            return `
-                <div class="form-group" style="margin-bottom: 15px;">
-                    <label style="display: block; text-align: left; margin-bottom: 5px; font-size: 13px; color: var(--text-muted);">
-                        📱 Numero di Telefono *
-                    </label>
-                    <input type="tel" id="input-phone" placeholder="+39 123 456 7890" 
-                           style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--glass-border); background: var(--glass); color: var(--text-main); font-size: 14px;">
-                </div>
-            `;
-        } else if (field === 'address') {
-            return `
-                <div class="form-group" style="margin-bottom: 15px;">
-                    <label style="display: block; text-align: left; margin-bottom: 5px; font-size: 13px; color: var(--text-muted);">
-                        📍 Indirizzo Completo *
-                    </label>
-                    <textarea id="input-address" rows="3" placeholder="Via, Città, CAP, Provincia" 
-                              style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--glass-border); background: var(--glass); color: var(--text-main); font-size: 14px; resize: vertical;"></textarea>
-                </div>
-            `;
-        }
-    }).join('');
-    
-    container.innerHTML = `
-        <div style="font-size: 48px; margin-bottom: 20px;">
-            ✅
-        </div>
-        <h2 style="margin-bottom: 10px; color: var(--success);">Autenticazione Riuscita!</h2>
-        <p style="font-size: 14px; color: var(--text-muted); margin-bottom: 30px;">
-            Completa la registrazione con i dati necessari per l'intervento:
-        </p>
-        
-        ${fieldsHTML}
-        
-        <button class="btn btn-primary btn-block" onclick="submitExtraData()" style="margin-top: 20px;">
-            Completa Registrazione
-        </button>
-    `;
-    
-    window.tempUserIdentity = userIdentity;
-}
-
-function submitExtraData() {
-    const phone = document.getElementById('input-phone')?.value.trim();
-    const address = document.getElementById('input-address')?.value.trim();
-    
-    if (!phone || !address) {
-        alert('Compila tutti i campi obbligatori.');
-        return;
-    }
-    
-    const userIdentity = window.tempUserIdentity;
-    userIdentity.phone = phone;
-    userIdentity.address = address;
-    
-    processAuthentication(userIdentity);
-}
-
-// ============================================
-// AUTHENTICATION PROCESSING
-// ============================================
-
-async function processAuthentication(userIdentity) {
-    try {
-        const customerSession = {
-            firstName: userIdentity.firstName,
-            lastName: userIdentity.lastName,
-            userId: userIdentity.userId,
-            username: userIdentity.username,
-            photoUrl: userIdentity.photoUrl,
-            provider: userIdentity.provider,
-            email: userIdentity.email,
-            phone: userIdentity.phone,
-            address: userIdentity.address,
-            linkedOperatorId: decodedToken?.operatorId || null,
-            linkedVatId: vatNumber || null,
-            inviteToken: decodedToken?.fullToken || null,
-            connectedAt: new Date().toISOString(),
-            gdprConsent: gdprConsent,
-            mode: isOperatorMode ? 'operator' : 'self-service',
-            telegramAuthDate: userIdentity.authDate,
-            telegramHash: userIdentity.hash,
-            emailVerified: userIdentity.emailVerified,
-            locale: userIdentity.locale
-        };
-        
-        console.log('💾 Persisting customer session:', customerSession);
-        
-        sessionStorage.setItem('customer_session', JSON.stringify(customerSession));
-        
-        await notifyCustomerConnected(customerSession);
-        
-        showSuccessFeedback(userIdentity);
-        
-        setTimeout(() => {
-            redirectToDashboard();
-        }, 1500);
-        
-    } catch (error) {
-        console.error('Authentication processing error:', error);
-        alert('Errore durante la connessione. Riprova.');
-    }
-}
-
-async function notifyCustomerConnected(customerSession) {
-    console.log('🔔 Notifying operator: Customer authenticated successfully');
+async function checkCustomerExists(userIdentity) {
+    console.log('🔍 STEP 1: Checking if customer exists in DB...');
     
     try {
         const response = await fetch(WEBHOOK_URL, {
@@ -409,39 +287,258 @@ async function notifyCustomerConnected(customerSession) {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 action: 'customer_connected',
-                session_id: customerSession.inviteToken,
-                operator_id: customerSession.linkedOperatorId,
-                vat_id: customerSession.linkedVatId,
-                mode: customerSession.mode,
-                customer: {
-                    firstName: customerSession.firstName,
-                    lastName: customerSession.lastName,
-                    userId: customerSession.userId,
-                    username: customerSession.username,
-                    photoUrl: customerSession.photoUrl,
-                    provider: customerSession.provider,
-                    email: customerSession.email,
-                    phone: customerSession.phone,
-                    address: customerSession.address,
-                    connectedAt: customerSession.connectedAt,
-                    gdprConsent: customerSession.gdprConsent,
-                    telegramAuthDate: customerSession.telegramAuthDate,
-                    telegramHash: customerSession.telegramHash,
-                    emailVerified: customerSession.emailVerified,
-                    locale: customerSession.locale
-                }
+                provider: userIdentity.provider,
+                user_id: userIdentity.userId,
+                email: userIdentity.email,
+                first_name: userIdentity.firstName,
+                last_name: userIdentity.lastName,
+                username: userIdentity.username,
+                photo_url: userIdentity.photoUrl,
+                linked_operator_id: decodedToken?.operatorId || null,
+                linked_vat_id: vatNumber || null,
+                invite_token: decodedToken?.fullToken || null,
+                mode: isOperatorMode ? 'operator' : 'self-service',
+                gdpr_consent: gdprConsent,
+                telegram_auth_date: userIdentity.authDate,
+                telegram_hash: userIdentity.hash,
+                email_verified: userIdentity.emailVerified,
+                locale: userIdentity.locale
             })
         });
         
-        if (!response.ok) throw new Error('Webhook failed');
+        if (!response.ok) {
+            throw new Error('Webhook failed: ' + response.status);
+        }
         
-        console.log('✅ Operator notified: Customer fully connected');
-        return true;
+        const result = await response.json();
+        console.log('✅ Webhook Response:', result);
+        
+        // Check if we need to collect more data
+        if (result.status === 'needs_completion' && result.missing && result.missing.length > 0) {
+            console.log('⚠️ Missing data:', result.missing);
+            userIdentity.existingData = result.existing_data || {};
+            showDataCompletionForm(userIdentity, result.missing);
+        } else {
+            console.log('✅ Customer complete, redirecting to dashboard...');
+            finishAuthentication(userIdentity, result.existing_data || {});
+        }
         
     } catch (error) {
-        console.warn('⚠️ Webhook notification failed (non-critical):', error);
-        return false;
+        console.error('❌ customer_connected webhook failed:', error);
+        // Fallback: assume we need all data
+        showDataCompletionForm(userIdentity, ['phone', 'address']);
     }
+}
+
+// ============================================
+// STEP 2: DATA COMPLETION FORM
+// ============================================
+
+function showDataCompletionForm(userIdentity, missingFields) {
+    console.log('📝 STEP 2: Showing data completion form');
+    console.log('Missing fields:', missingFields);
+    
+    const container = document.querySelector('.entry-card');
+    
+    const fieldsHTML = [];
+    
+    // Phone field
+    if (missingFields.includes('phone')) {
+        fieldsHTML.push(`
+            <div class="form-group" style="margin-bottom: 15px;">
+                <label style="display: block; text-align: left; margin-bottom: 5px; font-size: 13px; color: var(--text-muted); font-weight: 600;">
+                    📱 Numero di Telefono *
+                </label>
+                <input type="tel" id="input-phone" placeholder="+39 123 456 7890" 
+                       value="${userIdentity.existingData?.phone || ''}" required
+                       style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--glass-border); background: var(--glass); color: var(--text-main); font-size: 14px;">
+            </div>
+        `);
+    }
+    
+    // Address fields (4 separate inputs)
+    if (missingFields.includes('address')) {
+        const existingAddress = userIdentity.existingData?.address || {};
+        
+        fieldsHTML.push(`
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; text-align: left; margin-bottom: 10px; font-size: 14px; color: var(--text-muted); font-weight: 600;">
+                    📍 Indirizzo Completo
+                </label>
+                
+                <div class="form-group" style="margin-bottom: 10px;">
+                    <input type="text" id="input-street" placeholder="Via Roma 123" 
+                           value="${existingAddress.street || ''}" required
+                           style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--glass-border); background: var(--glass); color: var(--text-main); font-size: 14px;">
+                </div>
+                
+                <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                    <input type="text" id="input-city" placeholder="Milano" 
+                           value="${existingAddress.city || ''}" required
+                           style="flex: 2; padding: 12px; border-radius: 8px; border: 1px solid var(--glass-border); background: var(--glass); color: var(--text-main); font-size: 14px;">
+                    <input type="text" id="input-zip" placeholder="20100" 
+                           value="${existingAddress.zip || ''}" required maxlength="5" pattern="[0-9]{5}"
+                           style="flex: 1; padding: 12px; border-radius: 8px; border: 1px solid var(--glass-border); background: var(--glass); color: var(--text-main); font-size: 14px;">
+                </div>
+                
+                <div class="form-group">
+                    <input type="text" id="input-province" placeholder="Provincia (es. MI)" 
+                           value="${existingAddress.province || ''}" required maxlength="2" pattern="[A-Z]{2}"
+                           style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--glass-border); background: var(--glass); color: var(--text-main); font-size: 14px; text-transform: uppercase;">
+                </div>
+            </div>
+        `);
+    }
+    
+    container.innerHTML = `
+        <div style="font-size: 48px; margin-bottom: 15px;">
+            ✅
+        </div>
+        <h2 style="margin-bottom: 10px; color: var(--success);">Autenticazione Riuscita!</h2>
+        <p style="font-size: 14px; color: var(--text-muted); margin-bottom: 25px;">
+            Completa la registrazione con i dati ${isOperatorMode ? 'necessari per l\'intervento' : 'di contatto'}:
+        </p>
+        
+        <form id="completion-form" style="text-align: left;">
+            ${fieldsHTML.join('')}
+            
+            <button type="submit" class="btn btn-primary btn-block" style="margin-top: 20px; width: 100%;">
+                Completa Registrazione
+            </button>
+        </form>
+    `;
+    
+    // Attach form submit handler
+    document.getElementById('completion-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        submitDataCompletion(userIdentity, missingFields);
+    });
+    
+    // Auto-uppercase province
+    const provinceInput = document.getElementById('input-province');
+    if (provinceInput) {
+        provinceInput.addEventListener('input', (e) => {
+            e.target.value = e.target.value.toUpperCase();
+        });
+    }
+    
+    window.tempUserIdentity = userIdentity;
+}
+
+// ============================================
+// STEP 3: SUBMIT COMPLETION DATA (customer_complete)
+// ============================================
+
+async function submitDataCompletion(userIdentity, missingFields) {
+    console.log('💾 STEP 3: Submitting completion data...');
+    
+    const completionData = {};
+    
+    // Collect phone
+    if (missingFields.includes('phone')) {
+        const phone = document.getElementById('input-phone')?.value.trim();
+        if (!phone) {
+            alert('Inserisci un numero di telefono valido.');
+            return;
+        }
+        completionData.phone = phone;
+    }
+    
+    // Collect address
+    if (missingFields.includes('address')) {
+        const street = document.getElementById('input-street')?.value.trim();
+        const city = document.getElementById('input-city')?.value.trim();
+        const zip = document.getElementById('input-zip')?.value.trim();
+        const province = document.getElementById('input-province')?.value.trim().toUpperCase();
+        
+        if (!street || !city || !zip || !province) {
+            alert('Compila tutti i campi dell\'indirizzo.');
+            return;
+        }
+        
+        if (!/^[0-9]{5}$/.test(zip)) {
+            alert('CAP non valido. Deve essere un numero di 5 cifre.');
+            return;
+        }
+        
+        if (!/^[A-Z]{2}$/.test(province)) {
+            alert('Provincia non valida. Usa 2 lettere maiuscole (es. MI).');
+            return;
+        }
+        
+        completionData.address = {
+            street: street,
+            city: city,
+            zip: zip,
+            province: province
+        };
+    }
+    
+    console.log('📤 Sending customer_complete:', completionData);
+    
+    try {
+        const response = await fetch(WEBHOOK_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                action: 'customer_complete',
+                provider: userIdentity.provider,
+                user_id: userIdentity.userId,
+                ...completionData
+            })
+        });
+        
+        if (!response.ok) {
+            throw new Error('customer_complete webhook failed: ' + response.status);
+        }
+        
+        const result = await response.json();
+        console.log('✅ customer_complete response:', result);
+        
+        // Merge completion data into userIdentity
+        Object.assign(userIdentity, completionData);
+        
+        finishAuthentication(userIdentity, result.data || {});
+        
+    } catch (error) {
+        console.error('❌ customer_complete failed:', error);
+        alert('Errore durante il salvataggio dei dati. Riprova.');
+    }
+}
+
+// ============================================
+// FINAL STEP: REDIRECT TO DASHBOARD
+// ============================================
+
+function finishAuthentication(userIdentity, serverData) {
+    console.log('🎯 FINAL STEP: Completing authentication...');
+    
+    const customerSession = {
+        firstName: userIdentity.firstName,
+        lastName: userIdentity.lastName,
+        userId: userIdentity.userId,
+        username: userIdentity.username,
+        photoUrl: userIdentity.photoUrl,
+        provider: userIdentity.provider,
+        email: userIdentity.email,
+        phone: userIdentity.phone || serverData.phone,
+        address: userIdentity.address || serverData.address,
+        linkedOperatorId: decodedToken?.operatorId || null,
+        linkedVatId: vatNumber || null,
+        inviteToken: decodedToken?.fullToken || null,
+        connectedAt: new Date().toISOString(),
+        gdprConsent: gdprConsent,
+        mode: isOperatorMode ? 'operator' : 'self-service'
+    };
+    
+    console.log('💾 Persisting customer session:', customerSession);
+    sessionStorage.setItem('customer_session', JSON.stringify(customerSession));
+    
+    showSuccessFeedback(userIdentity);
+    
+    setTimeout(() => {
+        redirectToDashboard();
+    }, 1500);
 }
 
 // ============================================
