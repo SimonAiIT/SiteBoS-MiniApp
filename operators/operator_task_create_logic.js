@@ -25,6 +25,44 @@ const URL_VAT = urlParams.get('vat');
 console.log('✅ Operator session:', { chat_id: URL_CHAT_ID, vat: URL_VAT });
 
 // ============================================
+// CUSTOM ALERT SYSTEM (Browser Compatible)
+// ============================================
+function showAlert(message, type = 'info', duration = 3000) {
+    const existing = document.querySelector('.custom-alert');
+    if (existing) existing.remove();
+    
+    const alert = document.createElement('div');
+    alert.className = 'custom-alert';
+    alert.style.cssText = `
+        position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-100px);
+        z-index: 10000; background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 12px;
+        padding: 15px 20px; min-width: 280px; max-width: 90%;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.4); transition: transform 0.3s;
+        display: flex; align-items: center; gap: 12px;
+    `;
+    
+    const icons = { success: '✅', error: '❌', warning: '⚠️', info: 'ℹ️' };
+    const borderColors = { success: '#4cd964', error: '#ff6b6b', warning: '#f59e0b', info: '#32ade6' };
+    alert.style.borderLeft = `4px solid ${borderColors[type] || borderColors.info}`;
+    
+    alert.innerHTML = `
+        <span style="font-size: 20px;">${icons[type] || icons.info}</span>
+        <span style="flex: 1; font-size: 14px; color: #fff; line-height: 1.4;">${message}</span>
+    `;
+    
+    document.body.appendChild(alert);
+    setTimeout(() => alert.style.transform = 'translateX(-50%) translateY(0)', 10);
+    
+    if (navigator.vibrate) navigator.vibrate(type === 'success' ? [50] : [100, 50, 100]);
+    
+    setTimeout(() => {
+        alert.style.transform = 'translateX(-50%) translateY(-100px)';
+        setTimeout(() => alert.remove(), 300);
+    }, duration);
+}
+
+// ============================================
 // INIT
 // ============================================
 
@@ -164,7 +202,7 @@ async function initHandshake() {
 
     } catch (error) {
         console.error('Error:', error);
-        tg.showAlert('Errore nella creazione del link.');
+        showAlert('Errore nella creazione del link.', 'error');
     }
 }
 
@@ -174,7 +212,7 @@ async function verifyHandshakeManual() {
     const btn = document.getElementById('btn-verify');
     
     if (!inviteCode) {
-        tg.showAlert('Codice invito non trovato. Riprova.');
+        showAlert('Codice invito non trovato. Riprova.', 'warning');
         return;
     }
     
@@ -213,14 +251,14 @@ async function verifyHandshakeManual() {
                 
             } else {
                 // WAITING: Data not ready yet
-                tg.showAlert('Il cliente non ha ancora completato la procedura. Riprova tra poco.');
+                showAlert('Il cliente non ha ancora completato la procedura. Riprova tra poco.', 'warning');
             }
         } else {
             throw new Error('API Error');
         }
     } catch (error) {
         console.error('Verify error:', error);
-        tg.showAlert('Impossibile verificare. Controlla la connessione.');
+        showAlert('Impossibile verificare. Controlla la connessione.', 'error');
     } finally {
         // 3. Reset Button
         btn.innerHTML = originalHTML;
@@ -236,7 +274,7 @@ function handleCustomerReady(customer) {
     
     const fullName = `${customer.firstName} ${customer.lastName || ''}`.trim();
     
-    tg.showAlert(`✅ ${fullName} connesso!`);
+    showAlert(`✅ ${fullName} connesso!`, 'success');
     
     // Auto-proceed to mission type
     setTimeout(() => {
@@ -246,18 +284,18 @@ function handleCustomerReady(customer) {
 
 function copySmartLink() {
     if (!currentSmartLink) {
-        tg.showAlert('Link non generato');
+        showAlert('Link non generato', 'warning');
         return;
     }
     
     if (navigator.clipboard) {
         navigator.clipboard.writeText(currentSmartLink).then(() => {
-            tg.showAlert('✅ Link copiato!');
+            showAlert('✅ Link copiato!', 'success');
         }).catch(() => {
-            tg.showAlert('Link: ' + currentSmartLink);
+            showAlert('Link: ' + currentSmartLink, 'info');
         });
     } else {
-        tg.showAlert('Link: ' + currentSmartLink);
+        showAlert('Link: ' + currentSmartLink, 'info');
     }
 }
 
@@ -327,7 +365,7 @@ function selectClient(id, name) {
 // ============================================
 
 function scanAssetQR() {
-    tg.showAlert('Scansione QR non disponibile');
+    showAlert('Scansione QR non disponibile', 'info');
     setTimeout(() => {
         selectedTarget = { id: 'asset_123', name: 'Caldaia ABC', type: 'asset' };
         selectedTargetType = 'asset';
@@ -347,11 +385,11 @@ function setInternalTarget() {
 
 function handleMissionTypeSelection(type) {
     if (type === 'preventivo') {
-        tg.showAlert('Redirect a Catalogo...');
+        showAlert('Redirect a Catalogo...', 'info');
     } else if (type === 'esecuzione') {
-        tg.showAlert('Redirect a Blueprint...');
+        showAlert('Redirect a Blueprint...', 'info');
     } else if (type === 'assistenza') {
-        tg.showAlert('Redirect a Assistenza...');
+        showAlert('Redirect a Assistenza...', 'info');
     }
 }
 
@@ -375,7 +413,7 @@ function handlePhotoUpload(e) {
 
 async function generateReport() {
     if (!capturedPhoto) {
-        tg.showAlert('Nessuna foto');
+        showAlert('Nessuna foto', 'warning');
         return;
     }
 
@@ -399,7 +437,7 @@ async function generateReport() {
 
         if (!response.ok) throw new Error('Errore');
 
-        tg.showAlert('Report generato!');
+        showAlert('Report generato!', 'success');
         
         setTimeout(() => {
             navigateOperatorWithContext('operator_tasks.html');
@@ -407,7 +445,7 @@ async function generateReport() {
 
     } catch (error) {
         console.error('Error:', error);
-        tg.showAlert('Errore generazione report.');
+        showAlert('Errore generazione report.', 'error');
     } finally {
         showLoading(false);
     }
