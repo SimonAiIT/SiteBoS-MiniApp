@@ -107,7 +107,7 @@
             filter: grayscale(50%);
         }
         
-        .oauth-google-container.disabled > div {
+        .oauth-google-container.disabled #google-button-target {
             pointer-events: none;
         }
 
@@ -279,7 +279,13 @@
                 <!-- Google Button Container -->
                 <div class="oauth-google-container disabled" id="google-container">
                     <!-- Google renders button here -->
-                    <div id="google-button-target"></div>
+                    <div id="google-button-target">
+                        <!-- Placeholder while loading -->
+                        <div style="display: flex; align-items: center; gap: 10px; color: #666; font-size: 14px;">
+                            <div class="spinner-ring" style="width: 20px; height: 20px; border-width: 2px;"></div>
+                            <span>Caricamento Google Sign-In...</span>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Apple Button (Coming Soon) -->
@@ -304,12 +310,28 @@
     
     <!-- Telegram Widget Script - loaded after logic -->
     <script>
-        // Handle GDPR checkbox click
-        document.getElementById('gdpr-consent-box').addEventListener('click', function(e) {
-            // Don't toggle if clicking on links
-            if (e.target.tagName === 'A') return;
+        // ============================================
+        // GDPR CHECKBOX HANDLERS
+        // ============================================
+        
+        const checkbox = document.getElementById('gdpr-checkbox');
+        const consentBox = document.getElementById('gdpr-consent-box');
+        
+        // Handle click on checkbox directly
+        checkbox.addEventListener('click', function(e) {
+            e.stopPropagation(); // Don't trigger container click
+            // Checkbox state changes automatically
+            if (typeof toggleGDPR === 'function') {
+                toggleGDPR(this.checked);
+            }
+        });
+        
+        // Handle click on container (anywhere except links)
+        consentBox.addEventListener('click', function(e) {
+            // Don't toggle if clicking on links or checkbox itself
+            if (e.target.tagName === 'A' || e.target === checkbox) return;
             
-            const checkbox = document.getElementById('gdpr-checkbox');
+            // Toggle checkbox state
             checkbox.checked = !checkbox.checked;
             
             // Trigger the toggle function
@@ -318,7 +340,10 @@
             }
         });
         
-        // Inject Telegram widget programmatically
+        // ============================================
+        // TELEGRAM WIDGET INJECTION
+        // ============================================
+        
         (function() {
             const script = document.createElement('script');
             script.src = 'https://telegram.org/js/telegram-widget.js?22';
@@ -329,18 +354,15 @@
             script.setAttribute('data-onauth', 'onTelegramAuth(user)');
             script.setAttribute('data-request-access', 'write');
             
-            // Append to target container
             const target = document.getElementById('telegram-widget-target');
             if (target) {
                 target.appendChild(script);
                 
-                // Hide loading, show widget area
                 setTimeout(() => {
                     document.getElementById('telegram-loading').style.display = 'none';
                     target.style.display = 'block';
                 }, 1000);
                 
-                // Timeout: if widget doesn't load in 5 seconds, show error
                 setTimeout(() => {
                     const widgetIframe = target.querySelector('iframe');
                     if (!widgetIframe) {
