@@ -3,7 +3,7 @@
 // ✅ MANUAL VERIFY BUTTON - SINGLE CALL
 // ✅ QUOTE BUILDER with CATALOG
 // ✅ QUANTITY & PHOTOS with COMPRESSION
-// ✅ DOCUMENT UPLOAD (max 2, 2MB each)
+// ✅ PDF UPLOAD ONLY (max 2, 2MB each)
 // ============================================
 
 const tg = window.Telegram.WebApp;
@@ -28,43 +28,13 @@ let currentSessionId = null;
 let operatorSession = null;
 let quoteCart = []; // Cart for quote builder (with quantity)
 let quotePhotos = []; // Array of base64 photos (max 5, compressed)
-let quoteDocuments = []; // Array of documents (max 2, base64)
+let quoteDocuments = []; // Array of PDF documents (max 2, base64)
 
 const urlParams = new URLSearchParams(window.location.search);
 const URL_CHAT_ID = urlParams.get('chat_id');
 const URL_VAT = urlParams.get('vat');
 
 console.log('✅ Operator session:', { chat_id: URL_CHAT_ID, vat: URL_VAT });
-
-// ============================================
-// FILE UTILITIES
-// ============================================
-
-function getFileIcon(filename) {
-    const ext = filename.split('.').pop().toLowerCase();
-    const icons = {
-        'pdf': 'fa-file-pdf',
-        'doc': 'fa-file-word',
-        'docx': 'fa-file-word',
-        'xls': 'fa-file-excel',
-        'xlsx': 'fa-file-excel',
-        'txt': 'fa-file-alt'
-    };
-    return icons[ext] || 'fa-file';
-}
-
-function getFileColor(filename) {
-    const ext = filename.split('.').pop().toLowerCase();
-    const colors = {
-        'pdf': '#ff6b6b',
-        'doc': '#4a90e2',
-        'docx': '#4a90e2',
-        'xls': '#4caf50',
-        'xlsx': '#4caf50',
-        'txt': '#9e9e9e'
-    };
-    return colors[ext] || '#666';
-}
 
 // ============================================
 // CUSTOM ALERT SYSTEM (Browser Compatible)
@@ -852,14 +822,14 @@ function updateSizeIndicator() {
 }
 
 // ============================================
-// DOCUMENT MANAGEMENT
+// PDF DOCUMENT MANAGEMENT
 // ============================================
 
 async function handleQuoteDocumentsUpload(e) {
     const files = Array.from(e.target.files);
     
     if (quoteDocuments.length >= MAX_DOCUMENTS) {
-        showAlert(`Massimo ${MAX_DOCUMENTS} documenti`, 'warning');
+        showAlert(`Massimo ${MAX_DOCUMENTS} PDF`, 'warning');
         e.target.value = '';
         return;
     }
@@ -867,7 +837,7 @@ async function handleQuoteDocumentsUpload(e) {
     const availableSlots = MAX_DOCUMENTS - quoteDocuments.length;
     const filesToProcess = files.slice(0, availableSlots);
 
-    showLoading(true, 'Caricamento documenti...');
+    showLoading(true, 'Caricamento PDF...');
 
     try {
         for (const file of filesToProcess) {
@@ -902,11 +872,11 @@ async function handleQuoteDocumentsUpload(e) {
         updateDocumentsUI();
         
         if (quoteDocuments.length === MAX_DOCUMENTS) {
-            showAlert('Limite massimo documenti raggiunto', 'info');
+            showAlert('Limite massimo PDF raggiunto', 'info');
         }
     } catch (error) {
         console.error('Document upload error:', error);
-        showAlert('Errore nel caricamento dei documenti', 'error');
+        showAlert('Errore nel caricamento dei PDF', 'error');
     } finally {
         showLoading(false);
         e.target.value = '';
@@ -916,7 +886,7 @@ async function handleQuoteDocumentsUpload(e) {
 function removeQuoteDocument(index) {
     const removed = quoteDocuments.splice(index, 1)[0];
     updateDocumentsUI();
-    showAlert(`Documento ${removed.name} rimosso`, 'info', 1500);
+    showAlert(`PDF ${removed.name} rimosso`, 'info', 1500);
 }
 
 function updateDocumentsUI() {
@@ -925,14 +895,14 @@ function updateDocumentsUI() {
     if (!container) return;
 
     if (quoteDocuments.length === 0) {
-        container.innerHTML = '<p class="hint" style="margin: 0; font-size: 11px;">Nessun documento caricato</p>';
+        container.innerHTML = '<p class="hint" style="margin: 0; font-size: 11px;">Nessun PDF caricato</p>';
         return;
     }
 
     container.innerHTML = quoteDocuments.map((doc, index) => `
         <div style="display: flex; align-items: center; gap: 10px; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 8px; margin-bottom: 8px;">
-            <div style="width: 40px; height: 40px; border-radius: 8px; background: rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; color: ${getFileColor(doc.name)}; font-size: 20px;">
-                <i class="fas ${getFileIcon(doc.name)}"></i>
+            <div style="width: 40px; height: 40px; border-radius: 8px; background: rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; color: #ff6b6b; font-size: 20px;">
+                <i class="fas fa-file-pdf"></i>
             </div>
             <div style="flex: 1; min-width: 0;">
                 <div style="font-size: 13px; font-weight: 600; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${doc.name}</div>
@@ -946,7 +916,7 @@ function updateDocumentsUI() {
 }
 
 // ============================================
-// GENERATE QUOTE WITH PHOTOS, DOCS & QUANTITY
+// GENERATE QUOTE WITH PHOTOS, PDF & QUANTITY
 // ============================================
 
 async function generateQuote() {
