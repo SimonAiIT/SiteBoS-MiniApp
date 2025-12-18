@@ -19,25 +19,25 @@
     <script src="session_utils.js"></script>
     
     <style>
-        /* Privacy Disclaimer Banner */
+        /* Privacy Disclaimer Banner - Compact Version */
         .privacy-disclaimer {
             max-width: 600px;
-            margin: 0 auto 30px auto;
-            padding: 15px 20px;
+            margin: 0 auto 20px auto;
+            padding: 12px 16px;
             background: linear-gradient(135deg, rgba(34, 197, 94, 0.1), rgba(16, 185, 129, 0.1));
             border: 1px solid rgba(34, 197, 94, 0.3);
-            border-radius: 12px;
+            border-radius: 10px;
             display: flex;
             align-items: flex-start;
-            gap: 15px;
+            gap: 12px;
             text-align: left;
         }
 
         .privacy-disclaimer-icon {
-            font-size: 24px;
+            font-size: 20px;
             color: #10b981;
             flex-shrink: 0;
-            margin-top: 2px;
+            margin-top: 1px;
         }
 
         .privacy-disclaimer-content {
@@ -45,18 +45,18 @@
         }
 
         .privacy-disclaimer-title {
-            font-size: 14px;
+            font-size: 13px;
             font-weight: 700;
             color: #10b981;
-            margin-bottom: 6px;
+            margin-bottom: 4px;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
         }
 
         .privacy-disclaimer-text {
-            font-size: 12px;
-            line-height: 1.6;
+            font-size: 11px;
+            line-height: 1.5;
             color: var(--text-muted);
         }
 
@@ -302,7 +302,7 @@
 <body>
     <div class="container" style="display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 20px 15px;">
         <div style="width: 100%; max-width: 600px;">
-            <!-- Privacy Disclaimer Banner -->
+            <!-- Privacy Disclaimer Banner (Compact) -->
             <div class="privacy-disclaimer">
                 <div class="privacy-disclaimer-icon">
                     <i class="fas fa-shield-check"></i>
@@ -315,6 +315,14 @@
                         <strong>TrinAI Srl</strong> non distribuisce i tuoi dati personali a scopo di marketing verso terzi. 
                         I tuoi dati sono disponibili <strong>esclusivamente all'azienda</strong> con cui stai creando la connessione e vengono trattati nel pieno rispetto del GDPR.
                     </div>
+                </div>
+            </div>
+
+            <!-- GDPR Consent Checkbox (Second Position) -->
+            <div class="gdpr-consent" id="gdpr-consent-box">
+                <input type="checkbox" id="gdpr-checkbox" class="gdpr-checkbox">
+                <div class="gdpr-text">
+                    Accetto la <a href="../legal.html?lang=it" target="_blank" onclick="event.stopPropagation()">Privacy Policy</a> e i <a href="../legal.html?lang=it#terms" target="_blank" onclick="event.stopPropagation()">Termini di Servizio</a>. I miei dati saranno trattati secondo il GDPR.
                 </div>
             </div>
 
@@ -337,18 +345,8 @@
                     <span id="operator-name">Caricamento...</span>
                 </div>
 
-                <!-- GDPR Consent Checkbox -->
-                <div style="margin-top: 30px;">
-                    <div class="gdpr-consent" id="gdpr-consent-box">
-                        <input type="checkbox" id="gdpr-checkbox" class="gdpr-checkbox">
-                        <div class="gdpr-text">
-                            Accetto la <a href="../legal.html?lang=it" target="_blank" onclick="event.stopPropagation()">Privacy Policy</a> e i <a href="../legal.html?lang=it#terms" target="_blank" onclick="event.stopPropagation()">Termini di Servizio</a>. I miei dati saranno trattati secondo il GDPR.
-                        </div>
-                    </div>
-                </div>
-
                 <!-- OAuth Buttons Section -->
-                <div style="margin-top: 20px;">
+                <div style="margin-top: 30px;">
                     <!-- Telegram Widget Container -->
                     <div class="oauth-telegram-container disabled" id="telegram-container">
                         <!-- Loading state -->
