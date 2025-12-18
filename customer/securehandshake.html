@@ -455,12 +455,12 @@
         </div>
     </div>
 
-    <!-- Load logic first, then widget scripts -->
+    <!-- Load logic first -->
     <script src="securehandshake_logic.js"></script>
     
     <script>
         // ============================================
-        // GDPR CHECKBOX HANDLERS
+        // GLOBAL STATE
         // ============================================
         
         const checkbox = document.getElementById('gdpr-checkbox');
@@ -469,15 +469,55 @@
         const googleButton = document.getElementById('google-button');
         
         // Track widget readiness
-        let telegramReady = false;
-        let googleReady = false;
+        window.telegramReady = false;
+        window.googleReady = false;
+        
+        // ============================================
+        // UPDATE BUTTON STATES
+        // ============================================
+        
+        window.updateButtonStates = function() {
+            const gdprAccepted = checkbox.checked;
+            
+            console.log('🔄 Updating button states:', {
+                gdprAccepted,
+                telegramReady: window.telegramReady,
+                googleReady: window.googleReady
+            });
+            
+            // Telegram button
+            if (gdprAccepted && window.telegramReady) {
+                telegramButton.classList.remove('disabled');
+                telegramButton.removeAttribute('disabled');
+                console.log('✅ Telegram button ENABLED');
+            } else {
+                telegramButton.classList.add('disabled');
+                telegramButton.setAttribute('disabled', 'disabled');
+                console.log('❌ Telegram button disabled');
+            }
+            
+            // Google button
+            if (gdprAccepted && window.googleReady) {
+                googleButton.classList.remove('disabled');
+                googleButton.removeAttribute('disabled');
+                console.log('✅ Google button ENABLED');
+            } else {
+                googleButton.classList.add('disabled');
+                googleButton.setAttribute('disabled', 'disabled');
+                console.log('❌ Google button disabled');
+            }
+        };
+        
+        // ============================================
+        // GDPR CHECKBOX HANDLERS
+        // ============================================
         
         checkbox.addEventListener('click', function(e) {
             e.stopPropagation();
             if (typeof toggleGDPR === 'function') {
                 toggleGDPR(this.checked);
             }
-            updateButtonStates();
+            window.updateButtonStates();
         });
         
         consentBox.addEventListener('click', function(e) {
@@ -486,31 +526,8 @@
             if (typeof toggleGDPR === 'function') {
                 toggleGDPR(checkbox.checked);
             }
-            updateButtonStates();
+            window.updateButtonStates();
         });
-        
-        // Update button enabled/disabled state based on GDPR + widget readiness
-        function updateButtonStates() {
-            const gdprAccepted = checkbox.checked;
-            
-            // Telegram button: enable only if GDPR + widget ready
-            if (gdprAccepted && telegramReady) {
-                telegramButton.classList.remove('disabled');
-                telegramButton.removeAttribute('disabled');
-            } else {
-                telegramButton.classList.add('disabled');
-                telegramButton.setAttribute('disabled', 'disabled');
-            }
-            
-            // Google button: enable only if GDPR + widget ready
-            if (gdprAccepted && googleReady) {
-                googleButton.classList.remove('disabled');
-                googleButton.removeAttribute('disabled');
-            } else {
-                googleButton.classList.add('disabled');
-                googleButton.setAttribute('disabled', 'disabled');
-            }
-        }
         
         // ============================================
         // TELEGRAM BUTTON CLICK HANDLER
@@ -540,7 +557,7 @@
         });
         
         // ============================================
-        // TELEGRAM WIDGET INJECTION (Hidden)
+        // TELEGRAM WIDGET INJECTION
         // ============================================
         
         (function() {
@@ -561,8 +578,8 @@
                     const widget = target.querySelector('iframe');
                     if (widget) {
                         console.log('✅ Telegram widget loaded');
-                        telegramReady = true;
-                        updateButtonStates();
+                        window.telegramReady = true;
+                        window.updateButtonStates();
                     } else {
                         console.error('❌ Telegram widget failed to load');
                     }
@@ -571,27 +588,22 @@
         })();
         
         // ============================================
-        // GOOGLE WIDGET READY DETECTION
+        // WAIT FOR GOOGLE AND MARK AS READY
         // ============================================
         
-        // Wait for Google button to be rendered
-        const checkGoogleReady = setInterval(() => {
-            const googleBtn = document.querySelector('#google-button-target [role="button"]');
-            if (googleBtn) {
-                console.log('✅ Google button loaded');
-                googleReady = true;
-                updateButtonStates();
-                clearInterval(checkGoogleReady);
+        // Override initGoogleOAuth to mark as ready
+        const originalInitGoogle = window.initGoogleOAuth;
+        window.initGoogleOAuth = function() {
+            if (originalInitGoogle) {
+                originalInitGoogle();
             }
-        }, 500);
-        
-        // Timeout after 10 seconds
-        setTimeout(() => {
-            clearInterval(checkGoogleReady);
-            if (!googleReady) {
-                console.error('❌ Google button failed to load');
-            }
-        }, 10000);
+            // Mark Google as ready after init
+            setTimeout(() => {
+                window.googleReady = true;
+                console.log('✅ Google OAuth marked as ready');
+                window.updateButtonStates();
+            }, 500);
+        };
     </script>
 </body>
 </html>
