@@ -8,6 +8,7 @@ const GOOGLE_CLIENT_ID = '42649227972-hi1luhqh2t43bfsblmpunr108v6rtsoi.apps.goog
 
 let inviteToken = null;
 let decodedToken = null;
+let vatNumber = null;
 let isOperatorMode = false;
 let gdprConsent = false;
 
@@ -21,16 +22,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     const urlParams = new URLSearchParams(window.location.search);
     inviteToken = urlParams.get('invite');
+    vatNumber = urlParams.get('vat');
     
     console.log('Invite Token:', inviteToken);
+    console.log('VAT Number:', vatNumber);
     
-    isOperatorMode = !!inviteToken;
-    console.log('Mode:', isOperatorMode ? 'OPERATOR (full scopes)' : 'SELF-SERVICE (base scopes)');
-    
-    if (!inviteToken) {
-        console.log('⚠️ No invite token - Self-service registration');
-        displaySelfServiceMode();
-    } else {
+    // MODO 1: Con ?invite (Operatore presente)
+    if (inviteToken) {
+        isOperatorMode = true;
         decodedToken = decodeInviteToken(inviteToken);
         
         if (!decodedToken) {
@@ -39,13 +38,27 @@ document.addEventListener('DOMContentLoaded', async () => {
             return;
         }
         
+        vatNumber = decodedToken.vatId; // Estrai VAT dal token
+        console.log('Mode: OPERATOR (from invite token)');
         console.log('Decoded Token:', decodedToken);
-        displayOperatorInfo(decodedToken);
+        displayOperatorInfo(vatNumber);
+    }
+    // MODO 2: Con ?vat (Self-service con VAT)
+    else if (vatNumber) {
+        isOperatorMode = false;
+        console.log('Mode: SELF-SERVICE (with VAT)');
+        displayVatInfo(vatNumber);
+    }
+    // MODO 3: Nessun parametro (Self-service generico)
+    else {
+        isOperatorMode = false;
+        console.log('Mode: SELF-SERVICE (generic)');
+        displaySelfServiceMode();
     }
     
     console.groupEnd();
     
-    document.getElementById('invite-token').textContent = inviteToken || 'Self-service';
+    document.getElementById('invite-token').textContent = inviteToken || vatNumber || 'Self-service';
     
     // Wait for Google GIS to load, then initialize
     waitForGoogleAndInit();
@@ -355,7 +368,7 @@ async function processAuthentication(userIdentity) {
             phone: userIdentity.phone,
             address: userIdentity.address,
             linkedOperatorId: decodedToken?.operatorId || null,
-            linkedVatId: decodedToken?.vatId || null,
+            linkedVatId: vatNumber || null,
             inviteToken: decodedToken?.fullToken || null,
             connectedAt: new Date().toISOString(),
             gdprConsent: gdprConsent,
@@ -450,13 +463,20 @@ function decodeInviteToken(token) {
 // UI UPDATES
 // ============================================
 
-function displayOperatorInfo(tokenData) {
+function displayOperatorInfo(vat) {
     const operatorNameEl = document.getElementById('operator-name');
-    
-    // Display VAT ID instead of Operator ID
-    const displayName = tokenData.vatId || `Operatore #${tokenData.operatorId.slice(-4)}`;
-    
-    operatorNameEl.textContent = displayName;
+    operatorNameEl.innerHTML = `
+        <i class="fas fa-building"></i>
+        <span>${vat}</span>
+    `;
+}
+
+function displayVatInfo(vat) {
+    const operatorInfoEl = document.getElementById('operator-info');
+    operatorInfoEl.innerHTML = `
+        <i class="fas fa-building"></i>
+        <span>${vat}</span>
+    `;
 }
 
 function displaySelfServiceMode() {
@@ -530,6 +550,7 @@ function redirectToDashboard() {
 function debugSession() {
     console.group('🔍 Session Debug');
     console.log('Token:', inviteToken);
+    console.log('VAT:', vatNumber);
     console.log('Decoded:', decodedToken);
     console.log('Mode:', isOperatorMode ? 'OPERATOR' : 'SELF-SERVICE');
     console.log('GDPR Consent:', gdprConsent);
