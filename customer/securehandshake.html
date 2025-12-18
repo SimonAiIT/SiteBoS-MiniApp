@@ -124,6 +124,13 @@
             color: var(--primary-light);
         }
 
+        /* OAuth Button Container */
+        .oauth-button-container {
+            position: relative;
+            margin-bottom: 12px;
+            width: 100%;
+        }
+
         /* OAuth Button Styles - Simplified */
         .oauth-button {
             display: flex;
@@ -137,7 +144,6 @@
             font-weight: 600;
             cursor: pointer;
             transition: all 0.2s ease;
-            margin-bottom: 12px;
             width: 100%;
             max-width: 100%;
             box-sizing: border-box;
@@ -150,7 +156,6 @@
         .oauth-button.disabled {
             opacity: 0.5;
             cursor: not-allowed;
-            pointer-events: none;
         }
 
         /* Telegram Button */
@@ -162,6 +167,30 @@
 
         .oauth-telegram:hover:not(.disabled) {
             box-shadow: 0 5px 18px rgba(0, 136, 204, 0.4);
+        }
+
+        /* Telegram widget overlay */
+        #telegram-widget-target {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            pointer-events: none;
+        }
+
+        #telegram-widget-target.enabled {
+            pointer-events: auto;
+        }
+
+        #telegram-widget-target iframe {
+            opacity: 0;
+            width: 100% !important;
+            height: 100% !important;
+            cursor: pointer;
         }
 
         /* Google Button */
@@ -319,18 +348,6 @@
             max-width: 100% !important;
         }
 
-        /* Telegram widget container */
-        #telegram-widget-target {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            width: 100%;
-        }
-
-        #telegram-widget-target iframe {
-            max-width: 100%;
-        }
-
         /* Loading spinner */
         .spinner-ring {
             width: 24px;
@@ -397,14 +414,15 @@
 
                 <!-- OAuth Buttons Section -->
                 <div style="margin-top: 30px;">
-                    <!-- Telegram Button -->
-                    <button class="oauth-button oauth-telegram disabled" id="telegram-button" disabled>
-                        <i class="fab fa-telegram oauth-icon"></i>
-                        <span>Accedi con Telegram</span>
-                    </button>
-                    
-                    <!-- Hidden Telegram Widget Target -->
-                    <div id="telegram-widget-target" style="display: none;"></div>
+                    <!-- Telegram Button with Widget Overlay -->
+                    <div class="oauth-button-container">
+                        <button class="oauth-button oauth-telegram disabled" id="telegram-button" disabled>
+                            <i class="fab fa-telegram oauth-icon"></i>
+                            <span>Accedi con Telegram</span>
+                        </button>
+                        <!-- Telegram Widget Overlayed -->
+                        <div id="telegram-widget-target"></div>
+                    </div>
 
                     <!-- Google Button -->
                     <button class="oauth-button oauth-google disabled" id="google-button" disabled>
@@ -467,6 +485,7 @@
         const consentBox = document.getElementById('gdpr-consent-box');
         const telegramButton = document.getElementById('telegram-button');
         const googleButton = document.getElementById('google-button');
+        const telegramWidget = document.getElementById('telegram-widget-target');
         
         // Track widget readiness
         window.telegramReady = false;
@@ -485,14 +504,16 @@
                 googleReady: window.googleReady
             });
             
-            // Telegram button
+            // Telegram button + widget overlay
             if (gdprAccepted && window.telegramReady) {
                 telegramButton.classList.remove('disabled');
                 telegramButton.removeAttribute('disabled');
+                telegramWidget.classList.add('enabled');
                 console.log('✅ Telegram button ENABLED');
             } else {
                 telegramButton.classList.add('disabled');
                 telegramButton.setAttribute('disabled', 'disabled');
+                telegramWidget.classList.remove('enabled');
                 console.log('❌ Telegram button disabled');
             }
             
@@ -530,20 +551,6 @@
         });
         
         // ============================================
-        // TELEGRAM BUTTON CLICK HANDLER
-        // ============================================
-        
-        telegramButton.addEventListener('click', function() {
-            if (!this.classList.contains('disabled')) {
-                const widget = document.querySelector('#telegram-widget-target iframe');
-                if (widget) {
-                    widget.contentWindow.postMessage('click', '*');
-                    widget.click();
-                }
-            }
-        });
-        
-        // ============================================
         // GOOGLE BUTTON CLICK HANDLER
         // ============================================
         
@@ -566,7 +573,7 @@
             script.async = true;
             script.setAttribute('data-telegram-login', 'TrinAi_Agent_bot');
             script.setAttribute('data-size', 'large');
-            script.setAttribute('data-radius', '8');
+            script.setAttribute('data-radius', '10');
             script.setAttribute('data-onauth', 'onTelegramAuth(user)');
             script.setAttribute('data-request-access', 'write');
             
