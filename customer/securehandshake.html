@@ -63,7 +63,11 @@
         }
 
         .oauth-telegram-container.disabled {
-            opacity: 0.5;
+            opacity: 0.4;
+            filter: grayscale(50%);
+        }
+        
+        .oauth-telegram-container.disabled iframe {
             pointer-events: none;
         }
 
@@ -99,7 +103,11 @@
         }
 
         .oauth-google-container.disabled {
-            opacity: 0.5;
+            opacity: 0.4;
+            filter: grayscale(50%);
+        }
+        
+        .oauth-google-container.disabled > div {
             pointer-events: none;
         }
 
@@ -158,7 +166,7 @@
         .gdpr-consent {
             display: flex;
             align-items: flex-start;
-            gap: 10px;
+            gap: 12px;
             padding: 15px;
             background: rgba(91, 111, 237, 0.05);
             border: 1px solid var(--glass-border);
@@ -167,6 +175,7 @@
             text-align: left;
             cursor: pointer;
             transition: all 0.2s ease;
+            user-select: none;
         }
 
         .gdpr-consent:hover {
@@ -191,12 +200,14 @@
             min-width: 20px;
             cursor: pointer;
             margin-top: 2px;
+            accent-color: var(--primary);
         }
 
         .gdpr-text {
             font-size: 12px;
             color: var(--text-muted);
             line-height: 1.5;
+            flex: 1;
         }
 
         .gdpr-text a {
@@ -232,11 +243,11 @@
 
             <!-- GDPR Consent Checkbox -->
             <div style="margin-top: 30px;">
-                <div class="gdpr-consent" id="gdpr-consent-box" onclick="toggleGDPR()">
+                <div class="gdpr-consent" id="gdpr-consent-box">
                     <input type="checkbox" id="gdpr-checkbox" class="gdpr-checkbox">
-                    <label for="gdpr-checkbox" class="gdpr-text">
+                    <div class="gdpr-text">
                         Accetto la <a href="../legal.html?lang=it" target="_blank" onclick="event.stopPropagation()">Privacy Policy</a> e i <a href="../legal.html?lang=it#terms" target="_blank" onclick="event.stopPropagation()">Termini di Servizio</a>. I miei dati saranno trattati secondo il GDPR.
-                    </label>
+                    </div>
                 </div>
             </div>
 
@@ -293,6 +304,20 @@
     
     <!-- Telegram Widget Script - loaded after logic -->
     <script>
+        // Handle GDPR checkbox click
+        document.getElementById('gdpr-consent-box').addEventListener('click', function(e) {
+            // Don't toggle if clicking on links
+            if (e.target.tagName === 'A') return;
+            
+            const checkbox = document.getElementById('gdpr-checkbox');
+            checkbox.checked = !checkbox.checked;
+            
+            // Trigger the toggle function
+            if (typeof toggleGDPR === 'function') {
+                toggleGDPR(checkbox.checked);
+            }
+        });
+        
         // Inject Telegram widget programmatically
         (function() {
             const script = document.createElement('script');
