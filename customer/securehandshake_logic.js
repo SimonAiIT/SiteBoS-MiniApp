@@ -58,8 +58,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     console.groupEnd();
     
-    document.getElementById('invite-token').textContent = inviteToken || vatNumber || 'Self-service';
-    
     // Wait for Google GIS to load, then initialize
     waitForGoogleAndInit();
 });
@@ -160,6 +158,11 @@ function initGoogleOAuth() {
         
         // Clear loading placeholder
         const target = document.getElementById('google-button-target');
+        if (!target) {
+            console.error('❌ google-button-target not found in DOM');
+            return;
+        }
+        
         target.innerHTML = '';
         
         // Render Google button
@@ -465,35 +468,43 @@ function decodeInviteToken(token) {
 
 function displayOperatorInfo(vat) {
     const operatorNameEl = document.getElementById('operator-name');
-    operatorNameEl.innerHTML = `
-        <i class="fas fa-building"></i>
-        <span>${vat}</span>
-    `;
+    if (operatorNameEl) {
+        operatorNameEl.innerHTML = `
+            <i class="fas fa-building"></i>
+            <span>${vat}</span>
+        `;
+    }
 }
 
 function displayVatInfo(vat) {
     const operatorInfoEl = document.getElementById('operator-info');
-    operatorInfoEl.innerHTML = `
-        <i class="fas fa-building"></i>
-        <span>${vat}</span>
-    `;
+    if (operatorInfoEl) {
+        operatorInfoEl.innerHTML = `
+            <i class="fas fa-building"></i>
+            <span>${vat}</span>
+        `;
+    }
 }
 
 function displaySelfServiceMode() {
     const operatorInfoEl = document.getElementById('operator-info');
-    operatorInfoEl.innerHTML = `
-        <i class="fas fa-globe"></i>
-        <span>Registrazione Self-Service</span>
-    `;
+    if (operatorInfoEl) {
+        operatorInfoEl.innerHTML = `
+            <i class="fas fa-globe"></i>
+            <span>Registrazione Self-Service</span>
+        `;
+    }
 }
 
 function showError(message) {
     const container = document.querySelector('.entry-card');
-    container.innerHTML = `
-        <div style="font-size: 64px; margin-bottom: 20px;">⚠️</div>
-        <h1 style="margin-bottom: 10px;">Errore</h1>
-        <p style="color: var(--text-muted);">${message}</p>
-    `;
+    if (container) {
+        container.innerHTML = `
+            <div style="font-size: 64px; margin-bottom: 20px;">⚠️</div>
+            <h1 style="margin-bottom: 10px;">Errore</h1>
+            <p style="color: var(--text-muted);">${message}</p>
+        `;
+    }
 }
 
 function showSuccessFeedback(userIdentity) {
@@ -505,29 +516,31 @@ function showSuccessFeedback(userIdentity) {
     const providerIcon = userIdentity.provider === 'telegram' ? '📤' : userIdentity.provider === 'google' ? '🌐' : '🔑';
     
     const container = document.querySelector('.entry-card');
-    container.innerHTML = `
-        <div style="font-size: 64px; margin-bottom: 20px;">✅</div>
-        <h1 style="margin-bottom: 10px; color: var(--success);">Connesso!</h1>
-        
-        ${userIdentity.photoUrl ? `
-            <img src="${userIdentity.photoUrl}" 
-                 style="width: 80px; height: 80px; border-radius: 50%; margin: 15px auto; border: 3px solid var(--success);" 
-                 alt="${displayName}">
-        ` : ''}
-        
-        <p style="font-size: 18px; font-weight: 600; margin-bottom: 5px;">${displayName}</p>
-        
-        ${userIdentity.username ? `<p style="color: var(--text-muted); font-size: 14px; margin-bottom: 5px;">@${userIdentity.username}</p>` : ''}
-        ${userIdentity.email ? `<p style="color: var(--text-muted); font-size: 14px; margin-bottom: 5px;">${userIdentity.email}</p>` : ''}
-        
-        <p style="color: var(--text-muted); font-size: 13px; margin-top: 10px;">
-            ${providerIcon} Autenticato con ${userIdentity.provider.charAt(0).toUpperCase() + userIdentity.provider.slice(1)}
-        </p>
-        
-        <p style="color: var(--text-muted); font-size: 14px; margin-top: 20px;">Reindirizzamento alla dashboard...</p>
-        
-        <div class="spinner-ring" style="margin: 30px auto;"></div>
-    `;
+    if (container) {
+        container.innerHTML = `
+            <div style="font-size: 64px; margin-bottom: 20px;">✅</div>
+            <h1 style="margin-bottom: 10px; color: var(--success);">Connesso!</h1>
+            
+            ${userIdentity.photoUrl ? `
+                <img src="${userIdentity.photoUrl}" 
+                     style="width: 80px; height: 80px; border-radius: 50%; margin: 15px auto; border: 3px solid var(--success);" 
+                     alt="${displayName}">
+            ` : ''}
+            
+            <p style="font-size: 18px; font-weight: 600; margin-bottom: 5px;">${displayName}</p>
+            
+            ${userIdentity.username ? `<p style="color: var(--text-muted); font-size: 14px; margin-bottom: 5px;">@${userIdentity.username}</p>` : ''}
+            ${userIdentity.email ? `<p style="color: var(--text-muted); font-size: 14px; margin-bottom: 5px;">${userIdentity.email}</p>` : ''}
+            
+            <p style="color: var(--text-muted); font-size: 13px; margin-top: 10px;">
+                ${providerIcon} Autenticato con ${userIdentity.provider.charAt(0).toUpperCase() + userIdentity.provider.slice(1)}
+            </p>
+            
+            <p style="color: var(--text-muted); font-size: 14px; margin-top: 20px;">Reindirizzamento alla dashboard...</p>
+            
+            <div class="spinner-ring" style="margin: 30px auto;"></div>
+        `;
+    }
 }
 
 function redirectToDashboard() {
