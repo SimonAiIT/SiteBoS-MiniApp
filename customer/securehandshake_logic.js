@@ -1,6 +1,6 @@
 // ============================================
 // SECURE HANDSHAKE LOGIC
-// Multi-Provider OAuth: Telegram + Google + (Apple)
+// Multi-Provider OAuth: Telegram + Google + Dynamic Scopes
 // ============================================
 
 const WEBHOOK_URL = 'https://trinai.api.workflow.dcmake.it/webhook/9d094742-eaca-41e1-b4e9-ee0627ffa285';
@@ -8,7 +8,8 @@ const GOOGLE_CLIENT_ID = '42649227972-hi1luhqh2t43bfsblmpunr108v6rtsoi.apps.goog
 
 let inviteToken = null;
 let decodedToken = null;
-let arrivedAt = null;
+let isOperatorMode = false; // Con ?invite = operatore presente
+let gdprConsent = false;
 
 // ============================================
 // INIT
@@ -24,43 +25,77 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     console.log('Invite Token:', inviteToken);
     
+    // Determine mode
+    isOperatorMode = !!inviteToken;
+    console.log('Mode:', isOperatorMode ? 'OPERATOR (full scopes)' : 'SELF-SERVICE (base scopes)');
+    
     if (!inviteToken) {
-        showError('Token di invito mancante o non valido.');
-        console.groupEnd();
-        return;
+        // Self-service mode: still valid, just no operator linkage
+        console.log('⚠️ No invite token - Self-service registration');
+        displaySelfServiceMode();
+    } else {
+        // Decode token for operator mode
+        decodedToken = decodeInviteToken(inviteToken);
+        
+        if (!decodedToken) {
+            showError('Token corrotto. Richiedi un nuovo link.');
+            console.groupEnd();
+            return;
+        }
+        
+        console.log('Decoded Token:', decodedToken);
+        displayOperatorInfo(decodedToken);
     }
-    
-    // Decode token to extract operator/company info
-    decodedToken = decodeInviteToken(inviteToken);
-    
-    if (!decodedToken) {
-        showError('Token corrotto. Richiedi un nuovo link.');
-        console.groupEnd();
-        return;
-    }
-    
-    console.log('Decoded Token:', decodedToken);
-    
-    // Record arrival timestamp
-    arrivedAt = new Date().toISOString();
-    
-    // 🔔 CRITICAL: Notify operator IMMEDIATELY that customer arrived
-    await notifyCustomerArrived();
     
     console.groupEnd();
     
-    // Display operator info
-    displayOperatorInfo(decodedToken);
-    
     // Show token in debug section
-    document.getElementById('invite-token').textContent = inviteToken;
+    document.getElementById('invite-token').textContent = inviteToken || 'Self-service';
     
-    // Initialize Google OAuth
+    // Initialize Google OAuth (with dynamic scopes)
     initGoogleOAuth();
 });
 
 // ============================================
-// GOOGLE OAUTH INITIALIZATION (GIS)
+// GDPR CHECKBOX HANDLER
+// ============================================
+
+function toggleGDPR() {
+    const checkbox = document.getElementById('gdpr-checkbox');
+    checkbox.checked = !checkbox.checked;
+    gdprConsent = checkbox.checked;
+    
+    updateOAuthButtonsState();
+}
+
+function updateOAuthButtonsState() {
+    const telegramContainer = document.getElementById('telegram-container');
+    const googleContainer = document.getElementById('google-container');
+    
+    if (gdprConsent) {
+        telegramContainer.classList.remove('disabled');
+        googleContainer.classList.remove('disabled');
+        document.getElementById('gdpr-consent-box').classList.remove('error');
+    } else {
+        telegramContainer.classList.add('disabled');
+        googleContainer.classList.add('disabled');
+    }
+}
+
+// Validate GDPR before allowing OAuth
+function validateGDPR() {
+    if (!gdprConsent) {
+        const box = document.getElementById('gdpr-consent-box');
+        box.classList.add('error');
+        setTimeout(() => box.classList.remove('error'), 500);
+        alert('Devi accettare la Privacy Policy e i Termini di Servizio per continuare.');
+        return false;
+    }
+    return true;
+}
+
+// ============================================
+// GOOGLE OAUTH INITIALIZATION (DYNAMIC SCOPES)
 // ============================================
 
 function initGoogleOAuth() {
@@ -70,6 +105,13 @@ function initGoogleOAuth() {
     }
     
     try {
+        // Dynamic scopes based on mode
+        const scopes = isOperatorMode 
+            ? 'https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/user.phonenumbers.read https://www.googleapis.com/auth/user.addresses.read'
+            : 'https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email';
+        
+        console.log('🔑 Google Scopes:', scopes);
+        
         google.accounts.id.initialize({
             client_id: GOOGLE_CLIENT_ID,
             callback: handleGoogleResponse,
@@ -83,7 +125,7 @@ function initGoogleOAuth() {
             {
                 theme: 'outline',
                 size: 'large',
-                width: 352, // Full width
+                width: 352,
                 text: 'continue_with',
                 shape: 'rectangular',
                 logo_alignment: 'left'
@@ -102,6 +144,9 @@ function initGoogleOAuth() {
 // ============================================
 
 function handleGoogleResponse(response) {
+    // Validate GDPR first
+    if (!validateGDPR()) return;
+    
     console.group('✅ GOOGLE OAUTH - CREDENTIAL RECEIVED');
     console.log('Raw Google Response:', response);
     
@@ -126,7 +171,8 @@ function handleGoogleResponse(response) {
             photoUrl: payload.picture || null,
             provider: 'google',
             email: payload.email,
-            phone: null,
+            phone: null, // Will be filled if scope granted
+            address: null, // Will be filled if scope granted
             
             // Google specific metadata
             emailVerified: payload.email_verified,
@@ -135,8 +181,12 @@ function handleGoogleResponse(response) {
         
         console.log('✅ Extracted Identity:', userIdentity);
         
-        // Process authentication
-        processAuthentication(userIdentity);
+        // If operator mode and missing phone/address, show form
+        if (isOperatorMode && (!userIdentity.phone || !userIdentity.address)) {
+            showExtraDataForm(userIdentity, ['phone', 'address']);
+        } else {
+            processAuthentication(userIdentity);
+        }
         
     } catch (error) {
         console.error('Google response processing error:', error);
@@ -166,44 +216,14 @@ function decodeJwtResponse(token) {
 }
 
 // ============================================
-// WEBHOOK: CUSTOMER ARRIVED (Page Load)
-// ============================================
-
-async function notifyCustomerArrived() {
-    console.log('🔔 Notifying operator: Customer arrived at handshake page');
-    
-    try {
-        const response = await fetch(WEBHOOK_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                action: 'customer_arrived',
-                session_id: decodedToken.fullToken,
-                operator_id: decodedToken.operatorId,
-                vat_id: decodedToken.vatId,
-                arrived_at: arrivedAt,
-                user_agent: navigator.userAgent,
-                referrer: document.referrer || 'direct'
-            })
-        });
-        
-        if (!response.ok) throw new Error('Webhook notification failed');
-        
-        console.log('✅ Operator notified: Customer is viewing handshake page');
-        return true;
-        
-    } catch (error) {
-        console.warn('⚠️ Failed to notify customer arrival (non-critical):', error);
-        return false;
-    }
-}
-
-// ============================================
 // TELEGRAM OAUTH CALLBACK (REAL)
 // This function is called by Telegram Widget
 // ============================================
 
 window.onTelegramAuth = function(user) {
+    // Validate GDPR first
+    if (!validateGDPR()) return;
+    
     console.group('✅ TELEGRAM OAUTH - REAL DATA RECEIVED');
     console.log('Raw Telegram User:', user);
     console.groupEnd();
@@ -231,9 +251,82 @@ window.onTelegramAuth = function(user) {
     
     console.log('✅ Extracted Identity:', userIdentity);
     
+    // If operator mode, collect phone + address
+    if (isOperatorMode) {
+        showExtraDataForm(userIdentity, ['phone', 'address']);
+    } else {
+        processAuthentication(userIdentity);
+    }
+};
+
+// ============================================
+// EXTRA DATA COLLECTION FORM (Operator Mode)
+// ============================================
+
+function showExtraDataForm(userIdentity, fields) {
+    const container = document.querySelector('.entry-card');
+    
+    const fieldsHTML = fields.map(field => {
+        if (field === 'phone') {
+            return `
+                <div class="form-group" style="margin-bottom: 15px;">
+                    <label style="display: block; text-align: left; margin-bottom: 5px; font-size: 13px; color: var(--text-muted);">
+                        📱 Numero di Telefono *
+                    </label>
+                    <input type="tel" id="input-phone" placeholder="+39 123 456 7890" 
+                           style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--glass-border); background: var(--glass); color: var(--text-main); font-size: 14px;">
+                </div>
+            `;
+        } else if (field === 'address') {
+            return `
+                <div class="form-group" style="margin-bottom: 15px;">
+                    <label style="display: block; text-align: left; margin-bottom: 5px; font-size: 13px; color: var(--text-muted);">
+                        📍 Indirizzo Completo *
+                    </label>
+                    <textarea id="input-address" rows="3" placeholder="Via, Città, CAP, Provincia" 
+                              style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--glass-border); background: var(--glass); color: var(--text-main); font-size: 14px; resize: vertical;"></textarea>
+                </div>
+            `;
+        }
+    }).join('');
+    
+    container.innerHTML = `
+        <div style="font-size: 48px; margin-bottom: 20px;">
+            ✅
+        </div>
+        <h2 style="margin-bottom: 10px; color: var(--success);">Autenticazione Riuscita!</h2>
+        <p style="font-size: 14px; color: var(--text-muted); margin-bottom: 30px;">
+            Completa la registrazione con i dati necessari per l'intervento:
+        </p>
+        
+        ${fieldsHTML}
+        
+        <button class="btn btn-primary btn-block" onclick="submitExtraData()" style="margin-top: 20px;">
+            Completa Registrazione
+        </button>
+    `;
+    
+    // Store userIdentity temporarily
+    window.tempUserIdentity = userIdentity;
+}
+
+function submitExtraData() {
+    const phone = document.getElementById('input-phone')?.value.trim();
+    const address = document.getElementById('input-address')?.value.trim();
+    
+    if (!phone || !address) {
+        alert('Compila tutti i campi obbligatori.');
+        return;
+    }
+    
+    // Merge extra data
+    const userIdentity = window.tempUserIdentity;
+    userIdentity.phone = phone;
+    userIdentity.address = address;
+    
     // Process authentication
     processAuthentication(userIdentity);
-};
+}
 
 // ============================================
 // AUTHENTICATION PROCESSING (UNIFIED)
@@ -252,16 +345,17 @@ async function processAuthentication(userIdentity) {
             provider: userIdentity.provider,
             email: userIdentity.email,
             phone: userIdentity.phone,
+            address: userIdentity.address,
             
             // Operator linkage (from token)
-            linkedOperatorId: decodedToken.operatorId,
-            linkedVatId: decodedToken.vatId,
-            inviteToken: decodedToken.fullToken,
+            linkedOperatorId: decodedToken?.operatorId || null,
+            linkedVatId: decodedToken?.vatId || null,
+            inviteToken: decodedToken?.fullToken || null,
             
             // Metadata
-            arrivedAt: arrivedAt,
             connectedAt: new Date().toISOString(),
-            gdprConsent: true,
+            gdprConsent: gdprConsent, // TRUE only if checkbox was checked
+            mode: isOperatorMode ? 'operator' : 'self-service',
             
             // Provider specific (optional)
             telegramAuthDate: userIdentity.authDate,
@@ -275,7 +369,7 @@ async function processAuthentication(userIdentity) {
         // Persist session
         sessionStorage.setItem('customer_session', JSON.stringify(customerSession));
         
-        // 🔔 CRITICAL: Notify operator that customer CONNECTED
+        // 🔔 CRITICAL: Notify operator that customer CONNECTED (NO customer_arrived)
         await notifyCustomerConnected(customerSession);
         
         // Success feedback
@@ -308,6 +402,7 @@ async function notifyCustomerConnected(customerSession) {
                 session_id: customerSession.inviteToken,
                 operator_id: customerSession.linkedOperatorId,
                 vat_id: customerSession.linkedVatId,
+                mode: customerSession.mode,
                 customer: {
                     firstName: customerSession.firstName,
                     lastName: customerSession.lastName,
@@ -317,7 +412,7 @@ async function notifyCustomerConnected(customerSession) {
                     provider: customerSession.provider,
                     email: customerSession.email,
                     phone: customerSession.phone,
-                    arrivedAt: customerSession.arrivedAt,
+                    address: customerSession.address,
                     connectedAt: customerSession.connectedAt,
                     gdprConsent: customerSession.gdprConsent,
                     telegramAuthDate: customerSession.telegramAuthDate,
@@ -365,11 +460,16 @@ function decodeInviteToken(token) {
 
 function displayOperatorInfo(tokenData) {
     const operatorNameEl = document.getElementById('operator-name');
-    
-    // Display operator ID (last 4 digits)
     const displayName = `Operatore #${tokenData.operatorId.slice(-4)}`;
-    
     operatorNameEl.textContent = displayName;
+}
+
+function displaySelfServiceMode() {
+    const operatorInfoEl = document.getElementById('operator-info');
+    operatorInfoEl.innerHTML = `
+        <i class="fas fa-globe"></i>
+        <span>Registrazione Self-Service</span>
+    `;
 }
 
 function showError(message) {
@@ -384,7 +484,6 @@ function showError(message) {
 }
 
 function showSuccessFeedback(userIdentity) {
-    // Vibrate success pattern
     if (navigator.vibrate) {
         navigator.vibrate([100, 50, 100]);
     }
@@ -442,12 +541,13 @@ function redirectToDashboard() {
     
     if (!session) {
         console.error('Session lost during redirect!');
-        window.location.href = 'securehandshake.html?invite=' + inviteToken;
+        window.location.href = 'securehandshake.html' + (inviteToken ? '?invite=' + inviteToken : '');
         return;
     }
     
-    // Redirect with invite token in URL (source of truth)
-    const dashboardUrl = `customer_dashboard.html?invite=${session.inviteToken}`;
+    const dashboardUrl = session.inviteToken 
+        ? `customer_dashboard.html?invite=${session.inviteToken}`
+        : 'customer_dashboard.html';
     
     console.log('🚀 Redirecting to:', dashboardUrl);
     window.location.href = dashboardUrl;
@@ -461,10 +561,10 @@ function debugSession() {
     console.group('🔍 Session Debug');
     console.log('Token:', inviteToken);
     console.log('Decoded:', decodedToken);
-    console.log('Arrived At:', arrivedAt);
+    console.log('Mode:', isOperatorMode ? 'OPERATOR' : 'SELF-SERVICE');
+    console.log('GDPR Consent:', gdprConsent);
     console.log('Stored Session:', sessionStorage.getItem('customer_session'));
     console.groupEnd();
 }
 
-// Expose debug function globally
 window.debugSession = debugSession;
