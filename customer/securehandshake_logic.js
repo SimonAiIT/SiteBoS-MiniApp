@@ -47,8 +47,44 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     document.getElementById('invite-token').textContent = inviteToken || 'Self-service';
     
-    initGoogleOAuth();
+    // Wait for Google GIS to load, then initialize
+    waitForGoogleAndInit();
 });
+
+// ============================================
+// GOOGLE GIS LOADING HELPER
+// ============================================
+
+function waitForGoogleAndInit() {
+    let attempts = 0;
+    const maxAttempts = 20; // 20 * 250ms = 5 seconds
+    
+    const checkGoogle = setInterval(() => {
+        attempts++;
+        
+        if (typeof google !== 'undefined' && google.accounts) {
+            clearInterval(checkGoogle);
+            console.log('✅ Google GIS loaded');
+            initGoogleOAuth();
+        } else if (attempts >= maxAttempts) {
+            clearInterval(checkGoogle);
+            console.error('❌ Google GIS failed to load after 5 seconds');
+            showGoogleLoadError();
+        }
+    }, 250);
+}
+
+function showGoogleLoadError() {
+    const target = document.getElementById('google-button-target');
+    if (target) {
+        target.innerHTML = `
+            <div style="color: #d32f2f; font-size: 12px; text-align: center;">
+                <i class="fas fa-exclamation-triangle"></i>
+                Impossibile caricare Google Sign-In
+            </div>
+        `;
+    }
+}
 
 // ============================================
 // GDPR CHECKBOX HANDLER
@@ -89,8 +125,9 @@ function validateGDPR() {
 // ============================================
 
 function initGoogleOAuth() {
-    if (typeof google === 'undefined') {
-        console.warn('⚠️ Google Identity Services not loaded');
+    if (typeof google === 'undefined' || !google.accounts) {
+        console.warn('⚠️ Google Identity Services not available');
+        showGoogleLoadError();
         return;
     }
     
@@ -108,8 +145,13 @@ function initGoogleOAuth() {
             cancel_on_tap_outside: true
         });
         
+        // Clear loading placeholder
+        const target = document.getElementById('google-button-target');
+        target.innerHTML = '';
+        
+        // Render Google button
         google.accounts.id.renderButton(
-            document.getElementById('google-button-target'),
+            target,
             {
                 theme: 'outline',
                 size: 'large',
@@ -120,10 +162,11 @@ function initGoogleOAuth() {
             }
         );
         
-        console.log('✅ Google OAuth initialized');
+        console.log('✅ Google OAuth initialized and button rendered');
         
     } catch (error) {
         console.error('Google OAuth init error:', error);
+        showGoogleLoadError();
     }
 }
 
