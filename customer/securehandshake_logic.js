@@ -452,7 +452,10 @@ function decodeInviteToken(token) {
 
 function displayOperatorInfo(tokenData) {
     const operatorNameEl = document.getElementById('operator-name');
-    const displayName = `Operatore #${tokenData.operatorId.slice(-4)}`;
+    
+    // Display VAT ID instead of Operator ID
+    const displayName = tokenData.vatId || `Operatore #${tokenData.operatorId.slice(-4)}`;
+    
     operatorNameEl.textContent = displayName;
 }
 
