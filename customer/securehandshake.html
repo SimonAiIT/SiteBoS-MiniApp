@@ -19,6 +19,52 @@
     <script src="session_utils.js"></script>
     
     <style>
+        /* Privacy Disclaimer Banner */
+        .privacy-disclaimer {
+            max-width: 600px;
+            margin: 0 auto 30px auto;
+            padding: 15px 20px;
+            background: linear-gradient(135deg, rgba(34, 197, 94, 0.1), rgba(16, 185, 129, 0.1));
+            border: 1px solid rgba(34, 197, 94, 0.3);
+            border-radius: 12px;
+            display: flex;
+            align-items: flex-start;
+            gap: 15px;
+            text-align: left;
+        }
+
+        .privacy-disclaimer-icon {
+            font-size: 24px;
+            color: #10b981;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+
+        .privacy-disclaimer-content {
+            flex: 1;
+        }
+
+        .privacy-disclaimer-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: #10b981;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .privacy-disclaimer-text {
+            font-size: 12px;
+            line-height: 1.6;
+            color: var(--text-muted);
+        }
+
+        .privacy-disclaimer-text strong {
+            color: var(--text-main);
+            font-weight: 600;
+        }
+
         /* OAuth Button Styles */
         .oauth-button {
             display: flex;
@@ -254,86 +300,105 @@
     </style>
 </head>
 <body>
-    <div class="container" style="display: flex; align-items: center; justify-content: center; min-height: 100vh;">
-        <div class="entry-card">
-            <!-- Logo/Brand Area -->
-            <div style="font-size: 64px; margin-bottom: 20px;">
-                🔑
-            </div>
-
-            <!-- Header -->
-            <h1 style="margin-bottom: 10px; font-size: 28px;">Benvenuto</h1>
-            
-            <!-- Dynamic Subtitle with Operator Info -->
-            <p style="font-size: 16px; color: var(--text-muted); margin-bottom: 20px;">
-                Connettiti in modo sicuro
-            </p>
-            <div class="operator-info" id="operator-info">
-                <i class="fas fa-user-tie"></i>
-                <span id="operator-name">Caricamento...</span>
-            </div>
-
-            <!-- GDPR Consent Checkbox -->
-            <div style="margin-top: 30px;">
-                <div class="gdpr-consent" id="gdpr-consent-box">
-                    <input type="checkbox" id="gdpr-checkbox" class="gdpr-checkbox">
-                    <div class="gdpr-text">
-                        Accetto la <a href="../legal.html?lang=it" target="_blank" onclick="event.stopPropagation()">Privacy Policy</a> e i <a href="../legal.html?lang=it#terms" target="_blank" onclick="event.stopPropagation()">Termini di Servizio</a>. I miei dati saranno trattati secondo il GDPR.
+    <div class="container" style="display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 20px 15px;">
+        <div style="width: 100%; max-width: 600px;">
+            <!-- Privacy Disclaimer Banner -->
+            <div class="privacy-disclaimer">
+                <div class="privacy-disclaimer-icon">
+                    <i class="fas fa-shield-check"></i>
+                </div>
+                <div class="privacy-disclaimer-content">
+                    <div class="privacy-disclaimer-title">
+                        <span>🔒 Protezione Dati Garantita</span>
+                    </div>
+                    <div class="privacy-disclaimer-text">
+                        <strong>TrinAI Srl</strong> non distribuisce i tuoi dati personali a scopo di marketing verso terzi. 
+                        I tuoi dati sono disponibili <strong>esclusivamente all'azienda</strong> con cui stai creando la connessione e vengono trattati nel pieno rispetto del GDPR.
                     </div>
                 </div>
             </div>
 
-            <!-- OAuth Buttons Section -->
-            <div style="margin-top: 20px;">
-                <!-- Telegram Widget Container -->
-                <div class="oauth-telegram-container disabled" id="telegram-container">
-                    <!-- Loading state -->
-                    <div id="telegram-loading">
-                        <div class="spinner-ring" style="width: 30px; height: 30px;"></div>
-                        <p style="margin-top: 10px; font-size: 13px; color: white;">Caricamento widget Telegram...</p>
-                    </div>
-                    
-                    <!-- Widget will be injected here -->
-                    <div id="telegram-widget-target"></div>
-                    
-                    <!-- Error state (hidden initially) -->
-                    <div id="telegram-error" class="widget-error" style="display: none;">
-                        <strong>⚠️ Widget Telegram non disponibile</strong>
-                        <p style="margin: 10px 0 0 0; font-size: 12px;">
-                            Il bot deve essere configurato. Esegui:
-                        </p>
-                        <code style="display: block; background: rgba(0,0,0,0.2); padding: 8px; border-radius: 4px; margin-top: 8px; font-size: 11px;">
-                            /setdomain → @TrinAi_Agent_bot → simonaiit.github.io
-                        </code>
-                    </div>
+            <!-- Login Card -->
+            <div class="entry-card">
+                <!-- Logo/Brand Area -->
+                <div style="font-size: 64px; margin-bottom: 20px;">
+                    🔑
                 </div>
 
-                <!-- Google Button Container -->
-                <div class="oauth-google-container disabled" id="google-container">
-                    <!-- Google renders button here -->
-                    <div id="google-button-target">
-                        <!-- Placeholder while loading -->
-                        <div style="display: flex; align-items: center; gap: 10px; color: #666; font-size: 14px;">
-                            <div class="spinner-ring" style="width: 20px; height: 20px; border-width: 2px;"></div>
-                            <span>Caricamento Google Sign-In...</span>
+                <!-- Header -->
+                <h1 style="margin-bottom: 10px; font-size: 28px;">Benvenuto</h1>
+                
+                <!-- Dynamic Subtitle with Operator Info -->
+                <p style="font-size: 16px; color: var(--text-muted); margin-bottom: 20px;">
+                    Connettiti in modo sicuro
+                </p>
+                <div class="operator-info" id="operator-info">
+                    <i class="fas fa-user-tie"></i>
+                    <span id="operator-name">Caricamento...</span>
+                </div>
+
+                <!-- GDPR Consent Checkbox -->
+                <div style="margin-top: 30px;">
+                    <div class="gdpr-consent" id="gdpr-consent-box">
+                        <input type="checkbox" id="gdpr-checkbox" class="gdpr-checkbox">
+                        <div class="gdpr-text">
+                            Accetto la <a href="../legal.html?lang=it" target="_blank" onclick="event.stopPropagation()">Privacy Policy</a> e i <a href="../legal.html?lang=it#terms" target="_blank" onclick="event.stopPropagation()">Termini di Servizio</a>. I miei dati saranno trattati secondo il GDPR.
                         </div>
                     </div>
                 </div>
 
-                <!-- Apple Button (Coming Soon) -->
-                <button class="oauth-button oauth-apple disabled" disabled>
-                    <i class="fab fa-apple oauth-icon"></i>
-                    <span>Continua con Apple</span>
-                    <span class="coming-soon">Presto</span>
-                </button>
-            </div>
+                <!-- OAuth Buttons Section -->
+                <div style="margin-top: 20px;">
+                    <!-- Telegram Widget Container -->
+                    <div class="oauth-telegram-container disabled" id="telegram-container">
+                        <!-- Loading state -->
+                        <div id="telegram-loading">
+                            <div class="spinner-ring" style="width: 30px; height: 30px;"></div>
+                            <p style="margin-top: 10px; font-size: 13px; color: white;">Caricamento widget Telegram...</p>
+                        </div>
+                        
+                        <!-- Widget will be injected here -->
+                        <div id="telegram-widget-target"></div>
+                        
+                        <!-- Error state (hidden initially) -->
+                        <div id="telegram-error" class="widget-error" style="display: none;">
+                            <strong>⚠️ Widget Telegram non disponibile</strong>
+                            <p style="margin: 10px 0 0 0; font-size: 12px;">
+                                Il bot deve essere configurato. Esegui:
+                            </p>
+                            <code style="display: block; background: rgba(0,0,0,0.2); padding: 8px; border-radius: 4px; margin-top: 8px; font-size: 11px;">
+                                /setdomain → @TrinAi_Agent_bot → simonaiit.github.io
+                            </code>
+                        </div>
+                    </div>
 
-            <!-- Footer with TrinAI Branding -->
-            <div class="footer">
-                <img src="../images/logo.png" alt="TrinAI" class="footer-logo">
-                <div class="footer-text">
-                    <strong>SiteBoS</strong> è un prodotto <strong>TrinAI Srl</strong><br>
-                    © 2025 TrinAI - Tutti i diritti riservati
+                    <!-- Google Button Container -->
+                    <div class="oauth-google-container disabled" id="google-container">
+                        <!-- Google renders button here -->
+                        <div id="google-button-target">
+                            <!-- Placeholder while loading -->
+                            <div style="display: flex; align-items: center; gap: 10px; color: #666; font-size: 14px;">
+                                <div class="spinner-ring" style="width: 20px; height: 20px; border-width: 2px;"></div>
+                                <span>Caricamento Google Sign-In...</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Apple Button (Coming Soon) -->
+                    <button class="oauth-button oauth-apple disabled" disabled>
+                        <i class="fab fa-apple oauth-icon"></i>
+                        <span>Continua con Apple</span>
+                        <span class="coming-soon">Presto</span>
+                    </button>
+                </div>
+
+                <!-- Footer with TrinAI Branding -->
+                <div class="footer">
+                    <img src="../images/logo.png" alt="TrinAI" class="footer-logo">
+                    <div class="footer-text">
+                        <strong>SiteBoS</strong> è un prodotto <strong>TrinAI Srl</strong><br>
+                        © 2025 TrinAI - Tutti i diritti riservati
+                    </div>
                 </div>
             </div>
         </div>
