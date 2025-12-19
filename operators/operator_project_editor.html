@@ -8,6 +8,90 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="operator_session_utils.js"></script>
+    <style>
+        .fab-actions {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            z-index: 1000;
+        }
+        
+        .fab-action-btn {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            border: none;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+        
+        .fab-action-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+        }
+        
+        .fab-action-btn:active {
+            transform: scale(0.95);
+        }
+        
+        .fab-pdf {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+        }
+        
+        .fab-mail {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+        }
+        
+        .fab-app {
+            background: linear-gradient(135deg, #10b981, #059669);
+        }
+        
+        .fab-cost-badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: rgba(0,0,0,0.9);
+            color: #fbbf24;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 2px 6px;
+            border-radius: 10px;
+            border: 1px solid rgba(251, 191, 36, 0.3);
+            white-space: nowrap;
+        }
+        
+        .fab-tooltip {
+            position: absolute;
+            right: 70px;
+            background: rgba(0,0,0,0.9);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        
+        .fab-action-btn:hover .fab-tooltip {
+            opacity: 1;
+        }
+        
+        .fab-back {
+            margin-top: 20px;
+        }
+    </style>
 </head>
 <body>
     <div class="container">
@@ -29,8 +113,30 @@
     </div>
 
     <!-- Floating Action Buttons -->
-    <div class="fab-container">
-        <button class="fab-btn fab-secondary" onclick="goBack()" aria-label="Torna Indietro">
+    <div class="fab-actions">
+        <!-- Download PDF (100 crediti) -->
+        <button class="fab-action-btn fab-pdf" onclick="downloadProjectPDF()" aria-label="Scarica PDF" title="Scarica PDF (100 crediti)">
+            <i class="fas fa-file-pdf"></i>
+            <span class="fab-cost-badge">100</span>
+            <span class="fab-tooltip">Scarica PDF (100 cr)</span>
+        </button>
+        
+        <!-- Send SiteBoS Mail (200 crediti) -->
+        <button class="fab-action-btn fab-mail" onclick="sendViaSiteBosMailButton()" aria-label="Invia via SiteBoS Mail" title="Invia via SiteBoS Mail (200 crediti)">
+            <i class="fas fa-envelope"></i>
+            <span class="fab-cost-badge">200</span>
+            <span class="fab-tooltip">Invia Mail (200 cr)</span>
+        </button>
+        
+        <!-- Send to App (gratis) -->
+        <button class="fab-action-btn fab-app" onclick="sendToAppButton()" aria-label="Invia su App" title="Invia su App (Gratis)">
+            <i class="fas fa-mobile-alt"></i>
+            <span class="fab-cost-badge" style="background: rgba(16, 185, 129, 0.9); color: white; border-color: rgba(16, 185, 129, 0.5);">FREE</span>
+            <span class="fab-tooltip">Invia su App (Gratis)</span>
+        </button>
+        
+        <!-- Torna Indietro -->
+        <button class="fab-btn fab-secondary fab-back" onclick="goBack()" aria-label="Torna Indietro" title="Torna Indietro">
             <i class="fas fa-arrow-left"></i>
         </button>
     </div>
