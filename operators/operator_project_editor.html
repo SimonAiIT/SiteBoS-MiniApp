@@ -229,12 +229,12 @@
         }
         
         .viewer-header {
-            background: linear-gradient(135deg, rgba(91, 111, 237, 0.2), rgba(16, 185, 129, 0.2));
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.3), rgba(16, 185, 129, 0.1));
             padding: 15px 20px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            border-bottom: 2px solid rgba(16, 185, 129, 0.5);
         }
         
         .viewer-title {
@@ -244,6 +244,16 @@
             display: flex;
             align-items: center;
             gap: 10px;
+        }
+        
+        .viewer-success-badge {
+            background: rgba(16, 185, 129, 0.2);
+            color: #6ee7b7;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            border: 1px solid rgba(16, 185, 129, 0.4);
         }
         
         .viewer-close {
@@ -261,7 +271,7 @@
         }
         
         .viewer-close:hover {
-            background: rgba(255, 107, 107, 0.3);
+            background: rgba(255, 255, 255, 0.2);
             transform: scale(1.1);
         }
         
@@ -278,17 +288,16 @@
             background: white;
         }
         
-        .viewer-actions {
+        .viewer-footer {
             padding: 15px 20px;
             background: rgba(0, 0, 0, 0.5);
             border-top: 1px solid rgba(255, 255, 255, 0.1);
             display: flex;
-            gap: 12px;
             justify-content: center;
         }
         
-        .viewer-btn {
-            padding: 12px 24px;
+        .viewer-btn-close {
+            padding: 12px 32px;
             border-radius: 12px;
             border: none;
             font-weight: 600;
@@ -298,28 +307,14 @@
             display: flex;
             align-items: center;
             gap: 8px;
-        }
-        
-        .viewer-btn-confirm {
-            background: linear-gradient(135deg, #10b981, #059669);
-            color: white;
-            flex: 1;
-            max-width: 300px;
-        }
-        
-        .viewer-btn-confirm:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
-        }
-        
-        .viewer-btn-cancel {
             background: rgba(255, 255, 255, 0.1);
             color: white;
             border: 1px solid rgba(255, 255, 255, 0.2);
         }
         
-        .viewer-btn-cancel:hover {
+        .viewer-btn-close:hover {
             background: rgba(255, 255, 255, 0.15);
+            transform: translateY(-2px);
         }
         
         @keyframes fadeIn {
@@ -383,12 +378,13 @@
         </button>
     </div>
 
-    <!-- HTML Viewer Modal -->
+    <!-- HTML Viewer Modal (Post-Send Preview) -->
     <div id="html-viewer-modal">
         <div class="viewer-header">
             <div class="viewer-title">
-                <i class="fas fa-mobile-alt"></i>
-                <span>Anteprima App Cliente</span>
+                <i class="fas fa-check-circle" style="color: #6ee7b7;"></i>
+                <span>Inviato su App Cliente</span>
+                <span class="viewer-success-badge">✓ Status: Pending</span>
             </div>
             <button class="viewer-close" onclick="closeHTMLViewer()" aria-label="Chiudi">
                 <i class="fas fa-times"></i>
@@ -399,14 +395,10 @@
             <iframe id="preview-iframe" title="Project Preview"></iframe>
         </div>
         
-        <div class="viewer-actions">
-            <button class="viewer-btn viewer-btn-cancel" onclick="closeHTMLViewer()">
-                <i class="fas fa-times"></i>
-                Annulla
-            </button>
-            <button class="viewer-btn viewer-btn-confirm" onclick="confirmSendToApp()">
-                <i class="fas fa-paper-plane"></i>
-                Conferma Invio
+        <div class="viewer-footer">
+            <button class="viewer-btn-close" onclick="closeHTMLViewer()">
+                <i class="fas fa-check"></i>
+                Chiudi
             </button>
         </div>
     </div>
