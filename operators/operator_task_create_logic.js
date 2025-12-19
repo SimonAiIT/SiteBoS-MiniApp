@@ -5,6 +5,7 @@
 // ✅ QUANTITY & PHOTOS with COMPRESSION
 // ✅ PDF UPLOAD ONLY (max 2, 2MB each)
 // ✅ REDIRECT TO PROJECT EDITOR AFTER QUOTE
+// ✅ FAB BACK TO DASHBOARD (NOT TASKS)
 // ============================================
 
 const tg = window.Telegram.WebApp;
@@ -1084,10 +1085,11 @@ function goBack() {
     if (backSteps[currentStep]) {
         showStep(backSteps[currentStep]);
     } else {
+        // ✅ FIX: Back to DASHBOARD, not tasks
         if (window.history.length > 1) {
             window.history.back();
         } else {
-            navigateOperatorWithContext('operator_tasks.html');
+            navigateOperatorWithContext('operator_dashboard.html');
         }
     }
 }
