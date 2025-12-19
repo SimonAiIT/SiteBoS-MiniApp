@@ -5,6 +5,7 @@
 // ✅ FAB ACTIONS WITH API CALLS
 // ✅ DISCOUNT CALCULATION
 // ✅ INLINE EDITING
+// ✅ TAX-INCLUDED TOGGLE (FORFETTARI)
 // ============================================
 
 const tg = window.Telegram.WebApp;
@@ -18,6 +19,7 @@ let operatorSession = null;
 let currentParams = { vat: null, operatorId: null, inviteToken: null };
 let hasChanges = false;
 let discountPercent = 0;
+let taxIncluded = false; // Forfettari flag
 
 // ============================================
 // INIT
@@ -26,7 +28,6 @@ let discountPercent = 0;
 document.addEventListener('DOMContentLoaded', async () => {
     operatorSession = initOperatorSession();
     
-    // Estrai parametri URL
     const urlParams = new URLSearchParams(window.location.search);
     currentParams.vat = urlParams.get('vat');
     currentParams.operatorId = urlParams.get('operator');
@@ -69,7 +70,6 @@ async function loadProject(vat, operatorId, inviteToken) {
         const data = await response.json();
         console.log('✅ Project loaded:', data);
         
-        // Handle both 'project' and 'projects' from backend
         projectData = data.project || data.projects;
         
         if (!projectData) {
@@ -77,6 +77,7 @@ async function loadProject(vat, operatorId, inviteToken) {
         }
         
         discountPercent = projectData.financials?.discount_percent || 0;
+        taxIncluded = projectData.financials?.tax_included || false;
         
         renderProject(projectData);
         updateProjectStatus(projectData.meta?.status || 'draft');
@@ -223,9 +224,18 @@ function renderProject(project) {
             `).join('') : '<p style="color: var(--text-muted);">Nessun servizio trovato</p>'}
         </div>
         
-        <!-- Financials with Discount -->
+        <!-- Financials with Discount & Tax Toggle -->
         <div class="card" style="background: linear-gradient(135deg, rgba(50, 173, 230, 0.1), rgba(80, 200, 120, 0.1));">
             <h3><i class="fas fa-euro-sign"></i> Riepilogo Economico</h3>
+            
+            <!-- Tax Included Toggle -->
+            <div class="tax-toggle" onclick="toggleTaxIncluded()">
+                <i class="fas fa-file-invoice" style="color: #6ee7b7; font-size: 18px;"></i>
+                <span class="tax-toggle-label">Tasse Incluse (Forfettari)</span>
+                <div class="tax-toggle-checkbox ${taxIncluded ? 'active' : ''}" id="tax-toggle-checkbox">
+                    <div class="tax-toggle-slider"></div>
+                </div>
+            </div>
             
             <!-- Discount Input -->
             <div class="discount-input">
@@ -236,30 +246,32 @@ function renderProject(project) {
             </div>
             
             <div style="margin: 15px 0;" id="financials-breakdown">
-                <div style="display: flex; justify-content: space-between; margin: 8px 0;">
-                    <span>Subtotale:</span>
-                    <span style="font-weight: 600;" id="subtotal-display">€${(financials.subtotal || 0).toLocaleString('it-IT')}</span>
-                </div>
-                
-                ${discountPercent > 0 ? `
-                <div style="display: flex; justify-content: space-between; margin: 8px 0; color: #c4b5fd;">
-                    <span>Sconto (${discountPercent}%):</span>
-                    <span style="font-weight: 600;" id="discount-amount-display">-€${calculateDiscountAmount(financials.subtotal || 0, discountPercent).toLocaleString('it-IT')}</span>
-                </div>
-                ` : ''}
-                
-                <div style="display: flex; justify-content: space-between; margin: 8px 0; color: var(--text-muted);" id="tax-row">
-                    <span>IVA (${financials.tax_percent || 22}%):</span>
-                    <span id="tax-display">€${(financials.tax_amount || 0).toLocaleString('it-IT')}</span>
-                </div>
-                <hr style="margin: 15px 0; border: none; border-top: 1px solid var(--glass-border);">
-                <div style="display: flex; justify-content: space-between; font-size: 18px; font-weight: 700; color: var(--primary);">
-                    <span>TOTALE:</span>
-                    <span id="grand-total-display">€${(financials.grand_total || 0).toLocaleString('it-IT')}</span>
-                </div>
+                <!-- Will be populated by updateFinancialsUI() -->
             </div>
         </div>
     `;
+    
+    // Initial financials render
+    updateFinancialsUI();
+}
+
+// ============================================
+// TAX-INCLUDED TOGGLE (FORFETTARI)
+// ============================================
+
+function toggleTaxIncluded() {
+    taxIncluded = !taxIncluded;
+    
+    const checkbox = document.getElementById('tax-toggle-checkbox');
+    if (taxIncluded) {
+        checkbox.classList.add('active');
+    } else {
+        checkbox.classList.remove('active');
+    }
+    
+    // Recalculate financials
+    recalculateFinancials();
+    markAsChanged();
 }
 
 // ============================================
@@ -279,53 +291,71 @@ function applyDiscount() {
     
     input.value = discountPercent;
     
-    // Recalculate financials
+    recalculateFinancials();
+    markAsChanged();
+}
+
+function recalculateFinancials() {
     const subtotal = projectData.financials.subtotal;
     const discountAmount = calculateDiscountAmount(subtotal, discountPercent);
     const subtotalAfterDiscount = subtotal - discountAmount;
-    const taxAmount = Math.round((subtotalAfterDiscount * projectData.financials.tax_percent / 100) * 100) / 100;
-    const grandTotal = Math.round((subtotalAfterDiscount + taxAmount) * 100) / 100;
+    
+    let taxPercent = taxIncluded ? 0 : (projectData.financials.tax_percent || 22);
+    let taxAmount = taxIncluded ? 0 : Math.round((subtotalAfterDiscount * taxPercent / 100) * 100) / 100;
+    let grandTotal = Math.round((subtotalAfterDiscount + taxAmount) * 100) / 100;
     
     // Update project data
     projectData.financials.discount_percent = discountPercent;
     projectData.financials.discount_amount = discountAmount;
     projectData.financials.subtotal_after_discount = subtotalAfterDiscount;
+    projectData.financials.tax_percent = taxPercent;
     projectData.financials.tax_amount = taxAmount;
     projectData.financials.grand_total = grandTotal;
+    projectData.financials.tax_included = taxIncluded;
     
     // Update UI
     updateFinancialsUI();
-    markAsChanged();
 }
 
 function updateFinancialsUI() {
     const breakdown = document.getElementById('financials-breakdown');
+    if (!breakdown) return;
+    
     const subtotal = projectData.financials.subtotal;
     const discountAmount = projectData.financials.discount_amount || 0;
-    const taxAmount = projectData.financials.tax_amount;
+    const taxAmount = projectData.financials.tax_amount || 0;
+    const taxPercent = projectData.financials.tax_percent || 22;
     const grandTotal = projectData.financials.grand_total;
     
     breakdown.innerHTML = `
         <div style="display: flex; justify-content: space-between; margin: 8px 0;">
             <span>Subtotale:</span>
-            <span style="font-weight: 600;" id="subtotal-display">€${subtotal.toLocaleString('it-IT')}</span>
+            <span style="font-weight: 600;">€${subtotal.toLocaleString('it-IT')}</span>
         </div>
         
         ${discountPercent > 0 ? `
         <div style="display: flex; justify-content: space-between; margin: 8px 0; color: #c4b5fd;">
             <span>Sconto (${discountPercent}%):</span>
-            <span style="font-weight: 600;" id="discount-amount-display">-€${discountAmount.toLocaleString('it-IT')}</span>
+            <span style="font-weight: 600;">-€${discountAmount.toLocaleString('it-IT')}</span>
         </div>
         ` : ''}
         
-        <div style="display: flex; justify-content: space-between; margin: 8px 0; color: var(--text-muted);" id="tax-row">
-            <span>IVA (${projectData.financials.tax_percent}%):</span>
-            <span id="tax-display">€${taxAmount.toLocaleString('it-IT')}</span>
+        ${taxIncluded ? `
+        <div style="display: flex; justify-content: space-between; margin: 8px 0; color: #6ee7b7;">
+            <span><i class="fas fa-check-circle"></i> Tasse Incluse:</span>
+            <span style="font-weight: 600;">€0</span>
         </div>
+        ` : `
+        <div style="display: flex; justify-content: space-between; margin: 8px 0; color: var(--text-muted);">
+            <span>IVA (${taxPercent}%):</span>
+            <span>€${taxAmount.toLocaleString('it-IT')}</span>
+        </div>
+        `}
+        
         <hr style="margin: 15px 0; border: none; border-top: 1px solid var(--glass-border);">
         <div style="display: flex; justify-content: space-between; font-size: 18px; font-weight: 700; color: var(--primary);">
             <span>TOTALE:</span>
-            <span id="grand-total-display">€${grandTotal.toLocaleString('it-IT')}</span>
+            <span>€${grandTotal.toLocaleString('it-IT')}</span>
         </div>
     `;
 }
@@ -413,7 +443,6 @@ async function saveProjectChanges() {
 // FAB ACTIONS - API CALLS
 // ============================================
 
-// Download PDF (100 crediti)
 async function downloadProjectPDF() {
     if (!projectData) {
         showAlert('Progetto non caricato', 'warning');
@@ -458,7 +487,6 @@ async function downloadProjectPDF() {
     }
 }
 
-// Send via SiteBoS Mail (200 crediti)
 async function sendViaSiteBosMailButton() {
     if (!projectData) {
         showAlert('Progetto non caricato', 'warning');
@@ -500,7 +528,6 @@ async function sendViaSiteBosMailButton() {
     }
 }
 
-// Send to App (gratis)
 async function sendToAppButton() {
     if (!projectData) {
         showAlert('Progetto non caricato', 'warning');
