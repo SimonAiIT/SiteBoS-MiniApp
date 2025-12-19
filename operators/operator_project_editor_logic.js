@@ -3,6 +3,8 @@
 // ✅ LOADS PROJECT FROM BACKEND
 // ✅ DISPLAYS COMPLETE PROJECT DATA
 // ✅ FAB ACTIONS WITH API CALLS
+// ✅ DISCOUNT CALCULATION
+// ✅ INLINE EDITING
 // ============================================
 
 const tg = window.Telegram.WebApp;
@@ -14,6 +16,8 @@ const WEBHOOK_URL = 'https://trinai.api.workflow.dcmake.it/webhook/d253f855-ce1a
 let projectData = null;
 let operatorSession = null;
 let currentParams = { vat: null, operatorId: null, inviteToken: null };
+let hasChanges = false;
+let discountPercent = 0;
 
 // ============================================
 // INIT
@@ -65,21 +69,23 @@ async function loadProject(vat, operatorId, inviteToken) {
         const data = await response.json();
         console.log('✅ Project loaded:', data);
         
-        // 🔧 FIX: Handle both 'project' and 'projects' from backend
+        // Handle both 'project' and 'projects' from backend
         projectData = data.project || data.projects;
         
         if (!projectData) {
             throw new Error('No project data in response');
         }
         
+        discountPercent = projectData.financials?.discount_percent || 0;
+        
         renderProject(projectData);
         updateProjectStatus(projectData.meta?.status || 'draft');
+        setupEditListeners();
         
     } catch (error) {
         console.error('Load error:', error);
         showAlert('Errore nel caricamento del progetto', 'error');
         
-        // Fallback: mostra errore con opzione di tornare indietro
         const container = document.getElementById('project-container');
         container.innerHTML = `
             <div style="text-align: center; padding: 60px 20px; color: var(--error);">
@@ -97,13 +103,12 @@ async function loadProject(vat, operatorId, inviteToken) {
 }
 
 // ============================================
-// RENDER PROJECT
+// RENDER PROJECT WITH EDITABLE FIELDS
 // ============================================
 
 function renderProject(project) {
     const container = document.getElementById('project-container');
     
-    // Safe property access with defaults
     const meta = project.meta || {};
     const customer = project.customer_context || {};
     const summary = project.executive_summary || {};
@@ -115,7 +120,7 @@ function renderProject(project) {
         <div class="card">
             <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 20px;">
                 <div>
-                    <h2 style="margin: 0 0 5px 0; font-size: 18px;">${meta.quote_id || 'N/A'}</h2>
+                    <h2 style="margin: 0 0 5px 0; font-size: 18px;" class="editable" contenteditable="true" data-field="meta.quote_id">${meta.quote_id || 'N/A'}</h2>
                     <p style="font-size: 12px; color: var(--text-muted); margin: 0;">
                         Creato il ${meta.created_at ? new Date(meta.created_at).toLocaleDateString('it-IT') : 'N/A'} da ${meta.created_by_operator || 'Operatore'}
                     </p>
@@ -154,7 +159,7 @@ function renderProject(project) {
                 ` : ''}
             </div>
             <div style="background: rgba(0,0,0,0.2); padding: 12px; border-radius: 8px; border-left: 3px solid var(--primary);">
-                <p style="font-size: 13px; margin: 0; line-height: 1.5;">
+                <p class="editable" contenteditable="true" data-field="customer_context.needs_summary" style="font-size: 13px; margin: 0; line-height: 1.5;">
                     ${customer.needs_summary || 'N/A'}
                 </p>
             </div>
@@ -162,8 +167,8 @@ function renderProject(project) {
         
         <!-- Executive Summary -->
         <div class="card">
-            <h3><i class="fas fa-lightbulb"></i> ${summary.title || 'Riepilogo Esecutivo'}</h3>
-            <p style="font-size: 14px; line-height: 1.6; margin: 15px 0;">
+            <h3><i class="fas fa-lightbulb"></i> <span class="editable" contenteditable="true" data-field="executive_summary.title">${summary.title || 'Riepilogo Esecutivo'}</span></h3>
+            <p class="editable" contenteditable="true" data-field="executive_summary.value_proposition" style="font-size: 14px; line-height: 1.6; margin: 15px 0;">
                 ${summary.value_proposition || 'N/A'}
             </p>
         </div>
@@ -172,9 +177,9 @@ function renderProject(project) {
         <div class="card">
             <h3><i class="fas fa-tasks"></i> Servizi Proposti</h3>
             ${items.length > 0 ? items.map((item, index) => `
-                <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px; margin: 15px 0; border-left: 4px solid var(--primary);">
+                <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px; margin: 15px 0; border-left: 4px solid var(--primary);" data-item-index="${index}">
                     <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px;">
-                        <h4 style="margin: 0; font-size: 15px;">${item.name || item.short_name || 'Servizio'}</h4>
+                        <h4 class="editable" contenteditable="true" data-field="items.${index}.name" style="margin: 0; font-size: 15px;">${item.name || item.short_name || 'Servizio'}</h4>
                         <span style="font-size: 16px; font-weight: 700; color: var(--primary);">
                             €${(item.total || 0).toLocaleString('it-IT')}
                         </span>
@@ -184,14 +189,14 @@ function renderProject(project) {
                         SKU: ${item.sku || 'N/A'} | Quantità: ${item.qty || 1}
                     </p>
                     
-                    <p style="font-size: 13px; line-height: 1.5; margin: 10px 0;">
+                    <p class="editable" contenteditable="true" data-field="items.${index}.description_customized" style="font-size: 13px; line-height: 1.5; margin: 10px 0;">
                         ${item.description_customized || item.description || 'N/A'}
                     </p>
                     
                     ${item.timeline_estimation ? `
                         <div style="margin: 10px 0;">
                             <p style="font-size: 12px; margin: 5px 0;">
-                                <i class="fas fa-clock"></i> <strong>Timeline:</strong> ${item.timeline_estimation}
+                                <i class="fas fa-clock"></i> <strong>Timeline:</strong> <span class="editable" contenteditable="true" data-field="items.${index}.timeline_estimation">${item.timeline_estimation}</span>
                             </p>
                         </div>
                     ` : ''}
@@ -200,7 +205,9 @@ function renderProject(project) {
                         <div style="margin: 10px 0;">
                             <p style="font-size: 12px; font-weight: 600; margin: 5px 0;">Milestone:</p>
                             <ul style="margin: 5px 0 0 20px; font-size: 12px; color: var(--text-muted);">
-                                ${item.milestones.map(m => `<li style="margin: 3px 0;">${m}</li>`).join('')}
+                                ${item.milestones.map((m, mi) => `
+                                    <li class="editable" contenteditable="true" data-field="items.${index}.milestones.${mi}" style="margin: 3px 0;">${m}</li>
+                                `).join('')}
                             </ul>
                         </div>
                     ` : ''}
@@ -216,26 +223,190 @@ function renderProject(project) {
             `).join('') : '<p style="color: var(--text-muted);">Nessun servizio trovato</p>'}
         </div>
         
-        <!-- Financials -->
+        <!-- Financials with Discount -->
         <div class="card" style="background: linear-gradient(135deg, rgba(50, 173, 230, 0.1), rgba(80, 200, 120, 0.1));">
             <h3><i class="fas fa-euro-sign"></i> Riepilogo Economico</h3>
-            <div style="margin: 15px 0;">
+            
+            <!-- Discount Input -->
+            <div class="discount-input">
+                <i class="fas fa-percent" style="color: #c4b5fd; font-size: 18px;"></i>
+                <span class="discount-label">Sconto:</span>
+                <input type="number" id="discount-input" min="0" max="100" step="0.1" value="${discountPercent}" onchange="applyDiscount()">
+                <span style="color: var(--text-muted); font-size: 14px;">%</span>
+            </div>
+            
+            <div style="margin: 15px 0;" id="financials-breakdown">
                 <div style="display: flex; justify-content: space-between; margin: 8px 0;">
                     <span>Subtotale:</span>
-                    <span style="font-weight: 600;">€${(financials.subtotal || 0).toLocaleString('it-IT')}</span>
+                    <span style="font-weight: 600;" id="subtotal-display">€${(financials.subtotal || 0).toLocaleString('it-IT')}</span>
                 </div>
-                <div style="display: flex; justify-content: space-between; margin: 8px 0; color: var(--text-muted);">
+                
+                ${discountPercent > 0 ? `
+                <div style="display: flex; justify-content: space-between; margin: 8px 0; color: #c4b5fd;">
+                    <span>Sconto (${discountPercent}%):</span>
+                    <span style="font-weight: 600;" id="discount-amount-display">-€${calculateDiscountAmount(financials.subtotal || 0, discountPercent).toLocaleString('it-IT')}</span>
+                </div>
+                ` : ''}
+                
+                <div style="display: flex; justify-content: space-between; margin: 8px 0; color: var(--text-muted);" id="tax-row">
                     <span>IVA (${financials.tax_percent || 22}%):</span>
-                    <span>€${(financials.tax_amount || 0).toLocaleString('it-IT')}</span>
+                    <span id="tax-display">€${(financials.tax_amount || 0).toLocaleString('it-IT')}</span>
                 </div>
                 <hr style="margin: 15px 0; border: none; border-top: 1px solid var(--glass-border);">
                 <div style="display: flex; justify-content: space-between; font-size: 18px; font-weight: 700; color: var(--primary);">
                     <span>TOTALE:</span>
-                    <span>€${(financials.grand_total || 0).toLocaleString('it-IT')}</span>
+                    <span id="grand-total-display">€${(financials.grand_total || 0).toLocaleString('it-IT')}</span>
                 </div>
             </div>
         </div>
     `;
+}
+
+// ============================================
+// DISCOUNT CALCULATION
+// ============================================
+
+function calculateDiscountAmount(subtotal, percent) {
+    return Math.round((subtotal * percent / 100) * 100) / 100;
+}
+
+function applyDiscount() {
+    const input = document.getElementById('discount-input');
+    discountPercent = parseFloat(input.value) || 0;
+    
+    if (discountPercent < 0) discountPercent = 0;
+    if (discountPercent > 100) discountPercent = 100;
+    
+    input.value = discountPercent;
+    
+    // Recalculate financials
+    const subtotal = projectData.financials.subtotal;
+    const discountAmount = calculateDiscountAmount(subtotal, discountPercent);
+    const subtotalAfterDiscount = subtotal - discountAmount;
+    const taxAmount = Math.round((subtotalAfterDiscount * projectData.financials.tax_percent / 100) * 100) / 100;
+    const grandTotal = Math.round((subtotalAfterDiscount + taxAmount) * 100) / 100;
+    
+    // Update project data
+    projectData.financials.discount_percent = discountPercent;
+    projectData.financials.discount_amount = discountAmount;
+    projectData.financials.subtotal_after_discount = subtotalAfterDiscount;
+    projectData.financials.tax_amount = taxAmount;
+    projectData.financials.grand_total = grandTotal;
+    
+    // Update UI
+    updateFinancialsUI();
+    markAsChanged();
+}
+
+function updateFinancialsUI() {
+    const breakdown = document.getElementById('financials-breakdown');
+    const subtotal = projectData.financials.subtotal;
+    const discountAmount = projectData.financials.discount_amount || 0;
+    const taxAmount = projectData.financials.tax_amount;
+    const grandTotal = projectData.financials.grand_total;
+    
+    breakdown.innerHTML = `
+        <div style="display: flex; justify-content: space-between; margin: 8px 0;">
+            <span>Subtotale:</span>
+            <span style="font-weight: 600;" id="subtotal-display">€${subtotal.toLocaleString('it-IT')}</span>
+        </div>
+        
+        ${discountPercent > 0 ? `
+        <div style="display: flex; justify-content: space-between; margin: 8px 0; color: #c4b5fd;">
+            <span>Sconto (${discountPercent}%):</span>
+            <span style="font-weight: 600;" id="discount-amount-display">-€${discountAmount.toLocaleString('it-IT')}</span>
+        </div>
+        ` : ''}
+        
+        <div style="display: flex; justify-content: space-between; margin: 8px 0; color: var(--text-muted);" id="tax-row">
+            <span>IVA (${projectData.financials.tax_percent}%):</span>
+            <span id="tax-display">€${taxAmount.toLocaleString('it-IT')}</span>
+        </div>
+        <hr style="margin: 15px 0; border: none; border-top: 1px solid var(--glass-border);">
+        <div style="display: flex; justify-content: space-between; font-size: 18px; font-weight: 700; color: var(--primary);">
+            <span>TOTALE:</span>
+            <span id="grand-total-display">€${grandTotal.toLocaleString('it-IT')}</span>
+        </div>
+    `;
+}
+
+// ============================================
+// INLINE EDITING
+// ============================================
+
+function setupEditListeners() {
+    document.querySelectorAll('.editable').forEach(el => {
+        el.addEventListener('input', () => {
+            markAsChanged();
+        });
+        
+        el.addEventListener('blur', function() {
+            const field = this.dataset.field;
+            const value = this.textContent.trim();
+            updateProjectField(field, value);
+        });
+    });
+}
+
+function updateProjectField(field, value) {
+    const parts = field.split('.');
+    let obj = projectData;
+    
+    for (let i = 0; i < parts.length - 1; i++) {
+        obj = obj[parts[i]];
+    }
+    
+    obj[parts[parts.length - 1]] = value;
+}
+
+function markAsChanged() {
+    hasChanges = true;
+    const saveBtn = document.getElementById('fab-save-btn');
+    if (saveBtn) saveBtn.style.display = 'flex';
+}
+
+// ============================================
+// SAVE CHANGES
+// ============================================
+
+async function saveProjectChanges() {
+    if (!hasChanges) {
+        showAlert('Nessuna modifica da salvare', 'info');
+        return;
+    }
+    
+    showLoading(true, 'Salvataggio modifiche...');
+    
+    try {
+        const response = await fetch(WEBHOOK_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                action: 'update_project',
+                project_id: projectData.meta?.project_id || projectData.meta?.invite_token,
+                vat: currentParams.vat,
+                operator_id: currentParams.operatorId,
+                invite_token: currentParams.inviteToken,
+                project: projectData
+            })
+        });
+        
+        if (!response.ok) throw new Error('Save failed');
+        
+        const data = await response.json();
+        console.log('✅ Project saved:', data);
+        
+        hasChanges = false;
+        const saveBtn = document.getElementById('fab-save-btn');
+        if (saveBtn) saveBtn.style.display = 'none';
+        showAlert('✅ Modifiche salvate con successo!', 'success');
+        
+    } catch (error) {
+        console.error('Save error:', error);
+        showAlert('Errore nel salvataggio delle modifiche', 'error');
+    } finally {
+        showLoading(false);
+    }
 }
 
 // ============================================
@@ -275,7 +446,6 @@ async function downloadProjectPDF() {
         
         showAlert('✅ PDF generato! Controlla i download.', 'success');
         
-        // Se il backend ritorna un URL, apri in nuova tab
         if (data.pdf_url) {
             window.open(data.pdf_url, '_blank');
         }
@@ -377,8 +547,10 @@ async function sendToAppButton() {
 
 function updateProjectStatus(status) {
     const statusEl = document.getElementById('project-status');
-    statusEl.textContent = getStatusLabel(status);
-    statusEl.style.color = getStatusColor(status);
+    if (statusEl) {
+        statusEl.textContent = getStatusLabel(status);
+        statusEl.style.color = getStatusColor(status);
+    }
 }
 
 function getStatusColor(status) {
@@ -453,5 +625,10 @@ function showAlert(message, type = 'info', duration = 3000) {
 }
 
 function goBack() {
+    if (hasChanges) {
+        if (!confirm('Ci sono modifiche non salvate. Vuoi davvero uscire?')) {
+            return;
+        }
+    }
     navigateOperatorWithContext('operator_tasks.html');
 }
