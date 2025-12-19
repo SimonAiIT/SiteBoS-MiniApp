@@ -1,12 +1,6 @@
 // ============================================
 // OPERATOR PROJECT EDITOR - LOGIC
-// ✅ LOADS PROJECT FROM BACKEND
-// ✅ DISPLAYS COMPLETE PROJECT DATA
-// ✅ FAB ACTIONS WITH API CALLS
-// ✅ DISCOUNT CALCULATION
-// ✅ INLINE EDITING
-// ✅ TAX-INCLUDED TOGGLE (FORFETTARI)
-// ✅ SIMPLIFIED HTML VIEWER (POST-SEND)
+// ✅ COMPLETE VERSION WITH FULL RENDERING
 // ============================================
 
 const tg = window.Telegram.WebApp;
@@ -48,7 +42,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 // ============================================
-// LOAD PROJECT FROM BACKEND
+// LOAD PROJECT
 // ============================================
 
 async function loadProject(vat, operatorId, inviteToken) {
@@ -105,13 +99,154 @@ async function loadProject(vat, operatorId, inviteToken) {
 }
 
 // ============================================
-// RENDER PROJECT
-// (Keep existing renderProject function - not changed)
+// RENDER PROJECT - COMPLETE FUNCTION
 // ============================================
 
 function renderProject(project) {
-    // ... (Same as before - full project rendering)
-    // For brevity, not re-pasting the entire function
+    const container = document.getElementById('project-container');
+    
+    const meta = project.meta || {};
+    const customer = project.customer_context || {};
+    const summary = project.executive_summary || {};
+    const items = project.items || [];
+    const financials = project.financials || {};
+    
+    container.innerHTML = `
+        <!-- Meta Info Card -->
+        <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 20px;">
+                <div>
+                    <h2 style="margin: 0 0 5px 0; font-size: 18px;" class="editable" contenteditable="true" data-field="meta.quote_id">${meta.quote_id || 'N/A'}</h2>
+                    <p style="font-size: 12px; color: var(--text-muted); margin: 0;">
+                        Creato il ${meta.created_at ? new Date(meta.created_at).toLocaleDateString('it-IT') : 'N/A'} da ${meta.created_by_operator || 'Operatore'}
+                    </p>
+                </div>
+                <span class="badge badge-${meta.status || 'wip'}" style="background: ${getStatusColor(meta.status || 'draft')};">
+                    ${getStatusLabel(meta.status || 'draft')}
+                </span>
+            </div>
+            
+            <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <p style="font-size: 11px; color: var(--text-muted); margin: 0 0 5px 0;">Project ID</p>
+                        <p style="font-size: 13px; font-family: monospace; margin: 0;">${meta.project_id || meta.invite_token || 'N/A'}</p>
+                    </div>
+                    <div style="text-align: right;">
+                        <p style="font-size: 11px; color: var(--text-muted); margin: 0 0 5px 0;">Valido fino al</p>
+                        <p style="font-size: 13px; margin: 0;">${meta.valid_until || 'N/A'}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Customer Context -->
+        <div class="card">
+            <h3><i class="fas fa-user"></i> Cliente</h3>
+            <div style="margin: 15px 0;">
+                <p style="margin: 5px 0;"><strong>${customer.name || 'N/A'}</strong></p>
+                <p style="font-size: 12px; color: var(--text-muted); margin: 3px 0;">
+                    <i class="fas fa-envelope"></i> ${customer.email || 'N/A'}
+                </p>
+                ${customer.phone ? `
+                    <p style="font-size: 12px; color: var(--text-muted); margin: 3px 0;">
+                        <i class="fas fa-phone"></i> ${customer.phone}
+                    </p>
+                ` : ''}
+            </div>
+            <div style="background: rgba(0,0,0,0.2); padding: 12px; border-radius: 8px; border-left: 3px solid var(--primary);">
+                <p class="editable" contenteditable="true" data-field="customer_context.needs_summary" style="font-size: 13px; margin: 0; line-height: 1.5;">
+                    ${customer.needs_summary || 'N/A'}
+                </p>
+            </div>
+        </div>
+        
+        <!-- Executive Summary -->
+        <div class="card">
+            <h3><i class="fas fa-lightbulb"></i> <span class="editable" contenteditable="true" data-field="executive_summary.title">${summary.title || 'Riepilogo Esecutivo'}</span></h3>
+            <p class="editable" contenteditable="true" data-field="executive_summary.value_proposition" style="font-size: 14px; line-height: 1.6; margin: 15px 0;">
+                ${summary.value_proposition || 'N/A'}
+            </p>
+        </div>
+        
+        <!-- Items -->
+        <div class="card">
+            <h3><i class="fas fa-tasks"></i> Servizi Proposti</h3>
+            ${items.length > 0 ? items.map((item, index) => `
+                <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px; margin: 15px 0; border-left: 4px solid var(--primary);" data-item-index="${index}">
+                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px;">
+                        <h4 class="editable" contenteditable="true" data-field="items.${index}.name" style="margin: 0; font-size: 15px;">${item.name || item.short_name || 'Servizio'}</h4>
+                        <span style="font-size: 16px; font-weight: 700; color: var(--primary);">
+                            €${(item.total || 0).toLocaleString('it-IT')}
+                        </span>
+                    </div>
+                    
+                    <p style="font-size: 12px; color: var(--text-muted); margin: 5px 0;">
+                        SKU: ${item.sku || 'N/A'} | Quantità: ${item.qty || 1}
+                    </p>
+                    
+                    <p class="editable" contenteditable="true" data-field="items.${index}.description_customized" style="font-size: 13px; line-height: 1.5; margin: 10px 0;">
+                        ${item.description_customized || item.description || 'N/A'}
+                    </p>
+                    
+                    ${item.timeline_estimation ? `
+                        <div style="margin: 10px 0;">
+                            <p style="font-size: 12px; margin: 5px 0;">
+                                <i class="fas fa-clock"></i> <strong>Timeline:</strong> <span class="editable" contenteditable="true" data-field="items.${index}.timeline_estimation">${item.timeline_estimation}</span>
+                            </p>
+                        </div>
+                    ` : ''}
+                    
+                    ${item.milestones && item.milestones.length > 0 ? `
+                        <div style="margin: 10px 0;">
+                            <p style="font-size: 12px; font-weight: 600; margin: 5px 0;">Milestone:</p>
+                            <ul style="margin: 5px 0 0 20px; font-size: 12px; color: var(--text-muted);">
+                                ${item.milestones.map((m, mi) => `
+                                    <li class="editable" contenteditable="true" data-field="items.${index}.milestones.${mi}" style="margin: 3px 0;">${m}</li>
+                                `).join('')}
+                            </ul>
+                        </div>
+                    ` : ''}
+                    
+                    ${item.compliance_trust_badges && item.compliance_trust_badges.length > 0 ? `
+                        <div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--glass-border);">
+                            <p style="font-size: 11px; color: var(--text-muted); margin: 0;">
+                                ${item.compliance_trust_badges.join(' • ')}
+                            </p>
+                        </div>
+                    ` : ''}
+                </div>
+            `).join('') : '<p style="color: var(--text-muted);">Nessun servizio trovato</p>'}
+        </div>
+        
+        <!-- Financials with Discount & Tax Toggle -->
+        <div class="card" style="background: linear-gradient(135deg, rgba(50, 173, 230, 0.1), rgba(80, 200, 120, 0.1));">
+            <h3><i class="fas fa-euro-sign"></i> Riepilogo Economico</h3>
+            
+            <!-- Tax Included Toggle -->
+            <div class="tax-toggle" onclick="toggleTaxIncluded()">
+                <i class="fas fa-file-invoice" style="color: #6ee7b7; font-size: 18px;"></i>
+                <span class="tax-toggle-label">Tasse Incluse (Forfettari)</span>
+                <div class="tax-toggle-checkbox ${taxIncluded ? 'active' : ''}" id="tax-toggle-checkbox">
+                    <div class="tax-toggle-slider"></div>
+                </div>
+            </div>
+            
+            <!-- Discount Input -->
+            <div class="discount-input">
+                <i class="fas fa-percent" style="color: #c4b5fd; font-size: 18px;"></i>
+                <span class="discount-label">Sconto:</span>
+                <input type="number" id="discount-input" min="0" max="100" step="0.1" value="${discountPercent}" onchange="applyDiscount()">
+                <span style="color: var(--text-muted); font-size: 14px;">%</span>
+            </div>
+            
+            <div style="margin: 15px 0;" id="financials-breakdown">
+                <!-- Will be populated by updateFinancialsUI() -->
+            </div>
+        </div>
+    `;
+    
+    updateFinancialsUI();
 }
 
 // ============================================
@@ -185,6 +320,8 @@ function updateFinancialsUI() {
     const f = projectData.financials;
     const container = document.getElementById('financials-breakdown');
     
+    if (!container) return;
+    
     const subtotal = f.subtotal || 0;
     const discountAmount = f.discount_amount || 0;
     const subtotalAfterDiscount = f.subtotal_after_discount || subtotal;
@@ -225,7 +362,6 @@ function updateFinancialsUI() {
 
 // ============================================
 // EDITING & SAVING
-// (Keep existing functions)
 // ============================================
 
 function setupEditListeners() {
@@ -299,7 +435,7 @@ async function saveProjectChanges() {
 }
 
 // ============================================
-// SEND TO APP (SIMPLIFIED - ONE CALL)
+// SEND TO APP (SIMPLIFIED)
 // ============================================
 
 async function sendToAppButton() {
@@ -311,7 +447,6 @@ async function sendToAppButton() {
     showLoading(true, 'Invio su App Cliente...');
     
     try {
-        // Single API call: generate HTML + send + update status
         const response = await fetch(WEBHOOK_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -334,11 +469,9 @@ async function sendToAppButton() {
             throw new Error('No HTML in response');
         }
         
-        // Update status to pending
         projectData.meta.status = 'pending';
         updateProjectStatus('pending');
         
-        // Show HTML viewer with result
         openHTMLViewer(data.html);
         
         showAlert('✅ Progetto inviato sull\'App del cliente!', 'success');
@@ -357,7 +490,6 @@ function openHTMLViewer(htmlContent) {
     
     modal.classList.add('open');
     
-    // Write HTML to iframe
     const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
     iframeDoc.open();
     iframeDoc.write(htmlContent);
@@ -368,24 +500,21 @@ function closeHTMLViewer() {
     const modal = document.getElementById('html-viewer-modal');
     modal.classList.remove('open');
     
-    // Optional: refresh page to show updated status
     setTimeout(() => {
         location.reload();
     }, 300);
 }
 
 // ============================================
-// OTHER FAB ACTIONS (PLACEHOLDERS)
+// OTHER FAB ACTIONS
 // ============================================
 
 async function downloadProjectPDF() {
     showAlert('Funzione PDF in sviluppo (costa 100 crediti)', 'info');
-    // TODO: Implement PDF generation
 }
 
 async function sendViaSiteBosMailButton() {
     showAlert('Funzione SiteBoS Mail in sviluppo (costa 200 crediti)', 'info');
-    // TODO: Implement email sending
 }
 
 // ============================================
