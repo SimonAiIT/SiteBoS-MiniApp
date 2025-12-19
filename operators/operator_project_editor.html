@@ -208,6 +208,124 @@
             font-weight: 600;
             flex: 1;
         }
+        
+        /* HTML Viewer Modal */
+        #html-viewer-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            backdrop-filter: blur(10px);
+            z-index: 9999;
+            display: none;
+            flex-direction: column;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        #html-viewer-modal.open {
+            display: flex;
+        }
+        
+        .viewer-header {
+            background: linear-gradient(135deg, rgba(91, 111, 237, 0.2), rgba(16, 185, 129, 0.2));
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .viewer-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .viewer-close {
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: white;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+        
+        .viewer-close:hover {
+            background: rgba(255, 107, 107, 0.3);
+            transform: scale(1.1);
+        }
+        
+        .viewer-content {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        #preview-iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            background: white;
+        }
+        
+        .viewer-actions {
+            padding: 15px 20px;
+            background: rgba(0, 0, 0, 0.5);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+        }
+        
+        .viewer-btn {
+            padding: 12px 24px;
+            border-radius: 12px;
+            border: none;
+            font-weight: 600;
+            font-size: 15px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .viewer-btn-confirm {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            flex: 1;
+            max-width: 300px;
+        }
+        
+        .viewer-btn-confirm:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+        }
+        
+        .viewer-btn-cancel {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .viewer-btn-cancel:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
     </style>
 </head>
 <body>
@@ -263,6 +381,34 @@
             <i class="fas fa-arrow-left"></i>
             <span class="fab-tooltip">Torna Indietro</span>
         </button>
+    </div>
+
+    <!-- HTML Viewer Modal -->
+    <div id="html-viewer-modal">
+        <div class="viewer-header">
+            <div class="viewer-title">
+                <i class="fas fa-mobile-alt"></i>
+                <span>Anteprima App Cliente</span>
+            </div>
+            <button class="viewer-close" onclick="closeHTMLViewer()" aria-label="Chiudi">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <div class="viewer-content">
+            <iframe id="preview-iframe" title="Project Preview"></iframe>
+        </div>
+        
+        <div class="viewer-actions">
+            <button class="viewer-btn viewer-btn-cancel" onclick="closeHTMLViewer()">
+                <i class="fas fa-times"></i>
+                Annulla
+            </button>
+            <button class="viewer-btn viewer-btn-confirm" onclick="confirmSendToApp()">
+                <i class="fas fa-paper-plane"></i>
+                Conferma Invio
+            </button>
+        </div>
     </div>
 
     <!-- Loading Overlay -->
