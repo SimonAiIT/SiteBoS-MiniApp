@@ -2,7 +2,7 @@
 // OPERATOR PROJECT EDITOR - LOGIC
 // ✅ LOADS PROJECT FROM BACKEND
 // ✅ DISPLAYS COMPLETE PROJECT DATA
-// ✅ ACTION BUTTONS (SEND, EDIT, DOWNLOAD)
+// ✅ FAB ACTIONS WITH API CALLS
 // ============================================
 
 const tg = window.Telegram.WebApp;
@@ -13,6 +13,7 @@ const WEBHOOK_URL = 'https://trinai.api.workflow.dcmake.it/webhook/d253f855-ce1a
 
 let projectData = null;
 let operatorSession = null;
+let currentParams = { vat: null, operatorId: null, inviteToken: null };
 
 // ============================================
 // INIT
@@ -23,13 +24,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     // Estrai parametri URL
     const urlParams = new URLSearchParams(window.location.search);
-    const vat = urlParams.get('vat');
-    const operatorId = urlParams.get('operator');
-    const inviteToken = urlParams.get('token');
+    currentParams.vat = urlParams.get('vat');
+    currentParams.operatorId = urlParams.get('operator');
+    currentParams.inviteToken = urlParams.get('token');
     
-    console.log('📋 URL Params:', { vat, operatorId, inviteToken });
+    console.log('📋 URL Params:', currentParams);
     
-    if (!vat || !operatorId || !inviteToken) {
+    if (!currentParams.vat || !currentParams.operatorId || !currentParams.inviteToken) {
         showAlert('Parametri mancanti. Impossibile caricare il progetto.', 'error');
         setTimeout(() => {
             navigateOperatorWithContext('operator_tasks.html');
@@ -37,7 +38,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         return;
     }
     
-    await loadProject(vat, operatorId, inviteToken);
+    await loadProject(currentParams.vat, currentParams.operatorId, currentParams.inviteToken);
 });
 
 // ============================================
@@ -216,41 +217,140 @@ function renderProject(project) {
                 </div>
             </div>
         </div>
-        
-        <!-- Action Buttons -->
-        <div class="card">
-            <div class="btn-container">
-                <button class="btn btn-primary btn-block" onclick="sendToCustomer()">
-                    <i class="fas fa-paper-plane"></i> Invia al Cliente
-                </button>
-                <button class="btn btn-secondary btn-block" onclick="editProject()">
-                    <i class="fas fa-edit"></i> Modifica Preventivo
-                </button>
-                <button class="btn btn-block" onclick="downloadPDF()">
-                    <i class="fas fa-download"></i> Scarica PDF
-                </button>
-            </div>
-        </div>
     `;
 }
 
 // ============================================
-// ACTIONS
+// FAB ACTIONS - API CALLS
 // ============================================
 
-function sendToCustomer() {
-    showAlert('Funzione "Invia al Cliente" in sviluppo', 'info');
-    // TODO: Implementa invio email/notifica al cliente
+// Download PDF (100 crediti)
+async function downloadProjectPDF() {
+    if (!projectData) {
+        showAlert('Progetto non caricato', 'warning');
+        return;
+    }
+    
+    if (!confirm('💾 Scaricare il PDF? Costerà 100 crediti.')) {
+        return;
+    }
+    
+    showLoading(true, 'Generazione PDF...');
+    
+    try {
+        const response = await fetch(WEBHOOK_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                action: 'download_project_pdf',
+                project_id: projectData.meta.project_id,
+                vat: currentParams.vat,
+                operator_id: currentParams.operatorId,
+                invite_token: currentParams.inviteToken
+            })
+        });
+        
+        if (!response.ok) throw new Error('PDF generation failed');
+        
+        const data = await response.json();
+        console.log('✅ PDF generated:', data);
+        
+        showAlert('✅ PDF generato! Controlla i download.', 'success');
+        
+        // Se il backend ritorna un URL, apri in nuova tab
+        if (data.pdf_url) {
+            window.open(data.pdf_url, '_blank');
+        }
+        
+    } catch (error) {
+        console.error('PDF error:', error);
+        showAlert('Errore nella generazione del PDF', 'error');
+    } finally {
+        showLoading(false);
+    }
 }
 
-function editProject() {
-    showAlert('Funzione "Modifica" in sviluppo', 'info');
-    // TODO: Abilita modalità edit
+// Send via SiteBoS Mail (200 crediti)
+async function sendViaSiteBosMailButton() {
+    if (!projectData) {
+        showAlert('Progetto non caricato', 'warning');
+        return;
+    }
+    
+    if (!confirm('📧 Inviare via SiteBoS Mail al cliente? Costerà 200 crediti.')) {
+        return;
+    }
+    
+    showLoading(true, 'Invio email...');
+    
+    try {
+        const response = await fetch(WEBHOOK_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                action: 'send_project_sitebos_mail',
+                project_id: projectData.meta.project_id,
+                vat: currentParams.vat,
+                operator_id: currentParams.operatorId,
+                invite_token: currentParams.inviteToken,
+                customer_email: projectData.customer_context.email
+            })
+        });
+        
+        if (!response.ok) throw new Error('Email send failed');
+        
+        const data = await response.json();
+        console.log('✅ Email sent:', data);
+        
+        showAlert(`✅ Email inviata a ${projectData.customer_context.email}!`, 'success');
+        
+    } catch (error) {
+        console.error('Email error:', error);
+        showAlert('Errore nell\'invio dell\'email', 'error');
+    } finally {
+        showLoading(false);
+    }
 }
 
-function downloadPDF() {
-    showAlert('Funzione "Download PDF" in sviluppo', 'info');
-    // TODO: Genera e scarica PDF
+// Send to App (gratis)
+async function sendToAppButton() {
+    if (!projectData) {
+        showAlert('Progetto non caricato', 'warning');
+        return;
+    }
+    
+    if (!confirm('📱 Inviare il progetto sull\'App del cliente? (Gratuito)')) {
+        return;
+    }
+    
+    showLoading(true, 'Invio su App...');
+    
+    try {
+        const response = await fetch(WEBHOOK_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                action: 'send_project_to_app',
+                project_id: projectData.meta.project_id,
+                vat: currentParams.vat,
+                operator_id: currentParams.operatorId,
+                invite_token: currentParams.inviteToken
+            })
+        });
+        
+        if (!response.ok) throw new Error('App send failed');
+        
+        const data = await response.json();
+        console.log('✅ Sent to app:', data);
+        
+        showAlert('✅ Progetto inviato sull\'App del cliente!', 'success');
+        
+    } catch (error) {
+        console.error('App send error:', error);
+        showAlert('Errore nell\'invio sull\'App', 'error');
+    } finally {
+        showLoading(false);
+    }
 }
 
 // ============================================
