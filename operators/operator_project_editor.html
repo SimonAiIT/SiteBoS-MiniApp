@@ -56,6 +56,10 @@
             background: linear-gradient(135deg, #10b981, #059669);
         }
         
+        .fab-save {
+            background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+        }
+        
         .fab-cost-badge {
             position: absolute;
             top: -8px;
@@ -91,6 +95,59 @@
         .fab-back {
             margin-top: 20px;
         }
+        
+        /* Editable fields */
+        .editable {
+            border: 1px dashed transparent;
+            border-radius: 4px;
+            padding: 4px 8px;
+            transition: all 0.2s ease;
+            cursor: text;
+        }
+        
+        .editable:hover {
+            border-color: rgba(50, 173, 230, 0.5);
+            background: rgba(50, 173, 230, 0.05);
+        }
+        
+        .editable:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: rgba(50, 173, 230, 0.1);
+        }
+        
+        .discount-input {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 15px 0;
+            padding: 12px;
+            background: rgba(139, 92, 246, 0.1);
+            border-radius: 8px;
+            border: 1px solid rgba(139, 92, 246, 0.3);
+        }
+        
+        .discount-input input {
+            width: 80px;
+            padding: 8px 12px;
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 6px;
+            background: rgba(0,0,0,0.3);
+            color: white;
+            font-size: 16px;
+            font-weight: 700;
+            text-align: center;
+        }
+        
+        .discount-input input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+        
+        .discount-label {
+            color: #c4b5fd;
+            font-weight: 600;
+        }
     </style>
 </head>
 <body>
@@ -114,6 +171,12 @@
 
     <!-- Floating Action Buttons -->
     <div class="fab-actions">
+        <!-- Save Changes -->
+        <button class="fab-action-btn fab-save" onclick="saveProjectChanges()" aria-label="Salva Modifiche" title="Salva Modifiche" id="fab-save-btn" style="display: none;">
+            <i class="fas fa-save"></i>
+            <span class="fab-tooltip">Salva Modifiche</span>
+        </button>
+        
         <!-- Download PDF (100 crediti) -->
         <button class="fab-action-btn fab-pdf" onclick="downloadProjectPDF()" aria-label="Scarica PDF" title="Scarica PDF (100 crediti)">
             <i class="fas fa-file-pdf"></i>
