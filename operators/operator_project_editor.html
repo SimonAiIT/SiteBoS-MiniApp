@@ -60,6 +60,16 @@
             background: linear-gradient(135deg, #8b5cf6, #7c3aed);
         }
         
+        .fab-back {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            margin-top: 20px;
+        }
+        
+        .fab-back:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+        
         .fab-cost-badge {
             position: absolute;
             top: -8px;
@@ -90,13 +100,6 @@
         
         .fab-action-btn:hover .fab-tooltip {
             opacity: 1;
-        }
-        
-        .fab-back {
-            margin-top: 20px;
-            width: 56px;
-            height: 56px;
-            border-radius: 50%;
         }
         
         /* Editable fields */
@@ -256,8 +259,9 @@
         </button>
         
         <!-- Torna Indietro -->
-        <button class="fab-btn fab-secondary fab-back" onclick="goBack()" aria-label="Torna Indietro" title="Torna Indietro">
+        <button class="fab-action-btn fab-back" onclick="goBack()" aria-label="Torna Indietro" title="Torna Indietro">
             <i class="fas fa-arrow-left"></i>
+            <span class="fab-tooltip">Torna Indietro</span>
         </button>
     </div>
 
