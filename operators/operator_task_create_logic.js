@@ -952,8 +952,18 @@ async function generateQuote() {
 
         showAlert('✅ Preventivo generato con successo!', 'success');
 
+        // ⏱️ Attendi 1.5s per mostrare il messaggio di successo
         setTimeout(() => {
-            navigateOperatorWithContext('operator_tasks.html');
+            // Estrai invite_token dal customer (già presente in selectedTarget)
+            const inviteToken = selectedTarget.tasks?.[0]?.invite_token || currentSessionId;
+            const vat = operatorSession?.vat || URL_VAT;
+            const operatorId = operatorSession?.chat_id || URL_CHAT_ID;
+            
+            // Redirect a Project Editor con parametri URL
+            const editorUrl = `operator_project_editor.html?vat=${encodeURIComponent(vat)}&operator=${encodeURIComponent(operatorId)}&token=${encodeURIComponent(inviteToken)}`;
+            
+            console.log('🔄 Redirect to:', editorUrl);
+            navigateOperatorWithContext(editorUrl);
         }, 1500);
 
     } catch (error) {
