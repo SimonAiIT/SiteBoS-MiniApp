@@ -65,10 +65,15 @@ async function loadProject(vat, operatorId, inviteToken) {
         const data = await response.json();
         console.log('✅ Project loaded:', data);
         
-        projectData = data.project;
+        // 🔧 FIX: Handle both 'project' and 'projects' from backend
+        projectData = data.project || data.projects;
+        
+        if (!projectData) {
+            throw new Error('No project data in response');
+        }
         
         renderProject(projectData);
-        updateProjectStatus(projectData.meta.status);
+        updateProjectStatus(projectData.meta?.status || 'draft');
         
     } catch (error) {
         console.error('Load error:', error);
@@ -98,18 +103,25 @@ async function loadProject(vat, operatorId, inviteToken) {
 function renderProject(project) {
     const container = document.getElementById('project-container');
     
+    // Safe property access with defaults
+    const meta = project.meta || {};
+    const customer = project.customer_context || {};
+    const summary = project.executive_summary || {};
+    const items = project.items || [];
+    const financials = project.financials || {};
+    
     container.innerHTML = `
         <!-- Meta Info Card -->
         <div class="card">
             <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 20px;">
                 <div>
-                    <h2 style="margin: 0 0 5px 0; font-size: 18px;">${project.meta.quote_id}</h2>
+                    <h2 style="margin: 0 0 5px 0; font-size: 18px;">${meta.quote_id || 'N/A'}</h2>
                     <p style="font-size: 12px; color: var(--text-muted); margin: 0;">
-                        Creato il ${new Date(project.meta.created_at).toLocaleDateString('it-IT')} da ${project.meta.created_by_operator}
+                        Creato il ${meta.created_at ? new Date(meta.created_at).toLocaleDateString('it-IT') : 'N/A'} da ${meta.created_by_operator || 'Operatore'}
                     </p>
                 </div>
-                <span class="status-badge" style="background: ${getStatusColor(project.meta.status)};">
-                    ${getStatusLabel(project.meta.status)}
+                <span class="status-badge" style="background: ${getStatusColor(meta.status || 'draft')};">
+                    ${getStatusLabel(meta.status || 'draft')}
                 </span>
             </div>
             
@@ -117,11 +129,11 @@ function renderProject(project) {
                 <div style="display: flex; justify-content: space-between; align-items: center;">
                     <div>
                         <p style="font-size: 11px; color: var(--text-muted); margin: 0 0 5px 0;">Project ID</p>
-                        <p style="font-size: 13px; font-family: monospace; margin: 0;">${project.meta.project_id}</p>
+                        <p style="font-size: 13px; font-family: monospace; margin: 0;">${meta.project_id || meta.invite_token || 'N/A'}</p>
                     </div>
                     <div style="text-align: right;">
                         <p style="font-size: 11px; color: var(--text-muted); margin: 0 0 5px 0;">Valido fino al</p>
-                        <p style="font-size: 13px; margin: 0;">${project.meta.valid_until}</p>
+                        <p style="font-size: 13px; margin: 0;">${meta.valid_until || 'N/A'}</p>
                     </div>
                 </div>
             </div>
@@ -131,71 +143,77 @@ function renderProject(project) {
         <div class="card">
             <h3><i class="fas fa-user"></i> Cliente</h3>
             <div style="margin: 15px 0;">
-                <p style="margin: 5px 0;"><strong>${project.customer_context.name}</strong></p>
+                <p style="margin: 5px 0;"><strong>${customer.name || 'N/A'}</strong></p>
                 <p style="font-size: 12px; color: var(--text-muted); margin: 3px 0;">
-                    <i class="fas fa-envelope"></i> ${project.customer_context.email}
+                    <i class="fas fa-envelope"></i> ${customer.email || 'N/A'}
                 </p>
-                ${project.customer_context.phone ? `
+                ${customer.phone ? `
                     <p style="font-size: 12px; color: var(--text-muted); margin: 3px 0;">
-                        <i class="fas fa-phone"></i> ${project.customer_context.phone}
+                        <i class="fas fa-phone"></i> ${customer.phone}
                     </p>
                 ` : ''}
             </div>
             <div style="background: rgba(0,0,0,0.2); padding: 12px; border-radius: 8px; border-left: 3px solid var(--primary);">
                 <p style="font-size: 13px; margin: 0; line-height: 1.5;">
-                    ${project.customer_context.needs_summary}
+                    ${customer.needs_summary || 'N/A'}
                 </p>
             </div>
         </div>
         
         <!-- Executive Summary -->
         <div class="card">
-            <h3><i class="fas fa-lightbulb"></i> ${project.executive_summary.title}</h3>
+            <h3><i class="fas fa-lightbulb"></i> ${summary.title || 'Riepilogo Esecutivo'}</h3>
             <p style="font-size: 14px; line-height: 1.6; margin: 15px 0;">
-                ${project.executive_summary.value_proposition}
+                ${summary.value_proposition || 'N/A'}
             </p>
         </div>
         
         <!-- Items -->
         <div class="card">
             <h3><i class="fas fa-tasks"></i> Servizi Proposti</h3>
-            ${project.items.map((item, index) => `
+            ${items.length > 0 ? items.map((item, index) => `
                 <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px; margin: 15px 0; border-left: 4px solid var(--primary);">
                     <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px;">
-                        <h4 style="margin: 0; font-size: 15px;">${item.name}</h4>
+                        <h4 style="margin: 0; font-size: 15px;">${item.name || item.short_name || 'Servizio'}</h4>
                         <span style="font-size: 16px; font-weight: 700; color: var(--primary);">
-                            €${item.total.toLocaleString('it-IT')}
+                            €${(item.total || 0).toLocaleString('it-IT')}
                         </span>
                     </div>
                     
                     <p style="font-size: 12px; color: var(--text-muted); margin: 5px 0;">
-                        SKU: ${item.sku} | Quantità: ${item.qty}
+                        SKU: ${item.sku || 'N/A'} | Quantità: ${item.qty || 1}
                     </p>
                     
                     <p style="font-size: 13px; line-height: 1.5; margin: 10px 0;">
-                        ${item.description_customized}
+                        ${item.description_customized || item.description || 'N/A'}
                     </p>
                     
-                    <div style="margin: 10px 0;">
-                        <p style="font-size: 12px; margin: 5px 0;">
-                            <i class="fas fa-clock"></i> <strong>Timeline:</strong> ${item.timeline_estimation}
-                        </p>
-                    </div>
+                    ${item.timeline_estimation ? `
+                        <div style="margin: 10px 0;">
+                            <p style="font-size: 12px; margin: 5px 0;">
+                                <i class="fas fa-clock"></i> <strong>Timeline:</strong> ${item.timeline_estimation}
+                            </p>
+                        </div>
+                    ` : ''}
                     
-                    <div style="margin: 10px 0;">
-                        <p style="font-size: 12px; font-weight: 600; margin: 5px 0;">Milestone:</p>
-                        <ul style="margin: 5px 0 0 20px; font-size: 12px; color: var(--text-muted);">
-                            ${item.milestones.map(m => `<li style="margin: 3px 0;">${m}</li>`).join('')}
-                        </ul>
-                    </div>
+                    ${item.milestones && item.milestones.length > 0 ? `
+                        <div style="margin: 10px 0;">
+                            <p style="font-size: 12px; font-weight: 600; margin: 5px 0;">Milestone:</p>
+                            <ul style="margin: 5px 0 0 20px; font-size: 12px; color: var(--text-muted);">
+                                ${item.milestones.map(m => `<li style="margin: 3px 0;">${m}</li>`).join('')}
+                            </ul>
+                        </div>
+                    ` : ''}
                     
-                    <div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--glass-border);">
-                        <p style="font-size: 11px; color: var(--text-muted); margin: 0;">
-                            ${item.compliance_trust_badges.join(' • ')}
-                        </p>
-                    </div>
+                    ${item.compliance_trust_badges && item.compliance_trust_badges.length > 0 ? `
+                        <div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--glass-border);">
+                            <p style="font-size: 11px; color: var(--text-muted); margin: 0;">
+                                ${item.compliance_trust_badges.join(' • ')}
+                            </p>
+                        </div>
+                    ` : ''}
                 </div>
-            `).join('')}
+            `).join('') : '<p style="color: var(--text-muted);">Nessun servizio trovato</p>'}
         </div>
         
         <!-- Financials -->
@@ -204,16 +222,16 @@ function renderProject(project) {
             <div style="margin: 15px 0;">
                 <div style="display: flex; justify-content: space-between; margin: 8px 0;">
                     <span>Subtotale:</span>
-                    <span style="font-weight: 600;">€${project.financials.subtotal.toLocaleString('it-IT')}</span>
+                    <span style="font-weight: 600;">€${(financials.subtotal || 0).toLocaleString('it-IT')}</span>
                 </div>
                 <div style="display: flex; justify-content: space-between; margin: 8px 0; color: var(--text-muted);">
-                    <span>IVA (${project.financials.tax_percent}%):</span>
-                    <span>€${project.financials.tax_amount.toLocaleString('it-IT')}</span>
+                    <span>IVA (${financials.tax_percent || 22}%):</span>
+                    <span>€${(financials.tax_amount || 0).toLocaleString('it-IT')}</span>
                 </div>
                 <hr style="margin: 15px 0; border: none; border-top: 1px solid var(--glass-border);">
                 <div style="display: flex; justify-content: space-between; font-size: 18px; font-weight: 700; color: var(--primary);">
                     <span>TOTALE:</span>
-                    <span>€${project.financials.grand_total.toLocaleString('it-IT')}</span>
+                    <span>€${(financials.grand_total || 0).toLocaleString('it-IT')}</span>
                 </div>
             </div>
         </div>
@@ -243,7 +261,7 @@ async function downloadProjectPDF() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 action: 'download_project_pdf',
-                project_id: projectData.meta.project_id,
+                project_id: projectData.meta?.project_id || projectData.meta?.invite_token,
                 vat: currentParams.vat,
                 operator_id: currentParams.operatorId,
                 invite_token: currentParams.inviteToken
@@ -289,11 +307,11 @@ async function sendViaSiteBosMailButton() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 action: 'send_project_sitebos_mail',
-                project_id: projectData.meta.project_id,
+                project_id: projectData.meta?.project_id || projectData.meta?.invite_token,
                 vat: currentParams.vat,
                 operator_id: currentParams.operatorId,
                 invite_token: currentParams.inviteToken,
-                customer_email: projectData.customer_context.email
+                customer_email: projectData.customer_context?.email
             })
         });
         
@@ -302,7 +320,7 @@ async function sendViaSiteBosMailButton() {
         const data = await response.json();
         console.log('✅ Email sent:', data);
         
-        showAlert(`✅ Email inviata a ${projectData.customer_context.email}!`, 'success');
+        showAlert(`✅ Email inviata a ${projectData.customer_context?.email}!`, 'success');
         
     } catch (error) {
         console.error('Email error:', error);
@@ -331,7 +349,7 @@ async function sendToAppButton() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 action: 'send_project_to_app',
-                project_id: projectData.meta.project_id,
+                project_id: projectData.meta?.project_id || projectData.meta?.invite_token,
                 vat: currentParams.vat,
                 operator_id: currentParams.operatorId,
                 invite_token: currentParams.inviteToken
