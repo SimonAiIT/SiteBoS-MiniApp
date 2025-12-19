@@ -4,6 +4,7 @@
 // ✅ QUOTE BUILDER with CATALOG
 // ✅ QUANTITY & PHOTOS with COMPRESSION
 // ✅ PDF UPLOAD ONLY (max 2, 2MB each)
+// ✅ REDIRECT TO PROJECT EDITOR AFTER QUOTE
 // ============================================
 
 const tg = window.Telegram.WebApp;
@@ -917,6 +918,7 @@ function updateDocumentsUI() {
 
 // ============================================
 // GENERATE QUOTE WITH PHOTOS, PDF & QUANTITY
+// ✅ REDIRECT TO PROJECT EDITOR
 // ============================================
 
 async function generateQuote() {
