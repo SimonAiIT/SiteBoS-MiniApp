@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editor Progetto - SiteBoS</title>
+    <link rel="stylesheet" href="../styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="operator_session_utils.js"></script>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="dashboard-header">
+            <div class="header-info">
+                <h1><i class="fas fa-file-contract"></i> Editor Progetto</h1>
+                <small id="project-status">Caricamento...</small>
+            </div>
+        </div>
+
+        <!-- Project Content Container -->
+        <div id="project-container">
+            <div style="text-align: center; padding: 60px 20px; color: var(--text-muted);">
+                <i class="fas fa-spinner fa-spin" style="font-size: 48px; margin-bottom: 20px; display: block;"></i>
+                <p>Caricamento progetto...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Floating Action Buttons -->
+    <div class="fab-container">
+        <button class="fab-btn fab-secondary" onclick="goBack()" aria-label="Torna Indietro">
+            <i class="fas fa-arrow-left"></i>
+        </button>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="hidden">
+        <div class="loader-content">
+            <div class="spinner-ring"></div>
+            <p id="loading-text" style="margin-top: 15px; color: var(--text-muted);">Elaborazione...</p>
+        </div>
+    </div>
+
+    <script src="operator_project_editor_logic.js"></script>
+</body>
+</html>
