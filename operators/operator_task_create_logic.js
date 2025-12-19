@@ -958,14 +958,13 @@ async function generateQuote() {
         setTimeout(() => {
             // Estrai invite_token dal customer (già presente in selectedTarget)
             const inviteToken = selectedTarget.tasks?.[0]?.invite_token || currentSessionId;
-            const vat = operatorSession?.vat || URL_VAT;
-            const operatorId = operatorSession?.chat_id || URL_CHAT_ID;
             
-            // Redirect a Project Editor con parametri URL
-            const editorUrl = `operator_project_editor.html?vat=${encodeURIComponent(vat)}&operator=${encodeURIComponent(operatorId)}&token=${encodeURIComponent(inviteToken)}`;
-            
-            console.log('🔄 Redirect to:', editorUrl);
-            navigateOperatorWithContext(editorUrl);
+            // ✅ FIX: Usa navigateOperatorWithContext con additionalParams
+            // Questa funzione aggiunge automaticamente chat_id e vat senza duplicarli
+            navigateOperatorWithContext('operator_project_editor.html', {
+                operator: operatorSession?.chat_id || URL_CHAT_ID,
+                token: inviteToken
+            });
         }, 1500);
 
     } catch (error) {
