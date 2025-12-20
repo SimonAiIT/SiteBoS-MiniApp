@@ -33,8 +33,9 @@
    📦 **Catalog Manager** - Categorie, prodotti, AI descriptions, blueprint operativi  
    ✅ **COMPLETO** - Schema MongoDB, AI Vision, pricing & SKU
 
-7. **[07-AGENDA.md](./07-AGENDA.md)** 📋  
-   📅 Sistema calendario: booking, conflict detection, export iCal
+7. **[07-AGENDA.md](./07-AGENDA.md)** 🚧  
+   📅 **Smart Resource Orchestrator** - Gestione risorse a 3 layer, calendario AI-powered  
+   🚧 **IN PROGRESS** (75%) - Fase A/B/C complete, Fase D (Calendar View) in roadmap
 
 8. **[08-HONEYPOT.md](./08-HONEYPOT.md)** ✅  
    🎭 **Knowledge Base + Anti-Spam** - Asset library, form builder, honeypot security  
@@ -56,7 +57,7 @@
 12. **[12-AI-INTEGRATION.md](./12-AI-INTEGRATION.md)** 📋  
     🤖 Google Gemini API: prompt engineering, rate limits, fallback strategies
 
-### 🟪 Deploy & Operations
+### 🟣 Deploy & Operations
 
 13. **[13-DEPLOYMENT.md](./13-DEPLOYMENT.md)** 📋  
     🚀 Guida deploy: Frontend setup, MongoDB config, Telegram Bot registration
@@ -88,15 +89,17 @@
 2. **[03-ONBOARDING.md](./03-ONBOARDING.md)** (3 min) → come si inizia  
 3. **[04-SOFT-SKILLS.md](./04-SOFT-SKILLS.md)** (10 min) → modulo soft skills completo  
 4. **[06-CATALOG.md](./06-CATALOG.md)** (8 min) → sistema catalog con AI  
-5. **[08-HONEYPOT.md](./08-HONEYPOT.md)** (8 min) → knowledge base + anti-spam  
-6. Esplora il codice nei folder corrispondenti → vedi l'implementazione reale  
+5. **[07-AGENDA.md](./07-AGENDA.md)** (12 min) → smart resource orchestrator  
+6. **[08-HONEYPOT.md](./08-HONEYPOT.md)** (8 min) → knowledge base + anti-spam  
+7. Esplora il codice nei folder corrispondenti → vedi l'implementazione reale  
 
 ### Per Developer:
 
 1. **Setup Frontend**: [13-DEPLOYMENT.md](./13-DEPLOYMENT.md) 📋  
 2. **Database Schema**: [11-DATABASE-SCHEMA.md](./11-DATABASE-SCHEMA.md) 📋  
 3. **Moduli Completi**: [04](./04-SOFT-SKILLS.md), [06](./06-CATALOG.md), [08](./08-HONEYPOT.md), [09](./09-LEGAL-PROCESSOR.md), [10](./10-SPONSOR.md) ✅  
-4. **AI Integration**: [12-AI-INTEGRATION.md](./12-AI-INTEGRATION.md) 📋  
+4. **Agenda System**: [07](./07-AGENDA.md) 🚧  
+5. **AI Integration**: [12-AI-INTEGRATION.md](./12-AI-INTEGRATION.md) 📋  
 
 ### Per Product Owner:
 
@@ -162,6 +165,7 @@
 
 | Data | Documento | Modifica |
 |------|-----------|----------|
+| 20 Dic 2025 | 07-AGENDA.md | 🚧 Creato: Smart Resource Orchestrator (Fase A/B/C) |
 | 12 Dic 2025 | 10-SPONSOR.md | ✅ Creato: sponsor carousel completo |
 | 12 Dic 2025 | 09-LEGAL-PROCESSOR.md | ✅ Creato: legal document generator |
 | 12 Dic 2025 | 03-ONBOARDING.md | ✅ Creato: onboarding 5-step wizard |
@@ -183,15 +187,15 @@
 | Onboarding | 03-ONBOARDING.md | ✅ | 100% |
 | Soft Skills | 04-SOFT-SKILLS.md | ✅ | 100% |
 | Catalog | 06-CATALOG.md | ✅ | 100% |
+| **Agenda** | **07-AGENDA.md** | **🚧** | **75%** |
 | HoneyPot | 08-HONEYPOT.md | ✅ | 100% |
 | Legal Processor | 09-LEGAL-PROCESSOR.md | ✅ | 100% |
 | Sponsor | 10-SPONSOR.md | ✅ | 100% |
 | Team Manager | 05-TEAM-MANAGER.md | 📋 | 0% |
-| Agenda | 07-AGENDA.md | 📋 | 0% |
 | Marketing | - | 📋 | 0% |
 | Dashboard | - | 📋 | 0% |
 
-**Totale Moduli**: 7/11 documentati (63.6%)
+**Totale Moduli**: 7.75/11 documentati (70.5%)
 
 ### Linee di Documentazione
 
@@ -199,11 +203,12 @@
 - **03-ONBOARDING.md**: ~180 righe
 - **04-SOFT-SKILLS.md**: ~520 righe
 - **06-CATALOG.md**: ~480 righe
+- **07-AGENDA.md**: ~550 righe 🆕
 - **08-HONEYPOT.md**: ~600 righe
 - **09-LEGAL-PROCESSOR.md**: ~210 righe
 - **10-SPONSOR.md**: ~240 righe
 
-**Totale**: ~2,600 righe di documentazione tecnica 📚
+**Totale**: ~3,150 righe di documentazione tecnica 📚
 
 ---
 
@@ -223,8 +228,8 @@ A: Sì. Ogni modifica al codice richiede update alla MD corrispondente (vedi Upd
 
 ### **Q: Quali moduli sono prioritari per la prossima documentazione?**
 A: Nell'ordine:
-1. **Team Manager** (profili stakeholder, CRUD operatori)
-2. **Agenda System** (calendario booking multi-operatore)
+1. **Agenda - Fase D** (Calendar operational view) - 🆙 🚧
+2. **Team Manager** (profili stakeholder, CRUD operatori)
 3. **Marketing Hub** (AI content generation)
 4. **Dashboard** (KPI widgets, gatekeeper)
 
@@ -248,7 +253,7 @@ Il codice frontend di SiteBoS è **pubblico per trasparenza**. Il backend (orche
 
 ---
 
-## 📞 Contatti
+## 📣 Contatti
 
 **Per domande sulla documentazione**:  
 📧 info@trinai.it  
@@ -270,17 +275,17 @@ Il codice frontend di SiteBoS è **pubblico per trasparenza**. Il backend (orche
 ### 📊 Progress Tracker
 
 ```
-████████████░░░░░░░░ 63.6% Complete
+██████████████░░░░░░ 70.5% Complete
 
 ✅ Overview
 ✅ Onboarding
 ✅ Soft Skills
 ✅ Catalog
+🚧 Agenda System (75%)
 ✅ HoneyPot
 ✅ Legal Processor
 ✅ Sponsor Carousel
 📋 Team Manager (Next)
-📋 Agenda System
 📋 Marketing Hub
 📋 Dashboard
 ```
