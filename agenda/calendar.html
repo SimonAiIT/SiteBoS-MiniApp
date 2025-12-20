@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calendario Operativo - SiteBoS</title>
+    <link rel="stylesheet" href="../styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    
+    <!-- FullCalendar CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container" style="padding-bottom: 80px;">
+        
+        <!-- Header Navigation -->
+        <div class="card" style="margin-bottom: 20px; padding: 15px;">
+            <!-- Resource Selector -->
+            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 15px;">
+                <i class="fas fa-calendar-alt" style="color: var(--primary); font-size: 20px;"></i>
+                <select id="resource-selector" class="form-control" style="flex: 1; padding: 10px;">
+                    <option value="">Caricamento...</option>
+                </select>
+                <button class="btn-icon" id="settings-btn" title="Modifica Risorsa">
+                    <i class="fas fa-cog"></i>
+                </button>
+            </div>
+
+            <!-- Status Indicators -->
+            <div id="status-indicators" style="display: flex; gap: 8px; flex-wrap: wrap;">
+                <!-- Populated by JS -->
+            </div>
+        </div>
+
+        <!-- Quick Actions Bar (Mobile First) -->
+        <div class="card" style="margin-bottom: 20px; padding: 12px;">
+            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                <button class="btn btn-sm" id="open-native-calendar-btn" style="flex: 1;">
+                    <i class="fas fa-external-link-alt"></i> App Calendario
+                </button>
+                <button class="btn btn-secondary btn-sm" id="add-event-btn" style="flex: 1;">
+                    <i class="fas fa-plus"></i> Nuovo Evento
+                </button>
+                <button class="btn btn-secondary btn-sm" id="export-ical-btn">
+                    <i class="fas fa-download"></i> iCal
+                </button>
+            </div>
+        </div>
+
+        <!-- View Mode Selector (Mobile Optimized) -->
+        <div class="nav-tabs" style="margin-bottom: 15px; display: flex; gap: 8px;">
+            <div class="nav-tab active" data-view="list" style="flex: 1; padding: 10px 8px; font-size: 12px;">
+                <i class="fas fa-list"></i> Lista
+            </div>
+            <div class="nav-tab" data-view="week" style="flex: 1; padding: 10px 8px; font-size: 12px;">
+                <i class="fas fa-calendar-week"></i> Settimana
+            </div>
+            <div class="nav-tab" data-view="month" style="flex: 1; padding: 10px 8px; font-size: 12px;">
+                <i class="fas fa-calendar"></i> Mese
+            </div>
+        </div>
+
+        <!-- Calendar Container (Desktop + Tablet) -->
+        <div id="calendar-container" class="card" style="padding: 15px; display: none;">
+            <div id="fullcalendar"></div>
+        </div>
+
+        <!-- List View (Mobile First - Default) -->
+        <div id="list-view" style="display: block;">
+            <!-- Today Section -->
+            <div class="card" style="margin-bottom: 15px;">
+                <h3 style="margin: 0 0 15px 0; display: flex; align-items: center; gap: 10px;">
+                    <i class="fas fa-calendar-day" style="color: var(--primary);"></i>
+                    Oggi - <span id="today-date"></span>
+                </h3>
+                <div id="today-events">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+
+            <!-- Upcoming Section -->
+            <div class="card" style="margin-bottom: 15px;">
+                <h3 style="margin: 0 0 15px 0; display: flex; align-items: center; gap: 10px;">
+                    <i class="fas fa-clock" style="color: var(--warning);"></i>
+                    Prossimi Eventi
+                </h3>
+                <div id="upcoming-events">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+
+            <!-- Compliance Alerts -->
+            <div id="compliance-section" class="card hidden" style="border-left: 4px solid var(--error);">
+                <h3 style="margin: 0 0 15px 0; display: flex; align-items: center; gap: 10px;">
+                    <i class="fas fa-bell" style="color: var(--error);"></i>
+                    Scadenze in Arrivo
+                </h3>
+                <div id="compliance-alerts">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Empty State -->
+        <div id="empty-state" class="hidden" style="text-align: center; padding: 40px 20px;">
+            <i class="fas fa-calendar-check" style="font-size: 48px; color: var(--text-secondary); margin-bottom: 15px;"></i>
+            <h3 style="color: var(--text-muted);">Nessun evento programmato</h3>
+            <p style="color: var(--text-secondary); font-size: 14px; margin-bottom: 20px;">
+                Inizia creando il tuo primo appuntamento!
+            </p>
+            <button class="btn" onclick="CalendarController.openNewEventModal()">
+                <i class="fas fa-plus"></i> Crea Evento
+            </button>
+        </div>
+
+    </div>
+
+    <!-- New Event Modal -->
+    <div id="event-modal" class="modal-overlay hidden">
+        <div class="modal-content" style="max-width: 500px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2 id="event-modal-title" style="margin: 0;">Nuovo Evento</h2>
+                <button class="btn-icon" onclick="CalendarController.closeEventModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <!-- Event Type Selector -->
+            <div class="form-group">
+                <label class="required">Tipo Evento</label>
+                <div class="payment-selector" style="margin-top: 10px;">
+                    <div class="payment-option" data-type="production">
+                        🟦 Production
+                    </div>
+                    <div class="payment-option" data-type="ops">
+                        ⬜ Ops
+                    </div>
+                    <div class="payment-option" data-type="compliance">
+                        🔔 Compliance
+                    </div>
+                </div>
+                <input type="hidden" id="event-type" value="production">
+            </div>
+
+            <div class="form-group">
+                <label class="required">Titolo</label>
+                <input type="text" id="event-title" placeholder="es. Appuntamento Cliente, Manutenzione">
+            </div>
+
+            <div class="row">
+                <div class="col">
+                    <div class="form-group">
+                        <label class="required">Data</label>
+                        <input type="date" id="event-date">
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="form-group">
+                        <label>Durata (min)</label>
+                        <input type="number" id="event-duration" value="60" min="15" step="15">
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col">
+                    <div class="form-group">
+                        <label class="required">Ora Inizio</label>
+                        <input type="time" id="event-start-time">
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="form-group">
+                        <label>Ora Fine</label>
+                        <input type="time" id="event-end-time" disabled>
+                        <span class="hint">Calcolata automaticamente</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Note</label>
+                <textarea id="event-notes" rows="3" placeholder="Dettagli aggiuntivi..."></textarea>
+            </div>
+
+            <!-- Recurring Option (for Ops/Compliance) -->
+            <div id="recurring-section" class="form-group hidden">
+                <label class="checkbox-group">
+                    <input type="checkbox" id="event-recurring">
+                    Evento ricorrente
+                </label>
+                <select id="recurring-freq" class="hidden" style="margin-top: 10px;">
+                    <option value="daily">Giornaliero</option>
+                    <option value="weekly">Settimanale</option>
+                    <option value="monthly">Mensile</option>
+                </select>
+            </div>
+
+            <!-- Conflict Warning -->
+            <div id="conflict-warning" class="note note-error hidden" style="margin-top: 15px;">
+                <i class="fas fa-exclamation-triangle"></i>
+                <strong>Attenzione:</strong> <span id="conflict-message"></span>
+            </div>
+
+            <!-- Actions -->
+            <div style="margin-top: 25px; display: flex; gap: 10px;">
+                <button class="btn btn-secondary" onclick="CalendarController.closeEventModal()" style="flex: 1;">
+                    Annulla
+                </button>
+                <button class="btn" id="save-event-btn" style="flex: 2;">
+                    <i class="fas fa-check"></i> Salva Evento
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="hidden">
+        <div class="loader-content">
+            <div class="spinner-ring"></div>
+            <h3>Caricamento eventi...</h3>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
+    <script src="../url-params-manager.js"></script>
+    <script src="orchestrator_logic.js"></script>
+    <script src="calendar_logic.js"></script>
+</body>
+</html>
