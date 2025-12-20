@@ -68,12 +68,6 @@ const DOM = {
     softskillsModules: document.getElementById('softskills-modules'),
     btnAssessSoftskills: document.getElementById('btn-assess-softskills'),
     
-    // COMMERCIAL
-    customerSince: document.getElementById('customer_since'),
-    lifetimeValue: document.getElementById('lifetime_value'),
-    totalBookings: document.getElementById('total_bookings'),
-    commercialTags: document.getElementById('commercial-tags'),
-    
     // SOCIAL
     socialLinks: document.getElementById('social-links'),
     
@@ -119,7 +113,6 @@ const UI = {
         const identity = data.identity || {};
         const prof = data.professional_info || {};
         const behavioral = data.behavioral_profile || {};
-        const commercial = data.commercial_profile || {};
         const social = data.social_profiles || {};
         const metadata = data.metadata || {};
         
@@ -166,14 +159,6 @@ const UI = {
         const modulesCompleted = softSkillsAssessment.modules_completed || [];
         const validModules = modulesCompleted.filter(m => m.evaluation);
         UI.renderSoftSkills(validModules, softSkillsAssessment.completed_count || 0, softSkillsAssessment.total_modules || 4);
-
-        // COMMERCIAL
-        DOM.customerSince.textContent = commercial.customer_since 
-            ? new Date(commercial.customer_since).toLocaleDateString('it-IT') 
-            : '-';
-        DOM.lifetimeValue.textContent = `€ ${commercial.lifetime_value || 0}`;
-        DOM.totalBookings.textContent = commercial.total_bookings || '0';
-        UI.renderTags(DOM.commercialTags, commercial.tags || [], 'tag-badge');
 
         // SOCIAL
         UI.renderSocialLinks(social);
