@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resource Dossier - SiteBoS</title>
+    <link rel="stylesheet" href="../styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+</head>
+<body>
+    <div class="container">
+        
+        <!-- Header -->
+        <div style="text-align: center; margin-bottom: 30px;">
+            <h1>📋 Dossier Risorse</h1>
+            <p class="subtitle">Completa le informazioni delle risorse create</p>
+        </div>
+
+        <div class="note note-warning" style="margin-bottom: 25px;">
+            <i class="fas fa-exclamation-triangle"></i>
+            Le risorse sono in stato <strong>DRAFT</strong>. Completa il dossier per attivarle.
+        </div>
+
+        <!-- Resources Dashboard -->
+        <div id="resources-dashboard">
+            <!-- Populated by JS -->
+        </div>
+
+        <!-- Action Button -->
+        <div style="margin-top: 30px; text-align: center;">
+            <button class="btn btn-success btn-block" id="activate-all-btn" disabled>
+                <i class="fas fa-check-circle"></i> ATTIVA TUTTE LE RISORSE
+            </button>
+            <p class="hint" style="margin-top: 10px;">Completa almeno un dossier per procedere</p>
+        </div>
+
+    </div>
+
+    <!-- Dossier Modal -->
+    <div id="dossier-modal" class="modal-overlay hidden">
+        <div class="modal-content" style="max-width: 500px; max-height: 80vh; overflow-y: auto;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2 id="modal-title" style="margin: 0;">Completa Dossier</h2>
+                <button class="btn-icon" onclick="DossierController.closeModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <!-- Tab Navigation -->
+            <div class="nav-tabs" style="margin-bottom: 20px;">
+                <div class="nav-tab active" data-tab="identity">
+                    <i class="fas fa-id-card"></i> Identità
+                </div>
+                <div class="nav-tab" data-tab="capacity">
+                    <i class="fas fa-chart-bar"></i> Capacità
+                </div>
+                <div class="nav-tab" data-tab="health">
+                    <i class="fas fa-heartbeat"></i> Salute
+                </div>
+            </div>
+
+            <!-- Tab 1: Identity -->
+            <div id="tab-identity" class="tab-content active">
+                <div class="form-group">
+                    <label class="required">Nome Specifico</label>
+                    <input type="text" id="dossier-name" placeholder="es. Ponte Nord, Sala Riunioni A">
+                </div>
+                <div class="row">
+                    <div class="col">
+                        <div class="form-group">
+                            <label>Marca</label>
+                            <input type="text" id="dossier-brand">
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="form-group">
+                            <label>Modello</label>
+                            <input type="text" id="dossier-model">
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col">
+                        <div class="form-group">
+                            <label>Matricola/Serial</label>
+                            <input type="text" id="dossier-serial">
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="form-group">
+                            <label>Data Installazione</label>
+                            <input type="date" id="dossier-install-date">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 2: Capacity -->
+            <div id="tab-capacity" class="tab-content">
+                <div class="form-group">
+                    <label class="required">Slot Simultanei</label>
+                    <input type="number" id="dossier-slots" min="1" value="1">
+                    <span class="hint">Quante unità gestisce contemporaneamente? (es. Sala=8 posti, Ponte=1 auto)</span>
+                </div>
+                <div class="form-group">
+                    <label>Orari Specifici</label>
+                    <textarea id="dossier-hours" rows="3" placeholder="es. Questo forno si accende solo la sera (18:00-22:00)"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Note Capacità</label>
+                    <textarea id="dossier-capacity-notes" rows="2" placeholder="Informazioni aggiuntive sulla capacità..."></textarea>
+                </div>
+            </div>
+
+            <!-- Tab 3: Health & Compliance -->
+            <div id="tab-health" class="tab-content">
+                <h4 style="margin-bottom: 15px;">Routine Manutenzione</h4>
+                <div class="form-group">
+                    <label>Cosa fare regolarmente?</label>
+                    <input type="text" id="dossier-routine-task" placeholder="es. Pulizia Filtri">
+                </div>
+                <div class="row">
+                    <div class="col">
+                        <div class="form-group">
+                            <label>Frequenza</label>
+                            <select id="dossier-routine-freq">
+                                <option value="">Seleziona...</option>
+                                <option value="daily">Giornaliera</option>
+                                <option value="weekly">Settimanale</option>
+                                <option value="monthly">Mensile</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="form-group">
+                            <label>Durata (min)</label>
+                            <input type="number" id="dossier-routine-duration" value="30" min="5">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="separator">Scadenze Legali</div>
+
+                <div class="form-group">
+                    <label>Tipo Scadenza</label>
+                    <input type="text" id="dossier-deadline-type" placeholder="es. Revisione INAIL, Certificazione ISO">
+                </div>
+                <div class="form-group">
+                    <label>Data Scadenza</label>
+                    <input type="date" id="dossier-deadline-date">
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div style="margin-top: 25px; display: flex; gap: 10px;">
+                <button class="btn btn-secondary" onclick="DossierController.closeModal()" style="flex: 1;">
+                    Annulla
+                </button>
+                <button class="btn btn-success" id="save-dossier-btn" style="flex: 2;">
+                    <i class="fas fa-save"></i> Salva e Attiva
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="hidden">
+        <div class="loader-content">
+            <div class="spinner-ring"></div>
+            <h3>Attivazione in corso...</h3>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="../url-params-manager.js"></script>
+    <script src="orchestrator_logic.js"></script>
+    <script src="dossier_logic.js"></script>
+</body>
+</html>
