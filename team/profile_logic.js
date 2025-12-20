@@ -10,8 +10,7 @@
 // 1. CONFIGURATION & STATE
 // ==========================================
 const CONFIG = {
-    WEBHOOK_URL: "https://trinai.api.workflow.dcmake.it/webhook/502d2019-b5ee-4c9b-a14d-8d6545fbb05e",
-    SOFTSKILL_PATH: "../softskill/dashboard.html"
+    WEBHOOK_URL: "https://trinai.api.workflow.dcmake.it/webhook/502d2019-b5ee-4c9b-a14d-8d6545fbb05e"
 };
 
 const urlParams = new URLSearchParams(window.location.search);
@@ -66,7 +65,6 @@ const DOM = {
     // SOFT SKILLS
     assessmentStatus: document.getElementById('assessment-status'),
     softskillsModules: document.getElementById('softskills-modules'),
-    btnAssessSoftskills: document.getElementById('btn-assess-softskills'),
     
     // SOCIAL
     socialLinks: document.getElementById('social-links'),
@@ -443,25 +441,11 @@ const App = {
     },
 
     attachEvents: () => {
-        // ACCORDION TOGGLE (GIA' GESTITO DENTRO renderLearningHistory)
+        // ACCORDION TOGGLE
         DOM.app.addEventListener('click', (e) => {
             if (e.target.closest('.card-header') && !e.target.closest('#learning-history-container')) {
                 e.target.closest('.card-header').parentElement.classList.toggle('open');
             }
-        });
-
-        // SOFT SKILLS ASSESSMENT
-        DOM.btnAssessSoftskills.addEventListener('click', () => {
-            if (!STATE.isOwner) {
-                tg.showAlert('Solo l\'owner può valutare le soft skills');
-                return;
-            }
-            const params = new URLSearchParams();
-            if (STATE.vatNumber) params.set('vat', STATE.vatNumber);
-            if (STATE.accessToken) params.set('token', STATE.accessToken);
-            if (STATE.ownerId) params.set('user_id', STATE.ownerId);
-            params.set('role', 'owner');
-            window.location.href = `${CONFIG.SOFTSKILL_PATH}?${params.toString()}`;
         });
 
         // BACK BUTTON
