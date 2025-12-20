@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resource Wizard - SiteBoS</title>
+    <link rel="stylesheet" href="../styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+</head>
+<body>
+    <div class="container">
+        
+        <!-- Header -->
+        <div style="text-align: center; margin-bottom: 30px;">
+            <h1>🧙 Resource Wizard</h1>
+            <p class="subtitle">Configura le tue risorse operative</p>
+        </div>
+
+        <!-- ========================================
+             SEZIONE TEAM (Human Resources)
+             ======================================== -->
+        <div class="card">
+            <h2 style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px;">
+                <i class="fas fa-users" style="color: var(--primary);"></i>
+                TEAM (Risorse Umane)
+            </h2>
+
+            <div class="note note-info" style="margin-bottom: 20px;">
+                <i class="fas fa-info-circle"></i>
+                Gli operatori già censiti sono elencati qui. Puoi aggiungerne di nuovi e configurare i layer temporali.
+            </div>
+
+            <!-- Lista Operatori Esistenti -->
+            <div id="operators-list">
+                <!-- Populated by JS -->
+            </div>
+
+            <!-- Add New Operator -->
+            <button class="btn btn-secondary btn-block" id="add-operator-btn">
+                <i class="fas fa-plus"></i> Aggiungi Collaboratore
+            </button>
+        </div>
+
+        <!-- ========================================
+             SEZIONE ASSET (Physical Resources)
+             ======================================== -->
+        <div class="card" style="margin-top: 20px;">
+            <h2 style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px;">
+                <i class="fas fa-cogs" style="color: var(--warning);"></i>
+                ASSET (Risorse Fisiche)
+            </h2>
+
+            <div class="note note-warning" style="margin-bottom: 20px;">
+                <i class="fas fa-robot"></i>
+                L'AI ha analizzato i tuoi servizi e suggerisce questi asset. Imposta le quantità che possiedi.
+            </div>
+
+            <!-- AI Suggested Assets -->
+            <div id="assets-suggestions">
+                <!-- Populated by JS with counters -->
+            </div>
+
+            <div class="separator" style="margin: 25px 0;">Asset Personalizzati</div>
+
+            <button class="btn btn-secondary btn-block" id="add-custom-asset-btn">
+                <i class="fas fa-plus"></i> Aggiungi Asset Custom
+            </button>
+        </div>
+
+        <!-- Action Button -->
+        <div style="margin-top: 30px;">
+            <button class="btn btn-block" id="generate-infrastructure-btn">
+                <i class="fas fa-rocket"></i> GENERA INFRASTRUTTURA
+            </button>
+        </div>
+
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="hidden">
+        <div class="loader-content">
+            <div class="spinner-ring"></div>
+            <h3 style="margin: 15px 0;">Generazione in corso...</h3>
+            <p id="generation-status" style="color: var(--text-muted); font-size: 13px;"></p>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="../url-params-manager.js"></script>
+    <script src="orchestrator_logic.js"></script>
+    <script src="wizard_logic.js"></script>
+</body>
+</html>
