@@ -16,7 +16,7 @@ const RECHARGE_URL = "http://dashboard.trinai.it/ricarica"; // URL piattaforma r
 const ROUTES = {
     'honeypot': 'honeypot_editor.html',
     'catalog': 'catalog/catalog.html',
-    'agenda': 'agenda/agenda.html',
+    'agenda': 'agenda/index.html', // ✅ FIXED: Smart Resource Orchestrator entry point
     'team': 'team/team.html',
     'marketing': 'knowledge_base/knowledge.html',
     'company': 'edit_owner.html', 
