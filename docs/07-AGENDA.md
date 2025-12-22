@@ -1,6 +1,6 @@
 # 07 - AGENDA: Smart Resource Orchestrator
 
-> **Ultima revisione**: 20 Dicembre 2025  
+> **Ultima revisione**: 22 Dicembre 2025  
 > **Path**: `/agenda`  
 > **Status**: Production ✅
 
@@ -18,78 +18,79 @@ L'utente **dichiara le risorse**, il sistema (tramite AI/Webhook) costruisce l'i
 
 ---
 
-## 📊 Architettura
+## 🔧 Implementazione
 
-### User Journey Completo
+### File Structure
 
-```mermaid
-graph TD
-    A[Click Agenda in Dashboard] --> B[Smart Loader - Fase A]
-    B --> C{Tenant Configurato?}
-    C -->|Sì| D[Operational View - Fase D]
-    C -->|No| E[Resource Wizard - Fase B]
-    E --> F[Dossier Enrichment - Fase C]
-    F --> D
-    
-    B --> B1[Analizza Catalogo Servizi]
-    B1 --> B2[Identifica Archetipo Operativo]
-    B2 --> B3[Calcola Fabbisogno Risorse]
-    
-    E --> E1[Sezione TEAM]
-    E --> E2[Sezione ASSET]
-    E1 --> E3[Ops Mode Toggle]
-    E1 --> E4[Compliance Mode Toggle]
-    E2 --> E5[Contatori Quantità]
-    E2 --> E6[Need Maintenance]
-    E2 --> E7[Need Compliance]
-    
-    F --> F1[Dashboard Stato Risorse]
-    F1 --> F2{Status = Draft?}
-    F2 -->|Sì| F3[Completa Dossier]
-    F3 --> F4[Scheda 1: Identità]
-    F3 --> F5[Scheda 2: Capacità]
-    F3 --> F6[Scheda 3: Salute/Legge]
-    F6 --> F7[Risorsa Attivata]
-    
-    D --> D1[Resource Selector]
-    D1 --> D2{Device Type?}
-    D2 -->|Mobile| D3[Lista View - Default]
-    D2 -->|Desktop| D4[Calendar View]
-    D3 --> D5[Oggi/Prossimi/Compliance]
-    D3 --> D6[Apri App Calendario Nativa]
-    D4 --> D7[FullCalendar Week/Month]
-    D7 --> D8[Export iCal]
+```
+/agenda
+  ├── index.html            # Entry point - Smart Loader
+  ├── orchestrator_logic.js # Core logic & dual webhook routing ✅
+  ├── wizard.html           # Fase B - Resource Wizard
+  ├── wizard_logic.js       # Wizard controller
+  ├── dossier.html          # Fase C - Enrichment Dashboard
+  ├── dossier_logic.js      # Dossier controller
+  ├── calendar.html         # Fase D - Operational View ✅
+  ├── calendar_logic.js     # Calendar controller ✅
+  └── -*.html               # File legacy (deprecati)
 ```
 
-### I 4 Fasi Dettagliate
+### ✅ Dual Webhook Configuration
 
-#### **FASE A: Smart Entry & AI Architect**
+Il sistema utilizza **due webhook distinti** per separare logicamente onboarding e operazioni:
 
-**Scopo**: Decisione intelligente su dove atterrare.
+```javascript
+// orchestrator_logic.js
+const WEBHOOK_ONBOARDING = 'https://trinai.api.workflow.dcmake.it/webhook/8f148592-cbb9-4c72-96e8-73c08fccee43';
+const WEBHOOK_OPERATIONS = 'https://trinai.api.workflow.dcmake.it/webhook/5ea527d5-b0e7-44dc-b7ca-626f1c6176f0';
 
-**File**: `index.html`, `orchestrator_logic.js`
+// Smart routing per action
+const WEBHOOK_ROUTES = {
+    // Onboarding (Fase A, B)
+    'analyze_tenant': WEBHOOK_ONBOARDING,
+    'generate_infrastructure': WEBHOOK_ONBOARDING,
+    
+    // Operations (Fase C, D)
+    'get_draft_resources': WEBHOOK_OPERATIONS,
+    'complete_dossier': WEBHOOK_OPERATIONS,
+    'activate_all_resources': WEBHOOK_OPERATIONS,
+    'get_active_resources': WEBHOOK_OPERATIONS,
+    'get_calendar_events': WEBHOOK_OPERATIONS,
+    'create_booking': WEBHOOK_OPERATIONS,
+    'update_ops_rule': WEBHOOK_OPERATIONS
+};
+```
 
-**Flow**:
-1. Loader intelligente con feedback di stato
-2. Chiamata webhook: `analyze_tenant` con VAT
-3. Analisi:
-   - Servizi venduti nel catalogo
-   - Operatori già censiti
-   - Stato configurazione risorse
-4. **Decision Fork**:
-   - Se `is_configured = true` → GOTO Fase D (Operational)
-   - Se `is_configured = false` → GOTO Fase B (Wizard)
+**Vantaggi dell'approccio dual-webhook:**
+- ✅ **Separazione logica**: Setup vs Operazioni
+- ✅ **Scaling indipendente**: Load balancing differenziato
+- ✅ **Monitoring granulare**: Metriche separate per fase
+- ✅ **Rate limiting specifico**: Throttling diverso per onboarding (raro) vs operazioni (frequente)
 
-**Webhook Payload**:
+### Webhook Endpoints
+
+#### **Webhook 1: Onboarding** 🆕
+**URL**: `https://trinai.api.workflow.dcmake.it/webhook/8f148592-cbb9-4c72-96e8-73c08fccee43`
+
+**Scopo**: Gestisce setup iniziale e configurazione risorse (Fase A, B)
+
+**Actions**:
+
+| Action | Fase | Descrizione |
+|--------|------|-------------|
+| `analyze_tenant` | A | Analizza setup esistente e suggerisce risorse |
+| `generate_infrastructure` | B | Crea Ghost Assets e prepara calendari |
+
+**Esempio Request**:
 ```json
 {
   "action": "analyze_tenant",
   "vat": "IT12345678901",
-  "timestamp": "2025-12-20T10:30:00Z"
+  "timestamp": "2025-12-22T10:30:00Z"
 }
 ```
 
-**Expected Response**:
+**Esempio Response**:
 ```json
 {
   "is_configured": false,
@@ -117,325 +118,43 @@ graph TD
 
 ---
 
-#### **FASE B: Resource Wizard (L'Intervista)**
+#### **Webhook 2: Operations** 🆕
+**URL**: `https://trinai.api.workflow.dcmake.it/webhook/5ea527d5-b0e7-44dc-b7ca-626f1c6176f0`
 
-**Scopo**: Configurare HUMAN e ASSET senza "foglio bianco".
+**Scopo**: Gestisce operazioni quotidiane e calendario (Fase C, D)
 
-**File**: `wizard.html`, `wizard_logic.js`
+**Actions**:
 
-**UI Structure**:
+| Action | Fase | Descrizione |
+|--------|------|-------------|
+| `get_draft_resources` | C | Recupera risorse da completare |
+| `complete_dossier` | C | Attiva risorsa con dati completi |
+| `activate_all_resources` | C | Attivazione batch |
+| `get_active_resources` | D | Lista risorse attive per calendario |
+| `get_calendar_events` | D | Fetch eventi (Production/Ops/Compliance) |
+| `create_booking` | D | Nuovo appuntamento con conflict detection |
+| `update_ops_rule` | D | Modifica regola manutenzione |
 
-**1. Sezione TEAM (Human Resources)**
-- Lista operatori esistenti con avatar
-- **Toggles per ogni operatore**:
-  - 🔘 **Ops Mode**: Abilita Turni/Ferie (blocca agenda se assente)
-  - 🔘 **Compliance Mode**: Abilita scadenze (Patenti, Visite mediche)
-- Bottone `[+]` per aggiungere collaboratori al volo
-
-**2. Sezione ASSET (Physical Resources)**
-- **Suggerimenti AI**: Basati sui servizi (es. "Hai 'Tagliando' → Ti servono 'Ponti Sollevatori'")
-- **Contatori Quantità**: `[-]` `[0]` `[+]` per ogni categoria
-- **Layer Toggles** (appaiono se qty > 0):
-  - 🔘 **Need Maintenance** (default ON per macchinari)
-  - 🔘 **Need Compliance** (default ON per asset regolamentati)
-- Bottone per asset custom
-
-**3. Azione Finale**
-- **`[GENERA INFRASTRUTTURA]`**
-- Crea "Ghost Assets" (bozze)
-- Predispone calendari Google
-
-**Webhook Call**: `generate_infrastructure`
-
-**Payload**:
-```json
-{
-  "action": "generate_infrastructure",
-  "vat": "IT12345678901",
-  "configuration": {
-    "operators": [
-      {
-        "id": "op_123",
-        "name": "Mario Rossi",
-        "ops_enabled": true,
-        "compliance_enabled": false
-      }
-    ],
-    "assets": [
-      {
-        "id": "asset_lift",
-        "name": "Ponti Sollevatori",
-        "quantity": 3,
-        "maintenance_enabled": true,
-        "compliance_enabled": true
-      }
-    ]
-  }
-}
-```
-
-**Expected Response**:
-```json
-{
-  "status": "success",
-  "resources": [
-    {
-      "id": "res_001",
-      "name": "Ponte Sollevatore #1",
-      "type": "asset",
-      "category": "lift",
-      "status": "draft",
-      "layers": {
-        "production": true,
-        "ops": true,
-        "compliance": true
-      }
-    }
-  ],
-  "google_calendars_prepared": true
-}
-```
-
----
-
-#### **FASE C: Dossier Enrichment (Il Triage)**
-
-**Scopo**: Dare identità alle risorse Ghost (Draft → Ready).
-
-**File**: `dossier.html`, `dossier_logic.js`
-
-**Dashboard di Stato**:
-- **Card per ogni risorsa** con indicatori:
-  - 🟡 **Draft** (Giallo): Dati mancanti
-  - 🟢 **Ready** (Verde): Completo
-  - 🔴 **Error** (Rosso): Google Auth mancante
-
-**Modal Dossier (3 Tab)**:
-
-**Tab 1: Identità (Anagrafica)**
-```
-- Nome specifico* (es. "Ponte Nord")
-- Marca
-- Modello
-- Serial Number/Matricola
-- Data Installazione
-```
-
-**Tab 2: Capacità (Production)**
-```
-- Slot simultanei* (es. Sala=8 posti, Ponte=1 auto)
-- Orari apertura specifici (textarea)
-- Note capacità
-```
-
-**Tab 3: Salute & Legge (Ops/Compliance)**
-```
---- Routine Manutenzione ---
-- Cosa fare? (es. "Pulizia Filtri")
-- Frequenza (daily/weekly/monthly)
-- Durata (minuti)
-
---- Scadenze Legali ---
-- Tipo scadenza (es. "Revisione INAIL")
-- Data scadenza
-```
-
-**Al Salvataggio**:
-1. Risorsa diventa 🟢 **Verde**
-2. Calendari Google creati e sincronizzati
-3. Layer temporali attivi
-
-**Webhook Call**: `complete_dossier`
-
-**Payload**:
-```json
-{
-  "action": "complete_dossier",
-  "vat": "IT12345678901",
-  "dossier": {
-    "resource_id": "res_001",
-    "identity": {
-      "specific_name": "Ponte Nord",
-      "brand": "Ravaglioli",
-      "model": "KPN324",
-      "serial": "AB123456",
-      "install_date": "2020-03-15"
-    },
-    "capacity": {
-      "slots": 1,
-      "specific_hours": "Lun-Ven 08:00-18:00",
-      "notes": "Solo auto fino a 2.5 ton"
-    },
-    "health": {
-      "routine_task": "Lubrificazione catene",
-      "routine_freq": "monthly",
-      "routine_duration": 45,
-      "deadline_type": "Revisione INAIL",
-      "deadline_date": "2025-10-12"
-    }
-  }
-}
-```
-
----
-
-#### **FASE D: Operational View (Il Cockpit)** ✅
-
-**Scopo**: Utilizzo quotidiano - Vista calendario operativa **mobile-first**.
-
-**File**: `calendar.html`, `calendar_logic.js`
-
-### 📱 Mobile-First Strategy
-
-L'interfaccia si adatta automaticamente al device:
-- **Mobile**: Vista **Lista** (default) con integrazione calendario nativo
-- **Tablet/Desktop**: Vista **Calendario** (FullCalendar.js)
-
-**Header di Navigazione**:
-- **Resource Selector** (dropdown): `[Mio Calendario]`, `[Calendario Mario]`, `[Ponte 1]`
-- **Status Indicators**: 🔧 Manutenzione oggi, ⚠️ Scadenza vicina, ✓ Tutto OK
-- **Asset Edit (⚙️)**: Link rapido al Dossier della risorsa
-
-**Quick Actions Bar**:
-```html
-[📱 App Calendario] [+ Nuovo Evento] [⬇️ iCal]
-```
-
-### Vista Lista (Mobile Default)
-
-**Sezione OGGI**
-- Eventi del giorno corrente
-- Ordinati per ora inizio
-- 3 layer con colori distinti:
-  - 🟦 **Production**: Appuntamenti clienti (sfondo blu)
-  - ⬜ **Ops**: Blocchi rigidi (sfondo grigio + badge "BLOCCO")
-  - 🔔 **Compliance**: Badge rossi (non bloccanti)
-
-**Sezione PROSSIMI EVENTI**
-- Prossimi 10 eventi futuri
-- Mostra data + ora + durata
-- Click per dettagli
-
-**Sezione SCADENZE IN ARRIVO**
-- Solo eventi Compliance Layer
-- Mostra "giorni mancanti" alla scadenza
-- Alert visivo se < 7 giorni
-
-**Empty State**:
-```
-📅 Nessun evento programmato
-Inizia creando il tuo primo appuntamento!
-[Crea Evento]
-```
-
-### Vista Calendario (Desktop/Tablet)
-
-**View Modes**:
-- **Settimana** (timeGridWeek): Vista oraria 7 giorni
-- **Mese** (dayGridMonth): Vista mensile
-
-**FullCalendar Integration**:
-```javascript
-// Eventi con color-coding
-const layerColors = {
-  production: '#5B6FED',  // Blu
-  ops: '#808080',         // Grigio
-  compliance: '#ff6b6b'   // Rosso
-};
-
-// Custom rendering con emoji
-eventContent: (arg) => {
-  const icons = { production: '🟦', ops: '⬜', compliance: '🔔' };
-  return `${icons[layer]} ${event.title}`;
-}
-```
-
-**Interazioni**:
-- Click evento → Mostra dettagli
-- Eventi **Ops** non sono editabili (vincoli rigidi)
-- Eventi **Production** possono essere spostati (conflict detection)
-
-### 📱 Native Calendar Integration
-
-**Come Funziona**:
-1. Click su "App Calendario"
-2. Sistema genera file `.ics` (iCalendar format)
-3. Su mobile:
-   - Tenta apertura diretta con `window.open(blob_url)`
-   - Se fallisce → Download automatico del file
-   - Alert: "Apri il file con la tua app calendario"
-4. Su iOS/Android: Il sistema apre l'app nativa (Calendario/Google Calendar)
-
-**iCal Export Format**:
-```ical
-BEGIN:VCALENDAR
-VERSION:2.0
-PRODID:-//SiteBoS//Calendar//EN
-BEGIN:VEVENT
-UID:evt_001@sitebos.app
-DTSTART:20251220T090000Z
-DTEND:20251220T100000Z
-SUMMARY:Appuntamento Cliente
-DESCRIPTION:Note evento...
-END:VEVENT
-END:VCALENDAR
-```
-
-**Vantaggi**:
-- ✅ **Zero learning curve**: L'utente usa la SUA app calendario
-- ✅ **Sync automatica**: Le modifiche fatte nell'app nativa si riflettono
-- ✅ **Notifiche native**: Alert push del dispositivo
-- ✅ **Offline access**: Calendario disponibile senza internet
-
-### Nuovo Evento Modal
-
-**Campi**:
-```
-[🟦 Production] [⬜ Ops] [🔔 Compliance]  <- Tipo evento (toggle)
-
-Titolo*: _____________________
-Data*: [2025-12-20]
-Ora Inizio*: [09:00]
-Durata (min): [60]
-Ora Fine: [10:00] (auto-calcolata)
-Note: _____________________
-
-☐ Evento ricorrente (solo Ops/Compliance)
-  Frequenza: [Settimanale ▼]
-
-⚠️ Conflict Warning (se presente):
-"Slot già occupato da: Manutenzione Ponte (Ops Layer)"
-
-[Annulla] [Salva Evento]
-```
-
-**Validazione**:
-- Campi obbligatori: Tipo, Titolo, Data, Ora Inizio
-- **Conflict Detection**: Verifica sovrapposizioni con layer Ops
-- Se conflitto → Mostra warning + blocca salvataggio
-
-**Webhook Call**: `create_booking`
-
-**Payload**:
+**Esempio Request (create_booking)**:
 ```json
 {
   "action": "create_booking",
   "vat": "IT12345678901",
+  "timestamp": "2025-12-22T10:45:00Z",
   "event": {
     "resource_id": "res_001",
     "type": "production",
     "title": "Appuntamento Cliente Rossi",
-    "date": "2025-12-20",
+    "date": "2025-12-23",
     "start_time": "09:00",
     "duration": 60,
     "notes": "Revisione completa auto",
-    "recurring": false,
-    "recurring_freq": null
+    "recurring": false
   }
 }
 ```
 
-**Response (Success)**:
+**Esempio Response (Success)**:
 ```json
 {
   "status": "success",
@@ -445,7 +164,7 @@ Note: _____________________
 }
 ```
 
-**Response (Conflict)**:
+**Esempio Response (Conflict)**:
 ```json
 {
   "status": "error",
@@ -455,62 +174,32 @@ Note: _____________________
     "id": "evt_456",
     "title": "Manutenzione Ponte",
     "layer": "ops",
-    "start": "2025-12-20T09:00:00Z",
-    "end": "2025-12-20T11:00:00Z"
+    "start": "2025-12-23T09:00:00Z",
+    "end": "2025-12-23T11:00:00Z"
   }
 }
 ```
 
 ---
 
-## 🔧 Implementazione
+### Common Request/Response Structure
 
-### File Structure
-
+**Request Headers**:
 ```
-/agenda
-  ├── index.html            # Entry point - Smart Loader
-  ├── orchestrator_logic.js # Core logic & webhook calls
-  ├── wizard.html           # Fase B - Resource Wizard
-  ├── wizard_logic.js       # Wizard controller
-  ├── dossier.html          # Fase C - Enrichment Dashboard
-  ├── dossier_logic.js      # Dossier controller
-  ├── calendar.html         # Fase D - Operational View ✅
-  ├── calendar_logic.js     # Calendar controller ✅
-  └── -*.html               # File legacy (deprecati)
+Content-Type: application/json
 ```
 
-### Webhook Endpoint
-
-**Base URL**: `https://trinai.api.workflow.dcmake.it/webhook/8f148592-cbb9-4c72-96e8-73c08fccee43`
-
-**Protocollo**: POST JSON
-
-**Actions Disponibili**:
-
-| Action | Fase | Scopo |
-|--------|------|-------|
-| `analyze_tenant` | A | Analizza setup esistente |
-| `generate_infrastructure` | B | Crea risorse Ghost |
-| `get_draft_resources` | C | Recupera risorse da completare |
-| `complete_dossier` | C | Attiva risorsa con dati completi |
-| `activate_all_resources` | C | Attivazione batch |
-| `get_active_resources` | D | Lista risorse attive ✅ |
-| `get_calendar_events` | D | Fetch eventi (Production/Ops/Compliance) ✅ |
-| `create_booking` | D | Nuovo appuntamento con conflict detection ✅ |
-| `update_ops_rule` | D | Modifica regola manutenzione |
-
-**Common Request Structure**:
+**Common Request Fields**:
 ```json
 {
   "action": "<action_name>",
   "vat": "IT12345678901",
-  "timestamp": "2025-12-20T10:30:00Z",
+  "timestamp": "2025-12-22T10:30:00Z",
   ...<action-specific-data>
 }
 ```
 
-**Common Response Structure**:
+**Common Response Fields**:
 ```json
 {
   "status": "success" | "error",
@@ -522,122 +211,74 @@ Note: _____________________
 
 ---
 
-## 📊 Metriche
-
-### KPIs Tracciati
-
-1. **Setup Completion Rate**
-   - % tenant che completano il wizard
-   - Drop-off per fase (A/B/C/D)
-
-2. **Resource Utilization**
-   - Ore disponibili vs ore prenotate
-   - Asset con utilizzo < 20% (alert inefficienza)
-
-3. **Compliance Adherence**
-   - Scadenze rispettate vs scadute
-   - Tempo medio di anticipo revisioni
-
-4. **Ops Efficiency**
-   - Conflitti evitati (tentativi prenotazione su slot occupati)
-   - Tempo risparmiato con automazioni
-
-5. **Mobile Adoption** 🆕
-   - % utenti che usano "App Calendario"
-   - % eventi creati da mobile vs desktop
-   - Retention rate vista Lista vs Calendario
-
-### Analytics Events
-
-```javascript
-// Tracciare con analytics esistente
-analytics.track('agenda_wizard_started', { vat, archetype });
-analytics.track('agenda_resource_added', { vat, resource_type, quantity });
-analytics.track('agenda_dossier_completed', { vat, resource_id, time_spent });
-analytics.track('agenda_booking_created', { vat, resource_id, layer: 'production', device: 'mobile' });
-analytics.track('agenda_native_calendar_opened', { vat, resource_id, device: 'mobile' }); // NEW
-analytics.track('agenda_conflict_detected', { vat, resource_id, conflicting_layer: 'ops' }); // NEW
-```
-
----
-
 ## 🛠️ Troubleshooting
 
 ### Errori Comuni
 
-**1. "Google Calendar Auth Failed"**
-- **Causa**: Token OAuth scaduto
-- **Fix**: Forzare re-auth in dossier modal
-- **Webhook Response**: `{ "error": "google_auth_required", "auth_url": "..." }`
+**1. "Webhook Timeout"**
+- **Causa**: Request > 30s (limite Telegram WebApp)
+- **Fix**: Ridurre range date eventi (max 60 giorni)
+- **Monitoring**: Log backend per query lente
 
-**2. "Resource Already Exists"**
-- **Causa**: Tentativo di creare risorsa duplicata
-- **Fix**: Mostrare risorsa esistente, offrire modifica
+**2. "Wrong Webhook Called"**
+- **Causa**: Action non presente in `WEBHOOK_ROUTES`
+- **Fix**: Fallback automatico a `WEBHOOK_OPERATIONS`
+- **Debug**: Controlla console per log `🔗 Webhook Call: <action> → <webhook_id>`
 
-**3. "Slot Conflict"**
-- **Causa**: Tentativo booking su slot occupato (Ops Layer)
-- **Fix**: Mostrare visivamente il blocco grigio con motivo
-- **UI**: Warning rosso nel modal con dettagli evento conflittuale
+**3. "CORS Error"**
+- **Causa**: Webhook blocca richieste cross-origin
+- **Fix**: Backend deve rispondere con:
+  ```
+  Access-Control-Allow-Origin: *
+  Access-Control-Allow-Methods: POST, OPTIONS
+  Access-Control-Allow-Headers: Content-Type
+  ```
 
-**4. "Native Calendar Not Opening"** 🆕
-- **Causa**: Browser blocca `window.open()` con blob URL
-- **Fix**: Fallback automatico a download `.ics`
-- **UX**: Alert "File scaricato, aprilo con la tua app"
+**4. "Invalid Action"**
+- **Causa**: Typo nel nome action o action non implementata
+- **Fix**: Verificare spelling e consultare tabella actions sopra
+- **Fallback**: Mostrare errore user-friendly invece di crash
 
-**5. "Events Not Loading"**
-- **Causa**: Date range troppo ampio / timeout webhook
-- **Fix**: Limitare range a 60 giorni (default implementato)
-- **Monitoring**: Log query time > 5s
+---
 
-### Debug Mode
+## 📊 Metriche
 
-Abilitare debug info nel loader:
+### KPIs per Webhook
+
+**Onboarding Webhook**:
+- Setup completion rate (% che arrivano a Fase D)
+- Avg time to complete wizard (target < 5 min)
+- Drop-off per step (A → B → C)
+- Asset suggestions accuracy (AI)
+
+**Operations Webhook**:
+- API response time (P50, P95, P99)
+- Conflict detection rate (% booking bloccati)
+- Calendar sync success rate
+- Events created per day
+
+### Analytics Events
+
 ```javascript
-// In orchestrator_logic.js
-const DEBUG = true; // mostra payload/response webhook
+// Onboarding
+analytics.track('agenda_analyze_started', { vat, archetype });
+analytics.track('agenda_infrastructure_generated', { vat, resources_count });
+
+// Operations
+analytics.track('agenda_booking_created', { vat, resource_id, layer, device });
+analytics.track('agenda_conflict_detected', { vat, conflicting_layer });
+analytics.track('agenda_native_calendar_opened', { vat, platform });
 ```
 
 ---
 
-## 🚀 Roadmap
-
-### Q1 2026 ✅ COMPLETATO
-
-- [x] **Calendar View (Fase D)**: Vista operativa con FullCalendar.js
-- [x] **Mobile-First List View**: Vista lista ottimizzata per cellulari
-- [x] **Native Calendar Integration**: Export iCal + apertura app nativa
-- [x] **Booking Flow**: Creazione appuntamenti da calendario
-- [x] **Conflict Detection**: Visual feedback per slot occupati
-
-### Q2 2026 📋
-
-- [ ] **Google Calendar Bidirectional Sync**: Modif iche in Google → SiteBoS
-- [ ] **AI Optimizer**: Suggerimenti riorganizzazione slot per efficienza
-- [ ] **Multi-Resource Booking**: Prenota più risorse contemporaneamente
-- [ ] **Recurring Events Advanced**: Eventi ricorrenti con eccezioni
-- [ ] **Drag & Drop**: Spostamento eventi tra slot (solo Production)
-
-### Q3 2026 🔮
-
-- [ ] **Push Notifications**: Reminder 24h prima per eventi Production
-- [ ] **Team Collaboration**: Commenti su eventi, @mentions
-- [ ] **Resource Analytics Dashboard**: KPI per risorsa (utilizzo%, revenue)
-- [ ] **White-Label Calendar**: Calendar pubblico per clienti (booking esterno)
-- [ ] **Outlook/Apple Calendar Direct Sync**: Alternative a Google
-
----
-
-## 📚 Documentazione Correlata
-
-- [01-OVERVIEW.md](./01-OVERVIEW.md) - Architettura generale SiteBoS
-- [05-TEAM-MANAGER.md](./05-TEAM-MANAGER.md) - Gestione operatori (integrato)
-- [06-CATALOG.md](./06-CATALOG.md) - Servizi venduti (analizzati per asset)
-- [SESSION_ARCHITECTURE.md](./SESSION_ARCHITECTURE.md) - Gestione sessione/VAT
-- [WEBHOOK_FLOW.md](../WEBHOOK_FLOW.md) - Protocollo comunicazione backend
-
----
-
 ## ✅ Checklist Implementazione
+
+### Core Infrastructure
+- [x] Dual webhook configuration
+- [x] Smart routing per action type
+- [x] Error handling e fallback
+- [x] Debug mode con payload visibility
 
 ### Fase A - Smart Entry
 - [x] index.html con loader intelligente
@@ -649,13 +290,13 @@ const DEBUG = true; // mostra payload/response webhook
 - [x] wizard.html con sezioni TEAM/ASSET
 - [x] wizard_logic.js con contatori e toggles
 - [x] AI suggestions rendering
-- [x] Generate infrastructure webhook call
+- [x] Generate infrastructure webhook call (ONBOARDING)
 
 ### Fase C - Dossier
 - [x] dossier.html con dashboard stato
 - [x] dossier_logic.js con modal 3-tab
 - [x] Form validation
-- [x] Complete dossier webhook call
+- [x] Complete dossier webhook call (OPERATIONS)
 
 ### Fase D - Calendar ✅ COMPLETO
 - [x] calendar.html con FullCalendar integration
@@ -664,25 +305,44 @@ const DEBUG = true; // mostra payload/response webhook
 - [x] Desktop Calendar View (week/month)
 - [x] Native calendar integration (iCal export)
 - [x] Booking creation flow con modal
-- [x] Conflict detection e warning
+- [x] Conflict detection e warning (OPERATIONS)
 - [x] Status indicators dinamici
 - [x] Auto-calculation end time
 - [x] Recurring events setup (Ops/Compliance)
 
 ---
 
-## 🌟 Perché questa UX è "Agnostica & Vincente"
+## 🚀 Roadmap
 
-1. **Zero "Foglio Bianco"**: L'AI costruisce l'agenda, l'utente dice solo "Sì, ne ho 3" e "La matricola è XYZ"
-2. **Protezione Attiva**: Il sistema impedisce errori umani (non puoi prenotare se la poltrona è in manutenzione)
-3. **Scalabilità Infinita**: Funziona per 1 persona (Consulente) o 50 asset (Fabbrica), perché la logica "Resource + 3 Layers" è universale
-4. **Google as Infra**: Usa Google Calendar come infrastruttura temporale (affidabile, scalabile, gratis)
-5. **AI-Powered Setup**: Nessun manuale da leggere, l'AI deduce cosa serve dai servizi venduti
-6. **📱 Mobile Native**: Integrazione con app calendario del dispositivo = zero frizione 🆕
-7. **Responsive Smart**: Lista su mobile, calendario su desktop - best of both worlds
+### Q1 2026 ✅ COMPLETATO
+
+- [x] **Dual Webhook Architecture** 🆕
+- [x] **Calendar View (Fase D)**: Vista operativa con FullCalendar.js
+- [x] **Mobile-First List View**: Vista lista ottimizzata per cellulari
+- [x] **Native Calendar Integration**: Export iCal + apertura app nativa
+- [x] **Booking Flow**: Creazione appuntamenti da calendario
+- [x] **Conflict Detection**: Visual feedback per slot occupati
+
+### Q2 2026 📋
+
+- [ ] **Google Calendar Bidirectional Sync**: Modifiche in Google → SiteBoS
+- [ ] **Webhook Retry Logic**: Automatic retry con exponential backoff
+- [ ] **AI Optimizer**: Suggerimenti riorganizzazione slot per efficienza
+- [ ] **Multi-Resource Booking**: Prenota più risorse contemporaneamente
+- [ ] **Recurring Events Advanced**: Eventi ricorrenti con eccezioni
+- [ ] **Drag & Drop**: Spostamento eventi tra slot (solo Production)
+
+### Q3 2026 🔮
+
+- [ ] **Webhook Analytics Dashboard**: Real-time monitoring chiamate
+- [ ] **Push Notifications**: Reminder 24h prima per eventi Production
+- [ ] **Team Collaboration**: Commenti su eventi, @mentions
+- [ ] **Resource Analytics Dashboard**: KPI per risorsa (utilizzo%, revenue)
+- [ ] **White-Label Calendar**: Calendar pubblico per clienti (booking esterno)
+- [ ] **Outlook/Apple Calendar Direct Sync**: Alternative a Google
 
 ---
 
-**Ultimo aggiornamento**: 20 Dicembre 2025  
+**Ultimo aggiornamento**: 22 Dicembre 2025  
 **Responsabile**: Team Development SiteBoS  
-**Status**: ✅ **PRODUCTION READY** - Tutte le 4 fasi complete
+**Status**: ✅ **PRODUCTION READY** - Tutte le 4 fasi complete + Dual Webhook
