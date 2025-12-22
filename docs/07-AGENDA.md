@@ -35,209 +35,32 @@ L'utente **dichiara le risorse**, il sistema (tramite AI/Webhook) costruisce l'i
   └── -*.html               # File legacy (deprecati)
 ```
 
-### ✅ Dual Webhook Configuration
+### ✅ Dual Webhook Architecture
 
 Il sistema utilizza **due webhook distinti** per separare logicamente onboarding e operazioni:
 
-```javascript
-// orchestrator_logic.js
-const WEBHOOK_ONBOARDING = 'https://trinai.api.workflow.dcmake.it/webhook/8f148592-cbb9-4c72-96e8-73c08fccee43';
-const WEBHOOK_OPERATIONS = 'https://trinai.api.workflow.dcmake.it/webhook/5ea527d5-b0e7-44dc-b7ca-626f1c6176f0';
+**Webhook 1: Onboarding** (Setup iniziale - Fase A, B)
+- `analyze_tenant`: Analizza setup esistente e suggerisce risorse
+- `generate_infrastructure`: Crea Ghost Assets e prepara calendari
 
-// Smart routing per action
-const WEBHOOK_ROUTES = {
-    // Onboarding (Fase A, B)
-    'analyze_tenant': WEBHOOK_ONBOARDING,
-    'generate_infrastructure': WEBHOOK_ONBOARDING,
-    
-    // Operations (Fase C, D)
-    'get_draft_resources': WEBHOOK_OPERATIONS,
-    'complete_dossier': WEBHOOK_OPERATIONS,
-    'activate_all_resources': WEBHOOK_OPERATIONS,
-    'get_active_resources': WEBHOOK_OPERATIONS,
-    'get_calendar_events': WEBHOOK_OPERATIONS,
-    'create_booking': WEBHOOK_OPERATIONS,
-    'update_ops_rule': WEBHOOK_OPERATIONS
-};
-```
+**Webhook 2: Operations** (Uso quotidiano - Fase C, D)
+- `get_draft_resources`: Recupera risorse da completare
+- `complete_dossier`: Attiva risorsa con dati completi
+- `activate_all_resources`: Attivazione batch
+- `get_active_resources`: Lista risorse attive per calendario
+- `get_calendar_events`: Fetch eventi (Production/Ops/Compliance)
+- `create_booking`: Nuovo appuntamento con conflict detection
+- `update_ops_rule`: Modifica regola manutenzione
 
 **Vantaggi dell'approccio dual-webhook:**
-- ✅ **Separazione logica**: Setup vs Operazioni
-- ✅ **Scaling indipendente**: Load balancing differenziato
-- ✅ **Monitoring granulare**: Metriche separate per fase
-- ✅ **Rate limiting specifico**: Throttling diverso per onboarding (raro) vs operazioni (frequente)
+- ✅ Separazione logica Setup vs Operazioni
+- ✅ Scaling indipendente con load balancing differenziato
+- ✅ Monitoring granulare con metriche separate per fase
+- ✅ Rate limiting specifico (onboarding raro vs operazioni frequenti)
 
-### Webhook Endpoints
+**Routing automatico**: Il sistema seleziona il webhook corretto in base all'action tramite `orchestrator_logic.js`
 
-#### **Webhook 1: Onboarding** 🆕
-**URL**: `https://trinai.api.workflow.dcmake.it/webhook/8f148592-cbb9-4c72-96e8-73c08fccee43`
-
-**Scopo**: Gestisce setup iniziale e configurazione risorse (Fase A, B)
-
-**Actions**:
-
-| Action | Fase | Descrizione |
-|--------|------|-------------|
-| `analyze_tenant` | A | Analizza setup esistente e suggerisce risorse |
-| `generate_infrastructure` | B | Crea Ghost Assets e prepara calendari |
-
-**Esempio Request**:
-```json
-{
-  "action": "analyze_tenant",
-  "vat": "IT12345678901",
-  "timestamp": "2025-12-22T10:30:00Z"
-}
-```
-
-**Esempio Response**:
-```json
-{
-  "is_configured": false,
-  "resources_ready": false,
-  "archetype": "service_business",
-  "resource_requirements": {
-    "services_count": 12,
-    "operators_count": 3
-  },
-  "existing_operators": [
-    { "id": "op_123", "name": "Mario Rossi", "role": "Tecnico" }
-  ],
-  "asset_suggestions": [
-    {
-      "id": "asset_lift",
-      "name": "Ponti Sollevatori",
-      "icon": "fas fa-car-lift",
-      "ai_reason": "Hai servizi di Tagliando",
-      "default_maintenance": true,
-      "default_compliance": true
-    }
-  ]
-}
-```
-
----
-
-#### **Webhook 2: Operations** 🆕
-**URL**: `https://trinai.api.workflow.dcmake.it/webhook/5ea527d5-b0e7-44dc-b7ca-626f1c6176f0`
-
-**Scopo**: Gestisce operazioni quotidiane e calendario (Fase C, D)
-
-**Actions**:
-
-| Action | Fase | Descrizione |
-|--------|------|-------------|
-| `get_draft_resources` | C | Recupera risorse da completare |
-| `complete_dossier` | C | Attiva risorsa con dati completi |
-| `activate_all_resources` | C | Attivazione batch |
-| `get_active_resources` | D | Lista risorse attive per calendario |
-| `get_calendar_events` | D | Fetch eventi (Production/Ops/Compliance) |
-| `create_booking` | D | Nuovo appuntamento con conflict detection |
-| `update_ops_rule` | D | Modifica regola manutenzione |
-
-**Esempio Request (create_booking)**:
-```json
-{
-  "action": "create_booking",
-  "vat": "IT12345678901",
-  "timestamp": "2025-12-22T10:45:00Z",
-  "event": {
-    "resource_id": "res_001",
-    "type": "production",
-    "title": "Appuntamento Cliente Rossi",
-    "date": "2025-12-23",
-    "start_time": "09:00",
-    "duration": 60,
-    "notes": "Revisione completa auto",
-    "recurring": false
-  }
-}
-```
-
-**Esempio Response (Success)**:
-```json
-{
-  "status": "success",
-  "event_id": "evt_123",
-  "message": "Evento creato con successo",
-  "google_event_id": "abc123xyz"
-}
-```
-
-**Esempio Response (Conflict)**:
-```json
-{
-  "status": "error",
-  "error": "conflict",
-  "message": "Slot già occupato da: Manutenzione Ponte (Ops Layer)",
-  "conflicting_event": {
-    "id": "evt_456",
-    "title": "Manutenzione Ponte",
-    "layer": "ops",
-    "start": "2025-12-23T09:00:00Z",
-    "end": "2025-12-23T11:00:00Z"
-  }
-}
-```
-
----
-
-### Common Request/Response Structure
-
-**Request Headers**:
-```
-Content-Type: application/json
-```
-
-**Common Request Fields**:
-```json
-{
-  "action": "<action_name>",
-  "vat": "IT12345678901",
-  "timestamp": "2025-12-22T10:30:00Z",
-  ...<action-specific-data>
-}
-```
-
-**Common Response Fields**:
-```json
-{
-  "status": "success" | "error",
-  "message": "Human-readable message",
-  "data": { ... },
-  "errors": [ ... ] // se status = error
-}
-```
-
----
-
-## 🛠️ Troubleshooting
-
-### Errori Comuni
-
-**1. "Webhook Timeout"**
-- **Causa**: Request > 30s (limite Telegram WebApp)
-- **Fix**: Ridurre range date eventi (max 60 giorni)
-- **Monitoring**: Log backend per query lente
-
-**2. "Wrong Webhook Called"**
-- **Causa**: Action non presente in `WEBHOOK_ROUTES`
-- **Fix**: Fallback automatico a `WEBHOOK_OPERATIONS`
-- **Debug**: Controlla console per log `🔗 Webhook Call: <action> → <webhook_id>`
-
-**3. "CORS Error"**
-- **Causa**: Webhook blocca richieste cross-origin
-- **Fix**: Backend deve rispondere con:
-  ```
-  Access-Control-Allow-Origin: *
-  Access-Control-Allow-Methods: POST, OPTIONS
-  Access-Control-Allow-Headers: Content-Type
-  ```
-
-**4. "Invalid Action"**
-- **Causa**: Typo nel nome action o action non implementata
-- **Fix**: Verificare spelling e consultare tabella actions sopra
-- **Fallback**: Mostrare errore user-friendly invece di crash
+> **Nota**: Gli endpoint webhook sono configurati in `orchestrator_logic.js` e non vengono esposti pubblicamente per motivi di sicurezza.
 
 ---
 
@@ -269,6 +92,31 @@ analytics.track('agenda_booking_created', { vat, resource_id, layer, device });
 analytics.track('agenda_conflict_detected', { vat, conflicting_layer });
 analytics.track('agenda_native_calendar_opened', { vat, platform });
 ```
+
+---
+
+## 🛠️ Troubleshooting
+
+### Errori Comuni
+
+**1. "Webhook Timeout"**
+- **Causa**: Request > 30s (limite Telegram WebApp)
+- **Fix**: Ridurre range date eventi (max 60 giorni)
+- **Monitoring**: Log backend per query lente
+
+**2. "Wrong Webhook Called"**
+- **Causa**: Action non presente in routing map
+- **Fix**: Fallback automatico a webhook operations
+- **Debug**: Controlla console per log routing
+
+**3. "CORS Error"**
+- **Causa**: Webhook blocca richieste cross-origin
+- **Fix**: Backend deve rispondere con header CORS corretti
+
+**4. "Invalid Action"**
+- **Causa**: Typo nel nome action o action non implementata
+- **Fix**: Verificare spelling e consultare lista actions
+- **Fallback**: Mostrare errore user-friendly invece di crash
 
 ---
 
@@ -316,7 +164,7 @@ analytics.track('agenda_native_calendar_opened', { vat, platform });
 
 ### Q1 2026 ✅ COMPLETATO
 
-- [x] **Dual Webhook Architecture** 🆕
+- [x] **Dual Webhook Architecture**
 - [x] **Calendar View (Fase D)**: Vista operativa con FullCalendar.js
 - [x] **Mobile-First List View**: Vista lista ottimizzata per cellulari
 - [x] **Native Calendar Integration**: Export iCal + apertura app nativa
@@ -340,6 +188,19 @@ analytics.track('agenda_native_calendar_opened', { vat, platform });
 - [ ] **Resource Analytics Dashboard**: KPI per risorsa (utilizzo%, revenue)
 - [ ] **White-Label Calendar**: Calendar pubblico per clienti (booking esterno)
 - [ ] **Outlook/Apple Calendar Direct Sync**: Alternative a Google
+
+---
+
+## 🌟 Perché questa UX è "Agnostica & Vincente"
+
+1. **Zero "Foglio Bianco"**: L'AI costruisce l'agenda, l'utente dice solo "Sì, ne ho 3" e "La matricola è XYZ"
+2. **Protezione Attiva**: Il sistema impedisce errori umani (non puoi prenotare se la poltrona è in manutenzione)
+3. **Scalabilità Infinita**: Funziona per 1 persona (Consulente) o 50 asset (Fabbrica)
+4. **Google as Infra**: Usa Google Calendar come infrastruttura temporale (affidabile, scalabile)
+5. **AI-Powered Setup**: Nessun manuale da leggere, l'AI deduce cosa serve dai servizi venduti
+6. **📱 Mobile Native**: Integrazione con app calendario del dispositivo = zero frizione
+7. **Responsive Smart**: Lista su mobile, calendario su desktop - best of both worlds
+8. **Dual Webhook**: Separazione pulita tra setup e operazioni per performance ottimali
 
 ---
 
