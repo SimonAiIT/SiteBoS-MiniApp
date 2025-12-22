@@ -6,11 +6,31 @@
  * - Ops Layer: Turni, Ferie, Manutenzioni
  * - Compliance Layer: Scadenze legali, Certificazioni
  * 
- * @version 1.0.0
- * @date 2025-12-20
+ * @version 1.1.0
+ * @date 2025-12-22
  */
 
-const WEBHOOK_URL = 'https://trinai.api.workflow.dcmake.it/webhook/8f148592-cbb9-4c72-96e8-73c08fccee43';
+// ✅ DUAL WEBHOOK CONFIGURATION
+const WEBHOOK_ONBOARDING = 'https://trinai.api.workflow.dcmake.it/webhook/8f148592-cbb9-4c72-96e8-73c08fccee43';
+const WEBHOOK_OPERATIONS = 'https://trinai.api.workflow.dcmake.it/webhook/5ea527d5-b0e7-44dc-b7ca-626f1c6176f0';
+
+// Actions routing map
+const WEBHOOK_ROUTES = {
+    // Onboarding actions (Fase A, B)
+    'analyze_tenant': WEBHOOK_ONBOARDING,
+    'generate_infrastructure': WEBHOOK_ONBOARDING,
+    
+    // Dossier actions (Fase C)
+    'get_draft_resources': WEBHOOK_OPERATIONS,
+    'complete_dossier': WEBHOOK_OPERATIONS,
+    'activate_all_resources': WEBHOOK_OPERATIONS,
+    
+    // Calendar/Operations actions (Fase D)
+    'get_active_resources': WEBHOOK_OPERATIONS,
+    'get_calendar_events': WEBHOOK_OPERATIONS,
+    'create_booking': WEBHOOK_OPERATIONS,
+    'update_ops_rule': WEBHOOK_OPERATIONS
+};
 
 const SmartOrchestrator = {
     // State Management
@@ -85,11 +105,14 @@ const SmartOrchestrator = {
     },
 
     /**
-     * Webhook Communication
-     * Protocollo: POST JSON con action type
+     * Webhook Communication with Smart Routing
+     * Seleziona automaticamente il webhook giusto in base all'action
      */
     async callWebhook(action, data = {}) {
-        this.log('debug', `🔗 Webhook Call: ${action}`);
+        // ✅ Select correct webhook based on action
+        const webhookUrl = WEBHOOK_ROUTES[action] || WEBHOOK_OPERATIONS;
+        
+        this.log('debug', `🔗 Webhook Call: ${action} → ${webhookUrl.split('/').pop()}`);
         
         const payload = {
             action: action,
@@ -100,12 +123,15 @@ const SmartOrchestrator = {
         // Debug log
         const debugEl = document.getElementById('debug-data');
         if (debugEl) {
-            debugEl.textContent = JSON.stringify(payload, null, 2);
+            debugEl.textContent = JSON.stringify({
+                webhook: webhookUrl,
+                payload: payload
+            }, null, 2);
             document.getElementById('debug-info')?.classList.remove('hidden');
         }
 
         try {
-            const response = await fetch(WEBHOOK_URL, {
+            const response = await fetch(webhookUrl, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
