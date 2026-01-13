@@ -41,8 +41,8 @@
   --fc-border-color: rgba(255,255,255,0.1);
   --fc-today-bg-color: rgba(91, 111, 237, 0.15);
 
-     --bg-color: #ffffff; /* Sfondo bianco */
-  --text-color: #1a1a1a; /* Testo quasi nero per contrasto */
+     --bg-start: #ffffff; /* Sfondo bianco */
+  --text-main: #1a1a1a; /* Testo quasi nero per contrasto */
   --accent-color: #007bff; /* Colore d'accento (es. link) */
   --section-bg: #f8f9fa; /* Grigio chiarissimo per sezioni alternate */
   --border-color: #e0e0e0; /* Bordi sottili chiari */
