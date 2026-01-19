@@ -264,4 +264,4 @@ Quando modifichi questo progetto:
 ---
 
 **Ultimo aggiornamento**: 12 Dicembre 2025  
-**Responsabile**: Team Development SiteBoS
+**Responsabile**: Giuseppe Garofalo
