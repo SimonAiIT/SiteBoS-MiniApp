@@ -3,11 +3,127 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>Analisi Magazzino</title>
+  <title>Gestione Magazzino</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="../styles.css">
+  <style>
+    .action-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+      margin-top: 30px;
+    }
+
+    .action-card {
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      border-radius: 16px;
+      padding: 24px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .action-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+      border-color: var(--primary);
+    }
+
+    .action-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 4px;
+      background: linear-gradient(90deg, var(--primary), var(--accent));
+      transform: scaleX(0);
+      transition: transform 0.3s ease;
+    }
+
+    .action-card:hover::before {
+      transform: scaleX(1);
+    }
+
+    .action-icon {
+      font-size: 48px;
+      margin-bottom: 16px;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .action-title {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: var(--text-primary);
+    }
+
+    .action-description {
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 600;
+      margin-top: 12px;
+    }
+
+    .badge-new {
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      color: white;
+    }
+
+    .badge-coming-soon {
+      background: rgba(255,193,7,0.2);
+      color: var(--warning);
+      border: 1px solid var(--warning);
+    }
+
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 15px;
+      margin-bottom: 30px;
+    }
+
+    .stat-box {
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      border-radius: 12px;
+      padding: 16px;
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: 28px;
+      font-weight: 700;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 4px;
+    }
+
+    .stat-label {
+      font-size: 12px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+  </style>
 </head>
 <body>
 
@@ -18,54 +134,145 @@
         <div>
             <h1 style="font-size: 22px; margin: 0;">
                 <i class="fas fa-warehouse" style="color: var(--warning);"></i>
-                Analisi Magazzino
+                Gestione Magazzino
             </h1>
-            <p class="subtitle">Insights AI per ottimizzare lo stock</p>
+            <p class="subtitle">Sistema automatizzato di carico inventario</p>
         </div>
         <button class="btn-icon" onclick="goBack()" title="Indietro">
             <i class="fas fa-arrow-left"></i>
         </button>
     </div>
 
-    <!-- PLACEHOLDER CONTENT -->
-    <div class="card" style="text-align: center; padding: 60px 20px;">
-        <div style="font-size: 64px; color: var(--warning); margin-bottom: 20px;">
-            <i class="fas fa-warehouse"></i>
-        </div>
-        <h2 style="margin-bottom: 15px; color: var(--warning);">Modulo in Sviluppo</h2>
-        <p style="color: var(--text-muted); line-height: 1.6; max-width: 500px; margin: 0 auto;">
-            Il sistema di <strong>Analisi Magazzino</strong> è attualmente in fase di sviluppo. 
-            A breve potrai:
-        </p>
-        
-        <div style="margin-top: 30px; text-align: left; max-width: 500px; margin-left: auto; margin-right: auto;">
-            <div style="padding: 15px; background: rgba(0,0,0,0.2); border-radius: 12px; margin-bottom: 10px;">
-                <i class="fas fa-chart-line" style="color: var(--primary); margin-right: 10px;"></i>
-                <strong>Analizzare trend di vendita</strong> per prodotto
-            </div>
-            <div style="padding: 15px; background: rgba(0,0,0,0.2); border-radius: 12px; margin-bottom: 10px;">
-                <i class="fas fa-box" style="color: var(--success); margin-right: 10px;"></i>
-                <strong>Identificare prodotti lenti</strong> e best-seller
-            </div>
-            <div style="padding: 15px; background: rgba(0,0,0,0.2); border-radius: 12px; margin-bottom: 10px;">
-                <i class="fas fa-bell" style="color: var(--warning); margin-right: 10px;"></i>
-                <strong>Ricevere alert automatici</strong> per riordini
-            </div>
-            <div style="padding: 15px; background: rgba(0,0,0,0.2); border-radius: 12px;">
-                <i class="fas fa-brain" style="color: var(--info); margin-right: 10px;"></i>
-                <strong>Ottenere suggerimenti AI</strong> per l'ottimizzazione
-            </div>
-        </div>
+    <!-- STATS OVERVIEW -->
+    <div class="stats-row">
+      <div class="stat-box">
+        <div class="stat-value" id="totalItems">-</div>
+        <div class="stat-label">Articoli</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-value" id="totalValue">-</div>
+        <div class="stat-label">Valore Tot.</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-value" id="lastUpdate">-</div>
+        <div class="stat-label">Ultimo Carico</div>
+      </div>
+    </div>
 
-        <div style="margin-top: 40px;">
-            <button class="btn" onclick="goBack()">
-                <i class="fas fa-arrow-left"></i> Torna alla Dashboard
-            </button>
+    <!-- ACTION BUTTONS GRID -->
+    <div class="action-grid">
+      
+      <!-- CARICA ACQUISTO -->
+      <div class="action-card" onclick="navigateTo('new_insert')">
+        <div class="action-icon">
+          <i class="fas fa-file-upload"></i>
         </div>
+        <div class="action-title">Carica Acquisto</div>
+        <div class="action-description">
+          Importa fatture (XML, PDF) o foto ricevute fiscali con AI automatica
+        </div>
+        <span class="badge badge-new">
+          <i class="fas fa-sparkles"></i> AI Powered
+        </span>
+      </div>
+
+      <!-- VISUALIZZA MAGAZZINO -->
+      <div class="action-card" onclick="showComingSoon('Visualizza Magazzino')">
+        <div class="action-icon">
+          <i class="fas fa-boxes"></i>
+        </div>
+        <div class="action-title">Visualizza Magazzino</div>
+        <div class="action-description">
+          Dashboard completa con filtri, ricerca e export Excel
+        </div>
+        <span class="badge badge-coming-soon">
+          <i class="fas fa-clock"></i> Prossimamente
+        </span>
+      </div>
+
+      <!-- MOVIMENTI -->
+      <div class="action-card" onclick="showComingSoon('Storico Movimenti')">
+        <div class="action-icon">
+          <i class="fas fa-exchange-alt"></i>
+        </div>
+        <div class="action-title">Storico Movimenti</div>
+        <div class="action-description">
+          Cronologia carichi/scarichi con filtri temporali
+        </div>
+        <span class="badge badge-coming-soon">
+          <i class="fas fa-clock"></i> Prossimamente
+        </span>
+      </div>
+
+      <!-- INVENTARIO -->
+      <div class="action-card" onclick="showComingSoon('Inventario Fisico')">
+        <div class="action-icon">
+          <i class="fas fa-clipboard-check"></i>
+        </div>
+        <div class="action-title">Inventario Fisico</div>
+        <div class="action-description">
+          Conta fisica guidata con barcode scanner
+        </div>
+        <span class="badge badge-coming-soon">
+          <i class="fas fa-clock"></i> Prossimamente
+        </span>
+      </div>
+
+      <!-- ALERT GIACENZA -->
+      <div class="action-card" onclick="showComingSoon('Alert Giacenza')">
+        <div class="action-icon">
+          <i class="fas fa-bell"></i>
+        </div>
+        <div class="action-title">Alert Giacenza</div>
+        <div class="action-description">
+          Notifiche automatiche per riordini e scorte minime
+        </div>
+        <span class="badge badge-coming-soon">
+          <i class="fas fa-clock"></i> Prossimamente
+        </span>
+      </div>
+
+      <!-- ANALISI AI -->
+      <div class="action-card" onclick="showComingSoon('Analisi AI')">
+        <div class="action-icon">
+          <i class="fas fa-chart-line"></i>
+        </div>
+        <div class="action-title">Analisi AI</div>
+        <div class="action-description">
+          Insights su trend vendite, prodotti lenti e best-seller
+        </div>
+        <span class="badge badge-coming-soon">
+          <i class="fas fa-clock"></i> Prossimamente
+        </span>
+      </div>
+
+    </div>
+
+    <!-- INFO BOX -->
+    <div class="card" style="margin-top: 40px; padding: 20px; background: rgba(52, 152, 219, 0.1); border-color: var(--info);">
+      <div style="display: flex; align-items: start; gap: 15px;">
+        <div style="font-size: 24px; color: var(--info);">
+          <i class="fas fa-info-circle"></i>
+        </div>
+        <div style="flex: 1;">
+          <div style="font-weight: 600; margin-bottom: 8px; color: var(--info);">
+            Sistema AI Automatizzato
+          </div>
+          <div style="font-size: 13px; color: var(--text-muted); line-height: 1.6;">
+            Il caricamento acquisti utilizza <strong>Google Gemini AI</strong> per:
+            <ul style="margin: 10px 0 0 20px; padding: 0;">
+              <li>Estrarre automaticamente articoli da fatture XML/PDF</li>
+              <li>Riconoscere OCR da foto ricevute fiscali</li>
+              <li>Categorizzare prodotti e gestire aspetti fiscali (IVA, cod. articolo)</li>
+              <li>Validare dati ed evitare duplicati</li>
+            </ul>
+          </div>
+        </div>
+      </div>
     </div>
 
     <div style="text-align:center; margin-top:40px; opacity:0.3; font-size:10px;">
-        <p>TrinAi Warehouse Analysis Module v0.1</p>
+        <p>TrinAi Warehouse Manager v1.0</p>
     </div>
 
   </div>
@@ -74,6 +281,46 @@
     const tg = window.Telegram.WebApp;
     tg.ready();
     tg.expand();
+
+    // Inizializzazione
+    document.addEventListener('DOMContentLoaded', loadWarehouseStats);
+
+    function loadWarehouseStats() {
+      // TODO: Chiamata API per caricare statistiche reali
+      // Per ora mock data
+      document.getElementById('totalItems').textContent = '0';
+      document.getElementById('totalValue').textContent = '0 €';
+      document.getElementById('lastUpdate').textContent = 'Mai';
+    }
+
+    function navigateTo(page) {
+      if (tg?.HapticFeedback) tg.HapticFeedback.impactOccurred('medium');
+      const params = new URLSearchParams(window.location.search);
+      window.location.href = `./${page}.html?${params.toString()}`;
+    }
+
+    function showComingSoon(feature) {
+      if (tg?.HapticFeedback) tg.HapticFeedback.notificationOccurred('warning');
+      
+      if (tg?.showPopup) {
+        tg.showPopup({
+          title: '🚧 Funzione in Sviluppo',
+          message: `"${feature}" sarà disponibile nelle prossime release.\n\nVuoi essere notificato quando sarà pronta?`,
+          buttons: [
+            { id: 'notify', type: 'default', text: 'Notificami' },
+            { id: 'close', type: 'cancel', text: 'Chiudi' }
+          ]
+        }, (buttonId) => {
+          if (buttonId === 'notify') {
+            if (tg?.showAlert) {
+              tg.showAlert('✅ Ti avviseremo quando la funzione sarà disponibile!');
+            }
+          }
+        });
+      } else {
+        alert(`🚧 "${feature}" sarà disponibile presto!`);
+      }
+    }
 
     function goBack() {
         if (tg?.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
