@@ -30,6 +30,10 @@ const sessionId = urlParams.get('session_id') || generateSessionId();
 document.addEventListener('DOMContentLoaded', () => {
   setupFileInputs();
   setupDragAndDrop();
+  console.log('Warehouse Upload initialized');
+  console.log('VAT:', vat);
+  console.log('Session ID:', sessionId);
+  console.log('Webhook URL:', WEBHOOK_URL);
 });
 
 /**
@@ -88,6 +92,8 @@ function setupDragAndDrop() {
 function handleFileSelect(event, type) {
   const file = event.target.files[0];
   if (!file) return;
+
+  console.log(`File selected (${type}):`, file.name, file.size, file.type);
 
   // Validate file
   const validation = validateFile(file, type);
@@ -185,7 +191,9 @@ function showImagePreview(file) {
  * Enable submit button
  */
 function enableSubmitButton(type) {
-  document.getElementById(`submit-${type}`).disabled = false;
+  const btn = document.getElementById(`submit-${type}`);
+  btn.disabled = false;
+  console.log(`Submit button enabled for ${type}`);
 }
 
 /**
@@ -203,13 +211,24 @@ function formatFileSize(bytes) {
  * Switch tab
  */
 function switchTab(tabName) {
+  console.log('Switching to tab:', tabName);
+  
   // Remove active from all tabs
   document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
   document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
 
-  // Add active to selected tab
-  event.target.classList.add('active');
-  document.getElementById(`tab-${tabName}`).classList.add('active');
+  // Add active to selected tab button (find by onclick attribute)
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    if (btn.getAttribute('onclick')?.includes(tabName)) {
+      btn.classList.add('active');
+    }
+  });
+  
+  // Show selected tab content
+  const tabContent = document.getElementById(`tab-${tabName}`);
+  if (tabContent) {
+    tabContent.classList.add('active');
+  }
 
   if (tg?.HapticFeedback) {
     tg.HapticFeedback.selectionChanged();
@@ -220,14 +239,23 @@ function switchTab(tabName) {
  * Submit XML
  */
 async function submitXML() {
+  console.log('submitXML called');
   const file = uploadedFiles.xml;
-  if (!file) return;
+  
+  if (!file) {
+    console.error('No XML file selected');
+    showError('Nessun file XML selezionato');
+    return;
+  }
 
+  console.log('Starting XML upload...', file.name);
   setLoadingState('xml', true);
 
   try {
     // Read XML as text
+    console.log('Reading XML file as text...');
     const xmlText = await readFileAsText(file);
+    console.log('XML content loaded, length:', xmlText.length);
 
     // Prepare payload
     const payload = {
@@ -239,7 +267,15 @@ async function submitXML() {
       timestamp: new Date().toISOString()
     };
 
+    console.log('Payload prepared:', {
+      action: payload.action,
+      vat: payload.vat,
+      filename: payload.filename,
+      content_length: xmlText.length
+    });
+
     // Send to webhook
+    console.log('Calling webhook:', WEBHOOK_URL);
     const response = await fetch(WEBHOOK_URL, {
       method: 'POST',
       headers: {
@@ -248,11 +284,14 @@ async function submitXML() {
       body: JSON.stringify(payload)
     });
 
+    console.log('Webhook response status:', response.status);
+
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
 
     const result = await response.json();
+    console.log('Webhook result:', result);
     handleSuccess(result, 'xml');
 
   } catch (error) {
@@ -267,14 +306,23 @@ async function submitXML() {
  * Submit PDF
  */
 async function submitPDF() {
+  console.log('submitPDF called');
   const file = uploadedFiles.pdf;
-  if (!file) return;
+  
+  if (!file) {
+    console.error('No PDF file selected');
+    showError('Nessun file PDF selezionato');
+    return;
+  }
 
+  console.log('Starting PDF upload...', file.name);
   setLoadingState('pdf', true);
 
   try {
     // Read PDF as base64
+    console.log('Reading PDF file as base64...');
     const base64Data = await readFileAsBase64(file);
+    console.log('PDF base64 encoded, length:', base64Data.length);
 
     // Prepare payload
     const payload = {
@@ -287,7 +335,16 @@ async function submitPDF() {
       timestamp: new Date().toISOString()
     };
 
+    console.log('Payload prepared:', {
+      action: payload.action,
+      vat: payload.vat,
+      filename: payload.filename,
+      mimetype: payload.mimetype,
+      base64_length: base64Data.length
+    });
+
     // Send to webhook
+    console.log('Calling webhook:', WEBHOOK_URL);
     const response = await fetch(WEBHOOK_URL, {
       method: 'POST',
       headers: {
@@ -296,11 +353,14 @@ async function submitPDF() {
       body: JSON.stringify(payload)
     });
 
+    console.log('Webhook response status:', response.status);
+
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
 
     const result = await response.json();
+    console.log('Webhook result:', result);
     handleSuccess(result, 'pdf');
 
   } catch (error) {
@@ -315,14 +375,23 @@ async function submitPDF() {
  * Submit Photo
  */
 async function submitPhoto() {
+  console.log('submitPhoto called');
   const file = uploadedFiles.photo;
-  if (!file) return;
+  
+  if (!file) {
+    console.error('No photo file selected');
+    showError('Nessuna foto selezionata');
+    return;
+  }
 
+  console.log('Starting Photo upload...', file.name);
   setLoadingState('photo', true);
 
   try {
     // Read photo as base64
+    console.log('Reading photo as base64...');
     const base64Data = await readFileAsBase64(file);
+    console.log('Photo base64 encoded, length:', base64Data.length);
 
     // Prepare payload
     const payload = {
@@ -335,7 +404,16 @@ async function submitPhoto() {
       timestamp: new Date().toISOString()
     };
 
+    console.log('Payload prepared:', {
+      action: payload.action,
+      vat: payload.vat,
+      filename: payload.filename,
+      mimetype: payload.mimetype,
+      base64_length: base64Data.length
+    });
+
     // Send to webhook
+    console.log('Calling webhook:', WEBHOOK_URL);
     const response = await fetch(WEBHOOK_URL, {
       method: 'POST',
       headers: {
@@ -344,11 +422,14 @@ async function submitPhoto() {
       body: JSON.stringify(payload)
     });
 
+    console.log('Webhook response status:', response.status);
+
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
 
     const result = await response.json();
+    console.log('Webhook result:', result);
     handleSuccess(result, 'photo');
 
   } catch (error) {
@@ -396,9 +477,11 @@ function setLoadingState(type, loading) {
   if (loading) {
     btn.classList.add('loading');
     btn.disabled = true;
+    console.log(`Loading state: ON for ${type}`);
   } else {
     btn.classList.remove('loading');
     btn.disabled = false;
+    console.log(`Loading state: OFF for ${type}`);
   }
 }
 
@@ -406,6 +489,8 @@ function setLoadingState(type, loading) {
  * Handle success
  */
 function handleSuccess(result, type) {
+  console.log('Upload successful for', type);
+  
   if (tg?.HapticFeedback) {
     tg.HapticFeedback.notificationOccurred('success');
   }
@@ -438,6 +523,8 @@ function handleSuccess(result, type) {
  * Handle error
  */
 function handleError(error, type) {
+  console.error('Upload failed for', type, error);
+  
   if (tg?.HapticFeedback) {
     tg.HapticFeedback.notificationOccurred('error');
   }
@@ -455,6 +542,8 @@ function handleError(error, type) {
  * Show error
  */
 function showError(message) {
+  console.error('Validation error:', message);
+  
   if (tg?.HapticFeedback) {
     tg.HapticFeedback.notificationOccurred('error');
   }
