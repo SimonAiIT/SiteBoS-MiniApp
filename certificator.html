@@ -48,6 +48,7 @@
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
             margin-bottom: 20px;
             background-color: #000;
+            object-fit: cover;
         }
 
         .action-btn {
@@ -96,9 +97,8 @@
         <div class="logo">TrinAI Certificator</div>
         <div id="status" class="status-text">Pronto per l'acquisizione evidenza live</div>
         
-        <!-- Elemento Video per la fotocamera live -->
-        <video id="camera-feed" autoplay playsinline></video>
-        <!-- Canvas nascosto per catturare il frame -->
+        <!-- AGGIUNTO: muted e webkit-playsinline fondamentali per iOS/Telegram WebView -->
+        <video id="camera-feed" autoplay playsinline webkit-playsinline muted></video>
         <canvas id="canvas" style="display:none;"></canvas>
 
         <button id="startBtn" class="action-btn" onclick="startCamera()">
@@ -113,7 +113,6 @@
     </div>
 
     <script>
-        // Inizializza Telegram WebApp
         const tg = window.Telegram.WebApp;
         tg.expand();
 
@@ -131,57 +130,73 @@
             return Object.fromEntries(params.entries());
         }
 
-        // 1. Richiede i permessi e avvia lo stream video
         async function startCamera() {
             try {
-                // Chiede l'accesso alla fotocamera posteriore
+                startBtn.style.display = 'none';
+                loader.style.display = 'block';
+                statusText.innerText = 'Avvio fotocamera in corso...';
+
+                // Richiesta permessi: chiediamo esplicitamente di disattivare l'audio
                 const stream = await navigator.mediaDevices.getUserMedia({ 
-                    video: { facingMode: 'environment' } 
+                    video: { facingMode: 'environment' },
+                    audio: false 
                 });
                 
                 videoStream = stream;
                 video.srcObject = stream;
-                
-                startBtn.style.display = 'none';
-                video.style.display = 'block';
-                snapBtn.style.display = 'block';
-                statusText.innerText = 'Inquadra l\'evidenza...';
+
+                // Aspettiamo che il video sia effettivamente caricato e in riproduzione
+                video.onloadedmetadata = () => {
+                    video.play().then(() => {
+                        loader.style.display = 'none';
+                        video.style.display = 'block';
+                        snapBtn.style.display = 'block';
+                        statusText.innerText = 'Inquadra l\'evidenza...';
+                    }).catch(e => {
+                        console.error("Errore play video:", e);
+                        statusText.innerText = '❌ Errore riproduzione video.';
+                    });
+                };
 
             } catch (err) {
                 console.error("Errore accesso fotocamera: ", err);
+                loader.style.display = 'none';
+                startBtn.style.display = 'block';
                 statusText.innerText = '❌ Errore fotocamera. Controlla i permessi.';
-                if (err.name === 'NotAllowedError') {
+                if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
                     alert("Devi concedere i permessi della fotocamera a Telegram per continuare.");
                 }
             }
         }
 
-        // 2. Cattura il frame dal video e lo invia
         function takePhoto() {
-            // Ferma UI
+            // Controllo di sicurezza: verifichiamo che il video abbia dimensioni valide
+            if (video.videoWidth === 0 || video.videoHeight === 0) {
+                alert("La fotocamera si sta ancora inizializzando. Attendi un secondo.");
+                return;
+            }
+
             snapBtn.style.display = 'none';
             loader.style.display = 'block';
             statusText.innerText = 'Criptazione e invio evidenza in corso...';
 
-            // Imposta le dimensioni del canvas uguali a quelle del video
+            // Imposta le dimensioni del canvas uguali a quelle reali del video
             canvas.width = video.videoWidth;
             canvas.height = video.videoHeight;
             const context = canvas.getContext('2d');
             
-            // Disegna il frame corrente del video sul canvas
+            // Disegna il frame corrente
             context.drawImage(video, 0, 0, canvas.width, canvas.height);
             
-            // Estrae il Base64 (formato JPEG)
-            const dataURL = canvas.toDataURL('image/jpeg', 0.8); // 0.8 = 80% qualità
+            const dataURL = canvas.toDataURL('image/jpeg', 0.8);
             const base64Content = dataURL.split(',')[1];
             
-            // Ferma la fotocamera
+            // Spegne la fotocamera per risparmiare risorse
             if (videoStream) {
                 videoStream.getTracks().forEach(track => track.stop());
                 video.style.display = 'none';
             }
 
-            // Invia al webhook
             sendData(base64Content);
         }
 
@@ -214,7 +229,7 @@
             .catch(error => {
                 console.error('Error:', error);
                 statusText.innerText = '❌ Errore durante l\'invio. Riprova.';
-                startBtn.style.display = 'block'; // Mostra il bottone per riprovare
+                startBtn.style.display = 'block'; 
                 loader.style.display = 'none';
             });
         }
