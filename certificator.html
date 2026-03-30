@@ -21,7 +21,11 @@
         .container {
             text-align: center;
             padding: 20px;
-            width: 90%;
+            width: 100%;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
         .logo {
             font-weight: bold;
@@ -31,24 +35,45 @@
         }
         .status-text {
             font-size: 16px;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
             color: #4A4A4A;
         }
-        .camera-btn {
+        
+        /* Stili per il video (fotocamera) */
+        #camera-feed {
+            display: none;
+            width: 100%;
+            max-width: 400px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            background-color: #000;
+        }
+
+        .action-btn {
             background-color: #212D67;
             color: white;
             border: none;
-            padding: 20px 40px;
+            padding: 15px 30px;
             border-radius: 50px;
             font-size: 18px;
             font-weight: bold;
             cursor: pointer;
             box-shadow: 0 4px 15px rgba(0,0,0,0.2);
             transition: transform 0.2s;
+            margin: 5px;
+            width: 80%;
+            max-width: 300px;
         }
-        .camera-btn:active {
+        .action-btn:active {
             transform: scale(0.95);
         }
+        
+        #snapBtn {
+            display: none;
+            background-color: #E63946; /* Rosso per lo scatto */
+        }
+
         .loader {
             display: none;
             border: 4px solid #f3f3f3;
@@ -71,8 +96,17 @@
         <div class="logo">TrinAI Certificator</div>
         <div id="status" class="status-text">Pronto per l'acquisizione evidenza live</div>
         
-        <button id="triggerBtn" class="camera-btn" onclick="openCamera()">
-            📸 SCATTA FOTO
+        <!-- Elemento Video per la fotocamera live -->
+        <video id="camera-feed" autoplay playsinline></video>
+        <!-- Canvas nascosto per catturare il frame -->
+        <canvas id="canvas" style="display:none;"></canvas>
+
+        <button id="startBtn" class="action-btn" onclick="startCamera()">
+            📸 ATTIVA FOTOCAMERA
+        </button>
+
+        <button id="snapBtn" class="action-btn" onclick="takePhoto()">
+            🔴 SCATTA E INVIA
         </button>
 
         <div id="loader" class="loader"></div>
@@ -85,80 +119,104 @@
 
         const statusText = document.getElementById('status');
         const loader = document.getElementById('loader');
-        const triggerBtn = document.getElementById('triggerBtn');
+        const startBtn = document.getElementById('startBtn');
+        const snapBtn = document.getElementById('snapBtn');
+        const video = document.getElementById('camera-feed');
+        const canvas = document.getElementById('canvas');
+        
+        let videoStream = null;
 
         function getUrlParams() {
             const params = new URLSearchParams(window.location.search);
             return Object.fromEntries(params.entries());
         }
 
-        // Crea un input dinamico ogni volta: forza la fotocamera nelle WebView Telegram
-        function openCamera() {
-            const input = document.createElement('input');
-            input.type = 'file';
-            input.accept = 'image/*';
-            input.capture = 'environment'; // fotocamera posteriore
-            input.style.display = 'none';
-            document.body.appendChild(input);
+        // 1. Richiede i permessi e avvia lo stream video
+        async function startCamera() {
+            try {
+                // Chiede l'accesso alla fotocamera posteriore
+                const stream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { facingMode: 'environment' } 
+                });
+                
+                videoStream = stream;
+                video.srcObject = stream;
+                
+                startBtn.style.display = 'none';
+                video.style.display = 'block';
+                snapBtn.style.display = 'block';
+                statusText.innerText = 'Inquadra l\'evidenza...';
 
-            input.addEventListener('change', function(e) {
-                const file = e.target.files[0];
-                document.body.removeChild(input); // pulizia DOM
-                if (!file) return;
-                handleFile(file);
-            });
-
-            // Necessario su alcuni browser per garantire il trigger dell'evento change
-            input.addEventListener('cancel', function() {
-                document.body.removeChild(input);
-            });
-
-            input.click();
+            } catch (err) {
+                console.error("Errore accesso fotocamera: ", err);
+                statusText.innerText = '❌ Errore fotocamera. Controlla i permessi.';
+                if (err.name === 'NotAllowedError') {
+                    alert("Devi concedere i permessi della fotocamera a Telegram per continuare.");
+                }
+            }
         }
 
-        function handleFile(file) {
-            triggerBtn.style.display = 'none';
+        // 2. Cattura il frame dal video e lo invia
+        function takePhoto() {
+            // Ferma UI
+            snapBtn.style.display = 'none';
             loader.style.display = 'block';
             statusText.innerText = 'Criptazione e invio evidenza in corso...';
 
-            const reader = new FileReader();
-            reader.onload = function(event) {
-                const base64Content = event.target.result.split(',')[1];
-                const mimeType = file.type;
-                
-                const urlData = getUrlParams();
-                const payload = {
-                    action: "certificator",
-                    timestamp: new Date().toISOString(),
-                    base64_content: base64Content,
-                    mime_type: mimeType,
-                    file_name: file.name,
-                    ...urlData
-                };
+            // Imposta le dimensioni del canvas uguali a quelle del video
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            const context = canvas.getContext('2d');
+            
+            // Disegna il frame corrente del video sul canvas
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+            
+            // Estrae il Base64 (formato JPEG)
+            const dataURL = canvas.toDataURL('image/jpeg', 0.8); // 0.8 = 80% qualità
+            const base64Content = dataURL.split(',')[1];
+            
+            // Ferma la fotocamera
+            if (videoStream) {
+                videoStream.getTracks().forEach(track => track.stop());
+                video.style.display = 'none';
+            }
 
-                fetch('https://prod.workflow.trinai.it/webhook/ef4aece4-9ec0-4026-a7a7-328562bcbdf6', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                })
-                .then(response => {
-                    if (response.ok) {
-                        statusText.innerText = '✅ Certificazione Inviata!';
-                        if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
-                        setTimeout(() => { tg.close(); }, 1500);
-                    } else {
-                        throw new Error('Errore server');
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    statusText.innerText = '❌ Errore durante l\'invio. Riprova.';
-                    triggerBtn.style.display = 'block';
-                    loader.style.display = 'none';
-                });
+            // Invia al webhook
+            sendData(base64Content);
+        }
+
+        function sendData(base64Content) {
+            const urlData = getUrlParams();
+            const payload = {
+                action: "certificator",
+                timestamp: new Date().toISOString(),
+                base64_content: base64Content,
+                mime_type: "image/jpeg",
+                file_name: "evidenza_" + Date.now() + ".jpg",
+                ...urlData
             };
 
-            reader.readAsDataURL(file);
+            fetch('https://prod.workflow.trinai.it/webhook/ef4aece4-9ec0-4026-a7a7-328562bcbdf6', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            })
+            .then(response => {
+                if (response.ok) {
+                    statusText.innerText = '✅ Certificazione Inviata!';
+                    loader.style.display = 'none';
+                    if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
+                    setTimeout(() => { tg.close(); }, 1500);
+                } else {
+                    throw new Error('Errore server');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                statusText.innerText = '❌ Errore durante l\'invio. Riprova.';
+                startBtn.style.display = 'block'; // Mostra il bottone per riprovare
+                loader.style.display = 'none';
+            });
         }
     </script>
 </body>
