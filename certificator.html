@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="it">
 <head>
@@ -35,7 +34,6 @@
             margin-bottom: 30px;
             color: #4A4A4A;
         }
-        /* Stile del bottone che attiva la camera */
         .camera-btn {
             background-color: #212D67;
             color: white;
@@ -51,11 +49,6 @@
         .camera-btn:active {
             transform: scale(0.95);
         }
-        /* Nascondiamo l'input reale */
-        #cameraInput {
-            display: none;
-        }
-        /* Loader */
         .loader {
             display: none;
             border: 4px solid #f3f3f3;
@@ -78,13 +71,9 @@
         <div class="logo">TrinAI Certificator</div>
         <div id="status" class="status-text">Pronto per l'acquisizione evidenza live</div>
         
-        <!-- Bottone visibile -->
-        <button id="triggerBtn" class="camera-btn" onclick="document.getElementById('cameraInput').click()">
+        <button id="triggerBtn" class="camera-btn" onclick="openCamera()">
             📸 SCATTA FOTO
         </button>
-
-        <!-- Input nascosto iper-specializzato -->
-        <input type="file" id="cameraInput" accept="image/*" capture="environment">
 
         <div id="loader" class="loader"></div>
     </div>
@@ -92,24 +81,42 @@
     <script>
         // Inizializza Telegram WebApp
         const tg = window.Telegram.WebApp;
-        tg.expand(); // Espande la Mini App a tutto schermo
+        tg.expand();
 
-        const cameraInput = document.getElementById('cameraInput');
         const statusText = document.getElementById('status');
         const loader = document.getElementById('loader');
         const triggerBtn = document.getElementById('triggerBtn');
 
-        // Funzione per estrarre parametri dall'URL
         function getUrlParams() {
             const params = new URLSearchParams(window.location.search);
             return Object.fromEntries(params.entries());
         }
 
-        cameraInput.addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (!file) return;
+        // Crea un input dinamico ogni volta: forza la fotocamera nelle WebView Telegram
+        function openCamera() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'image/*';
+            input.capture = 'environment'; // fotocamera posteriore
+            input.style.display = 'none';
+            document.body.appendChild(input);
 
-            // Mostra caricamento
+            input.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                document.body.removeChild(input); // pulizia DOM
+                if (!file) return;
+                handleFile(file);
+            });
+
+            // Necessario su alcuni browser per garantire il trigger dell'evento change
+            input.addEventListener('cancel', function() {
+                document.body.removeChild(input);
+            });
+
+            input.click();
+        }
+
+        function handleFile(file) {
             triggerBtn.style.display = 'none';
             loader.style.display = 'block';
             statusText.innerText = 'Criptazione e invio evidenza in corso...';
@@ -119,7 +126,6 @@
                 const base64Content = event.target.result.split(',')[1];
                 const mimeType = file.type;
                 
-                // Prepariamo il payload unificando dati URL e dati Foto
                 const urlData = getUrlParams();
                 const payload = {
                     action: "certificator",
@@ -127,10 +133,9 @@
                     base64_content: base64Content,
                     mime_type: mimeType,
                     file_name: file.name,
-                    ...urlData // Include sop_id, vat, user_id, token ecc. passati in URL
+                    ...urlData
                 };
 
-                // Chiamata al Webhook n8n
                 fetch('https://prod.workflow.trinai.it/webhook/ef4aece4-9ec0-4026-a7a7-328562bcbdf6', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -139,13 +144,8 @@
                 .then(response => {
                     if (response.ok) {
                         statusText.innerText = '✅ Certificazione Inviata!';
-                        // Feedback tattile (vibrazione) se supportato
                         if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
-                        
-                        // Chiude la WebApp dopo 1.5 secondi
-                        setTimeout(() => {
-                            tg.close();
-                        }, 1500);
+                        setTimeout(() => { tg.close(); }, 1500);
                     } else {
                         throw new Error('Errore server');
                     }
@@ -159,7 +159,7 @@
             };
 
             reader.readAsDataURL(file);
-        });
+        }
     </script>
 </body>
 </html>
