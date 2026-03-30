@@ -1,2 +1,165 @@
 
-<input type="file" accept="image/*" capture="environment" id="cameraInput">
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>TrinAI Certificator</title>
+    <!-- SDK ufficiale Telegram Mini Apps -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f4f7f9;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            color: #1a1e24;
+        }
+        .container {
+            text-align: center;
+            padding: 20px;
+            width: 90%;
+        }
+        .logo {
+            font-weight: bold;
+            font-size: 24px;
+            margin-bottom: 10px;
+            color: #212D67;
+        }
+        .status-text {
+            font-size: 16px;
+            margin-bottom: 30px;
+            color: #4A4A4A;
+        }
+        /* Stile del bottone che attiva la camera */
+        .camera-btn {
+            background-color: #212D67;
+            color: white;
+            border: none;
+            padding: 20px 40px;
+            border-radius: 50px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            transition: transform 0.2s;
+        }
+        .camera-btn:active {
+            transform: scale(0.95);
+        }
+        /* Nascondiamo l'input reale */
+        #cameraInput {
+            display: none;
+        }
+        /* Loader */
+        .loader {
+            display: none;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #212D67;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="logo">TrinAI Certificator</div>
+        <div id="status" class="status-text">Pronto per l'acquisizione evidenza live</div>
+        
+        <!-- Bottone visibile -->
+        <button id="triggerBtn" class="camera-btn" onclick="document.getElementById('cameraInput').click()">
+            📸 SCATTA FOTO
+        </button>
+
+        <!-- Input nascosto iper-specializzato -->
+        <input type="file" id="cameraInput" accept="image/*" capture="environment">
+
+        <div id="loader" class="loader"></div>
+    </div>
+
+    <script>
+        // Inizializza Telegram WebApp
+        const tg = window.Telegram.WebApp;
+        tg.expand(); // Espande la Mini App a tutto schermo
+
+        const cameraInput = document.getElementById('cameraInput');
+        const statusText = document.getElementById('status');
+        const loader = document.getElementById('loader');
+        const triggerBtn = document.getElementById('triggerBtn');
+
+        // Funzione per estrarre parametri dall'URL
+        function getUrlParams() {
+            const params = new URLSearchParams(window.location.search);
+            return Object.fromEntries(params.entries());
+        }
+
+        cameraInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            // Mostra caricamento
+            triggerBtn.style.display = 'none';
+            loader.style.display = 'block';
+            statusText.innerText = 'Criptazione e invio evidenza in corso...';
+
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const base64Content = event.target.result.split(',')[1];
+                const mimeType = file.type;
+                
+                // Prepariamo il payload unificando dati URL e dati Foto
+                const urlData = getUrlParams();
+                const payload = {
+                    action: "certificator",
+                    timestamp: new Date().toISOString(),
+                    base64_content: base64Content,
+                    mime_type: mimeType,
+                    file_name: file.name,
+                    ...urlData // Include sop_id, vat, user_id, token ecc. passati in URL
+                };
+
+                // Chiamata al Webhook n8n
+                fetch('https://prod.workflow.trinai.it/webhook/ef4aece4-9ec0-4026-a7a7-328562bcbdf6', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                })
+                .then(response => {
+                    if (response.ok) {
+                        statusText.innerText = '✅ Certificazione Inviata!';
+                        // Feedback tattile (vibrazione) se supportato
+                        if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
+                        
+                        // Chiude la WebApp dopo 1.5 secondi
+                        setTimeout(() => {
+                            tg.close();
+                        }, 1500);
+                    } else {
+                        throw new Error('Errore server');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    statusText.innerText = '❌ Errore durante l\'invio. Riprova.';
+                    triggerBtn.style.display = 'block';
+                    loader.style.display = 'none';
+                });
+            };
+
+            reader.readAsDataURL(file);
+        });
+    </script>
+</body>
+</html>
