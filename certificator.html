@@ -401,10 +401,10 @@
             const payload = {
                 action: "certificator",
                 timestamp: new Date().toISOString(),
-                evidence_type: evidenceType, // IMAGE, FILE, TEXT
+                evidence_type: evidenceType,
                 mime_type: mimeType,
                 file_name: fileName,
-                ...urlParams // Include sop_id, step_id, vat, chat_id
+                ...urlParams // <--- QUESTO prende il message_id dall'URL e lo mette nel Body del Webhook
             };
 
             if (isPlainText) {
