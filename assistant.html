@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>TrinAI OS</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
@@ -19,7 +20,7 @@
         #viewport {
             display: flex; width: 300vw; height: 100vh;
             transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-            transform: translateX(-100vw); /* Inizia sullo schermo centrale (Chat) */
+            transform: translateX(-100vw);
         }
         .screen { width: 100vw; height: 100vh; display: flex; flex-direction: column; position: relative; }
 
@@ -28,23 +29,29 @@
             background: #fff; padding: 10px 15px; display: flex; justify-content: space-between; align-items: center;
             box-shadow: 0 2px 5px rgba(0,0,0,0.05); z-index: 100;
         }
+        .header-btn { background: none; border: none; font-size: 20px; color: var(--primary); cursor: pointer; padding: 5px; }
         .agent-info { text-align: center; cursor: pointer; }
         .agent-info h1 { font-size: 16px; color: var(--primary); }
         .agent-info p { font-size: 11px; color: #888; }
 
         /* --- SCHERMO 1: STORICO (SINISTRA) --- */
-        #screen-history { background: #fff; padding: 20px; }
+        #screen-history { background: #fff; }
+        #thread-list { padding: 15px; overflow-y: auto; flex: 1; }
         .thread-item { 
             padding: 15px; border-radius: 12px; background: var(--bg); margin-bottom: 10px;
             display: flex; justify-content: space-between; align-items: center; border: 1px solid #eee;
+            cursor: pointer;
         }
         .thread-item.active { border-color: var(--accent); background: #f0ebff; }
+        .thread-item .thread-name { font-size: 14px; font-weight: 500; color: var(--primary); }
+        .thread-item .thread-date { font-size: 11px; color: #aaa; margin-top: 3px; }
 
         /* --- SCHERMO 2: CHAT (CENTRO) --- */
         #chat-container { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
-        .message { max-width: 80%; padding: 12px; border-radius: 15px; font-size: 15px; position: relative; }
+        .message { max-width: 80%; padding: 12px; border-radius: 15px; font-size: 15px; position: relative; line-height: 1.5; }
         .message.user { align-self: flex-end; background: var(--chat-user); border-bottom-right-radius: 2px; }
         .message.ai { align-self: flex-start; background: var(--chat-ai); border-bottom-left-radius: 2px; border: 1px solid #ddd; }
+        .message.loading { opacity: 0.6; font-style: italic; }
 
         /* --- SCHERMO 3: VOCALE (DESTRA) --- */
         #screen-voice { background: linear-gradient(180deg, #212D67 0%, #101530 100%); color: white; justify-content: center; align-items: center; }
@@ -52,13 +59,14 @@
             width: 150px; height: 150px; background: var(--accent); border-radius: 50%;
             display: flex; align-items: center; justify-content: center; font-size: 50px;
             box-shadow: 0 0 30px rgba(137, 95, 224, 0.5); cursor: pointer;
+            user-select: none; -webkit-user-select: none;
         }
         .mic-sphere.recording { animation: pulse 1.5s infinite; background: var(--danger); }
 
         /* --- FOOTER INPUT --- */
         footer { background: #fff; padding: 10px 15px; display: flex; gap: 10px; align-items: center; padding-bottom: env(safe-area-inset-bottom, 15px); }
-        #chat-input { flex: 1; border: 1px solid #ddd; border-radius: 20px; padding: 12px; outline: none; }
-        .icon-btn { width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; font-size: 20px; color: var(--primary); cursor: pointer; }
+        #chat-input { flex: 1; border: 1px solid #ddd; border-radius: 20px; padding: 12px; outline: none; font-family: 'Inter', sans-serif; font-size: 15px; }
+        .icon-btn { width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; font-size: 20px; color: var(--primary); cursor: pointer; border: none; background: none; }
 
         /* --- MENU AGENTI (SIDE DRAWER) --- */
         #agent-drawer {
@@ -66,36 +74,75 @@
             transform: translateX(-100%); transition: 0.3s; z-index: 1000; box-shadow: 5px 0 15px rgba(0,0,0,0.1);
         }
         body.drawer-open #agent-drawer { transform: translateX(0); }
-        .drawer-item { padding: 15px 20px; border-bottom: 1px solid #f0f0f0; display: flex; align-items: center; gap: 10px; }
+        #drawer-overlay {
+            display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.3); z-index: 999;
+        }
+        body.drawer-open #drawer-overlay { display: block; }
+        .drawer-item { padding: 15px 20px; border-bottom: 1px solid #f0f0f0; display: flex; align-items: center; gap: 10px; cursor: pointer; font-size: 14px; }
+        .drawer-item:hover { background: var(--bg); }
+        .drawer-item.solver-item { color: var(--accent); font-weight: 600; }
 
+        /* --- OVERLAY SOLVER --- */
+        #solver-overlay {
+            display: none; position: fixed; inset: 0; background: var(--bg);
+            z-index: 2000; overflow-y: auto;
+            animation: slideUp 0.3s ease;
+        }
+        #solver-overlay.active { display: block; }
+        #solver-overlay iframe {
+            width: 100%; height: 100%; border: none;
+        }
+        .solver-close-bar {
+            position: sticky; top: 0; z-index: 10;
+            background: var(--primary); color: white;
+            padding: 12px 15px; display: flex; align-items: center; gap: 10px;
+            font-size: 15px; font-weight: 600;
+        }
+        .solver-close-bar button {
+            background: none; border: none; color: white; font-size: 20px; cursor: pointer; line-height: 1;
+        }
+
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
         @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
         .hidden { display: none !important; }
     </style>
 </head>
 <body>
 
+    <!-- OVERLAY DRAWER -->
+    <div id="drawer-overlay" onclick="toggleDrawer()"></div>
+
     <!-- MENU AGENTI -->
     <nav id="agent-drawer">
-        <div style="padding: 20px; font-weight: bold; background: var(--primary); color: #fff;">Direzione Aziendale</div>
+        <div style="padding: 20px; font-weight: bold; background: var(--primary); color: #fff; font-family: 'Inter', sans-serif;">Direzione Aziendale</div>
         <div class="drawer-item" onclick="switchAgent('pm')"><i class="fas fa-tasks"></i> Gestione Lavori</div>
-        <div class="drawer-item" onclick="switchAgent('mkt')"><i class="fas fa-bullhorn"></i> Vendite & Promo</div>
-        <div class="drawer-item" onclick="switchAgent('hr')"><i class="fas fa-shield-alt"></i> Team & Sicurezza</div>
-        <div class="drawer-item" onclick="switchAgent('acc')"><i class="fas fa-wallet"></i> Cassa & Conti</div>
-        <div class="drawer-item" onclick="openSolver()"><i class="fas fa-route"></i> 🚗 Risolvi Percorso</div>
+        <div class="drawer-item" onclick="switchAgent('mkt')"><i class="fas fa-bullhorn"></i> Vendite &amp; Promo</div>
+        <div class="drawer-item" onclick="switchAgent('hr')"><i class="fas fa-shield-alt"></i> Team &amp; Sicurezza</div>
+        <div class="drawer-item" onclick="switchAgent('acc')"><i class="fas fa-wallet"></i> Cassa &amp; Conti</div>
+        <div class="drawer-item solver-item" onclick="openSolver()"><i class="fas fa-route"></i> 🚗 Pianifica Percorso</div>
     </nav>
+
+    <!-- OVERLAY SOLVER (iframe) -->
+    <div id="solver-overlay">
+        <div class="solver-close-bar">
+            <button onclick="closeSolver()"><i class="fas fa-arrow-left"></i></button>
+            <span>🚗 Pianifica Percorso</span>
+        </div>
+        <iframe id="solver-frame" src="" title="Pianifica Percorso"></iframe>
+    </div>
 
     <div id="viewport">
         <!-- 1. SCHERMO STORICO -->
         <section class="screen" id="screen-history">
             <header>
                 <button class="header-btn" onclick="toggleDrawer()"><i class="fas fa-bars"></i></button>
-                <div class="header-title"><b>Archivio Chat</b></div>
+                <div style="font-weight:600; color: var(--primary);">Archivio Chat</div>
                 <div style="width:30px"></div>
             </header>
-            <div id="thread-list" style="padding: 15px;">
-                <!-- Populate via JS -->
+            <div id="thread-list">
+                <!-- Popolato via JS -->
             </div>
-            <button onclick="createNewThread()" style="margin: 20px; padding: 15px; border-radius: 10px; border: none; background: var(--primary); color: white;">+ Nuova Discussione</button>
+            <button onclick="createNewThread()" style="margin: 15px; padding: 15px; border-radius: 10px; border: none; background: var(--primary); color: white; font-family: 'Inter', sans-serif; font-size: 15px; cursor: pointer;">+ Nuova Discussione</button>
         </section>
 
         <!-- 2. SCHERMO CHAT CENTRALE -->
@@ -112,18 +159,20 @@
             <main id="chat-container"></main>
 
             <footer>
-                <input type="text" id="chat-input" placeholder="Chiedi all'AI...">
-                <div id="btn-send" class="icon-btn" onclick="sendText()"><i class="fas fa-paper-plane"></i></div>
+                <input type="text" id="chat-input" placeholder="Chiedi all'AI..." onkeydown="handleInputKey(event)">
+                <button id="btn-send" class="icon-btn" onclick="sendText()"><i class="fas fa-paper-plane"></i></button>
             </footer>
         </section>
 
         <!-- 3. SCHERMO VOCALE -->
         <section class="screen" id="screen-voice">
-            <header style="background: transparent; color: white;">
-                <button class="header-btn" style="color:white" onclick="goToScreen(1)"><i class="fas fa-chevron-left"></i> Torna alla Chat</button>
+            <header style="background: transparent; box-shadow: none; color: white;">
+                <button class="header-btn" style="color:white" onclick="goToScreen(1)"><i class="fas fa-chevron-left"></i></button>
+                <span style="color:white; font-weight:600;">Modalità Vocale</span>
+                <div style="width:30px"></div>
             </header>
             <div style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center;">
-                <div id="voice-status" style="margin-bottom: 30px; font-size: 18px; font-weight: 300;">Tocca per parlare</div>
+                <div id="voice-status" style="margin-bottom: 30px; font-size: 18px; font-weight: 300;">Tieni premuto per parlare</div>
                 <div id="mic-btn" class="mic-sphere">
                     <i class="fas fa-microphone"></i>
                 </div>
@@ -136,65 +185,176 @@
         const tg = window.Telegram.WebApp;
         tg.expand();
 
-        const WH_CHAT = "https://prod.workflow.trinai.it/webhook/81ab5292-43c3-4f93-afaf-7411b95fc010";
+        const urlParams = new URLSearchParams(window.location.search);
+        const lang = urlParams.get('lang') || 'it';
+        const chatId = urlParams.get('chatId') || null;
+
+        const WH_CHAT   = "https://prod.workflow.trinai.it/webhook/81ab5292-43c3-4f93-afaf-7411b95fc010";
         const WH_SOLVER = "https://trinai.api.workflow.dcmake.it/webhook/a0b6b2cb-4e19-4a92-9269-6b6d8a7afb80";
 
-        let currentAgent = 'pm';
+        let currentAgent   = 'pm';
         let currentThreadId = 'thread_001';
-        let currentScreen = 1;
+        let currentScreen  = 1;
+        let threads = [
+            { id: 'thread_001', name: 'Discussione Attiva', agent: 'pm', date: new Date().toLocaleDateString('it-IT') }
+        ];
 
         // --- GESTIONE SWIPE ---
-        let startX;
-        document.addEventListener('touchstart', e => startX = e.touches[0].clientX);
+        let startX, startY;
+        document.addEventListener('touchstart', e => {
+            startX = e.touches[0].clientX;
+            startY = e.touches[0].clientY;
+        }, { passive: true });
         document.addEventListener('touchend', e => {
+            if (document.body.classList.contains('drawer-open')) return;
+            if (document.getElementById('solver-overlay').classList.contains('active')) return;
             const endX = e.changedTouches[0].clientX;
-            const diff = startX - endX;
-            if (Math.abs(diff) > 80) {
-                if (diff > 0 && currentScreen < 2) goToScreen(currentScreen + 1);
-                else if (diff < 0 && currentScreen > 0) goToScreen(currentScreen - 1);
+            const endY = e.changedTouches[0].clientY;
+            const diffX = startX - endX;
+            const diffY = Math.abs(startY - e.changedTouches[0].clientY);
+            if (diffY > Math.abs(diffX)) return; // scroll verticale, ignora
+            if (Math.abs(diffX) > 80) {
+                if (diffX > 0 && currentScreen < 2) goToScreen(currentScreen + 1);
+                else if (diffX < 0 && currentScreen > 0) goToScreen(currentScreen - 1);
             }
-        });
+        }, { passive: true });
 
         function goToScreen(index) {
             currentScreen = index;
             document.getElementById('viewport').style.transform = `translateX(-${index * 100}vw)`;
         }
 
-        function toggleDrawer() { document.body.classList.toggle('drawer-open'); }
+        function toggleDrawer() {
+            document.body.classList.toggle('drawer-open');
+        }
 
-        // --- LOGICA AGENTI & THREAD ---
+        // --- GESTIONE THREAD ---
+        function renderThreadList() {
+            const list = document.getElementById('thread-list');
+            list.innerHTML = '';
+            const agentThreads = threads.filter(t => t.agent === currentAgent);
+            if (agentThreads.length === 0) {
+                list.innerHTML = '<p style="color:#aaa; text-align:center; padding:20px; font-size:14px;">Nessuna discussione. Creane una nuova.</p>';
+                return;
+            }
+            agentThreads.forEach(thread => {
+                const item = document.createElement('div');
+                item.className = 'thread-item' + (thread.id === currentThreadId ? ' active' : '');
+                item.innerHTML = `<div><div class="thread-name">${thread.name}</div><div class="thread-date">${thread.date}</div></div><i class="fas fa-chevron-right" style="color:#ccc"></i>`;
+                item.onclick = () => selectThread(thread.id);
+                list.appendChild(item);
+            });
+        }
+
+        function selectThread(threadId) {
+            currentThreadId = threadId;
+            const thread = threads.find(t => t.id === threadId);
+            if (thread) document.getElementById('ui-thread-name').innerText = thread.name;
+            renderThreadList();
+            goToScreen(1);
+            // Carica messaggi dal server
+            callApi(WH_CHAT, { action: 'load_thread' }, false);
+        }
+
+        function createNewThread() {
+            const id = 'thread_' + Date.now();
+            const newThread = {
+                id,
+                name: 'Nuova Discussione',
+                agent: currentAgent,
+                date: new Date().toLocaleDateString('it-IT')
+            };
+            threads.unshift(newThread);
+            currentThreadId = id;
+            document.getElementById('ui-thread-name').innerText = newThread.name;
+            document.getElementById('chat-container').innerHTML = '';
+            renderThreadList();
+            goToScreen(1);
+            callApi(WH_CHAT, { action: 'create_thread', thread_id: id }, false);
+        }
+
+        function loadThreads() {
+            renderThreadList();
+        }
+
+        // --- LOGICA AGENTI ---
         function switchAgent(agent) {
             currentAgent = agent;
             const names = { pm: "🛠️ Gestione Lavori", mkt: "🚀 Vendite & Promo", hr: "🛡️ Team & Sicurezza", acc: "💰 Cassa & Conti" };
-            document.getElementById('ui-agent-name').innerText = names[agent];
+            document.getElementById('ui-agent-name').innerText = names[agent] || agent;
             toggleDrawer();
-            loadThreads();
-        }
-
-        function renameCurrentThread() {
-            const newName = prompt("Inserisci il nuovo nome della discussione:");
-            if (newName) {
-                document.getElementById('ui-thread-name').innerText = newName;
-                callApi(WH_CHAT, { action: "rename_thread", new_name: newName });
+            // Seleziona primo thread disponibile per l'agente o crea nuovo
+            const agentThread = threads.find(t => t.agent === agent);
+            if (agentThread) {
+                selectThread(agentThread.id);
+            } else {
+                createNewThread();
             }
         }
 
+        function renameCurrentThread() {
+            tg.showPopup({
+                title: "Rinomina discussione",
+                message: "Inserisci il nuovo nome:",
+                buttons: [
+                    { id: 'confirm', type: 'default', text: 'Conferma' },
+                    { type: 'cancel', text: 'Annulla' }
+                ]
+            }, (btnId) => {
+                // Telegram non supporta input inline nel popup.
+                // Usiamo prompt nativo come fallback.
+                if (btnId === 'confirm') {
+                    const newName = prompt('Nuovo nome della discussione:');
+                    if (newName && newName.trim()) {
+                        const thread = threads.find(t => t.id === currentThreadId);
+                        if (thread) thread.name = newName.trim();
+                        document.getElementById('ui-thread-name').innerText = newName.trim();
+                        callApi(WH_CHAT, { action: 'rename_thread', new_name: newName.trim() }, false);
+                    }
+                }
+            });
+        }
+
         // --- COMUNICAZIONE ---
-        async function callApi(url, payload) {
+        async function callApi(url, payload, showReply = true) {
             const fullPayload = { 
                 ...payload, 
-                agent_id: currentAgent, 
+                agent_id:  currentAgent, 
                 thread_id: currentThreadId,
-                user_id: tg.initDataUnsafe?.user?.id || 'TEST'
+                user_id:   tg.initDataUnsafe?.user?.id || 'TEST',
+                chat_id:   chatId,
+                lang:      lang
             };
-            const response = await fetch(url, {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify(fullPayload)
-            });
-            const data = await response.json();
-            if (data.reply) addMessage('ai', data.reply);
-            if (data.audio_base64) playAudio(data.audio_base64);
+            let loadingEl = null;
+            if (showReply) {
+                loadingEl = addMessage('ai', '⏳ ...', true);
+            }
+            try {
+                const response = await fetch(url, {
+                    method:  'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body:    JSON.stringify(fullPayload)
+                });
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                const text = await response.text();
+                let data = {};
+                try { data = JSON.parse(text); } catch(e) { data = { reply: text }; }
+                if (loadingEl) loadingEl.remove();
+                if (data.reply && showReply) addMessage('ai', data.reply);
+                if (data.audio_base64) playAudio(data.audio_base64);
+                if (data.threads) {
+                    threads = data.threads;
+                    renderThreadList();
+                }
+            } catch (err) {
+                if (loadingEl) loadingEl.remove();
+                if (showReply) addMessage('ai', '⚠️ Errore di connessione. Riprova tra poco.');
+                console.error('callApi error:', err);
+            }
+        }
+
+        function handleInputKey(e) {
+            if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendText(); }
         }
 
         function sendText() {
@@ -203,15 +363,17 @@
             if (!text) return;
             addMessage('user', text);
             input.value = '';
-            callApi(WH_CHAT, { action: "npl_chat", message: text });
+            callApi(WH_CHAT, { action: 'npl_chat', message: text });
         }
 
-        function addMessage(sender, text) {
+        function addMessage(sender, text, isLoading = false) {
             const div = document.createElement('div');
-            div.className = `message ${sender}`;
+            div.className = `message ${sender}${isLoading ? ' loading' : ''}`;
             div.innerText = text;
-            document.getElementById('chat-container').appendChild(div);
-            document.getElementById('chat-container').scrollTop = document.getElementById('chat-container').scrollHeight;
+            const container = document.getElementById('chat-container');
+            container.appendChild(div);
+            container.scrollTop = container.scrollHeight;
+            return div;
         }
 
         // --- LOGICA VOCALE (Push-to-Talk) ---
@@ -219,57 +381,67 @@
         let mediaRecorder;
         let audioChunks = [];
 
-        micBtn.onmousedown = startRecording;
-        micBtn.onmouseup = stopRecording;
-        micBtn.ontouchstart = (e) => { e.preventDefault(); startRecording(); };
-        micBtn.ontouchend = (e) => { e.preventDefault(); stopRecording(); };
+        micBtn.addEventListener('mousedown',  startRecording);
+        micBtn.addEventListener('mouseup',    stopRecording);
+        micBtn.addEventListener('touchstart', (e) => { e.preventDefault(); startRecording(); }, { passive: false });
+        micBtn.addEventListener('touchend',   (e) => { e.preventDefault(); stopRecording();  }, { passive: false });
 
         async function startRecording() {
-            micBtn.classList.add('recording');
-            document.getElementById('voice-status').innerText = "Ti ascolto...";
-            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-            mediaRecorder = new MediaRecorder(stream);
-            mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
-            mediaRecorder.onstop = async () => {
-                const blob = new Blob(audioChunks, { type: 'audio/webm' });
-                const reader = new FileReader();
-                reader.readAsDataURL(blob);
-                reader.onloadend = () => {
-                    const base64 = reader.result.split(',')[1];
-                    callApi(WH_CHAT, { action: "npl_voice", audio_base64: base64, mime_type: "audio/webm" });
-                };
+            try {
+                micBtn.classList.add('recording');
+                document.getElementById('voice-status').innerText = "Ti ascolto...";
                 audioChunks = [];
-            };
-            mediaRecorder.start();
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                mediaRecorder = new MediaRecorder(stream);
+                mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+                mediaRecorder.onstop = async () => {
+                    stream.getTracks().forEach(t => t.stop());
+                    const blob = new Blob(audioChunks, { type: 'audio/webm' });
+                    const reader = new FileReader();
+                    reader.readAsDataURL(blob);
+                    reader.onloadend = () => {
+                        const base64 = reader.result.split(',')[1];
+                        document.getElementById('voice-status').innerText = "Elaborazione...";
+                        callApi(WH_CHAT, { action: 'npl_voice', audio_base64: base64, mime_type: 'audio/webm' })
+                            .then(() => { document.getElementById('voice-status').innerText = "Tieni premuto per parlare"; });
+                    };
+                };
+                mediaRecorder.start();
+            } catch(err) {
+                micBtn.classList.remove('recording');
+                document.getElementById('voice-status').innerText = "Microfono non disponibile";
+                tg.showAlert('Permesso microfono negato. Controlla le impostazioni.');
+            }
         }
 
         function stopRecording() {
+            if (!mediaRecorder || mediaRecorder.state === 'inactive') return;
             micBtn.classList.remove('recording');
             document.getElementById('voice-status').innerText = "Analisi voce...";
             mediaRecorder.stop();
         }
 
         function playAudio(base64) {
-            const audio = new Audio("data:audio/webm;base64," + base64);
-            audio.play();
+            const audio = new Audio('data:audio/webm;base64,' + base64);
+            audio.play().catch(e => console.warn('Audio play failed:', e));
         }
 
-        // --- RISOLUTORE (LOGISTICA) ---
+        // --- SOLVER: OVERLAY INTEGRATO ---
         function openSolver() {
             toggleDrawer();
-            // Qui carichiamo dinamicamente il form che hai creato tu
-            // Per semplicità lo mostriamo come un overlay
-            tg.showPopup({
-                title: "Logistica",
-                message: "Vuoi aprire il modulo di pianificazione percorso?",
-                buttons: [{text: "Apri", type: "default"}, {text: "Annulla", type: "cancel"}]
-            }, (id) => {
-                if (id === "default") {
-                    // Reindirizza al tuo file solver.html o iniettalo nel DOM
-                    window.location.href = "solver.html"; 
-                }
-            });
+            const solverUrl = `solver.html?lang=${lang}&chatId=${chatId || ''}&threadId=${currentThreadId}`;
+            const frame = document.getElementById('solver-frame');
+            frame.src = solverUrl;
+            document.getElementById('solver-overlay').classList.add('active');
         }
+
+        function closeSolver() {
+            document.getElementById('solver-overlay').classList.remove('active');
+            document.getElementById('solver-frame').src = '';
+        }
+
+        // --- INIT ---
+        loadThreads();
     </script>
 </body>
 </html>
