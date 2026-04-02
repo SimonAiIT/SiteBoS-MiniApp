@@ -4,23 +4,254 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>Pianifica Percorso</title>
-  
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link rel="stylesheet" href="styles.css">
+  <style>
+    /* ── TOKEN DI DESIGN (identici a assistant.html) ──────────── */
+    :root {
+      --primary:    #212D67;
+      --accent:     #895FE0;
+      --bg:         #f4f7f9;
+      --surface:    #ffffff;
+      --border:     #e8e8e8;
+      --text:       #1a1a2e;
+      --text-muted: #888;
+      --danger:     #ff4444;
+      --success:    #27ae60;
+      --radius-sm:  8px;
+      --radius-md:  12px;
+      --radius-lg:  16px;
+      --shadow-sm:  0 2px 5px rgba(0,0,0,0.05);
+      --shadow-md:  0 4px 16px rgba(0,0,0,0.08);
+      --trans:      180ms cubic-bezier(0.16,1,0.3,1);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { -webkit-text-size-adjust: none; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding-bottom: env(safe-area-inset-bottom, 20px);
+    }
+
+    /* ── HEADER ───────────────────────────────────────── */
+    .page-header {
+      background: var(--surface);
+      padding: 14px 16px 12px;
+      box-shadow: var(--shadow-sm);
+      position: sticky; top: 0; z-index: 10;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .page-header-icon {
+      width: 36px; height: 36px;
+      background: #e8edf8;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--primary); font-size: 16px; flex-shrink: 0;
+    }
+    .page-header-text h1 {
+      font-size: 16px; font-weight: 700; color: var(--primary); line-height: 1.2;
+    }
+    .page-header-text p {
+      font-size: 12px; color: var(--text-muted); margin-top: 1px;
+    }
+
+    /* ── CONTENITORE ───────────────────────────────────── */
+    .container {
+      padding: 14px 14px 24px;
+      display: flex; flex-direction: column; gap: 12px;
+    }
+
+    /* ── CARD (stile identico ai thread-item di assistant) ────── */
+    .card {
+      background: var(--surface);
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border);
+      padding: 16px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .section-title {
+      font-size: 11px; font-weight: 700;
+      letter-spacing: 0.08em; text-transform: uppercase;
+      color: var(--accent); margin-bottom: 14px;
+    }
+
+    /* ── FORM ELEMENTS ────────────────────────────────── */
+    .form-group {
+      margin-bottom: 14px;
+    }
+    .form-group:last-child { margin-bottom: 0; }
+
+    label {
+      display: block;
+      font-size: 13px; font-weight: 500; color: var(--text);
+      margin-bottom: 6px;
+    }
+    label.required::after {
+      content: ' *'; color: var(--danger); font-weight: 700;
+    }
+
+    input[type="text"],
+    input[type="date"],
+    input[type="number"],
+    textarea {
+      width: 100%;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 10px 12px;
+      font-family: 'Inter', sans-serif;
+      font-size: 14px; color: var(--text);
+      background: var(--surface);
+      outline: none;
+      transition: border-color var(--trans), box-shadow var(--trans);
+      -webkit-appearance: none;
+    }
+    input[type="text"]:focus,
+    input[type="date"]:focus,
+    input[type="number"]:focus,
+    textarea:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(137,95,224,0.12);
+    }
+    textarea { resize: none; line-height: 1.5; }
+    input[type="number"] { text-align: center; }
+
+    .hint {
+      font-size: 11px; color: var(--text-muted); margin-top: 5px;
+    }
+
+    /* ── CHECKBOX TOGGLE (stile pill) ────────────────────── */
+    .checkbox-group {
+      display: flex; align-items: center; gap: 10px;
+      margin-bottom: 10px;
+    }
+    .checkbox-group input[type="checkbox"] {
+      appearance: none; -webkit-appearance: none;
+      width: 42px; height: 24px; border-radius: 12px;
+      background: var(--border); cursor: pointer;
+      flex-shrink: 0;
+      position: relative;
+      transition: background var(--trans);
+    }
+    .checkbox-group input[type="checkbox"]::after {
+      content: '';
+      position: absolute; top: 3px; left: 3px;
+      width: 18px; height: 18px; border-radius: 50%;
+      background: #fff;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+      transition: transform var(--trans);
+    }
+    .checkbox-group input[type="checkbox"]:checked {
+      background: var(--primary);
+    }
+    .checkbox-group input[type="checkbox"]:checked::after {
+      transform: translateX(18px);
+    }
+    .checkbox-group label {
+      margin-bottom: 0; cursor: pointer; font-size: 14px;
+    }
+
+    /* ── RADIO GROUP (card selezionabili) ─────────────────── */
+    .radio-group {
+      display: flex; gap: 10px;
+      margin-bottom: 0;
+    }
+    .radio-group input[type="radio"] { display: none; }
+    .radio-group label {
+      flex: 1; margin-bottom: 0;
+      padding: 10px 8px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      text-align: center;
+      font-size: 13px; font-weight: 500; color: var(--text-muted);
+      cursor: pointer;
+      transition: border-color var(--trans), color var(--trans), background var(--trans);
+      background: var(--bg);
+    }
+    .radio-group input[type="radio"]:checked + label {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: #f0ebff;
+      font-weight: 600;
+    }
+
+    /* ── ROW / COL (per notti/adulti/bambini) ──────────────── */
+    .row { display: flex; gap: 10px; }
+    .col { flex: 1; }
+    .col label { font-size: 12px; }
+
+    /* ── PULSANTE PRINCIPALE (identico a assistant.html btn-primary) ── */
+    .btn-container {
+      padding: 0;
+    }
+    .btn-primary {
+      width: 100%;
+      padding: 14px;
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius-sm);
+      font-family: 'Inter', sans-serif;
+      font-size: 15px; font-weight: 600;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      transition: background var(--trans), opacity var(--trans);
+      -webkit-tap-highlight-color: transparent;
+    }
+    .btn-primary:hover:not(:disabled) { background: #1a2456; }
+    .btn-primary:active:not(:disabled) { background: #141d40; }
+    .btn-primary:disabled {
+      opacity: 0.45; cursor: not-allowed;
+    }
+    .btn-primary.btn-success {
+      background: var(--success);
+    }
+
+    .cancel-hint {
+      text-align: center;
+      font-size: 12px; color: var(--text-muted);
+      margin-top: 8px;
+    }
+
+    /* ── HIDDEN + ANIMAZIONE REVEAL ───────────────────────── */
+    .hidden { display: none !important; }
+    .reveal {
+      animation: revealDown 0.22s cubic-bezier(0.16,1,0.3,1);
+    }
+    @keyframes revealDown {
+      from { opacity: 0; transform: translateY(-6px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── INPUT AGGIUNTIVO (sotto checkbox) ────────────────── */
+    .input-group {
+      padding: 10px 0 4px 52px;
+    }
+    .input-group label { font-size: 12px; color: var(--text-muted); }
+  </style>
 </head>
 <body>
+
+  <!-- HEADER identico per stile all'header di assistant.html -->
+  <div class="page-header">
+    <div class="page-header-icon"><i class="fas fa-route"></i></div>
+    <div class="page-header-text">
+      <h1 id="title">Pianifica Percorso</h1>
+      <p id="subtitle"></p>
+    </div>
+  </div>
+
   <div class="container">
-    <h1 id="title">Caricamento...</h1>
-    <p class="subtitle" id="subtitle"></p>
-    
     <form id="travelForm">
-      
+
       <!-- SEZIONE 1: ITINERARIO -->
       <div class="card">
         <div class="section-title">Itinerario</div>
-        
+
         <div class="form-group checkbox-group">
           <input type="checkbox" id="partenzaDaSede" checked>
           <label for="partenzaDaSede"><span id="lblPartenzaSede">Partenza da Sede</span></label>
@@ -30,7 +261,7 @@
           <input type="text" id="partenza" placeholder="Es. Via Roma 1, Milano">
         </div>
 
-        <div class="form-group checkbox-group">
+        <div class="form-group checkbox-group" style="margin-top:4px">
           <input type="checkbox" id="arrivoInSede" checked>
           <label for="arrivoInSede"><span id="lblArrivoSede">Arrivo in Sede</span></label>
         </div>
@@ -40,44 +271,46 @@
         </div>
       </div>
 
-      <!-- SEZIONE 2: DETTAGLI E SCOPO -->
+      <!-- SEZIONE 2: SCOPO -->
       <div class="card">
         <div class="section-title" id="lblTipoPercorso">Scopo del percorso</div>
-        
+
         <div class="form-group radio-group">
           <input type="radio" name="tripType" value="interessi" id="radio-interessi" checked>
-          <label for="radio-interessi"><span id="optInteressi">Interessi</span></label>
-          
+          <label for="radio-interessi"><i class="fas fa-star" style="margin-right:5px"></i><span id="optInteressi">Interessi</span></label>
+
           <input type="radio" name="tripType" value="appuntamenti" id="radio-appuntamenti">
-          <label for="radio-appuntamenti"><span id="optAppuntamenti">Appuntamenti</span></label>
+          <label for="radio-appuntamenti"><i class="fas fa-calendar" style="margin-right:5px"></i><span id="optAppuntamenti">Appuntamenti</span></label>
         </div>
 
-        <div id="dataAppuntamentoContainer" class="form-group hidden">
+        <div id="dataAppuntamentoContainer" class="form-group hidden" style="margin-top:12px">
           <label for="dataAppuntamento" class="required"><span id="lblDataAppuntamento">Data Appuntamento</span></label>
           <input type="date" id="dataAppuntamento">
         </div>
 
-        <div id="midpointContainer" class="form-group">
+        <div id="midpointContainer" class="form-group" style="margin-top:12px">
           <label for="midpoint"><span id="lblMidpoint">Tappe Intermedie</span></label>
           <input type="text" id="midpoint" placeholder="Es. Tappa 1, Tappa 2...">
           <div class="hint" id="hintMidpoint"></div>
         </div>
 
-        <div class="form-group">
+        <div class="form-group" style="margin-top:4px">
           <label for="dettagli"><span id="lblDettagli">Dettagli</span></label>
-          <textarea id="dettagli" rows="2"></textarea>
+          <textarea id="dettagli" rows="2" placeholder="Aggiungi note o dettagli..."></textarea>
         </div>
       </div>
-      
+
       <!-- SEZIONE 3: LOGISTICA -->
       <div class="card">
+        <div class="section-title">Logistica</div>
+
         <div class="form-group checkbox-group">
           <input type="checkbox" id="includeTripDetails">
           <label for="includeTripDetails"><span id="lblPernottamento">Pianifica pernottamento</span></label>
         </div>
-        
-        <div id="tripDetailsContainer" class="hidden">
-          <div class="row">
+
+        <div id="tripDetailsContainer" class="hidden reveal">
+          <div class="row" style="margin-top:10px">
             <div class="col">
               <div class="form-group">
                 <label for="notti"><span id="lblNotti">Notti</span></label>
@@ -100,9 +333,12 @@
         </div>
       </div>
 
-      <!-- AZIONI -->
-      <div class="button-container">
-        <button type="submit" id="submitBtn" class="btn btn-primary btn-block">Crea Itinerario</button>
+      <!-- BOTTONE -->
+      <div class="btn-container">
+        <button type="submit" id="submitBtn" class="btn-primary" disabled>
+          <i class="fas fa-route"></i>
+          <span id="btnLabel">Crea Itinerario</span>
+        </button>
       </div>
       <p class="cancel-hint" id="cancelHint"></p>
     </form>
@@ -111,245 +347,244 @@
   <script>
     const translations = {
       it: {
-        title: "🚗 Pianifica Percorso", subtitle: "Crea un itinerario o calcola un percorso per appuntamenti.",
-        lblPartenza: "📍 Punto di Partenza Personalizzato", lblPartenzaSede: "Partenza da Sede",
-        lblArrivo: "🏁 Punto di Arrivo Personalizzato", lblArrivoSede: "Arrivo in Sede",
+        title: "Pianifica Percorso", subtitle: "Crea un itinerario o calcola un percorso per appuntamenti.",
+        lblPartenza: "Punto di Partenza Personalizzato", lblPartenzaSede: "Partenza da Sede",
+        lblArrivo: "Punto di Arrivo Personalizzato", lblArrivoSede: "Arrivo in Sede",
         lblTipoPercorso: "Scopo del percorso", optInteressi: "Interessi", optAppuntamenti: "Appuntamenti",
-        lblDataAppuntamento: "🗓️ Data Appuntamento",
-        lblMidpoint: "🗺️ Tappe Intermedie (Opzionale)", hintMidpoint: "Separa le tappe con una virgola",
+        lblDataAppuntamento: "Data Appuntamento",
+        lblMidpoint: "Tappe Intermedie (Opzionale)", hintMidpoint: "Separa le tappe con una virgola",
         lblDettagliApp: "Dettagli Appuntamento (es. Cliente Rossi)", lblDettagliInt: "Elenca Interessi (es. cibo, musei)",
         lblPernottamento: "Pianifica anche il pernottamento",
-        lblNotti: "🌙 Notti", lblAdulti: "👥 Adulti", lblBambini: "🧒 Bambini",
-        btnSubmit: "Crea Itinerario", btnSuccess: "Richiesta inviata!", cancelHint: "Per annullare, chiudi la finestra."
+        lblNotti: "Notti", lblAdulti: "Adulti", lblBambini: "Bambini",
+        btnSubmit: "Crea Itinerario", btnSuccess: "Richiesta inviata! ✓", cancelHint: "Per annullare, chiudi la finestra."
       },
       en: {
-        title: "🚗 Plan Route", subtitle: "Create an itinerary or calculate a route for appointments.",
-        lblPartenza: "📍 Custom Starting Point", lblPartenzaSede: "Depart from Office",
-        lblArrivo: "🏁 Custom Destination", lblArrivoSede: "Arrive at Office",
+        title: "Plan Route", subtitle: "Create an itinerary or calculate a route for appointments.",
+        lblPartenza: "Custom Starting Point", lblPartenzaSede: "Depart from Office",
+        lblArrivo: "Custom Destination", lblArrivoSede: "Arrive at Office",
         lblTipoPercorso: "Purpose of the route", optInteressi: "Interests", optAppuntamenti: "Appointments",
-        lblDataAppuntamento: "🗓️ Appointment Date",
-        lblMidpoint: "🗺️ Midpoints / Stops (Optional)", hintMidpoint: "You can list multiple destinations here",
+        lblDataAppuntamento: "Appointment Date",
+        lblMidpoint: "Midpoints / Stops (Optional)", hintMidpoint: "You can list multiple destinations here",
         lblDettagliApp: "Appointment Details (e.g., Client Smith)", lblDettagliInt: "List Interests (e.g., food, museums)",
         lblPernottamento: "Plan overnight stay as well",
-        lblNotti: "🌙 Nights", lblAdulti: "👥 Adults", lblBambini: "🧒 Children",
-        btnSubmit: "Create Itinerary", btnSuccess: "Request sent!", cancelHint: "To cancel, just close the window."
+        lblNotti: "Nights", lblAdulti: "Adults", lblBambini: "Children",
+        btnSubmit: "Create Itinerary", btnSuccess: "Request sent! ✓", cancelHint: "To cancel, just close the window."
       },
       fr: {
-        title: "🚗 Planifier l'Itinéraire", subtitle: "Créez un itinéraire ou calculez un trajet pour des rendez-vous.",
-        lblPartenza: "📍 Point de Départ Personnalisé", lblPartenzaSede: "Départ du Siège",
-        lblArrivo: "🏁 Destination Personnalisée", lblArrivoSede: "Arrivée au Siège",
+        title: "Planifier l'Itinéraire", subtitle: "Créez un itinéraire ou calculez un trajet pour des rendez-vous.",
+        lblPartenza: "Point de Départ Personnalisé", lblPartenzaSede: "Départ du Siège",
+        lblArrivo: "Destination Personnalisée", lblArrivoSede: "Arrivée au Siège",
         lblTipoPercorso: "But du parcours", optInteressi: "Intérêts", optAppuntamenti: "Rendez-vous",
-        lblDataAppuntamento: "🗓️ Date du Rendez-vous",
-        lblMidpoint: "🗺️ Étapes Intermédiaires (Optionnel)", hintMidpoint: "Vous pouvez lister plusieurs destinations ici",
+        lblDataAppuntamento: "Date du Rendez-vous",
+        lblMidpoint: "Étapes Intermédiaires (Optionnel)", hintMidpoint: "Vous pouvez lister plusieurs destinations ici",
         lblDettagliApp: "Détails du rendez-vous (ex: Client Durand)", lblDettagliInt: "Listez vos intérêts (ex: nourriture, musées)",
         lblPernottamento: "Planifier aussi la nuitée",
-        lblNotti: "🌙 Nuits", lblAdulti: "👥 Adultes", lblBambini: "🧒 Enfants",
-        btnSubmit: "Créer l'Itinéraire", btnSuccess: "Demande envoyée !", cancelHint: "Pour annuler, fermez la fenêtre."
+        lblNotti: "Nuits", lblAdulti: "Adultes", lblBambini: "Enfants",
+        btnSubmit: "Créer l'Itinéraire", btnSuccess: "Demande envoyée ! ✓", cancelHint: "Pour annuler, fermez la fenêtre."
       },
       de: {
-        title: "🚗 Route planen", subtitle: "Erstellen Sie eine Reiseroute oder berechnen Sie eine Strecke für Termine.",
-        lblPartenza: "📍 Benutzerdefinierter Startpunkt", lblPartenzaSede: "Abfahrt vom Büro",
-        lblArrivo: "🏁 Benutzerdefiniertes Ziel", lblArrivoSede: "Ankunft im Büro",
+        title: "Route planen", subtitle: "Erstellen Sie eine Reiseroute oder berechnen Sie eine Strecke für Termine.",
+        lblPartenza: "Benutzerdefinierter Startpunkt", lblPartenzaSede: "Abfahrt vom Büro",
+        lblArrivo: "Benutzerdefiniertes Ziel", lblArrivoSede: "Ankunft im Büro",
         lblTipoPercorso: "Zweck der Route", optInteressi: "Interessen", optAppuntamenti: "Termine",
-        lblDataAppuntamento: "🗓️ Termindatum",
-        lblMidpoint: "🗺️ Zwischenstopps (Optional)", hintMidpoint: "Sie können hier mehrere Ziele auflisten",
+        lblDataAppuntamento: "Termindatum",
+        lblMidpoint: "Zwischenstopps (Optional)", hintMidpoint: "Sie können hier mehrere Ziele auflisten",
         lblDettagliApp: "Termindetails (z.B. Kunde Müller)", lblDettagliInt: "Interessen auflisten (z.B. Essen, Museen)",
         lblPernottamento: "Auch Übernachtung planen",
-        lblNotti: "🌙 Nächte", lblAdulti: "👥 Erwachsene", lblBambini: "🧒 Kinder",
-        btnSubmit: "Route erstellen", btnSuccess: "Anfrage gesendet!", cancelHint: "Zum Abbrechen, schließen Sie das Fenster."
+        lblNotti: "Nächte", lblAdulti: "Erwachsene", lblBambini: "Kinder",
+        btnSubmit: "Route erstellen", btnSuccess: "Anfrage gesendet! ✓", cancelHint: "Zum Abbrechen, schließen Sie das Fenster."
       },
       es: {
-        title: "🚗 Planificar Ruta", subtitle: "Crea un itinerario o calcula una ruta para citas.",
-        lblPartenza: "📍 Punto de Salida Personalizado", lblPartenzaSede: "Salida desde la Oficina",
-        lblArrivo: "🏁 Destino Personalizado", lblArrivoSede: "Llegada a la Oficina",
+        title: "Planificar Ruta", subtitle: "Crea un itinerario o calcula una ruta para citas.",
+        lblPartenza: "Punto de Salida Personalizado", lblPartenzaSede: "Salida desde la Oficina",
+        lblArrivo: "Destino Personalizado", lblArrivoSede: "Llegada a la Oficina",
         lblTipoPercorso: "Propósito de la ruta", optInteressi: "Intereses", optAppuntamenti: "Citas",
-        lblDataAppuntamento: "🗓️ Fecha de la Cita",
-        lblMidpoint: "🗺️ Paradas Intermedias (Opcional)", hintMidpoint: "Puedes listar múltiples destinos aquí",
+        lblDataAppuntamento: "Fecha de la Cita",
+        lblMidpoint: "Paradas Intermedias (Opcional)", hintMidpoint: "Puedes listar múltiples destinos aquí",
         lblDettagliApp: "Detalles de la cita (ej: Cliente García)", lblDettagliInt: "Enumera intereses (ej: comida, museos)",
         lblPernottamento: "Planificar también la pernoctación",
-        lblNotti: "🌙 Noches", lblAdulti: "👥 Adultos", lblBambini: "🧒 Niños",
-        btnSubmit: "Crear Itinerario", btnSuccess: "¡Solicitud enviada!", cancelHint: "Para cancelar, cierra la ventana."
+        lblNotti: "Noches", lblAdulti: "Adultos", lblBambini: "Niños",
+        btnSubmit: "Crear Itinerario", btnSuccess: "¡Solicitud enviada! ✓", cancelHint: "Para cancelar, cierra la ventana."
       },
       pt: {
-        title: "🚗 Planear Rota", subtitle: "Crie um itinerário ou calcule uma rota para compromissos.",
-        lblPartenza: "📍 Ponto de Partida Personalizado", lblPartenzaSede: "Partida do Escritório",
-        lblArrivo: "🏁 Destino Personalizado", lblArrivoSede: "Chegada ao Escritório",
+        title: "Planear Rota", subtitle: "Crie um itinérario ou calcule uma rota para compromissos.",
+        lblPartenza: "Ponto de Partida Personalizado", lblPartenzaSede: "Partida do Escritório",
+        lblArrivo: "Destino Personalizado", lblArrivoSede: "Chegada ao Escritório",
         lblTipoPercorso: "Objetivo da rota", optInteressi: "Interesses", optAppuntamenti: "Compromissos",
-        lblDataAppuntamento: "🗓️ Data do Compromisso",
-        lblMidpoint: "🗺️ Paragens Intermédias (Opcional)", hintMidpoint: "Pode listar vários destinos aqui",
+        lblDataAppuntamento: "Data do Compromisso",
+        lblMidpoint: "Paragens Intermédias (Opcional)", hintMidpoint: "Pode listar vários destinos aqui",
         lblDettagliApp: "Detalhes do compromisso (ex: Cliente Silva)", lblDettagliInt: "Liste interesses (ex: comida, museus)",
         lblPernottamento: "Planear também a pernoita",
-        lblNotti: "🌙 Noites", lblAdulti: "👥 Adultos", lblBambini: "🧒 Crianças",
-        btnSubmit: "Criar Itinerário", btnSuccess: "Pedido enviado!", cancelHint: "Para cancelar, feche a janela."
+        lblNotti: "Noites", lblAdulti: "Adultos", lblBambini: "Crianças",
+        btnSubmit: "Criar Itinário", btnSuccess: "Pedido enviado! ✓", cancelHint: "Para cancelar, feche a janela."
       }
     };
-    
+
     const WH_SOLVER = "https://trinai.api.workflow.dcmake.it/webhook/a0b6b2cb-4e19-4a92-9269-6b6d8a7afb80";
-    
+
     try {
       const tg = window.Telegram.WebApp;
-      tg.ready();
-      tg.expand();
-      
+      tg.ready(); tg.expand();
+
       const urlParams = new URLSearchParams(window.location.search);
       const lang = urlParams.get('lang') || 'it';
       const t = translations[lang] || translations['it'];
-      
+
       const dom = {
-          form: document.getElementById('travelForm'),
-          submitBtn: document.getElementById('submitBtn'),
-          title: document.getElementById('title'),
-          subtitle: document.getElementById('subtitle'),
-          lblPartenza: document.getElementById('lblPartenza'),
-          lblPartenzaSede: document.getElementById('lblPartenzaSede'),
-          lblArrivo: document.getElementById('lblArrivo'),
-          lblArrivoSede: document.getElementById('lblArrivoSede'),
-          lblTipoPercorso: document.getElementById('lblTipoPercorso'),
-          optInteressi: document.getElementById('optInteressi'),
-          optAppuntamenti: document.getElementById('optAppuntamenti'),
-          lblDataAppuntamento: document.getElementById('lblDataAppuntamento'),
-          lblMidpoint: document.getElementById('lblMidpoint'),
-          hintMidpoint: document.getElementById('hintMidpoint'),
-          lblPernottamento: document.getElementById('lblPernottamento'),
-          lblNotti: document.getElementById('lblNotti'),
-          lblAdulti: document.getElementById('lblAdulti'),
-          lblBambini: document.getElementById('lblBambini'),
-          cancelHint: document.getElementById('cancelHint'),
-          partenzaDaSede: document.getElementById('partenzaDaSede'),
-          customPartenzaContainer: document.getElementById('customPartenzaContainer'),
-          partenza: document.getElementById('partenza'),
-          arrivoInSede: document.getElementById('arrivoInSede'),
-          customArrivoContainer: document.getElementById('customArrivoContainer'),
-          arrivo: document.getElementById('arrivo'),
-          dataAppuntamentoContainer: document.getElementById('dataAppuntamentoContainer'),
-          dataAppuntamento: document.getElementById('dataAppuntamento'),
-          midpointContainer: document.getElementById('midpointContainer'),
-          midpoint: document.getElementById('midpoint'),
-          dettagli: document.getElementById('dettagli'),
-          lblDettagli: document.getElementById('lblDettagli'),
-          includeTripDetails: document.getElementById('includeTripDetails'),
-          tripDetailsContainer: document.getElementById('tripDetailsContainer'),
-          notti: document.getElementById('notti'),
-          adulti: document.getElementById('adulti'),
-          bambini: document.getElementById('bambini'),
-          tripTypeRadios: document.querySelectorAll('input[name="tripType"]')
+        form:                     document.getElementById('travelForm'),
+        submitBtn:                document.getElementById('submitBtn'),
+        btnLabel:                 document.getElementById('btnLabel'),
+        title:                    document.getElementById('title'),
+        subtitle:                 document.getElementById('subtitle'),
+        lblPartenza:              document.getElementById('lblPartenza'),
+        lblPartenzaSede:          document.getElementById('lblPartenzaSede'),
+        lblArrivo:                document.getElementById('lblArrivo'),
+        lblArrivoSede:            document.getElementById('lblArrivoSede'),
+        lblTipoPercorso:          document.getElementById('lblTipoPercorso'),
+        optInteressi:             document.getElementById('optInteressi'),
+        optAppuntamenti:          document.getElementById('optAppuntamenti'),
+        lblDataAppuntamento:      document.getElementById('lblDataAppuntamento'),
+        lblMidpoint:              document.getElementById('lblMidpoint'),
+        hintMidpoint:             document.getElementById('hintMidpoint'),
+        lblPernottamento:         document.getElementById('lblPernottamento'),
+        lblNotti:                 document.getElementById('lblNotti'),
+        lblAdulti:                document.getElementById('lblAdulti'),
+        lblBambini:               document.getElementById('lblBambini'),
+        cancelHint:               document.getElementById('cancelHint'),
+        partenzaDaSede:           document.getElementById('partenzaDaSede'),
+        customPartenzaContainer:  document.getElementById('customPartenzaContainer'),
+        partenza:                 document.getElementById('partenza'),
+        arrivoInSede:             document.getElementById('arrivoInSede'),
+        customArrivoContainer:    document.getElementById('customArrivoContainer'),
+        arrivo:                   document.getElementById('arrivo'),
+        dataAppuntamentoContainer:document.getElementById('dataAppuntamentoContainer'),
+        dataAppuntamento:         document.getElementById('dataAppuntamento'),
+        midpointContainer:        document.getElementById('midpointContainer'),
+        midpoint:                 document.getElementById('midpoint'),
+        dettagli:                 document.getElementById('dettagli'),
+        lblDettagli:              document.getElementById('lblDettagli'),
+        includeTripDetails:       document.getElementById('includeTripDetails'),
+        tripDetailsContainer:     document.getElementById('tripDetailsContainer'),
+        notti:                    document.getElementById('notti'),
+        adulti:                   document.getElementById('adulti'),
+        bambini:                  document.getElementById('bambini'),
+        tripTypeRadios:           document.querySelectorAll('input[name="tripType"]')
       };
 
-      function applyTranslations() {
-        document.title = t.title.replace(/<[^>]*>?/gm, '');
-        dom.title.innerHTML = t.title;
-        dom.subtitle.textContent = t.subtitle;
-        dom.lblPartenza.textContent = t.lblPartenza;
-        dom.lblPartenzaSede.textContent = t.lblPartenzaSede;
-        dom.lblArrivo.textContent = t.lblArrivo;
-        dom.lblArrivoSede.textContent = t.lblArrivoSede;
-        dom.lblTipoPercorso.textContent = t.lblTipoPercorso;
-        dom.optInteressi.textContent = t.optInteressi;
-        dom.optAppuntamenti.textContent = t.optAppuntamenti;
-        dom.lblDataAppuntamento.textContent = t.lblDataAppuntamento;
-        dom.lblMidpoint.textContent = t.lblMidpoint;
-        dom.hintMidpoint.textContent = t.hintMidpoint;
-        dom.lblPernottamento.textContent = t.lblPernottamento;
-        dom.lblNotti.textContent = t.lblNotti;
-        dom.lblAdulti.textContent = t.lblAdulti;
-        dom.lblBambini.textContent = t.lblBambini;
-        dom.submitBtn.textContent = t.btnSubmit;
-        dom.cancelHint.textContent = t.cancelHint;
-      }
-      applyTranslations();
-      
+      // Applica traduzioni
+      document.title = t.title;
+      dom.title.textContent = t.title;
+      dom.subtitle.textContent = t.subtitle;
+      dom.lblPartenza.textContent = t.lblPartenza;
+      dom.lblPartenzaSede.textContent = t.lblPartenzaSede;
+      dom.lblArrivo.textContent = t.lblArrivo;
+      dom.lblArrivoSede.textContent = t.lblArrivoSede;
+      dom.lblTipoPercorso.textContent = t.lblTipoPercorso;
+      dom.optInteressi.textContent = t.optInteressi;
+      dom.optAppuntamenti.textContent = t.optAppuntamenti;
+      dom.lblDataAppuntamento.textContent = t.lblDataAppuntamento;
+      dom.lblMidpoint.textContent = t.lblMidpoint;
+      dom.hintMidpoint.textContent = t.hintMidpoint;
+      dom.lblPernottamento.textContent = t.lblPernottamento;
+      dom.lblNotti.textContent = t.lblNotti;
+      dom.lblAdulti.textContent = t.lblAdulti;
+      dom.lblBambini.textContent = t.lblBambini;
+      dom.btnLabel.textContent = t.btnSubmit;
+      dom.cancelHint.textContent = t.cancelHint;
+
       dom.dataAppuntamento.setAttribute('min', new Date().toISOString().split('T')[0]);
 
       function updateFormUI() {
-          const tripType = document.querySelector('input[name="tripType"]:checked').value;
-          const isAppointments = tripType === 'appuntamenti';
-          dom.dataAppuntamentoContainer.classList.toggle('hidden', !isAppointments);
-          dom.dataAppuntamento.toggleAttribute('required', isAppointments);
-          dom.midpointContainer.classList.toggle('hidden', isAppointments);
-          dom.lblDettagli.textContent = isAppointments ? t.lblDettagliApp : t.lblDettagliInt;
+        const tripType = document.querySelector('input[name="tripType"]:checked').value;
+        const isApp = tripType === 'appuntamenti';
+        dom.dataAppuntamentoContainer.classList.toggle('hidden', !isApp);
+        dom.dataAppuntamento.toggleAttribute('required', isApp);
+        dom.midpointContainer.classList.toggle('hidden', isApp);
+        dom.lblDettagli.textContent = isApp ? t.lblDettagliApp : t.lblDettagliInt;
+        validateForm();
+      }
+
+      function toggleField(checkbox, container, input) {
+        checkbox.addEventListener('change', function() {
+          const show = !this.checked;
+          container.classList.toggle('hidden', !show);
+          if (show) container.classList.add('reveal');
+          input.toggleAttribute('required', show);
           validateForm();
+        });
       }
+      toggleField(dom.partenzaDaSede, dom.customPartenzaContainer, dom.partenza);
+      toggleField(dom.arrivoInSede, dom.customArrivoContainer, dom.arrivo);
 
-      function createCheckboxToggleListener(checkbox, container, input) {
-          checkbox.addEventListener('change', function() {
-              container.classList.toggle('hidden', this.checked);
-              input.toggleAttribute('required', !this.checked);
-              validateForm();
-          });
-      }
+      dom.tripTypeRadios.forEach(r => r.addEventListener('change', updateFormUI));
 
-      createCheckboxToggleListener(dom.partenzaDaSede, dom.customPartenzaContainer, dom.partenza);
-      createCheckboxToggleListener(dom.arrivoInSede, dom.customArrivoContainer, dom.arrivo);
-      dom.tripTypeRadios.forEach(radio => radio.addEventListener('change', updateFormUI));
       dom.includeTripDetails.addEventListener('change', function() {
-          const isChecked = this.checked;
-          dom.tripDetailsContainer.classList.toggle('hidden', !isChecked);
-          dom.notti.toggleAttribute('required', isChecked);
-          dom.adulti.toggleAttribute('required', isChecked);
-          validateForm();
+        const on = this.checked;
+        dom.tripDetailsContainer.classList.toggle('hidden', !on);
+        if (on) dom.tripDetailsContainer.classList.add('reveal');
+        dom.notti.toggleAttribute('required', on);
+        dom.adulti.toggleAttribute('required', on);
+        validateForm();
       });
 
       function validateForm() {
-          const currentRequired = dom.form.querySelectorAll('[required]');
-          const isValid = Array.from(currentRequired).every(input => input.value.trim() !== '');
-          dom.submitBtn.disabled = !isValid;
+        const required = dom.form.querySelectorAll('[required]');
+        dom.submitBtn.disabled = !Array.from(required).every(i => i.value.trim() !== '');
       }
-      
+
       dom.form.addEventListener('input', validateForm);
       updateFormUI();
 
-      dom.form.addEventListener('submit', (e) => {
+      dom.form.addEventListener('submit', e => {
         e.preventDefault();
         const tripType = document.querySelector('input[name="tripType"]:checked').value;
         const pernottamento = dom.includeTripDetails.checked;
-        const tripData = {
+        const payload = {
           type: 'TRIP_PLANNING_SUBMISSION',
           payload: {
-              Partenza: dom.partenzaDaSede.checked ? "Sede" : dom.partenza.value.trim(),
-              Arrivo: dom.arrivoInSede.checked ? "Sede" : dom.arrivo.value.trim(),
-              TipoPercorso: tripType,
-              TappeIntermedie: tripType === 'interessi' ? (dom.midpoint.value.trim() || null) : null,
-              Dettagli: dom.dettagli.value.trim() || null,
-              DataAppuntamento: tripType === 'appuntamenti' ? dom.dataAppuntamento.value : null,
-              PernottamentoIncluso: pernottamento,
-              Notti: pernottamento ? parseInt(dom.notti.value) : null,
-              Adulti: pernottamento ? parseInt(dom.adulti.value) : null,
-              Bambini: pernottamento ? parseInt(dom.bambini.value) : null,
+            Partenza:            dom.partenzaDaSede.checked ? 'Sede' : dom.partenza.value.trim(),
+            Arrivo:              dom.arrivoInSede.checked  ? 'Sede' : dom.arrivo.value.trim(),
+            TipoPercorso:        tripType,
+            TappeIntermedie:     tripType === 'interessi' ? (dom.midpoint.value.trim() || null) : null,
+            Dettagli:            dom.dettagli.value.trim() || null,
+            DataAppuntamento:    tripType === 'appuntamenti' ? dom.dataAppuntamento.value : null,
+            PernottamentoIncluso: pernottamento,
+            Notti:               pernottamento ? parseInt(dom.notti.value)   : null,
+            Adulti:              pernottamento ? parseInt(dom.adulti.value)  : null,
+            Bambini:             pernottamento ? parseInt(dom.bambini.value) : null
           },
           context: {
-              chatId: urlParams.get('chatId'),
-              threadId: urlParams.get('threadId'),
-              language: lang,
-              user_id: tg.initDataUnsafe?.user?.id || null
+            chatId:   urlParams.get('chatId'),
+            threadId: urlParams.get('threadId'),
+            language: lang,
+            user_id:  tg.initDataUnsafe?.user?.id || null
           }
         };
 
-        const btn = dom.submitBtn;
-        const originalText = btn.textContent;
-        btn.disabled = true;
-        btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i>';
+        dom.submitBtn.disabled = true;
+        dom.submitBtn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i>';
 
         fetch(WH_SOLVER, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(tripData)
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
         })
-        .then(response => {
-            if (!response.ok) throw new Error('Network response was not ok');
-            btn.textContent = t.btnSuccess;
-            btn.classList.add('btn-success');
-            setTimeout(() => { tg.close(); }, 1200);
+        .then(r => {
+          if (!r.ok) throw new Error();
+          dom.submitBtn.innerHTML = `<i class="fas fa-check"></i><span>${t.btnSuccess}</span>`;
+          dom.submitBtn.classList.add('btn-success');
+          setTimeout(() => tg.close(), 1400);
         })
         .catch(() => {
-            btn.disabled = false;
-            btn.textContent = originalText;
-            tg.showAlert('Errore nell\'invio. Controlla la connessione e riprova.');
+          dom.submitBtn.disabled = false;
+          dom.submitBtn.innerHTML = `<i class="fas fa-route"></i><span>${t.btnSubmit}</span>`;
+          tg.showAlert('Errore nell\'invio. Controlla la connessione e riprova.');
         });
       });
 
-    } catch (error) {
-        console.error("Errore nell'inizializzazione dell'app:", error);
-        document.body.innerHTML = '<div style="padding:20px;text-align:center"><h1>Oops!</h1><p>Qualcosa è andato storto. Assicurati di aprire questa pagina da Telegram.</p></div>';
+    } catch(err) {
+      console.error(err);
+      document.body.innerHTML = '<div style="padding:24px;text-align:center"><h2>Oops!</h2><p style="margin-top:8px;color:#888">Apri questa pagina da Telegram.</p></div>';
     }
   </script>
 </body>
