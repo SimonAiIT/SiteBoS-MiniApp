@@ -105,6 +105,7 @@
             max-width: 80%; padding: 11px 14px;
             border-radius: 16px; font-size: 15px;
             position: relative; line-height: 1.5; word-break: break-word;
+            white-space: pre-wrap; /* Aggiunto per formattare i postmessage in chat */
         }
         .message.user {
             align-self: flex-end;
@@ -137,6 +138,27 @@
             transition: transform 0.15s ease;
         }
         .mic-sphere.recording { animation: pulse 1.5s infinite; background: var(--danger); }
+
+        /* ── NUOVO: SELEZIONE AGENTI VOCALE ───────────────────── */
+        .voice-agents-container {
+            margin-top: 40px;
+            display: flex; gap: 12px; flex-wrap: wrap;
+            justify-content: center; max-width: 90%;
+            z-index: 10;
+        }
+        .voice-agent-btn {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.3);
+            color: white; padding: 10px 16px;
+            border-radius: 20px; font-size: 13px; font-weight: 500;
+            cursor: pointer; transition: all 0.2s;
+        }
+        .voice-agent-btn.active {
+            background: var(--accent);
+            border-color: var(--accent);
+            font-weight: 700;
+            box-shadow: 0 0 10px rgba(137,95,224,0.5);
+        }
 
         /* ── FOOTER INPUT ─────────────────────────────────────── */
         footer {
@@ -237,6 +259,7 @@
             background: #fff;
             transform: translateX(-100%); transition: 0.3s;
             z-index: 1000; box-shadow: 5px 0 15px rgba(0,0,0,0.1);
+            display: flex; flex-direction: column; /* Aggiunto per pushare il solver in basso */
         }
         body.drawer-open #agent-drawer { transform: translateX(0); }
         #drawer-overlay {
@@ -470,6 +493,11 @@
         <div class="drawer-item" onclick="switchAgent('mkt')"><i class="fas fa-bullhorn" style="color:#e67e22"></i> Vendite &amp; Promo</div>
         <div class="drawer-item" onclick="switchAgent('hr')"><i class="fas fa-shield-alt" style="color:#27ae60"></i> Team &amp; Sicurezza</div>
         <div class="drawer-item" onclick="switchAgent('acc')"><i class="fas fa-wallet" style="color:#8e44ad"></i> Cassa &amp; Conti</div>
+        
+        <!-- NUOVO: Pulsante Gestione Percorsi nel menu hamburger -->
+        <div class="drawer-item" style="margin-top: auto; border-top: 1px solid #eee; color: var(--accent); font-weight: 600;" onclick="openSolver()">
+            <i class="fas fa-route"></i> Gestione Percorsi
+        </div>
     </nav>
 
     <!-- OVERLAY SOLVER (mantenuto per uso dal drawer) -->
@@ -607,6 +635,15 @@
             <div style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center;">
                 <div id="voice-status" style="margin-bottom:30px; font-size:18px; font-weight:300;">Tieni premuto per parlare</div>
                 <div id="mic-btn" class="mic-sphere"><i class="fas fa-microphone"></i></div>
+                
+                <!-- NUOVO: Selezione Agenti nella Schermata Vocale -->
+                <div class="voice-agents-container">
+                    <button class="voice-agent-btn" id="v-btn-pm" onclick="addAgentToChat('pm')">🛠️ PM</button>
+                    <button class="voice-agent-btn" id="v-btn-mkt" onclick="addAgentToChat('mkt')">🚀 MKT</button>
+                    <button class="voice-agent-btn" id="v-btn-hr" onclick="addAgentToChat('hr')">🛡️ HR</button>
+                    <button class="voice-agent-btn" id="v-btn-acc" onclick="addAgentToChat('acc')">💰 CONTI</button>
+                </div>
+
                 <div id="audio-feedback" style="margin-top:50px; width:80%; text-align:center; font-style:italic; opacity:0.7;"></div>
             </div>
         </section>
@@ -621,7 +658,6 @@
         const chatId     = urlParams.get('chatId') || null;
 
         const WH_CHAT   = "https://prod.workflow.trinai.it/webhook/81ab5292-43c3-4f93-afaf-7411b95fc010";
-        const WH_SOLVER = "https://trinai.api.workflow.dcmake.it/webhook/a0b6b2cb-4e19-4a92-9269-6b6d8a7afb80";
 
         // ── STATO ─────────────────────────────────────────────────────
         let primaryAgent    = 'pm';
@@ -861,6 +897,10 @@
             Object.keys(AGENT_META).forEach(id => {
                 const item = document.getElementById('popup-' + id);
                 if (item) item.classList.toggle('active-agent', activeAgents.includes(id));
+                
+                // NUOVO: Sincronizza anche i bottoni della schermata vocale
+                const vBtn = document.getElementById('v-btn-' + id);
+                if (vBtn) vBtn.classList.toggle('active', activeAgents.includes(id));
             });
         }
 
@@ -872,13 +912,16 @@
                     removeAgentFromChat(agentId);
                     addMessage('ai', `${AGENT_META[agentId].label} ha lasciato la conversazione.`, false, agentId);
                 }
+                updatePopupActiveState(); // Aggiorna UI
                 return;
             }
             activeAgents.push(agentId);
             renderAgentBar();
             const meta = AGENT_META[agentId];
             addMessage('ai', `👋 Ciao! Sono ${meta.label}. Sono qui per collaborare. In cosa posso aiutare?`, false, agentId);
-            callApi(WH_CHAT, { action: 'add_collaborator', collaborator_id: agentId }, false);
+            
+            // RIMOSSO IL CALLAPI PER L'AGGIUNTA DELL'AGENTE (come richiesto)
+            updatePopupActiveState(); // Aggiorna UI (incluso il vocale)
         }
 
         function removeAgentFromChat(agentId) {
@@ -909,7 +952,9 @@
             e.stopPropagation();
             removeAgentFromChat(agentId);
             addMessage('ai', `${AGENT_META[agentId].label} ha lasciato la conversazione.`, false, agentId);
-            callApi(WH_CHAT, { action: 'remove_collaborator', collaborator_id: agentId }, false);
+            
+            // RIMOSSO IL CALLAPI PER LA RIMOZIONE DELL'AGENTE (come richiesto)
+            updatePopupActiveState(); // Aggiorna UI
         }
 
         // ── THREAD ────────────────────────────────────────────────────
@@ -962,6 +1007,9 @@
             document.getElementById('ui-agent-name').innerText = AGENT_META[agent].label;
             toggleDrawer();
             renderAgentBar();
+            
+            updatePopupActiveState(); // Sincronizza UI
+
             const existing = threads.find(t => t.agent === agent);
             if (existing) selectThread(existing.id);
             else createNewThread();
@@ -982,7 +1030,7 @@
             const fullPayload = {
                 ...payload,
                 agent_id:        targetAgentId || primaryAgent,
-                active_agents:   activeAgents,
+                active_agents:   activeAgents, // <- ARRAY AGENTI ATTIVI INVIATO AL WH_CHAT QUI
                 thread_id:       currentThreadId,
                 user_id:         tg.initDataUnsafe?.user?.id || 'TEST',
                 chat_id:         chatId,
@@ -1023,6 +1071,8 @@
             if (!text) return;
             addMessage('user', text);
             input.value = '';
+            
+            // Invia al backend (WH_CHAT)
             activeAgents.forEach(agentId => {
                 callApi(WH_CHAT, { action: 'npl_chat', message: text }, true, agentId);
             });
@@ -1079,6 +1129,8 @@
                     reader.onloadend = () => {
                         const base64 = reader.result.split(',')[1];
                         document.getElementById('voice-status').innerText = 'Elaborazione...';
+                        
+                        // Invia l'audio a WH_CHAT
                         activeAgents.forEach(agentId => {
                             callApi(WH_CHAT, { action: 'npl_voice', audio_base64: base64, mime_type: 'audio/webm' }, true, agentId)
                                 .then(() => { document.getElementById('voice-status').innerText = 'Tieni premuto per parlare'; });
@@ -1115,7 +1167,24 @@
             document.getElementById('solver-frame').src = '';
         }
 
+        // ── NUOVO: INTEGRAZIONE SOLVER (Ricezione PostMessage) ───────────────────────
+        window.addEventListener('message', (event) => {
+            if (event.data && event.data.type === 'SOLVER_DATA') {
+                closeSolver(); // Chiude l'overlay del solver
+                
+                const summaryText = event.data.payload;
+                
+                // Mettiamo il testo nel campo input della chat
+                const input = document.getElementById('chat-input');
+                input.value = summaryText;
+                
+                // Chiamiamo sendText(), che stampa il messaggio nella chat e lo invia al WH_CHAT
+                sendText(); 
+            }
+        });
+
         // ── INIT ──────────────────────────────────────────────────────
+        updatePopupActiveState(); // Inizializza i tastini all'avvio
         loadThreads();
         // L'handle swipe è visibile solo sullo schermo chat (schermo 1)
         document.getElementById('swipe-handle').style.display = 'flex';
