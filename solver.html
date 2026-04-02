@@ -5,14 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Agenda & Percorsi</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- Protezione Iframe: Permette l'apertura solo in contesti Telegram ufficiali -->
     <meta http-equiv="Content-Security-Policy" content="frame-ancestors 'self' https://web.telegram.org https://t.me;">
 
     <script>
-        // ── SICUREZZA ──
         (function() {
             if (!(window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initData)) {
                 document.body.innerHTML = "<div style='padding:50px; text-align:center; font-family:sans-serif;'><h2>🚫 Accesso Negato</h2><p>Questa risorsa è ad uso interno dell'App SiteBoS.</p></div>";
@@ -26,9 +24,10 @@
             --primary: #212D67; --accent: #895FE0; --bg: #f4f7f9; 
             --surface: #ffffff; --border: #e8e8e8; --text: #1a1a2e; 
             --text-muted: #888; --danger: #ff4444; --success: #27ae60; --radius: 12px; 
+            --trans: 180ms cubic-bezier(0.16,1,0.3,1);
         }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
-        body { background: var(--bg); color: var(--text); padding-bottom: 30px; }
+        body { background: var(--bg); color: var(--text); padding-bottom: 40px; }
         
         .page-header { background: var(--surface); padding: 14px 16px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); display: flex; align-items: center; gap: 10px; position: sticky; top: 0; z-index: 10; }
         .container { padding: 14px; display: flex; flex-direction: column; gap: 14px; }
@@ -36,7 +35,7 @@
         .section-title { font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--primary); margin-bottom: 14px; display: flex; align-items: center; gap: 6px; }
         
         label { display: block; font-size: 12px; font-weight: 600; margin-bottom: 4px; }
-        input, select, textarea { width: 100%; border: 1px solid var(--border); border-radius: 8px; padding: 10px; font-size: 14px; outline: none; background: var(--surface); transition: 0.2s; }
+        input, select, textarea { width: 100%; border: 1px solid var(--border); border-radius: 8px; padding: 10px; font-size: 14px; outline: none; background: var(--surface); transition: 0.2s; -webkit-appearance: none; }
         input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(137,95,224,0.1); }
 
         .row { display: flex; gap: 10px; }
@@ -53,7 +52,7 @@
         .segmented-control input:checked + label { background: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.08); color: var(--primary); }
 
         .smart-tags-container { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
-        .smart-tag { border: 1px solid var(--border); border-radius: 20px; padding: 5px 12px; font-size: 11px; font-weight: 500; color: #666; cursor: pointer; background: #fff; }
+        .smart-tag { border: 1px solid var(--border); border-radius: 20px; padding: 5px 12px; font-size: 11px; font-weight: 500; color: #666; cursor: pointer; background: #fff; transition: 0.2s; }
         .smart-tag.active { background: #f0ebff; border-color: var(--accent); color: var(--accent); font-weight: 700; }
 
         .btn-add { width: 100%; background: none; border: 2px dashed var(--border); padding: 14px; border-radius: 10px; color: var(--primary); font-weight: 700; cursor: pointer; transition: 0.2s; }
@@ -70,10 +69,10 @@
 <body>
 
     <div class="page-header">
-        <i class="fas fa-calendar-check" style="color:var(--primary); font-size:20px;"></i>
+        <i class="fas fa-calendar-check" style="color:var(--primary); font-size:22px;"></i>
         <div>
-            <h1 style="font-size:16px; font-weight:700;">Agenda & Percorsi</h1>
-            <p style="font-size:11px; color:var(--text-muted);">Organizza viaggi misti (Business & Leisure)</p>
+            <h1 style="font-size:16px; font-weight:700;">Agenda TrinAI</h1>
+            <p style="font-size:11px; color:var(--text-muted);">Organizza viaggi misti Business & Leisure</p>
         </div>
     </div>
 
@@ -81,7 +80,7 @@
         <form id="travelForm">
             <!-- 1. BASE LOGISTICA -->
             <div class="card">
-                <div class="section-title">📍 Punto di Partenza e Rientro</div>
+                <div class="section-title">📍 Partenza e Rientro</div>
                 <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px;">
                     <input type="checkbox" id="partenzaDaSede" checked style="width:18px; height:18px; accent-color:var(--primary);">
                     <label for="partenzaDaSede" style="margin:0; font-size:14px;">Partenza da Sede Principale</label>
@@ -118,7 +117,7 @@
                     <label for="aiLogistics" style="margin:0; font-size:14px;">Pianifica Pasti e Soste</label>
                 </div>
                 <label>Direttive Extra per l'A.I.</label>
-                <textarea id="noteAI" rows="2" placeholder="Es. Preferenza per auto elettrica (cerca colonnine), dieta veg, etc..."></textarea>
+                <textarea id="noteAI" rows="2" placeholder="Es. Preferenza per auto elettrica, dieta veg, etc..."></textarea>
             </div>
 
             <button type="submit" id="submitBtn" class="btn-primary">Genera Piano di Viaggio</button>
@@ -157,7 +156,7 @@
                 
                 <div class="segmented-control">
                     <input type="radio" id="bus-${id}" name="type-${id}" value="Lavoro" checked>
-                    <label for="bus-${id}"><i class="fas fa-briefcase"></i> Lavoro</label>
+                    <label for="bus-${id}">💼 Lavoro</label>
                     <input type="radio" id="lei-${id}" name="type-${id}" value="Libero">
                     <label for="lei-${id}"><i class="fas fa-camera"></i> Libero</label>
                 </div>
@@ -187,7 +186,6 @@
             `;
             dom.agenda.appendChild(div);
 
-            // Toggle Smart Tags in base al tipo
             const rBus = div.querySelector(`#bus-${id}`);
             const rLei = div.querySelector(`#lei-${id}`);
             const tags = div.querySelectorAll('.smart-tag');
@@ -208,7 +206,7 @@
         dom.aSede.onchange = () => document.getElementById('customArrivoContainer').classList.toggle('hidden', dom.aSede.checked);
         
         dom.btnAdd.onclick = addStop;
-        addStop(); // Tappa iniziale obbligatoria
+        addStop();
 
         dom.form.onsubmit = async (e) => {
             e.preventDefault();
@@ -245,36 +243,26 @@
             };
 
             try {
-                const res = await fetch(WH_SOLVER, { 
-                    method: 'POST', 
-                    headers: { 'Content-Type': 'application/json' }, 
-                    body: JSON.stringify(payload) 
-                });
-                
+                const res = await fetch(WH_SOLVER, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
                 if (res.ok) {
                     dom.btnSubmit.innerHTML = '✅ Richiesta Inviata!';
                     dom.btnSubmit.classList.add('btn-success');
                     
-                    // Costruzione riassunto grafico per la chat
                     let summary = `🗓️ *NUOVA PIANIFICAZIONE AGENDA*\n`;
                     summary += `🏁 Partenza: ${payload.payload.Partenza}\n`;
                     summary += `🔚 Rientro: ${payload.payload.Arrivo}\n\n`;
-                    
                     stops.forEach(s => {
                         summary += `${s.tipo === 'Lavoro' ? '💼' : '📸'} *${s.data} (${s.ora})* - ${s.luogo}\n`;
                         if(s.richieste_extra.length > 0) summary += `   └ 🤖 AI: ${s.richieste_extra.join(', ')}\n`;
                     });
-
                     if(payload.payload.NoteUtente) summary += `\n*Note:* ${payload.payload.NoteUtente}`;
 
                     setTimeout(() => {
                         window.parent.postMessage({ type: 'SOLVER_DATA', payload: summary }, '*');
                     }, 1200);
-                } else {
-                    throw new Error();
-                }
+                } else { throw new Error(); }
             } catch (err) { 
-                tg.showAlert("Errore durante l'invio al server Make. Riprova."); 
+                tg.showAlert("Errore durante l'invio."); 
                 dom.btnSubmit.disabled = false; 
                 dom.btnSubmit.innerHTML = "Genera Piano di Viaggio";
             }
