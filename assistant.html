@@ -118,7 +118,6 @@
             border: 1px solid #ddd;
         }
         .message.loading { opacity: 0.55; font-style: italic; }
-        /* Badge agente sul messaggio AI */
         .msg-agent-badge {
             font-size: 10px; font-weight: 600;
             color: var(--accent); letter-spacing: 0.04em;
@@ -219,8 +218,6 @@
         }
         .popup-item .popup-label { font-weight: 500; color: #1a1a2e; }
         .popup-item .popup-sub   { font-size: 11px; color: #888; margin-top: 1px; }
-        .popup-divider { height: 1px; background: #f0f0f0; margin: 6px 12px; }
-        .popup-item.solver-item .popup-icon { background: #f0ebff; color: var(--accent); }
         .popup-item.active-agent .popup-label::after {
             content: ' ✓';
             color: var(--accent);
@@ -274,6 +271,186 @@
             cursor: pointer; line-height: 1; padding: 4px;
         }
 
+        /* ── SWIPE-UP INSIGHT DRAWER ──────────────────────────── */
+        /* Handle visibile per indicare che si può fare swipe up */
+        #swipe-handle {
+            position: fixed;
+            bottom: 0; left: 0; right: 0;
+            height: 20px;
+            display: flex; align-items: center; justify-content: center;
+            z-index: 150;
+            cursor: pointer;
+            background: transparent;
+        }
+        #swipe-handle-bar {
+            width: 40px; height: 4px;
+            background: rgba(33,45,103,0.25);
+            border-radius: 2px;
+            transition: background 0.2s;
+        }
+        #swipe-handle:hover #swipe-handle-bar { background: var(--accent); }
+
+        /* Il pannello insight che sale dal basso */
+        #insight-drawer {
+            position: fixed;
+            bottom: 0; left: 0; right: 0;
+            height: 78vh;
+            background: #fff;
+            border-radius: 20px 20px 0 0;
+            box-shadow: 0 -8px 40px rgba(0,0,0,0.14);
+            z-index: 500;
+            transform: translateY(100%);
+            transition: transform 0.38s cubic-bezier(0.32, 0.72, 0, 1);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        #insight-drawer.open {
+            transform: translateY(0);
+        }
+        #insight-backdrop {
+            display: none;
+            position: fixed; inset: 0;
+            background: rgba(0,0,0,0.35);
+            z-index: 499;
+        }
+        #insight-backdrop.open { display: block; }
+
+        /* Header del drawer insight */
+        .insight-header {
+            padding: 12px 20px 10px;
+            display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 1px solid #f0f0f0;
+            flex-shrink: 0;
+        }
+        .insight-handle-top {
+            width: 40px; height: 4px;
+            background: #ddd; border-radius: 2px;
+            margin: 10px auto 0;
+        }
+        .insight-title {
+            font-size: 15px; font-weight: 700; color: var(--primary);
+        }
+        .insight-close-btn {
+            background: none; border: none; font-size: 18px;
+            color: #999; cursor: pointer; padding: 4px;
+            border-radius: 50%;
+            display: flex; align-items:center; justify-content:center;
+            width: 32px; height: 32px;
+            transition: background 0.15s;
+        }
+        .insight-close-btn:hover { background: var(--bg); color: var(--primary); }
+
+        /* Tab bar interna */
+        .insight-tabs {
+            display: flex; border-bottom: 1px solid #f0f0f0;
+            flex-shrink: 0;
+        }
+        .insight-tab {
+            flex: 1; padding: 10px 6px;
+            text-align: center;
+            font-size: 12px; font-weight: 500; color: #999;
+            cursor: pointer; border: none; background: none;
+            border-bottom: 2px solid transparent;
+            transition: color 0.2s, border-color 0.2s;
+        }
+        .insight-tab.active {
+            color: var(--primary);
+            border-bottom-color: var(--accent);
+        }
+        .insight-tab i { display: block; font-size: 16px; margin-bottom: 3px; }
+
+        /* Contenuto tab */
+        .insight-content {
+            flex: 1; overflow-y: auto;
+            padding: 18px 20px;
+        }
+        .insight-panel { display: none; }
+        .insight-panel.active { display: block; }
+
+        /* ── Stile contenuto insight ── */
+        .insight-section-title {
+            font-size: 11px; font-weight: 700; letter-spacing: 0.08em;
+            text-transform: uppercase; color: var(--accent);
+            margin-bottom: 10px;
+        }
+        .insight-card {
+            background: var(--bg); border-radius: 12px;
+            padding: 14px 16px; margin-bottom: 14px;
+            font-size: 14px; line-height: 1.6; color: #333;
+        }
+        .insight-card p { margin-bottom: 0; }
+
+        /* Timeline tracciabilità */
+        .trace-timeline { padding-left: 10px; }
+        .trace-event {
+            display: flex; gap: 12px; margin-bottom: 16px;
+            position: relative;
+        }
+        .trace-event::before {
+            content: '';
+            position: absolute;
+            left: 15px; top: 22px;
+            width: 2px; height: calc(100% + 2px);
+            background: #eee;
+        }
+        .trace-event:last-child::before { display: none; }
+        .trace-dot {
+            width: 30px; height: 30px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 13px; flex-shrink: 0;
+            background: #f0ebff; color: var(--accent);
+        }
+        .trace-dot.user-dot { background: #e3f2fd; color: var(--primary); }
+        .trace-dot.system-dot { background: #eafaf1; color: #27ae60; }
+        .trace-body { flex: 1; }
+        .trace-label {
+            font-size: 11px; font-weight: 600; color: #aaa;
+            text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 2px;
+        }
+        .trace-text {
+            font-size: 13px; color: #444; line-height: 1.5;
+        }
+        .trace-time {
+            font-size: 10px; color: #bbb; margin-top: 3px;
+        }
+
+        /* Badge agente nel riassunto */
+        .summary-agent-row {
+            display: flex; align-items: flex-start; gap: 10px;
+            margin-bottom: 12px; padding-bottom: 12px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .summary-agent-row:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+        .summary-agent-icon {
+            width: 28px; height: 28px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 12px; flex-shrink: 0; margin-top: 1px;
+        }
+        .summary-agent-body { flex: 1; }
+        .summary-agent-name { font-size: 11px; font-weight: 700; margin-bottom: 4px; }
+        .summary-agent-text { font-size: 13px; color: #555; line-height: 1.5; }
+
+        /* Razionale */
+        .rationale-steps { counter-reset: step; }
+        .rationale-step {
+            display: flex; gap: 12px; margin-bottom: 14px; align-items: flex-start;
+        }
+        .rationale-step-num {
+            width: 24px; height: 24px; border-radius: 50%;
+            background: var(--primary); color: white;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 11px; font-weight: 700; flex-shrink: 0;
+        }
+        .rationale-step-text { font-size: 13px; line-height: 1.6; color: #444; }
+
+        /* Empty state insight */
+        .insight-empty {
+            text-align: center; padding: 40px 20px;
+            color: #bbb; font-size: 14px;
+        }
+        .insight-empty i { font-size: 36px; display: block; margin-bottom: 10px; opacity: 0.4; }
+
         @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
         @keyframes pulse   { 0%   { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
         @keyframes popIn   { from { transform: scale(0.7); opacity: 0; } to { transform: scale(1); opacity: 1; } }
@@ -293,16 +470,58 @@
         <div class="drawer-item" onclick="switchAgent('mkt')"><i class="fas fa-bullhorn" style="color:#e67e22"></i> Vendite &amp; Promo</div>
         <div class="drawer-item" onclick="switchAgent('hr')"><i class="fas fa-shield-alt" style="color:#27ae60"></i> Team &amp; Sicurezza</div>
         <div class="drawer-item" onclick="switchAgent('acc')"><i class="fas fa-wallet" style="color:#8e44ad"></i> Cassa &amp; Conti</div>
-        <div class="drawer-item" onclick="openSolver()" style="color:var(--accent); font-weight:600;"><i class="fas fa-route"></i> 🚗 Pianifica Percorso</div>
     </nav>
 
-    <!-- OVERLAY SOLVER -->
+    <!-- OVERLAY SOLVER (mantenuto per uso dal drawer) -->
     <div id="solver-overlay">
         <div class="solver-close-bar">
             <button onclick="closeSolver()"><i class="fas fa-arrow-left"></i></button>
             <span>🚗 Pianifica Percorso</span>
         </div>
         <iframe id="solver-frame" src="" title="Pianifica Percorso"></iframe>
+    </div>
+
+    <!-- ── INSIGHT DRAWER (swipe dal basso) ─────────────── -->
+    <div id="insight-backdrop" onclick="closeInsightDrawer()"></div>
+    <div id="insight-drawer">
+        <div class="insight-handle-top"></div>
+        <div class="insight-header">
+            <span class="insight-title">📊 Insight Conversazione</span>
+            <button class="insight-close-btn" onclick="closeInsightDrawer()"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="insight-tabs">
+            <button class="insight-tab active" onclick="switchInsightTab('trace', this)">
+                <i class="fas fa-route"></i>Tracciabilità
+            </button>
+            <button class="insight-tab" onclick="switchInsightTab('summary', this)">
+                <i class="fas fa-list-ul"></i>Riassunto
+            </button>
+            <button class="insight-tab" onclick="switchInsightTab('rationale', this)">
+                <i class="fas fa-brain"></i>Razionale
+            </button>
+        </div>
+        <div class="insight-content">
+            <!-- TAB 1: Tracciabilità -->
+            <div class="insight-panel active" id="panel-trace">
+                <div class="insight-section-title">Timeline della chat</div>
+                <div id="trace-timeline-content" class="trace-timeline"></div>
+            </div>
+            <!-- TAB 2: Riassunto -->
+            <div class="insight-panel" id="panel-summary">
+                <div class="insight-section-title">Riassunto per agente</div>
+                <div id="summary-content"></div>
+            </div>
+            <!-- TAB 3: Razionale -->
+            <div class="insight-panel" id="panel-rationale">
+                <div class="insight-section-title">Razionale ultima risposta</div>
+                <div id="rationale-content"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Handle swipe-up (visibile sul bordo inferiore dello schermo chat) -->
+    <div id="swipe-handle" onclick="openInsightDrawer()" title="Apri insight">
+        <div id="swipe-handle-bar"></div>
     </div>
 
     <div id="viewport">
@@ -340,7 +559,7 @@
                     <i class="fas fa-bars" id="fab-icon"></i>
                 </button>
 
-                <!-- POPUP AGENTI sopra FAB -->
+                <!-- POPUP AGENTI sopra FAB (senza Pianifica Percorso) -->
                 <div id="fab-overlay" onclick="closeFabMenu()"></div>
                 <div id="agent-popup">
                     <div class="popup-item" id="popup-pm" onclick="addAgentToChat('pm')">
@@ -369,14 +588,6 @@
                         <div>
                             <div class="popup-label">Cassa &amp; Conti</div>
                             <div class="popup-sub">Accounting Agent</div>
-                        </div>
-                    </div>
-                    <div class="popup-divider"></div>
-                    <div class="popup-item solver-item" onclick="openSolver(); closeFabMenu();">
-                        <div class="popup-icon"><i class="fas fa-route"></i></div>
-                        <div>
-                            <div class="popup-label">Pianifica Percorso</div>
-                            <div class="popup-sub">Apri modulo logistica</div>
                         </div>
                     </div>
                 </div>
@@ -413,36 +624,53 @@
         const WH_SOLVER = "https://trinai.api.workflow.dcmake.it/webhook/a0b6b2cb-4e19-4a92-9269-6b6d8a7afb80";
 
         // ── STATO ─────────────────────────────────────────────────────
-        let primaryAgent    = 'pm';        // agente principale (mostrato nell'header)
-        let activeAgents    = ['pm'];      // tutti gli agenti attivi nella chat (collaboratori)
+        let primaryAgent    = 'pm';
+        let activeAgents    = ['pm'];
         let currentThreadId = 'thread_001';
         let currentScreen   = 1;
         let threads = [
             { id: 'thread_001', name: 'Discussione Attiva', agent: 'pm', date: new Date().toLocaleDateString('it-IT') }
         ];
 
+        // Struttura dati per insight
+        let chatLog = [];          // ogni entry: { role, agentId, text, time }
+        let lastRationale = null;  // razionale dell'ultima risposta (da API o generato)
+
         const AGENT_META = {
-            pm:  { label: '🛠️ Gestione Lavori', short: 'PM',        color: '#212D67' },
-            mkt: { label: '🚀 Vendite & Promo', short: 'MKT',       color: '#e67e22' },
-            hr:  { label: '🛡️ Team & Sicurezza', short: 'HR',       color: '#27ae60' },
-            acc: { label: '💰 Cassa & Conti',    short: 'CONTI',    color: '#8e44ad' }
+            pm:  { label: '🛠️ Gestione Lavori', short: 'PM',        color: '#212D67', bg: '#e8edf8' },
+            mkt: { label: '🚀 Vendite & Promo', short: 'MKT',       color: '#e67e22', bg: '#fef3e8' },
+            hr:  { label: '🛡️ Team & Sicurezza', short: 'HR',       color: '#27ae60', bg: '#eafaf1' },
+            acc: { label: '💰 Cassa & Conti',    short: 'CONTI',    color: '#8e44ad', bg: '#f5eefb' }
         };
 
-        // ── SWIPE ─────────────────────────────────────────────────────
-        let startX, startY;
+        // ── SWIPE ORIZZONTALE (schermata) ─────────────────────────────
+        let startX, startY, startTime;
         document.addEventListener('touchstart', e => {
             startX = e.touches[0].clientX;
             startY = e.touches[0].clientY;
+            startTime = Date.now();
         }, { passive: true });
+
         document.addEventListener('touchend', e => {
             if (document.body.classList.contains('drawer-open')) return;
             if (document.getElementById('solver-overlay').classList.contains('active')) return;
             if (document.getElementById('agent-popup').classList.contains('open')) return;
-            const endX  = e.changedTouches[0].clientX;
-            const diffX = startX - endX;
-            const diffY = Math.abs(startY - e.changedTouches[0].clientY);
-            if (diffY > Math.abs(diffX)) return;
-            if (Math.abs(diffX) > 80) {
+            if (document.getElementById('insight-drawer').classList.contains('open')) return;
+
+            const endX   = e.changedTouches[0].clientX;
+            const endY   = e.changedTouches[0].clientY;
+            const diffX  = startX - endX;
+            const diffY  = startY - endY;
+            const elapsed = Date.now() - startTime;
+
+            // Swipe dal basso verso l'alto: diffY > 60, diffY > |diffX|, veloce
+            if (diffY > 60 && Math.abs(diffY) > Math.abs(diffX) && elapsed < 500 && currentScreen === 1) {
+                openInsightDrawer();
+                return;
+            }
+
+            // Swipe orizzontale
+            if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 80) {
                 if (diffX > 0 && currentScreen < 2) goToScreen(currentScreen + 1);
                 else if (diffX < 0 && currentScreen > 0) goToScreen(currentScreen - 1);
             }
@@ -451,6 +679,157 @@
         function goToScreen(index) {
             currentScreen = index;
             document.getElementById('viewport').style.transform = `translateX(-${index * 100}vw)`;
+            // Mostra/nascondi handle swipe solo sullo schermo chat
+            document.getElementById('swipe-handle').style.display = index === 1 ? 'flex' : 'none';
+        }
+
+        // ── INSIGHT DRAWER ────────────────────────────────────────────
+        function openInsightDrawer() {
+            buildInsightPanels();
+            document.getElementById('insight-drawer').classList.add('open');
+            document.getElementById('insight-backdrop').classList.add('open');
+        }
+        function closeInsightDrawer() {
+            document.getElementById('insight-drawer').classList.remove('open');
+            document.getElementById('insight-backdrop').classList.remove('open');
+        }
+        function switchInsightTab(tabName, btn) {
+            document.querySelectorAll('.insight-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.insight-panel').forEach(p => p.classList.remove('active'));
+            btn.classList.add('active');
+            document.getElementById('panel-' + tabName).classList.add('active');
+        }
+
+        function buildInsightPanels() {
+            buildTrace();
+            buildSummary();
+            buildRationale();
+        }
+
+        // ── TAB 1: TRACCIABILITÀ ──────────────────────────────────────
+        function buildTrace() {
+            const container = document.getElementById('trace-timeline-content');
+            if (!chatLog.length) {
+                container.innerHTML = `<div class="insight-empty"><i class="fas fa-comments"></i>Nessun messaggio ancora.<br>Inizia una conversazione.</div>`;
+                return;
+            }
+            container.innerHTML = chatLog.map(entry => {
+                const isUser = entry.role === 'user';
+                const meta   = isUser ? null : AGENT_META[entry.agentId];
+                const dotClass = isUser ? 'user-dot' : '';
+                const icon = isUser ? 'fas fa-user' : (meta ? agentIcon(entry.agentId) : 'fas fa-robot');
+                const label = isUser ? 'Tu' : (meta ? meta.short : entry.agentId);
+                const color = isUser ? '#212D67' : (meta ? meta.color : '#895FE0');
+                const shortText = entry.text.length > 90 ? entry.text.slice(0, 90) + '…' : entry.text;
+                return `
+                    <div class="trace-event">
+                        <div class="trace-dot ${dotClass}" style="${isUser ? '' : 'background:' + (meta ? meta.bg : '#f0ebff') + ';color:' + color + ';'}">
+                            <i class="${icon}"></i>
+                        </div>
+                        <div class="trace-body">
+                            <div class="trace-label" style="color:${color}">${label}</div>
+                            <div class="trace-text">${shortText}</div>
+                            <div class="trace-time">${entry.time}</div>
+                        </div>
+                    </div>`;
+            }).join('');
+        }
+
+        // ── TAB 2: RIASSUNTO ──────────────────────────────────────────
+        function buildSummary() {
+            const container = document.getElementById('summary-content');
+            // Raggruppa messaggi AI per agente
+            const byAgent = {};
+            chatLog.forEach(entry => {
+                if (entry.role === 'ai') {
+                    if (!byAgent[entry.agentId]) byAgent[entry.agentId] = [];
+                    byAgent[entry.agentId].push(entry.text);
+                }
+            });
+            const agentIds = Object.keys(byAgent);
+            if (!agentIds.length) {
+                container.innerHTML = `<div class="insight-empty"><i class="fas fa-list-ul"></i>Nessuna risposta ancora da riassumere.</div>`;
+                return;
+            }
+            container.innerHTML = agentIds.map(id => {
+                const meta = AGENT_META[id] || { label: id, color: '#895FE0', bg: '#f0ebff' };
+                const msgs = byAgent[id];
+                const lastMsg = msgs[msgs.length - 1];
+                const count   = msgs.length;
+                const preview = lastMsg.length > 120 ? lastMsg.slice(0, 120) + '…' : lastMsg;
+                return `
+                    <div class="summary-agent-row">
+                        <div class="summary-agent-icon" style="background:${meta.bg};color:${meta.color};">
+                            <i class="${agentIcon(id)}"></i>
+                        </div>
+                        <div class="summary-agent-body">
+                            <div class="summary-agent-name" style="color:${meta.color}">${meta.label} <span style="font-weight:400;color:#aaa;">(${count} risposta${count > 1 ? 'e' : ''})</span></div>
+                            <div class="summary-agent-text">${preview}</div>
+                        </div>
+                    </div>`;
+            }).join('');
+        }
+
+        // ── TAB 3: RAZIONALE ─────────────────────────────────────────
+        function buildRationale() {
+            const container = document.getElementById('rationale-content');
+            // Cerca ultima risposta AI
+            const lastAI = [...chatLog].reverse().find(e => e.role === 'ai');
+            if (!lastAI) {
+                container.innerHTML = `<div class="insight-empty"><i class="fas fa-brain"></i>Nessuna risposta AI ancora generata.</div>`;
+                return;
+            }
+            // Se il server ha mandato un razionale esplicito, usalo
+            if (lastRationale && lastRationale.steps && lastRationale.steps.length) {
+                const meta = AGENT_META[lastAI.agentId] || { label: lastAI.agentId, color: '#895FE0' };
+                container.innerHTML = `
+                    <div class="insight-card">
+                        <p style="font-size:13px;color:#777;margin-bottom:8px;">Agente: <strong style="color:${meta.color}">${meta.label}</strong> · ${lastAI.time}</p>
+                        <p style="margin-bottom:12px;font-size:13px;color:#555;">${lastRationale.conclusion || ''}</p>
+                    </div>
+                    <div class="rationale-steps">
+                        ${lastRationale.steps.map((step, i) => `
+                            <div class="rationale-step">
+                                <div class="rationale-step-num">${i+1}</div>
+                                <div class="rationale-step-text">${step}</div>
+                            </div>`).join('')}
+                    </div>`;
+            } else {
+                // Fallback: genera razionale sintetico dal testo
+                const meta = AGENT_META[lastAI.agentId] || { label: lastAI.agentId, color: '#895FE0' };
+                const text = lastAI.text;
+                const steps = generateLocalRationale(text, lastAI.agentId);
+                container.innerHTML = `
+                    <div class="insight-card">
+                        <p style="font-size:13px;color:#777;margin-bottom:6px;">Agente: <strong style="color:${meta.color}">${meta.label}</strong> · ${lastAI.time}</p>
+                        <p style="font-size:12px;color:#aaa;margin-bottom:0;">💡 Razionale ricostruito localmente</p>
+                    </div>
+                    <div class="rationale-steps">
+                        ${steps.map((step, i) => `
+                            <div class="rationale-step">
+                                <div class="rationale-step-num">${i+1}</div>
+                                <div class="rationale-step-text">${step}</div>
+                            </div>`).join('')}
+                    </div>`;
+            }
+        }
+
+        // Genera un razionale locale sintetico basato sul ruolo agente
+        function generateLocalRationale(text, agentId) {
+            const meta = AGENT_META[agentId];
+            const label = meta ? meta.label.replace(/^[^\s]+\s/, '') : 'Assistente';
+            const preview = text.slice(0, 80) + (text.length > 80 ? '…' : '');
+            return [
+                `Richiesta ricevuta dall'utente nella conversazione attiva (thread: ${currentThreadId}).`,
+                `Il modulo <strong>${label}</strong> ha analizzato il contesto della domanda in base al suo dominio di competenza.`,
+                `È stata selezionata una risposta pertinente: "<em>${preview}</em>"`,
+                `La risposta è stata inviata all'utente alle ${text && new Date().toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' })}.`
+            ];
+        }
+
+        function agentIcon(id) {
+            const icons = { pm: 'fas fa-tasks', mkt: 'fas fa-bullhorn', hr: 'fas fa-shield-alt', acc: 'fas fa-wallet' };
+            return icons[id] || 'fas fa-robot';
         }
 
         // ── DRAWER ────────────────────────────────────────────────────
@@ -486,24 +865,19 @@
         }
 
         // ── AGENTI COME COLLABORATORI ─────────────────────────────────
-        // Aggiunge o rimuove un agente dalla conversazione corrente
         function addAgentToChat(agentId) {
             closeFabMenu();
             if (activeAgents.includes(agentId)) {
-                // Se è già attivo e non è il principale, rimuovilo
                 if (agentId !== primaryAgent) {
                     removeAgentFromChat(agentId);
                     addMessage('ai', `${AGENT_META[agentId].label} ha lasciato la conversazione.`, false, agentId);
                 }
                 return;
             }
-            // Aggiungi il collaboratore
             activeAgents.push(agentId);
             renderAgentBar();
             const meta = AGENT_META[agentId];
-            // Messaggio di benvenuto del nuovo agente
             addMessage('ai', `👋 Ciao! Sono ${meta.label}. Sono qui per collaborare. In cosa posso aiutare?`, false, agentId);
-            // Notifica al server
             callApi(WH_CHAT, { action: 'add_collaborator', collaborator_id: agentId }, false);
         }
 
@@ -512,7 +886,6 @@
             renderAgentBar();
         }
 
-        // Render della barra chip collaboratori
         function renderAgentBar() {
             const bar = document.getElementById('active-agents-bar');
             bar.innerHTML = '';
@@ -559,6 +932,7 @@
 
         function selectThread(threadId) {
             currentThreadId = threadId;
+            chatLog = []; // resetta il log locale al cambio thread
             const thread = threads.find(t => t.id === threadId);
             if (thread) document.getElementById('ui-thread-name').innerText = thread.name;
             renderThreadList();
@@ -571,6 +945,7 @@
             const newThread = { id, name: 'Nuova Discussione', agent: primaryAgent, date: new Date().toLocaleDateString('it-IT') };
             threads.unshift(newThread);
             currentThreadId = id;
+            chatLog = [];
             document.getElementById('ui-thread-name').innerText = newThread.name;
             document.getElementById('chat-container').innerHTML = '';
             renderThreadList();
@@ -580,10 +955,8 @@
 
         function loadThreads() { renderThreadList(); }
 
-        // switchAgent ora imposta l'agente primario (nel drawer storico)
         function switchAgent(agent) {
             primaryAgent = agent;
-            // Assicura che il primario sia sempre in activeAgents
             if (!activeAgents.includes(agent)) activeAgents = [agent, ...activeAgents];
             else { activeAgents = [agent, ...activeAgents.filter(a => a !== agent)]; }
             document.getElementById('ui-agent-name').innerText = AGENT_META[agent].label;
@@ -624,7 +997,13 @@
                 let data = {};
                 try { data = JSON.parse(text); } catch(e) { data = { reply: text }; }
                 if (loadingEl) loadingEl.remove();
-                if (data.reply && showReply) addMessage('ai', data.reply, false, data.agent_id || targetAgentId || primaryAgent);
+                if (data.reply && showReply) {
+                    const agId = data.agent_id || targetAgentId || primaryAgent;
+                    addMessage('ai', data.reply, false, agId);
+                    // Salva razionale se presente nella risposta
+                    if (data.rationale) lastRationale = data.rationale;
+                    else lastRationale = null;
+                }
                 if (data.audio_base64) playAudio(data.audio_base64);
                 if (data.threads) { threads = data.threads; renderThreadList(); }
             } catch(err) {
@@ -644,13 +1023,18 @@
             if (!text) return;
             addMessage('user', text);
             input.value = '';
-            // Invia a tutti gli agenti attivi
             activeAgents.forEach(agentId => {
                 callApi(WH_CHAT, { action: 'npl_chat', message: text }, true, agentId);
             });
         }
 
         function addMessage(sender, text, isLoading = false, agentId = null) {
+            // Registra nel log
+            if (!isLoading) {
+                const now = new Date().toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
+                chatLog.push({ role: sender, agentId: agentId || primaryAgent, text, time: now });
+            }
+
             const div = document.createElement('div');
             div.className = `message ${sender}${isLoading ? ' loading' : ''}`;
             if (sender === 'ai' && agentId && activeAgents.length > 1) {
@@ -733,6 +1117,8 @@
 
         // ── INIT ──────────────────────────────────────────────────────
         loadThreads();
+        // L'handle swipe è visibile solo sullo schermo chat (schermo 1)
+        document.getElementById('swipe-handle').style.display = 'flex';
     </script>
 </body>
 </html>
