@@ -2,10 +2,34 @@
 <html lang="it">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>SiteBoS Certificator</title>
+    
     <!-- SDK ufficiale Telegram Mini Apps -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+    <!-- Protezione Iframe: Solo Telegram può ospitare questa pagina -->
+    <meta http-equiv="Content-Security-Policy" content="frame-ancestors 'self' https://web.telegram.org https://t.me;">
+
+    <script>
+        // ── 1. SICUREZZA: IL BUTTAFUORI ──
+        (function() {
+            const isTelegram = window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initData !== "";
+            if (!isTelegram) {
+                document.documentElement.innerHTML = `
+                    <body style="background:#000;color:#fff;display:flex;justify-content:center;align-items:center;height:100vh;text-align:center;font-family:sans-serif;padding:30px;">
+                        <div>
+                            <h1 style="font-size:60px;margin-bottom:20px;">🚫</h1>
+                            <h2>Accesso Negato</h2>
+                            <p style="opacity:0.7;">Questo modulo di certificazione è accessibile solo tramite l'App SiteBoS ufficiale su Telegram.</p>
+                        </div>
+                    </body>`;
+                window.stop();
+                throw new Error("Unauthorized Access");
+            }
+        })();
+    </script>
+
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -50,13 +74,12 @@
 
         /* --- SEZIONI DINAMICHE --- */
         .module-section {
-            display: none; /* Nascoste di default, attivate via JS */
+            display: none;
             width: 100%;
             flex-direction: column;
             align-items: center;
         }
         
-        /* Modulo: FOTOCAMERA (IMAGE) */
         #camera-feed {
             display: none;
             width: 100%;
@@ -68,7 +91,6 @@
             object-fit: cover;
         }
 
-        /* Modulo: DOCUMENTO (FILE) */
         .file-upload-box {
             border: 2px dashed #212D67;
             border-radius: 12px;
@@ -80,21 +102,10 @@
             margin-bottom: 20px;
             transition: background-color 0.3s;
         }
-        .file-upload-box:hover {
-            background-color: #f0f4f8;
-        }
-        .file-name-display {
-            margin-top: 10px;
-            font-size: 14px;
-            color: #E63946;
-            font-weight: bold;
-            word-break: break-all;
-        }
-        input[type="file"] {
-            display: none;
-        }
+        .file-upload-box:hover { background-color: #f0f4f8; }
+        .file-name-display { margin-top: 10px; font-size: 14px; color: #E63946; font-weight: bold; word-break: break-all; }
+        input[type="file"] { display: none; }
 
-        /* Modulo: TESTO (TEXT) */
         textarea {
             width: 100%;
             box-sizing: border-box;
@@ -108,13 +119,8 @@
             margin-bottom: 20px;
             box-shadow: inset 0 2px 5px rgba(0,0,0,0.05);
         }
-        textarea:focus {
-            outline: none;
-            border-color: #212D67;
-            box-shadow: 0 0 5px rgba(33, 45, 103, 0.3);
-        }
+        textarea:focus { outline: none; border-color: #212D67; box-shadow: 0 0 5px rgba(33, 45, 103, 0.3); }
 
-        /* --- PULSANTI E LOADER --- */
         .action-btn {
             background-color: #212D67;
             color: white;
@@ -130,15 +136,8 @@
             width: 100%;
             max-width: 300px;
         }
-        .action-btn:active {
-            transform: scale(0.95);
-        }
-        .action-btn:disabled {
-            background-color: #ccc;
-            cursor: not-allowed;
-            transform: none;
-            box-shadow: none;
-        }
+        .action-btn:active { transform: scale(0.95); }
+        .action-btn:disabled { background-color: #ccc; cursor: not-allowed; }
         
         .btn-danger { background-color: #E63946; }
         .btn-success { background-color: #2a9d8f; }
@@ -153,10 +152,7 @@
             animation: spin 1s linear infinite;
             margin: 20px auto;
         }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
@@ -164,290 +160,174 @@
     <div class="container">
         <div class="logo">SiteBoS Certificator</div>
         <div id="subtitle" class="subtitle">Modulo Acquisizione Evidenze</div>
-        <div id="status" class="status-text">Inizializzazione in corso...</div>
+        <div id="status" class="status-text">Inizializzazione...</div>
         <div id="loader" class="loader"></div>
 
-        <!-- ========================================== -->
-        <!-- MODULO: IMAGE (Fotocamera Live)            -->
-        <!-- ========================================== -->
+        <!-- MODULO: IMAGE -->
         <div id="section-image" class="module-section">
             <video id="camera-feed" autoplay playsinline webkit-playsinline muted></video>
             <canvas id="canvas" style="display:none;"></canvas>
-
-            <button id="startCamBtn" class="action-btn" onclick="startCamera()">
-                📸 ATTIVA FOTOCAMERA
-            </button>
-            <button id="snapBtn" class="action-btn btn-danger" style="display:none;" onclick="takePhoto()">
-                🔴 SCATTA E INVIA
-            </button>
+            <button id="startCamBtn" class="action-btn" onclick="startCamera()">📸 ATTIVA FOTOCAMERA</button>
+            <button id="snapBtn" class="action-btn btn-danger" style="display:none;" onclick="takePhoto()">🔴 SCATTA E INVIA</button>
         </div>
 
-        <!-- ========================================== -->
-        <!-- MODULO: FILE (Upload Documenti)            -->
-        <!-- ========================================== -->
+        <!-- MODULO: FILE -->
         <div id="section-file" class="module-section">
             <div class="file-upload-box" onclick="document.getElementById('fileInput').click()">
-                📄 Clicca qui per selezionare un documento<br>
-                <span style="font-size: 12px; color:#666; margin-top:5px; display:block;">(PDF, JPG, PNG ammessi)</span>
+                📄 Seleziona Documento<br>
+                <span style="font-size: 11px; color:#666; margin-top:5px; display:block;">(PDF, JPG, PNG - Max 10MB)</span>
             </div>
             <input type="file" id="fileInput" accept=".pdf,image/jpeg,image/png" onchange="handleFileSelect(event)">
-            
             <div id="fileNameDisplay" class="file-name-display">Nessun file selezionato</div>
-
-            <button id="uploadFileBtn" class="action-btn btn-success" disabled onclick="processAndSendFile()">
-                📤 INVIA DOCUMENTO
-            </button>
+            <button id="uploadFileBtn" class="action-btn btn-success" disabled onclick="processAndSendFile()">📤 INVIA DOCUMENTO</button>
         </div>
 
-        <!-- ========================================== -->
-        <!-- MODULO: TEXT (Validazione / Note)          -->
-        <!-- ========================================== -->
+        <!-- MODULO: TEXT -->
         <div id="section-text" class="module-section">
-            <textarea id="textInput" placeholder="Scrivi qui la tua nota, motivazione o evidenza testuale..." oninput="validateText()"></textarea>
-
-            <button id="sendTextBtn" class="action-btn btn-success" disabled onclick="sendTextData()">
-                📤 INVIA TESTO
-            </button>
+            <textarea id="textInput" placeholder="Inserisci qui il testo richiesto o la nota di validazione..." oninput="validateText()"></textarea>
+            <button id="sendTextBtn" class="action-btn btn-success" disabled onclick="sendTextData()">📤 INVIA TESTO</button>
         </div>
-
     </div>
 
     <script>
-        // --- INIZIALIZZAZIONE ---
         const tg = window.Telegram.WebApp;
         tg.expand();
+        tg.ready();
 
         const statusText = document.getElementById('status');
         const loader = document.getElementById('loader');
-        
-        // Elementi DOM Sezioni
         const secImage = document.getElementById('section-image');
         const secFile = document.getElementById('section-file');
         const secText = document.getElementById('section-text');
 
-        // Variabili Globali
+        // RECUPERO DATI SICURI (ChatId e UserId da SDK)
+        const chatId = tg.initDataUnsafe.start_param || tg.initDataUnsafe.user?.id;
+        const userId = tg.initDataUnsafe.user?.id;
+
         let urlParams = {};
-        let evidenceType = "IMAGE"; // Default
+        let evidenceType = "IMAGE";
         let videoStream = null;
         let selectedFileBase64 = null;
         let selectedFileMime = null;
         let selectedFileName = null;
 
-        // --- PARSING URL ---
         function initApp() {
             const params = new URLSearchParams(window.location.search);
             urlParams = Object.fromEntries(params.entries());
             evidenceType = (urlParams.evidence_type || "IMAGE").toUpperCase();
 
-            // Mostra la sezione corretta in base al parametro
             if (evidenceType === "FILE") {
                 secFile.style.display = "flex";
-                statusText.innerText = "Carica il documento richiesto";
+                statusText.innerText = "Allega il file richiesto";
             } else if (evidenceType === "TEXT") {
                 secText.style.display = "flex";
-                statusText.innerText = "Inserisci l'evidenza testuale";
+                statusText.innerText = "Inserisci la nota testuale";
             } else {
-                // Default: IMAGE
                 secImage.style.display = "flex";
-                statusText.innerText = "Pronto per l'acquisizione fotografica live";
+                statusText.innerText = "Scatta una foto live";
             }
         }
 
-        // ==========================================
-        // LOGICA MODULO: IMAGE
-        // ==========================================
         async function startCamera() {
-            const startBtn = document.getElementById('startCamBtn');
-            const snapBtn = document.getElementById('snapBtn');
-            const video = document.getElementById('camera-feed');
-
             try {
-                startBtn.style.display = 'none';
+                document.getElementById('startCamBtn').style.display = 'none';
                 loader.style.display = 'block';
-                statusText.innerText = 'Avvio fotocamera in corso...';
-
-                const stream = await navigator.mediaDevices.getUserMedia({ 
-                    video: { facingMode: 'environment' },
-                    audio: false 
-                });
-                
+                const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: false });
                 videoStream = stream;
+                const video = document.getElementById('camera-feed');
                 video.srcObject = stream;
-
                 video.onloadedmetadata = () => {
-                    video.play().then(() => {
-                        loader.style.display = 'none';
-                        video.style.display = 'block';
-                        snapBtn.style.display = 'block';
-                        statusText.innerText = 'Inquadra l\'evidenza...';
-                    }).catch(e => {
-                        console.error("Errore play video:", e);
-                        statusText.innerText = '❌ Errore riproduzione video.';
-                    });
+                    video.play();
+                    loader.style.display = 'none';
+                    video.style.display = 'block';
+                    document.getElementById('snapBtn').style.display = 'block';
+                    statusText.innerText = 'Inquadra l\'oggetto...';
                 };
-
             } catch (err) {
-                console.error("Errore accesso fotocamera: ", err);
                 loader.style.display = 'none';
-                startBtn.style.display = 'block';
-                statusText.innerText = '❌ Errore fotocamera. Controlla i permessi del browser.';
-                if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
-                    alert("Devi concedere i permessi della fotocamera a Telegram per continuare.");
-                }
+                document.getElementById('startCamBtn').style.display = 'block';
+                statusText.innerText = '❌ Errore fotocamera.';
+                tg.showAlert("È necessario concedere i permessi per scattare la foto.");
             }
         }
 
         function takePhoto() {
             const video = document.getElementById('camera-feed');
             const canvas = document.getElementById('canvas');
-            const snapBtn = document.getElementById('snapBtn');
-
-            if (video.videoWidth === 0 || video.videoHeight === 0) {
-                alert("La fotocamera si sta ancora inizializzando. Attendi un secondo.");
-                return;
-            }
-
-            snapBtn.style.display = 'none';
-            loader.style.display = 'block';
-            statusText.innerText = 'Criptazione e invio evidenza in corso...';
-
             canvas.width = video.videoWidth;
             canvas.height = video.videoHeight;
-            const context = canvas.getContext('2d');
-            context.drawImage(video, 0, 0, canvas.width, canvas.height);
-            
-            const dataURL = canvas.toDataURL('image/jpeg', 0.8);
-            const base64Content = dataURL.split(',')[1];
-            
-            if (videoStream) {
-                videoStream.getTracks().forEach(track => track.stop());
-                video.style.display = 'none';
-            }
-
-            sendToServer(base64Content, "image/jpeg", "foto_live_" + Date.now() + ".jpg");
+            canvas.getContext('2d').drawImage(video, 0, 0);
+            const base64 = canvas.toDataURL('image/jpeg', 0.8).split(',')[1];
+            if (videoStream) videoStream.getTracks().forEach(t => t.stop());
+            sendToServer(base64, "image/jpeg", `cert_${Date.now()}.jpg`);
         }
 
-        // ==========================================
-        // LOGICA MODULO: FILE
-        // ==========================================
-        function handleFileSelect(event) {
-            const file = event.target.files[0];
-            const btn = document.getElementById('uploadFileBtn');
-            const display = document.getElementById('fileNameDisplay');
-
-            if (!file) {
-                btn.disabled = true;
-                display.innerText = "Nessun file selezionato";
-                return;
-            }
-
-            display.innerText = `📎 ${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)`;
+        function handleFileSelect(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            if (file.size > 10 * 1024 * 1024) { tg.showAlert("File troppo grande (Max 10MB)"); return; }
+            document.getElementById('fileNameDisplay').innerText = `📎 ${file.name}`;
             selectedFileName = file.name;
-            selectedFileMime = file.type || "application/octet-stream";
-
-            // Controllo dimensione (max 10MB per sicurezza webhook)
-            if (file.size > 10 * 1024 * 1024) {
-                alert("Il file è troppo grande. Dimensione massima: 10MB.");
-                btn.disabled = true;
-                return;
-            }
-
+            selectedFileMime = file.type;
             const reader = new FileReader();
-            reader.onload = function(e) {
-                // e.target.result è "data:application/pdf;base64,JVBER..."
-                selectedFileBase64 = e.target.result.split(',')[1];
-                btn.disabled = false;
+            reader.onload = (event) => {
+                selectedFileBase64 = event.target.result.split(',')[1];
+                document.getElementById('uploadFileBtn').disabled = false;
             };
             reader.readAsDataURL(file);
         }
 
         function processAndSendFile() {
-            if (!selectedFileBase64) return;
-            document.getElementById('uploadFileBtn').style.display = 'none';
-            loader.style.display = 'block';
-            statusText.innerText = 'Caricamento documento in corso...';
             sendToServer(selectedFileBase64, selectedFileMime, selectedFileName);
         }
 
-        // ==========================================
-        // LOGICA MODULO: TEXT
-        // ==========================================
         function validateText() {
-            const text = document.getElementById('textInput').value.trim();
-            const btn = document.getElementById('sendTextBtn');
-            // Abilita il bottone solo se ci sono almeno 3 caratteri
-            btn.disabled = text.length < 3;
+            document.getElementById('sendTextBtn').disabled = document.getElementById('textInput').value.trim().length < 3;
         }
 
         function sendTextData() {
-            const text = document.getElementById('textInput').value.trim();
-            if (text.length < 3) return;
-
-            document.getElementById('sendTextBtn').style.display = 'none';
-            document.getElementById('textInput').disabled = true;
-            loader.style.display = 'block';
-            statusText.innerText = 'Invio validazione in corso...';
-            
-            // Per il testo puro, mandiamo la stringa direttamente senza Base64
-            sendToServer(text, "text/plain", "nota_testuale.txt", true);
+            sendToServer(document.getElementById('textInput').value.trim(), "text/plain", "nota.txt", true);
         }
 
-        // ==========================================
-        // COMUNICAZIONE SERVER (Unificata)
-        // ==========================================
         function sendToServer(content, mimeType, fileName, isPlainText = false) {
+            loader.style.display = 'block';
+            statusText.innerText = 'Invio in corso...';
             
-            // Costruiamo il payload in base al tipo
+            // PAYLOAD SICURO: Parametri URL + Dati SDK + Auth
             const payload = {
+                _auth: tg.initData, // Stringa di verifica
                 action: "certificator",
-                timestamp: new Date().toISOString(),
                 evidence_type: evidenceType,
                 mime_type: mimeType,
                 file_name: fileName,
-                ...urlParams // <--- QUESTO prende il message_id dall'URL e lo mette nel Body del Webhook
+                chat_id: chatId,   // Preso da SDK
+                user_id: userId,   // Preso da SDK
+                ...urlParams       // sop_id, step_id, message_id presi dall'URL
             };
 
-            if (isPlainText) {
-                payload.text_content = content; // Manda testo in chiaro
-            } else {
-                payload.base64_content = content; // Manda file codificato
-            }
+            if (isPlainText) payload.text_content = content;
+            else payload.base64_content = content;
 
             fetch('https://prod.workflow.trinai.it/webhook/ef4aece4-9ec0-4026-a7a7-328562bcbdf6', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
             })
-            .then(response => {
-                if (response.ok) {
-                    statusText.innerText = '✅ Acquisizione Completata!';
-                    statusText.style.color = '#2a9d8f';
-                    loader.style.display = 'none';
+            .then(res => {
+                if (res.ok) {
+                    statusText.innerText = '✅ Inviato con successo!';
                     if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
-                    setTimeout(() => { tg.close(); }, 1500);
-                } else {
-                    throw new Error('Errore HTTP: ' + response.status);
-                }
+                    setTimeout(() => tg.close(), 1500);
+                } else { throw new Error(); }
             })
-            .catch(error => {
-                console.error('Error:', error);
-                statusText.innerText = '❌ Errore durante l\'invio. Riprova.';
-                statusText.style.color = '#E63946';
+            .catch(() => {
                 loader.style.display = 'none';
-                
-                // Ripristina i pulsanti in base al modulo per permettere un retry
-                if (evidenceType === "IMAGE") document.getElementById('startCamBtn').style.display = 'block';
-                if (evidenceType === "FILE") document.getElementById('uploadFileBtn').style.display = 'block';
-                if (evidenceType === "TEXT") {
-                    document.getElementById('sendTextBtn').style.display = 'block';
-                    document.getElementById('textInput').disabled = false;
-                }
+                statusText.innerText = '❌ Errore. Riprova.';
+                tg.showAlert("Errore durante l'invio al sistema SiteBoS.");
             });
         }
 
-        // Avvio app al caricamento DOM
         window.onload = initApp;
-
     </script>
 </body>
 </html>
