@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <script>
-        // ── SICUREZZA LATO CLIENT: IL BUTTAFUORI ──
+        // ── SICUREZZA LATO CLIENT ──
         (function() {
             const isTelegram = window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initData !== "";
             if (!isTelegram) {
@@ -17,8 +17,8 @@
                     <body style="background:#000;color:#fff;display:flex;justify-content:center;align-items:center;height:100vh;text-align:center;font-family:'Inter',sans-serif;padding:30px;">
                         <div>
                             <h1 style="font-size:60px;margin-bottom:20px;">🚫</h1>
-                            <h2 style="font-size:24px;margin-bottom:10px;">Accesso Non Autorizzato</h2>
-                            <p style="opacity:0.7;line-height:1.5;">Questa applicazione è protetta e accessibile esclusivamente tramite il bot ufficiale SiteBoS su Telegram.</p>
+                            <h2 style="font-size:24px;margin-bottom:10px;">Accesso Proibito</h2>
+                            <p style="opacity:0.7;line-height:1.5;">Questa applicazione è accessibile esclusivamente tramite il bot ufficiale SiteBoS su Telegram.</p>
                         </div>
                     </body>`;
                 window.stop();
@@ -40,7 +40,7 @@
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
         body { background: var(--bg); overflow: hidden; height: 100vh; position: relative; }
 
-        /* ── VIEWPORT A 3 SCHERMI ─────────────────────────────── */
+        /* ── VIEWPORT A 3 SCHERMI ── */
         #viewport {
             display: flex; width: 300vw; height: 100vh;
             transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
@@ -48,7 +48,7 @@
         }
         .screen { width: 100vw; height: 100vh; display: flex; flex-direction: column; position: relative; }
 
-        /* ── HEADER ───────────────────────────────────────────── */
+        /* ── HEADER ── */
         header {
             background: #fff; padding: 10px 15px;
             display: flex; justify-content: space-between; align-items: center;
@@ -60,291 +60,80 @@
         .agent-info h1 { font-size: 16px; color: var(--primary); font-weight: 600; }
         .agent-info p  { font-size: 11px; color: #888; }
 
-        /* ── COLLABORATORI ATTIVI (badge sotto header) ────────── */
+        /* ── COLLABORATORI ATTIVI ── */
         #active-agents-bar {
-            background: #fff;
-            border-bottom: 1px solid #eee;
-            padding: 6px 15px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            overflow-x: auto;
-            flex-shrink: 0;
-            min-height: 0;
-            transition: max-height 0.3s ease, padding 0.3s ease, opacity 0.3s ease;
-            max-height: 0;
-            padding: 0 15px;
-            opacity: 0;
-            pointer-events: none;
+            background: #fff; border-bottom: 1px solid #eee; padding: 6px 15px;
+            display: flex; align-items: center; gap: 8px; overflow-x: auto;
+            flex-shrink: 0; min-height: 0; transition: max-height 0.3s ease, padding 0.3s ease, opacity 0.3s ease;
+            max-height: 0; padding: 0 15px; opacity: 0; pointer-events: none;
         }
-        #active-agents-bar.has-agents {
-            max-height: 48px;
-            padding: 6px 15px;
-            opacity: 1;
-            pointer-events: all;
-        }
+        #active-agents-bar.has-agents { max-height: 48px; padding: 6px 15px; opacity: 1; pointer-events: all; }
         #active-agents-bar::-webkit-scrollbar { display: none; }
         .agent-chip {
-            display: inline-flex; align-items: center; gap: 5px;
-            background: #f0ebff; color: var(--accent);
-            border: 1px solid #d8cdf8;
-            border-radius: 20px; padding: 3px 10px 3px 8px;
-            font-size: 12px; font-weight: 500;
-            white-space: nowrap; cursor: pointer;
-            transition: background 0.2s;
+            display: inline-flex; align-items: center; gap: 5px; background: #f0ebff; color: var(--accent);
+            border: 1px solid #d8cdf8; border-radius: 20px; padding: 3px 10px 3px 8px;
+            font-size: 12px; font-weight: 500; white-space: nowrap; cursor: pointer; transition: background 0.2s;
         }
-        .agent-chip.primary-chip {
-            background: var(--primary); color: #fff; border-color: var(--primary);
-        }
-        .agent-chip .chip-remove {
-            font-size: 14px; line-height: 1; margin-left: 2px;
-            opacity: 0.6; transition: opacity 0.2s;
-        }
+        .agent-chip.primary-chip { background: var(--primary); color: #fff; border-color: var(--primary); }
+        .agent-chip .chip-remove { font-size: 14px; line-height: 1; margin-left: 2px; opacity: 0.6; transition: opacity 0.2s; }
         .agent-chip:hover .chip-remove { opacity: 1; }
-        .agent-chip.primary-chip .chip-remove { display: none; }
 
-        /* ── SCHERMO 1: STORICO ───────────────────────────────── */
+        /* ── SCHERMO 1: STORICO ── */
         #screen-history { background: #fff; }
         #thread-list { padding: 15px; overflow-y: auto; flex: 1; }
         .thread-item {
-            padding: 14px; border-radius: 12px; background: var(--bg);
-            margin-bottom: 10px; display: flex; justify-content: space-between;
-            align-items: center; border: 1px solid #eee; cursor: pointer;
-            transition: border-color 0.2s, background 0.2s;
+            padding: 14px; border-radius: 12px; background: var(--bg); margin-bottom: 10px;
+            display: flex; justify-content: space-between; align-items: center; border: 1px solid #eee;
+            cursor: pointer; transition: 0.2s;
         }
         .thread-item.active { border-color: var(--accent); background: #f0ebff; }
         .thread-item .thread-name { font-size: 14px; font-weight: 500; color: var(--primary); }
         .thread-item .thread-date { font-size: 11px; color: #aaa; margin-top: 3px; }
 
-        /* ── SCHERMO 2: CHAT ──────────────────────────────────── */
-        #chat-container {
-            flex: 1; padding: 15px; overflow-y: auto;
-            display: flex; flex-direction: column; gap: 10px;
-        }
-        .message {
-            max-width: 80%; padding: 11px 14px;
-            border-radius: 16px; font-size: 15px;
-            position: relative; line-height: 1.5; word-break: break-word;
-            white-space: pre-wrap;
-        }
-        .message.user {
-            align-self: flex-end;
-            background: var(--chat-user);
-            border-bottom-right-radius: 3px;
-        }
-        .message.ai {
-            align-self: flex-start;
-            background: var(--chat-ai);
-            border-bottom-left-radius: 3px;
-            border: 1px solid #ddd;
-        }
+        /* ── SCHERMO 2: CHAT ── */
+        #chat-container { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+        .message { max-width: 80%; padding: 11px 14px; border-radius: 16px; font-size: 15px; position: relative; line-height: 1.5; word-break: break-word; white-space: pre-wrap; }
+        .message.user { align-self: flex-end; background: var(--chat-user); border-bottom-right-radius: 3px; }
+        .message.ai { align-self: flex-start; background: var(--chat-ai); border-bottom-left-radius: 3px; border: 1px solid #ddd; }
         .message.loading { opacity: 0.55; font-style: italic; }
-        .msg-agent-badge {
-            font-size: 10px; font-weight: 600;
-            color: var(--accent); letter-spacing: 0.04em;
-            margin-bottom: 4px; display: block;
-        }
+        .msg-agent-badge { font-size: 10px; font-weight: 600; color: var(--accent); letter-spacing: 0.04em; margin-bottom: 4px; display: block; }
 
-        /* ── SCHERMO 3: VOCALE ────────────────────────────────── */
-        #screen-voice {
-            background: linear-gradient(180deg, #212D67 0%, #101530 100%);
-            color: white; justify-content: center; align-items: center;
-        }
-        .mic-sphere {
-            width: 150px; height: 150px; background: var(--accent); border-radius: 50%;
-            display: flex; align-items: center; justify-content: center; font-size: 50px;
-            box-shadow: 0 0 30px rgba(137,95,224,0.5); cursor: pointer;
-            user-select: none; -webkit-user-select: none;
-            transition: transform 0.15s ease;
-        }
+        /* ── SCHERMO 3: VOCALE ── */
+        #screen-voice { background: linear-gradient(180deg, #212D67 0%, #101530 100%); color: white; justify-content: center; align-items: center; }
+        .mic-sphere { width: 150px; height: 150px; background: var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 50px; box-shadow: 0 0 30px rgba(137,95,224,0.5); cursor: pointer; transition: transform 0.15s ease; }
         .mic-sphere.recording { animation: pulse 1.5s infinite; background: var(--danger); }
+        
+        .voice-agents-selector { margin-top: 40px; display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; padding: 0 20px; }
+        .v-agent-btn { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 8px 16px; border-radius: 20px; font-size: 12px; font-weight: 500; cursor: pointer; transition: 0.2s; }
+        .v-agent-btn.active { background: var(--accent); border-color: var(--accent); box-shadow: 0 0 15px rgba(137,95,224,0.4); }
 
-        /* SELEZIONE AGENTI IN MODALITÀ VOCALE */
-        .voice-agents-selector {
-            margin-top: 40px;
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-            justify-content: center;
-            padding: 0 20px;
-        }
-        .v-agent-btn {
-            background: rgba(255,255,255,0.1);
-            border: 1px solid rgba(255,255,255,0.2);
-            color: white;
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: 0.2s;
-        }
-        .v-agent-btn.active {
-            background: var(--accent);
-            border-color: var(--accent);
-            box-shadow: 0 0 15px rgba(137,95,224,0.4);
-        }
+        /* ── FOOTER ── */
+        footer { background: #fff; padding: 10px 15px; display: flex; gap: 10px; align-items: center; padding-bottom: env(safe-area-inset-bottom, 15px); flex-shrink: 0; position: relative; }
+        #chat-input { flex: 1; border: 1px solid #ddd; border-radius: 22px; padding: 11px 16px; outline: none; font-size: 15px; }
+        .icon-btn { width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; font-size: 19px; color: var(--primary); cursor: pointer; border: none; background: none; }
 
-        /* ── FOOTER INPUT ─────────────────────────────────────── */
-        footer {
-            background: #fff; padding: 10px 15px;
-            display: flex; gap: 10px; align-items: center;
-            padding-bottom: env(safe-area-inset-bottom, 15px);
-            flex-shrink: 0; position: relative;
-        }
-        #chat-input {
-            flex: 1; border: 1px solid #ddd; border-radius: 22px;
-            padding: 11px 16px; outline: none;
-            font-family: 'Inter', sans-serif; font-size: 15px;
-            transition: border-color 0.2s;
-        }
-        #chat-input:focus { border-color: var(--accent); }
-        .icon-btn {
-            width: 42px; height: 42px;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 19px; color: var(--primary); cursor: pointer;
-            border: none; background: none;
-            border-radius: 50%; transition: background 0.15s;
-        }
-        .icon-btn:hover { background: rgba(33,45,103,0.07); }
-
-        /* ── FAB HAMBURGER ── */
-        #fab-menu {
-            position: absolute;
-            bottom: calc(env(safe-area-inset-bottom, 0px) + 72px);
-            left: 15px;
-            width: 44px; height: 44px;
-            background: var(--primary);
-            color: white;
-            border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 18px;
-            box-shadow: 0 4px 14px rgba(33,45,103,0.35);
-            cursor: pointer; z-index: 200;
-            border: none;
-            transition: background 0.2s, transform 0.2s;
-        }
-        #fab-menu:hover { background: #1a2456; }
+        /* ── FAB & POPUP ── */
+        #fab-menu { position: absolute; bottom: calc(env(safe-area-inset-bottom, 0px) + 72px); left: 15px; width: 44px; height: 44px; background: var(--primary); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; box-shadow: 0 4px 14px rgba(0,0,0,0.2); cursor: pointer; z-index: 200; transition: 0.2s; }
         #fab-menu.open { transform: rotate(90deg); background: var(--accent); }
-
-        /* ── POPUP AGENTI (sopra FAB) ── */
-        #agent-popup {
-            position: absolute;
-            bottom: calc(env(safe-area-inset-bottom, 0px) + 126px);
-            left: 12px;
-            width: 220px;
-            background: #fff;
-            border-radius: 16px;
-            box-shadow: 0 8px 30px rgba(0,0,0,0.15);
-            padding: 8px 0;
-            z-index: 300;
-            transform-origin: bottom left;
-            transform: scale(0.85) translateY(10px);
-            opacity: 0;
-            pointer-events: none;
-            transition: transform 0.22s cubic-bezier(0.34,1.56,0.64,1), opacity 0.18s ease;
-        }
-        #agent-popup.open {
-            transform: scale(1) translateY(0);
-            opacity: 1;
-            pointer-events: all;
-        }
-        .popup-item {
-            padding: 11px 16px;
-            display: flex; align-items: center; gap: 11px;
-            font-size: 14px; cursor: pointer;
-            transition: background 0.15s;
-            border-radius: 8px;
-            margin: 2px 6px;
-        }
+        #agent-popup { position: absolute; bottom: calc(env(safe-area-inset-bottom, 0px) + 126px); left: 12px; width: 220px; background: #fff; border-radius: 16px; box-shadow: 0 8px 30px rgba(0,0,0,0.15); padding: 8px 0; z-index: 300; transform-origin: bottom left; transform: scale(0.85); opacity: 0; pointer-events: none; transition: 0.2s cubic-bezier(0.34,1.56,0.64,1); }
+        #agent-popup.open { transform: scale(1); opacity: 1; pointer-events: all; }
+        .popup-item { padding: 11px 16px; display: flex; align-items: center; gap: 11px; font-size: 14px; cursor: pointer; transition: background 0.15s; border-radius: 8px; margin: 2px 6px; }
         .popup-item:hover { background: var(--bg); }
-        .popup-item .popup-icon {
-            width: 32px; height: 32px; border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 14px; flex-shrink: 0;
-        }
-        .popup-item .popup-label { font-weight: 500; color: #1a1a2e; }
-        .popup-item.active-agent .popup-label::after {
-            content: ' ✓';
-            color: var(--accent);
-            font-weight: 700;
-        }
-
-        #fab-overlay {
-            display: none; position: fixed; inset: 0;
-            z-index: 199; background: transparent;
-        }
+        .popup-item.active-agent .popup-label::after { content: ' ✓'; color: var(--accent); font-weight: 700; }
+        #fab-overlay { display: none; position: fixed; inset: 0; z-index: 199; }
         #fab-overlay.open { display: block; }
 
-        /* ── MENU AGENTI DRAWER ── */
-        #agent-drawer {
-            position: fixed; top: 0; left: 0; width: 260px; height: 100%;
-            background: #fff;
-            transform: translateX(-100%); transition: 0.3s;
-            z-index: 1000; box-shadow: 5px 0 15px rgba(0,0,0,0.1);
-            display: flex; flex-direction: column;
-        }
+        /* ── DRAWER ── */
+        #agent-drawer { position: fixed; top: 0; left: 0; width: 260px; height: 100%; background: #fff; transform: translateX(-100%); transition: 0.3s; z-index: 1000; box-shadow: 5px 0 15px rgba(0,0,0,0.1); display: flex; flex-direction: column; }
         body.drawer-open #agent-drawer { transform: translateX(0); }
-        #drawer-overlay {
-            display: none; position: fixed; inset: 0;
-            background: rgba(0,0,0,0.3); z-index: 999;
-        }
+        #drawer-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.3); z-index: 999; }
         body.drawer-open #drawer-overlay { display: block; }
-        .drawer-item {
-            padding: 14px 20px; border-bottom: 1px solid #f0f0f0;
-            display: flex; align-items: center; gap: 10px;
-            cursor: pointer; font-size: 14px;
-            transition: background 0.15s;
-        }
+        .drawer-item { padding: 14px 20px; border-bottom: 1px solid #f0f0f0; display: flex; align-items: center; gap: 10px; cursor: pointer; font-size: 14px; }
 
-        /* ── OVERLAY SOLVER ── */
-        #solver-overlay {
-            display: none; position: fixed; inset: 0;
-            background: var(--bg); z-index: 2000;
-            animation: slideUp 0.3s ease;
-        }
-        #solver-overlay.active { display: block; }
-        #solver-overlay iframe { width: 100%; height: 100%; border: none; }
-        .solver-close-bar {
-            position: sticky; top: 0; z-index: 10;
-            background: var(--primary); color: white;
-            padding: 12px 15px; display: flex; align-items: center; gap: 10px;
-            font-size: 15px; font-weight: 600;
-        }
-        .solver-close-bar button {
-            background: none; border: none; color: white; font-size: 20px;
-            cursor: pointer; line-height: 1; padding: 4px;
-        }
-
-        /* ── SWIPE-UP INSIGHT DRAWER ── */
-        #swipe-handle {
-            position: fixed;
-            bottom: 0; left: 0; right: 0;
-            height: 20px;
-            display: flex; align-items: center; justify-content: center;
-            z-index: 150;
-            cursor: pointer;
-            background: transparent;
-        }
-        #swipe-handle-bar {
-            width: 40px; height: 4px;
-            background: rgba(33,45,103,0.25);
-            border-radius: 2px;
-        }
-        #insight-drawer {
-            position: fixed;
-            bottom: 0; left: 0; right: 0;
-            height: 78vh;
-            background: #fff;
-            border-radius: 20px 20px 0 0;
-            box-shadow: 0 -8px 40px rgba(0,0,0,0.14);
-            z-index: 500;
-            transform: translateY(100%);
-            transition: transform 0.38s cubic-bezier(0.32, 0.72, 0, 1);
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
+        /* ── INSIGHT DRAWER ── */
+        #swipe-handle { position: fixed; bottom: 0; left: 0; right: 0; height: 20px; display: flex; align-items: center; justify-content: center; z-index: 150; cursor: pointer; }
+        #swipe-handle-bar { width: 40px; height: 4px; background: rgba(33,45,103,0.25); border-radius: 2px; }
+        #insight-drawer { position: fixed; bottom: 0; left: 0; right: 0; height: 78vh; background: #fff; border-radius: 20px 20px 0 0; box-shadow: 0 -8px 40px rgba(0,0,0,0.14); z-index: 500; transform: translateY(100%); transition: transform 0.38s cubic-bezier(0.32, 0.72, 0, 1); display: flex; flex-direction: column; overflow: hidden; }
         #insight-drawer.open { transform: translateY(0); }
         #insight-backdrop { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.35); z-index: 499; }
         #insight-backdrop.open { display: block; }
@@ -356,49 +145,41 @@
         .insight-content { flex: 1; overflow-y: auto; padding: 20px; }
         .insight-panel { display: none; }
         .insight-panel.active { display: block; }
-
-        /* Timeline styles */
-        .trace-event { display: flex; gap: 12px; margin-bottom: 15px; position: relative; }
-        .trace-dot { width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; flex-shrink: 0; }
-        .trace-dot.user-dot { background: #e3f2fd; color: var(--primary); }
-        .trace-label { font-size: 11px; font-weight: 700; text-transform: uppercase; margin-bottom: 2px; }
-        .trace-text { font-size: 13px; color: #444; }
-        .trace-time { font-size: 10px; color: #aaa; margin-top: 2px; }
+        
+        /* ── SOLVER OVERLAY ── */
+        #solver-overlay { display: none; position: fixed; inset: 0; background: var(--bg); z-index: 2000; animation: slideUp 0.3s ease; }
+        #solver-overlay.active { display: block; }
+        #solver-overlay iframe { width: 100%; height: 100%; border: none; }
+        .solver-close-bar { position: sticky; top: 0; z-index: 10; background: var(--primary); color: white; padding: 12px 15px; display: flex; align-items: center; gap: 10px; font-size: 15px; font-weight: 600; }
+        .solver-close-bar button { background: none; border: none; color: white; font-size: 20px; cursor: pointer; }
 
         @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
         @keyframes pulse   { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
-        
         .hidden { display: none !important; }
     </style>
 </head>
 <body>
 
     <div id="drawer-overlay" onclick="toggleDrawer()"></div>
-
-    <!-- MENU DRAWER -->
     <nav id="agent-drawer">
         <div style="padding:20px; font-weight:700; background:var(--primary); color:#fff;">Direzione Aziendale</div>
-        <div class="drawer-item" onclick="switchAgent('pm')"><i class="fas fa-tasks"></i> Gestione Lavori</div>
-        <div class="drawer-item" onclick="switchAgent('mkt')"><i class="fas fa-bullhorn"></i> Vendite &amp; Promo</div>
-        <div class="drawer-item" onclick="switchAgent('hr')"><i class="fas fa-shield-alt"></i> Team &amp; Sicurezza</div>
-        <div class="drawer-item" onclick="switchAgent('acc')"><i class="fas fa-wallet"></i> Cassa &amp; Conti</div>
-        
-        <!-- Tasto Gestione Percorsi in fondo -->
+        <div class="drawer-item" onclick="switchAgent('pm')"><i class="fas fa-tasks" style="color:var(--primary)"></i> Gestione Lavori</div>
+        <div class="drawer-item" onclick="switchAgent('mkt')"><i class="fas fa-bullhorn" style="color:#e67e22"></i> Vendite & Promo</div>
+        <div class="drawer-item" onclick="switchAgent('hr')"><i class="fas fa-shield-alt" style="color:#27ae60"></i> Team & Sicurezza</div>
+        <div class="drawer-item" onclick="switchAgent('acc')"><i class="fas fa-wallet" style="color:#8e44ad"></i> Cassa & Conti</div>
         <div class="drawer-item" style="margin-top:auto; border-top:1px solid #eee; color:var(--accent); font-weight:700;" onclick="openSolver()">
             <i class="fas fa-route"></i> Gestione Percorsi
         </div>
     </nav>
 
-    <!-- OVERLAY SOLVER -->
     <div id="solver-overlay">
         <div class="solver-close-bar">
             <button onclick="closeSolver()"><i class="fas fa-arrow-left"></i></button>
             <span>🚗 Pianifica Itinerario</span>
         </div>
-        <iframe id="solver-frame" src="" title="Pianifica Percorso"></iframe>
+        <iframe id="solver-frame" src=""></iframe>
     </div>
 
-    <!-- INSIGHT DRAWER -->
     <div id="insight-backdrop" onclick="closeInsightDrawer()"></div>
     <div id="insight-drawer">
         <div style="width:40px; height:4px; background:#ddd; border-radius:2px; margin:10px auto;"></div>
@@ -421,7 +202,6 @@
     <div id="swipe-handle" onclick="openInsightDrawer()"><div id="swipe-handle-bar"></div></div>
 
     <div id="viewport">
-
         <!-- SCHERMO 1: STORICO -->
         <section class="screen" id="screen-history">
             <header>
@@ -429,8 +209,8 @@
                 <div style="font-weight:600; color:var(--primary);">Archivio Chat</div>
                 <div style="width:36px"></div>
             </header>
-            <div id="thread-list" style="padding:15px; flex:1; overflow-y:auto;"></div>
-            <button onclick="createNewThread()" style="margin:15px; padding:14px; border:none; background:var(--primary); color:white; border-radius:10px; font-weight:600; cursor:pointer;">+ Nuova Discussione</button>
+            <div id="thread-list"></div>
+            <button onclick="createNewThread()" style="margin:15px; padding:14px; border:none; background:var(--primary); color:white; border-radius:10px; font-weight:600;">+ Nuova Discussione</button>
         </section>
 
         <!-- SCHERMO 2: CHAT -->
@@ -443,11 +223,8 @@
                 </div>
                 <button class="header-btn" onclick="goToScreen(2)"><i class="fas fa-microphone"></i></button>
             </header>
-
             <div id="active-agents-bar"></div>
-
             <main id="chat-container"></main>
-
             <footer>
                 <button id="fab-menu" onclick="toggleFabMenu()"><i class="fas fa-bars"></i></button>
                 <div id="fab-overlay" onclick="closeFabMenu()"></div>
@@ -458,18 +235,17 @@
                     </div>
                     <div class="popup-item" id="popup-mkt" onclick="addAgentToChat('mkt')">
                         <div class="popup-icon" style="background:#fef3e8; color:#e67e22;"><i class="fas fa-bullhorn"></i></div>
-                        <div class="popup-label">Vendite &amp; Promo</div>
+                        <div class="popup-label">Vendite & Promo</div>
                     </div>
                     <div class="popup-item" id="popup-hr" onclick="addAgentToChat('hr')">
                         <div class="popup-icon" style="background:#eafaf1; color:#27ae60;"><i class="fas fa-shield-alt"></i></div>
-                        <div class="popup-label">Team &amp; Sicurezza</div>
+                        <div class="popup-label">Team & Sicurezza</div>
                     </div>
                     <div class="popup-item" id="popup-acc" onclick="addAgentToChat('acc')">
                         <div class="popup-icon" style="background:#f5eefb; color:#8e44ad;"><i class="fas fa-wallet"></i></div>
-                        <div class="popup-label">Cassa &amp; Conti</div>
+                        <div class="popup-label">Cassa & Conti</div>
                     </div>
                 </div>
-
                 <input type="text" id="chat-input" placeholder="Chiedi all'AI..." onkeydown="if(event.key==='Enter') sendText()">
                 <button class="icon-btn" onclick="sendText()"><i class="fas fa-paper-plane"></i></button>
             </footer>
@@ -485,9 +261,7 @@
             <div style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center;">
                 <div id="voice-status" style="margin-bottom:30px; font-size:18px; font-weight:300;">Tieni premuto per parlare</div>
                 <div id="mic-btn" class="mic-sphere"><i class="fas fa-microphone"></i></div>
-                
-                <!-- SELETTORE AGENTI VOCALI -->
-                <div class="voice-agents-container">
+                <div class="voice-agents-selector">
                     <button class="v-agent-btn" id="v-btn-pm" onclick="addAgentToChat('pm')">🛠️ PM</button>
                     <button class="v-agent-btn" id="v-btn-mkt" onclick="addAgentToChat('mkt')">🚀 MKT</button>
                     <button class="v-agent-btn" id="v-btn-hr" onclick="addAgentToChat('hr')">🛡️ HR</button>
@@ -503,7 +277,7 @@
 
         const WH_CHAT = "https://prod.workflow.trinai.it/webhook/81ab5292-43c3-4f93-afaf-7411b95fc010";
 
-        // ── RECUPERO DATI SICURI DA SDK ──
+        // ── DATI DA SDK (URL PULITO) ──
         const chatId = tg.initDataUnsafe.start_param || tg.initDataUnsafe.user?.id || "TEST_USER";
         const lang = tg.initDataUnsafe.user?.language_code || "it";
 
@@ -513,6 +287,7 @@
         let currentScreen = 1;
         let chatLog = [];
         let threads = [{ id: 'thread_001', name: 'Discussione Attiva', agent: 'pm', date: new Date().toLocaleDateString() }];
+        let lastRationale = null;
 
         const AGENT_META = {
             pm:  { label: '🛠️ Gestione Lavori', short: 'PM', color: '#212D67', bg: '#e8edf8', icon: 'fas fa-tasks' },
@@ -525,7 +300,7 @@
         let startX, startY, startTime;
         document.addEventListener('touchstart', e => { startX = e.touches[0].clientX; startY = e.touches[0].clientY; startTime = Date.now(); }, { passive: true });
         document.addEventListener('touchend', e => {
-            if (document.body.classList.contains('drawer-open') || document.getElementById('solver-overlay').classList.contains('active') || document.getElementById('insight-drawer').classList.contains('open')) return;
+            if (document.body.classList.contains('drawer-open') || document.getElementById('solver-overlay').classList.contains('active') || document.getElementById('agent-popup').classList.contains('open') || document.getElementById('insight-drawer').classList.contains('open')) return;
             const endX = e.changedTouches[0].clientX, endY = e.changedTouches[0].clientY;
             const diffX = startX - endX, diffY = startY - endY, elapsed = Date.now() - startTime;
             if (diffY > 60 && Math.abs(diffY) > Math.abs(diffX) && elapsed < 500 && currentScreen === 1) { openInsightDrawer(); return; }
@@ -537,11 +312,11 @@
 
         function goToScreen(i) { currentScreen = i; document.getElementById('viewport').style.transform = `translateX(-${i * 100}vw)`; document.getElementById('swipe-handle').style.display = (i===1)?'flex':'none'; }
 
-        /* ── CHAT API ── */
+        /* ── CHAT LOGIC ── */
         async function callApi(url, payload, showReply = true, targetAgentId = null) {
             const fullPayload = {
                 ...payload,
-                _auth: tg.initData, // Passiamo initData per sicurezza server
+                _auth: tg.initData,
                 chat_id: chatId,
                 user_id: tg.initDataUnsafe.user?.id,
                 agent_id: targetAgentId || primaryAgent,
@@ -552,15 +327,14 @@
             let loadingEl = null;
             if (showReply) loadingEl = addMessage('ai', '⏳ Elaborazione...', true, targetAgentId || primaryAgent);
             try {
-                const res = await fetch(url, { 
-                    method: 'POST', 
-                    headers: { 'Content-Type': 'application/json' }, 
-                    body: JSON.stringify(fullPayload) 
-                });
+                const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(fullPayload) });
                 const data = await res.json();
                 if (loadingEl) loadingEl.remove();
-                if (data.reply && showReply) addMessage('ai', data.reply, false, data.agent_id || targetAgentId || primaryAgent);
-            } catch(e) { if (loadingEl) loadingEl.remove(); addMessage('ai', '⚠️ Errore di connessione col server TrinAI.'); }
+                if (data.reply && showReply) {
+                    addMessage('ai', data.reply, false, data.agent_id || targetAgentId || primaryAgent);
+                    if (data.rationale) lastRationale = data.rationale;
+                }
+            } catch(e) { if (loadingEl) loadingEl.remove(); addMessage('ai', '⚠️ Errore di connessione.'); }
         }
 
         function sendText(customText = null) {
@@ -587,7 +361,7 @@
             return div;
         }
 
-        /* ── AGENTI & UI LOGIC ── */
+        /* ── AGENTI & UI ── */
         function toggleDrawer() { document.body.classList.toggle('drawer-open'); }
         function toggleFabMenu() { document.getElementById('agent-popup').classList.toggle('open'); document.getElementById('fab-menu').classList.toggle('open'); document.getElementById('fab-overlay').classList.toggle('open'); updatePopupActiveState(); }
         function closeFabMenu() { document.getElementById('agent-popup').classList.remove('open'); document.getElementById('fab-menu').classList.remove('open'); document.getElementById('fab-overlay').classList.remove('open'); }
@@ -607,7 +381,7 @@
                 if (id !== primaryAgent) activeAgents = activeAgents.filter(a => a !== id);
             } else {
                 activeAgents.push(id);
-                addMessage('ai', `👋 Sono ${AGENT_META[id].label}, pronto a collaborare su questa discussione.`, false, id);
+                addMessage('ai', `👋 Sono ${AGENT_META[id].label}, pronto a collaborare.`, false, id);
             }
             updatePopupActiveState();
         }
@@ -630,7 +404,12 @@
             toggleDrawer(); updatePopupActiveState();
         }
 
-        /* ── VOCALE RECORDER ── */
+        function renameCurrentThread() {
+            const n = prompt("Nome discussione:");
+            if(n) { const t = threads.find(x=>x.id===currentThreadId); if(t){t.name=n; renderThreadList();} }
+        }
+
+        /* ── VOCALE ── */
         const micBtn = document.getElementById('mic-btn');
         let mediaRecorder, audioChunks = [];
         micBtn.addEventListener('mousedown', startRec); micBtn.addEventListener('mouseup', stopRec);
@@ -649,65 +428,53 @@
                         const base64 = reader.result.split(',')[1];
                         activeAgents.forEach(id => callApi(WH_CHAT, { action: 'npl_voice', audio_base64: base64, mime_type: 'audio/webm' }, true, id));
                     };
-                    stream.getTracks().forEach(t => t.stop());
                 };
                 mediaRecorder.start();
                 document.getElementById('voice-status').textContent = "Ti ascolto...";
-            } catch(e) { tg.showAlert("Permesso microfono negato o non disponibile."); micBtn.classList.remove('recording'); }
+            } catch(e) { tg.showAlert("Microfono non disponibile."); }
         }
-        function stopRec() { if(mediaRecorder && mediaRecorder.state !== 'inactive') { micBtn.classList.remove('recording'); mediaRecorder.stop(); document.getElementById('voice-status').textContent = "Analisi voce..."; } }
+        function stopRec() { if(mediaRecorder && mediaRecorder.state !== 'inactive') { micBtn.classList.remove('recording'); mediaRecorder.stop(); document.getElementById('voice-status').textContent = "Analisi..."; } }
 
-        /* ── SOLVER & POSTMESSAGE ── */
-        function openSolver() {
-            toggleDrawer();
-            document.getElementById('solver-frame').src = "solver.html";
-            document.getElementById('solver-overlay').classList.add('active');
-        }
-        function closeSolver() { document.getElementById('solver-overlay').classList.remove('active'); document.getElementById('solver-frame').src = ""; }
-
-        window.addEventListener('message', (event) => {
-            if (event.data && event.data.type === 'SOLVER_DATA') {
-                closeSolver();
-                sendText(event.data.payload);
-            }
-        });
-
-        /* ── INSIGHT PANELS ── */
+        /* ── INSIGHT LOGIC ── */
         function openInsightDrawer() {
-            const cont = document.getElementById('panel-trace');
-            cont.innerHTML = chatLog.map(e => `
-                <div class="trace-event">
-                    <div class="trace-dot ${e.sender==='user'?'user-dot':''}" style="${e.sender==='ai'?'background:'+AGENT_META[e.agentId].bg+';color:'+AGENT_META[e.agentId].color:''}">
-                        <i class="${e.sender==='user'?'fas fa-user':AGENT_META[e.agentId].icon}"></i>
-                    </div>
-                    <div class="trace-body">
-                        <div class="trace-label" style="color:${e.sender==='user'? 'var(--primary)': AGENT_META[e.agentId].color}">${e.sender==='user'?'TU':AGENT_META[e.agentId].short}</div>
-                        <div class="trace-text">${e.text}</div>
-                        <div class="trace-time">${e.time}</div>
-                    </div>
-                </div>`).join('');
+            buildTrace(); buildSummary(); buildRationale();
             document.getElementById('insight-drawer').classList.add('open');
             document.getElementById('insight-backdrop').classList.add('open');
         }
         function closeInsightDrawer() { document.getElementById('insight-drawer').classList.remove('open'); document.getElementById('insight-backdrop').classList.remove('open'); }
         function switchInsightTab(tab, btn) {
-            document.querySelectorAll('.insight-tab').forEach(t => t.classList.remove('active'));
-            document.querySelectorAll('.insight-panel').forEach(p => p.classList.remove('active'));
-            btn.classList.add('active');
-            document.getElementById('panel-' + tab).classList.add('active');
+            document.querySelectorAll('.insight-tab, .insight-panel').forEach(x => x.classList.remove('active'));
+            btn.classList.add('active'); document.getElementById('panel-' + tab).classList.add('active');
         }
+        function buildTrace() {
+            const c = document.getElementById('panel-trace');
+            c.innerHTML = chatLog.map(e => `
+                <div class="trace-event">
+                    <div class="trace-dot ${e.sender==='user'?'user-dot':''}" style="${e.sender==='ai'?'background:'+AGENT_META[e.agentId].bg+';color:'+AGENT_META[e.agentId].color:''}">
+                        <i class="${e.sender==='user'?'fas fa-user':AGENT_META[e.agentId].icon}"></i>
+                    </div>
+                    <div class="trace-body">
+                        <div class="trace-label" style="color:${e.sender==='user'?'#212D67':AGENT_META[e.agentId].color}">${e.sender==='user'?'Tu':AGENT_META[e.agentId].short}</div>
+                        <div class="trace-text">${e.text}</div>
+                        <div class="trace-time">${e.time}</div>
+                    </div>
+                </div>`).join('') || "Nessun messaggio.";
+        }
+        function buildSummary() { document.getElementById('panel-summary').innerHTML = "Analisi in corso..."; }
+        function buildRationale() { document.getElementById('panel-rationale').innerHTML = lastRationale ? `<div class="message ai">${lastRationale}</div>` : "Nessun dato."; }
 
-        // Thread initialization
+        /* ── SOLVER INTEGRATION ── */
+        function openSolver() { toggleDrawer(); document.getElementById('solver-frame').src = "solver.html"; document.getElementById('solver-overlay').classList.add('active'); }
+        function closeSolver() { document.getElementById('solver-overlay').classList.remove('active'); document.getElementById('solver-frame').src = ""; }
+        window.addEventListener('message', e => { if(e.data.type === 'SOLVER_DATA'){ closeSolver(); sendText(e.data.payload); }});
+
         function renderThreadList() {
             const list = document.getElementById('thread-list');
             list.innerHTML = threads.map(t => `<div class="thread-item ${t.id===currentThreadId?'active':''}" onclick="selectThread('${t.id}')"><div><div class="thread-name">${t.name}</div><div class="thread-date">${t.date}</div></div><i class="fas fa-chevron-right" style="color:#ccc"></i></div>`).join('');
         }
-        function createNewThread() {
-            const id = 'thread_' + Date.now();
-            threads.unshift({ id, name: 'Nuova Discussione', agent: primaryAgent, date: new Date().toLocaleDateString() });
-            currentThreadId = id; chatLog = []; document.getElementById('chat-container').innerHTML = ''; renderThreadList();
-        }
-        
+        function selectThread(id) { currentThreadId = id; chatLog = []; document.getElementById('chat-container').innerHTML = ''; renderThreadList(); goToScreen(1); }
+        function createNewThread() { const id = 't_'+Date.now(); threads.unshift({id, name:'Nuova Chat', date:new Date().toLocaleDateString()}); selectThread(id); }
+
         renderThreadList();
         updatePopupActiveState();
     </script>
