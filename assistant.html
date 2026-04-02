@@ -7,6 +7,26 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script>
+        // ── SICUREZZA LATO CLIENT: IL BUTTAFUORI ──
+        (function() {
+            const isTelegram = window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initData !== "";
+            if (!isTelegram) {
+                document.documentElement.innerHTML = `
+                    <body style="background:#000;color:#fff;display:flex;justify-content:center;align-items:center;height:100vh;text-align:center;font-family:'Inter',sans-serif;padding:30px;">
+                        <div>
+                            <h1 style="font-size:60px;margin-bottom:20px;">🚫</h1>
+                            <h2 style="font-size:24px;margin-bottom:10px;">Accesso Non Autorizzato</h2>
+                            <p style="opacity:0.7;line-height:1.5;">Questa applicazione è protetta e accessibile esclusivamente tramite il bot ufficiale SiteBoS su Telegram.</p>
+                        </div>
+                    </body>`;
+                window.stop();
+                throw new Error("Unauthorized");
+            }
+        })();
+    </script>
+
     <style>
         :root {
             --primary: #212D67;
@@ -105,7 +125,7 @@
             max-width: 80%; padding: 11px 14px;
             border-radius: 16px; font-size: 15px;
             position: relative; line-height: 1.5; word-break: break-word;
-            white-space: pre-wrap; /* Aggiunto per formattare i postmessage in chat */
+            white-space: pre-wrap;
         }
         .message.user {
             align-self: flex-end;
@@ -139,25 +159,30 @@
         }
         .mic-sphere.recording { animation: pulse 1.5s infinite; background: var(--danger); }
 
-        /* ── NUOVO: SELEZIONE AGENTI VOCALE ───────────────────── */
-        .voice-agents-container {
+        /* SELEZIONE AGENTI IN MODALITÀ VOCALE */
+        .voice-agents-selector {
             margin-top: 40px;
-            display: flex; gap: 12px; flex-wrap: wrap;
-            justify-content: center; max-width: 90%;
-            z-index: 10;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+            padding: 0 20px;
         }
-        .voice-agent-btn {
+        .v-agent-btn {
             background: rgba(255,255,255,0.1);
-            border: 1px solid rgba(255,255,255,0.3);
-            color: white; padding: 10px 16px;
-            border-radius: 20px; font-size: 13px; font-weight: 500;
-            cursor: pointer; transition: all 0.2s;
+            border: 1px solid rgba(255,255,255,0.2);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: 0.2s;
         }
-        .voice-agent-btn.active {
+        .v-agent-btn.active {
             background: var(--accent);
             border-color: var(--accent);
-            font-weight: 700;
-            box-shadow: 0 0 10px rgba(137,95,224,0.5);
+            box-shadow: 0 0 15px rgba(137,95,224,0.4);
         }
 
         /* ── FOOTER INPUT ─────────────────────────────────────── */
@@ -183,7 +208,7 @@
         }
         .icon-btn:hover { background: rgba(33,45,103,0.07); }
 
-        /* ── FAB HAMBURGER (in basso a sinistra) ──────────────── */
+        /* ── FAB HAMBURGER ── */
         #fab-menu {
             position: absolute;
             bottom: calc(env(safe-area-inset-bottom, 0px) + 72px);
@@ -202,7 +227,7 @@
         #fab-menu:hover { background: #1a2456; }
         #fab-menu.open { transform: rotate(90deg); background: var(--accent); }
 
-        /* ── POPUP AGENTI (sopra FAB) ─────────────────────────── */
+        /* ── POPUP AGENTI (sopra FAB) ── */
         #agent-popup {
             position: absolute;
             bottom: calc(env(safe-area-inset-bottom, 0px) + 126px);
@@ -239,27 +264,25 @@
             font-size: 14px; flex-shrink: 0;
         }
         .popup-item .popup-label { font-weight: 500; color: #1a1a2e; }
-        .popup-item .popup-sub   { font-size: 11px; color: #888; margin-top: 1px; }
         .popup-item.active-agent .popup-label::after {
             content: ' ✓';
             color: var(--accent);
             font-weight: 700;
         }
 
-        /* ── OVERLAY SFONDO FAB ───────────────────────────────── */
         #fab-overlay {
             display: none; position: fixed; inset: 0;
             z-index: 199; background: transparent;
         }
         #fab-overlay.open { display: block; }
 
-        /* ── MENU AGENTI DRAWER (storico) ─────────────────────── */
+        /* ── MENU AGENTI DRAWER ── */
         #agent-drawer {
             position: fixed; top: 0; left: 0; width: 260px; height: 100%;
             background: #fff;
             transform: translateX(-100%); transition: 0.3s;
             z-index: 1000; box-shadow: 5px 0 15px rgba(0,0,0,0.1);
-            display: flex; flex-direction: column; /* Aggiunto per pushare il solver in basso */
+            display: flex; flex-direction: column;
         }
         body.drawer-open #agent-drawer { transform: translateX(0); }
         #drawer-overlay {
@@ -273,9 +296,8 @@
             cursor: pointer; font-size: 14px;
             transition: background 0.15s;
         }
-        .drawer-item:hover { background: var(--bg); }
 
-        /* ── OVERLAY SOLVER ───────────────────────────────────── */
+        /* ── OVERLAY SOLVER ── */
         #solver-overlay {
             display: none; position: fixed; inset: 0;
             background: var(--bg); z-index: 2000;
@@ -294,8 +316,7 @@
             cursor: pointer; line-height: 1; padding: 4px;
         }
 
-        /* ── SWIPE-UP INSIGHT DRAWER ──────────────────────────── */
-        /* Handle visibile per indicare che si può fare swipe up */
+        /* ── SWIPE-UP INSIGHT DRAWER ── */
         #swipe-handle {
             position: fixed;
             bottom: 0; left: 0; right: 0;
@@ -309,11 +330,7 @@
             width: 40px; height: 4px;
             background: rgba(33,45,103,0.25);
             border-radius: 2px;
-            transition: background 0.2s;
         }
-        #swipe-handle:hover #swipe-handle-bar { background: var(--accent); }
-
-        /* Il pannello insight che sale dal basso */
         #insight-drawer {
             position: fixed;
             bottom: 0; left: 0; right: 0;
@@ -328,244 +345,95 @@
             flex-direction: column;
             overflow: hidden;
         }
-        #insight-drawer.open {
-            transform: translateY(0);
-        }
-        #insight-backdrop {
-            display: none;
-            position: fixed; inset: 0;
-            background: rgba(0,0,0,0.35);
-            z-index: 499;
-        }
+        #insight-drawer.open { transform: translateY(0); }
+        #insight-backdrop { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.35); z-index: 499; }
         #insight-backdrop.open { display: block; }
 
-        /* Header del drawer insight */
-        .insight-header {
-            padding: 12px 20px 10px;
-            display: flex; justify-content: space-between; align-items: center;
-            border-bottom: 1px solid #f0f0f0;
-            flex-shrink: 0;
-        }
-        .insight-handle-top {
-            width: 40px; height: 4px;
-            background: #ddd; border-radius: 2px;
-            margin: 10px auto 0;
-        }
-        .insight-title {
-            font-size: 15px; font-weight: 700; color: var(--primary);
-        }
-        .insight-close-btn {
-            background: none; border: none; font-size: 18px;
-            color: #999; cursor: pointer; padding: 4px;
-            border-radius: 50%;
-            display: flex; align-items:center; justify-content:center;
-            width: 32px; height: 32px;
-            transition: background 0.15s;
-        }
-        .insight-close-btn:hover { background: var(--bg); color: var(--primary); }
-
-        /* Tab bar interna */
-        .insight-tabs {
-            display: flex; border-bottom: 1px solid #f0f0f0;
-            flex-shrink: 0;
-        }
-        .insight-tab {
-            flex: 1; padding: 10px 6px;
-            text-align: center;
-            font-size: 12px; font-weight: 500; color: #999;
-            cursor: pointer; border: none; background: none;
-            border-bottom: 2px solid transparent;
-            transition: color 0.2s, border-color 0.2s;
-        }
-        .insight-tab.active {
-            color: var(--primary);
-            border-bottom-color: var(--accent);
-        }
-        .insight-tab i { display: block; font-size: 16px; margin-bottom: 3px; }
-
-        /* Contenuto tab */
-        .insight-content {
-            flex: 1; overflow-y: auto;
-            padding: 18px 20px;
-        }
+        .insight-header { padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f0f0f0; }
+        .insight-tabs { display: flex; border-bottom: 1px solid #f0f0f0; }
+        .insight-tab { flex: 1; padding: 12px; text-align: center; font-size: 12px; font-weight: 600; color: #999; cursor: pointer; border-bottom: 2px solid transparent; }
+        .insight-tab.active { color: var(--primary); border-bottom-color: var(--accent); }
+        .insight-content { flex: 1; overflow-y: auto; padding: 20px; }
         .insight-panel { display: none; }
         .insight-panel.active { display: block; }
 
-        /* ── Stile contenuto insight ── */
-        .insight-section-title {
-            font-size: 11px; font-weight: 700; letter-spacing: 0.08em;
-            text-transform: uppercase; color: var(--accent);
-            margin-bottom: 10px;
-        }
-        .insight-card {
-            background: var(--bg); border-radius: 12px;
-            padding: 14px 16px; margin-bottom: 14px;
-            font-size: 14px; line-height: 1.6; color: #333;
-        }
-        .insight-card p { margin-bottom: 0; }
-
-        /* Timeline tracciabilità */
-        .trace-timeline { padding-left: 10px; }
-        .trace-event {
-            display: flex; gap: 12px; margin-bottom: 16px;
-            position: relative;
-        }
-        .trace-event::before {
-            content: '';
-            position: absolute;
-            left: 15px; top: 22px;
-            width: 2px; height: calc(100% + 2px);
-            background: #eee;
-        }
-        .trace-event:last-child::before { display: none; }
-        .trace-dot {
-            width: 30px; height: 30px; border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 13px; flex-shrink: 0;
-            background: #f0ebff; color: var(--accent);
-        }
+        /* Timeline styles */
+        .trace-event { display: flex; gap: 12px; margin-bottom: 15px; position: relative; }
+        .trace-dot { width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; flex-shrink: 0; }
         .trace-dot.user-dot { background: #e3f2fd; color: var(--primary); }
-        .trace-dot.system-dot { background: #eafaf1; color: #27ae60; }
-        .trace-body { flex: 1; }
-        .trace-label {
-            font-size: 11px; font-weight: 600; color: #aaa;
-            text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 2px;
-        }
-        .trace-text {
-            font-size: 13px; color: #444; line-height: 1.5;
-        }
-        .trace-time {
-            font-size: 10px; color: #bbb; margin-top: 3px;
-        }
-
-        /* Badge agente nel riassunto */
-        .summary-agent-row {
-            display: flex; align-items: flex-start; gap: 10px;
-            margin-bottom: 12px; padding-bottom: 12px;
-            border-bottom: 1px solid #f0f0f0;
-        }
-        .summary-agent-row:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
-        .summary-agent-icon {
-            width: 28px; height: 28px; border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 12px; flex-shrink: 0; margin-top: 1px;
-        }
-        .summary-agent-body { flex: 1; }
-        .summary-agent-name { font-size: 11px; font-weight: 700; margin-bottom: 4px; }
-        .summary-agent-text { font-size: 13px; color: #555; line-height: 1.5; }
-
-        /* Razionale */
-        .rationale-steps { counter-reset: step; }
-        .rationale-step {
-            display: flex; gap: 12px; margin-bottom: 14px; align-items: flex-start;
-        }
-        .rationale-step-num {
-            width: 24px; height: 24px; border-radius: 50%;
-            background: var(--primary); color: white;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 11px; font-weight: 700; flex-shrink: 0;
-        }
-        .rationale-step-text { font-size: 13px; line-height: 1.6; color: #444; }
-
-        /* Empty state insight */
-        .insight-empty {
-            text-align: center; padding: 40px 20px;
-            color: #bbb; font-size: 14px;
-        }
-        .insight-empty i { font-size: 36px; display: block; margin-bottom: 10px; opacity: 0.4; }
+        .trace-label { font-size: 11px; font-weight: 700; text-transform: uppercase; margin-bottom: 2px; }
+        .trace-text { font-size: 13px; color: #444; }
+        .trace-time { font-size: 10px; color: #aaa; margin-top: 2px; }
 
         @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
-        @keyframes pulse   { 0%   { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
-        @keyframes popIn   { from { transform: scale(0.7); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-
+        @keyframes pulse   { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
+        
         .hidden { display: none !important; }
     </style>
 </head>
 <body>
 
-    <!-- OVERLAY DRAWER -->
     <div id="drawer-overlay" onclick="toggleDrawer()"></div>
 
-    <!-- MENU DRAWER (storico) -->
+    <!-- MENU DRAWER -->
     <nav id="agent-drawer">
-        <div style="padding:20px; font-weight:700; background:var(--primary); color:#fff; font-size:15px;">Direzione Aziendale</div>
-        <div class="drawer-item" onclick="switchAgent('pm')"><i class="fas fa-tasks" style="color:var(--primary)"></i> Gestione Lavori</div>
-        <div class="drawer-item" onclick="switchAgent('mkt')"><i class="fas fa-bullhorn" style="color:#e67e22"></i> Vendite &amp; Promo</div>
-        <div class="drawer-item" onclick="switchAgent('hr')"><i class="fas fa-shield-alt" style="color:#27ae60"></i> Team &amp; Sicurezza</div>
-        <div class="drawer-item" onclick="switchAgent('acc')"><i class="fas fa-wallet" style="color:#8e44ad"></i> Cassa &amp; Conti</div>
+        <div style="padding:20px; font-weight:700; background:var(--primary); color:#fff;">Direzione Aziendale</div>
+        <div class="drawer-item" onclick="switchAgent('pm')"><i class="fas fa-tasks"></i> Gestione Lavori</div>
+        <div class="drawer-item" onclick="switchAgent('mkt')"><i class="fas fa-bullhorn"></i> Vendite &amp; Promo</div>
+        <div class="drawer-item" onclick="switchAgent('hr')"><i class="fas fa-shield-alt"></i> Team &amp; Sicurezza</div>
+        <div class="drawer-item" onclick="switchAgent('acc')"><i class="fas fa-wallet"></i> Cassa &amp; Conti</div>
         
-        <!-- NUOVO: Pulsante Gestione Percorsi nel menu hamburger -->
-        <div class="drawer-item" style="margin-top: auto; border-top: 1px solid #eee; color: var(--accent); font-weight: 600;" onclick="openSolver()">
+        <!-- Tasto Gestione Percorsi in fondo -->
+        <div class="drawer-item" style="margin-top:auto; border-top:1px solid #eee; color:var(--accent); font-weight:700;" onclick="openSolver()">
             <i class="fas fa-route"></i> Gestione Percorsi
         </div>
     </nav>
 
-    <!-- OVERLAY SOLVER (mantenuto per uso dal drawer) -->
+    <!-- OVERLAY SOLVER -->
     <div id="solver-overlay">
         <div class="solver-close-bar">
             <button onclick="closeSolver()"><i class="fas fa-arrow-left"></i></button>
-            <span>🚗 Pianifica Percorso</span>
+            <span>🚗 Pianifica Itinerario</span>
         </div>
         <iframe id="solver-frame" src="" title="Pianifica Percorso"></iframe>
     </div>
 
-    <!-- ── INSIGHT DRAWER (swipe dal basso) ─────────────── -->
+    <!-- INSIGHT DRAWER -->
     <div id="insight-backdrop" onclick="closeInsightDrawer()"></div>
     <div id="insight-drawer">
-        <div class="insight-handle-top"></div>
+        <div style="width:40px; height:4px; background:#ddd; border-radius:2px; margin:10px auto;"></div>
         <div class="insight-header">
-            <span class="insight-title">📊 Insight Conversazione</span>
-            <button class="insight-close-btn" onclick="closeInsightDrawer()"><i class="fas fa-times"></i></button>
+            <span style="font-weight:700; color:var(--primary);">📊 Insight Conversazione</span>
+            <button onclick="closeInsightDrawer()" style="background:none; border:none; color:#aaa; font-size:18px;"><i class="fas fa-times"></i></button>
         </div>
         <div class="insight-tabs">
-            <button class="insight-tab active" onclick="switchInsightTab('trace', this)">
-                <i class="fas fa-route"></i>Tracciabilità
-            </button>
-            <button class="insight-tab" onclick="switchInsightTab('summary', this)">
-                <i class="fas fa-list-ul"></i>Riassunto
-            </button>
-            <button class="insight-tab" onclick="switchInsightTab('rationale', this)">
-                <i class="fas fa-brain"></i>Razionale
-            </button>
+            <div class="insight-tab active" onclick="switchInsightTab('trace', this)">Tracciabilità</div>
+            <div class="insight-tab" onclick="switchInsightTab('summary', this)">Riassunto</div>
+            <div class="insight-tab" onclick="switchInsightTab('rationale', this)">Razionale</div>
         </div>
         <div class="insight-content">
-            <!-- TAB 1: Tracciabilità -->
-            <div class="insight-panel active" id="panel-trace">
-                <div class="insight-section-title">Timeline della chat</div>
-                <div id="trace-timeline-content" class="trace-timeline"></div>
-            </div>
-            <!-- TAB 2: Riassunto -->
-            <div class="insight-panel" id="panel-summary">
-                <div class="insight-section-title">Riassunto per agente</div>
-                <div id="summary-content"></div>
-            </div>
-            <!-- TAB 3: Razionale -->
-            <div class="insight-panel" id="panel-rationale">
-                <div class="insight-section-title">Razionale ultima risposta</div>
-                <div id="rationale-content"></div>
-            </div>
+            <div class="insight-panel active" id="panel-trace"></div>
+            <div class="insight-panel" id="panel-summary"></div>
+            <div class="insight-panel" id="panel-rationale"></div>
         </div>
     </div>
 
-    <!-- Handle swipe-up (visibile sul bordo inferiore dello schermo chat) -->
-    <div id="swipe-handle" onclick="openInsightDrawer()" title="Apri insight">
-        <div id="swipe-handle-bar"></div>
-    </div>
+    <div id="swipe-handle" onclick="openInsightDrawer()"><div id="swipe-handle-bar"></div></div>
 
     <div id="viewport">
 
-        <!-- ── SCHERMO 1: STORICO ───────────────────────────── -->
+        <!-- SCHERMO 1: STORICO -->
         <section class="screen" id="screen-history">
             <header>
                 <button class="header-btn" onclick="toggleDrawer()"><i class="fas fa-bars"></i></button>
-                <div style="font-weight:600; color:var(--primary); font-size:15px;">Archivio Chat</div>
+                <div style="font-weight:600; color:var(--primary);">Archivio Chat</div>
                 <div style="width:36px"></div>
             </header>
-            <div id="thread-list"></div>
-            <button onclick="createNewThread()" style="margin:15px; padding:14px; border-radius:10px; border:none; background:var(--primary); color:white; font-family:'Inter',sans-serif; font-size:15px; cursor:pointer; font-weight:500;">+ Nuova Discussione</button>
+            <div id="thread-list" style="padding:15px; flex:1; overflow-y:auto;"></div>
+            <button onclick="createNewThread()" style="margin:15px; padding:14px; border:none; background:var(--primary); color:white; border-radius:10px; font-weight:600; cursor:pointer;">+ Nuova Discussione</button>
         </section>
 
-        <!-- ── SCHERMO 2: CHAT ──────────────────────────────── -->
+        <!-- SCHERMO 2: CHAT -->
         <section class="screen" id="screen-main">
             <header>
                 <button class="header-btn" onclick="goToScreen(0)"><i class="fas fa-history"></i></button>
@@ -576,618 +444,272 @@
                 <button class="header-btn" onclick="goToScreen(2)"><i class="fas fa-microphone"></i></button>
             </header>
 
-            <!-- BARRA COLLABORATORI ATTIVI -->
             <div id="active-agents-bar"></div>
 
             <main id="chat-container"></main>
 
             <footer>
-                <!-- FAB HAMBURGER -->
-                <button id="fab-menu" onclick="toggleFabMenu()" title="Agenti & Strumenti">
-                    <i class="fas fa-bars" id="fab-icon"></i>
-                </button>
-
-                <!-- POPUP AGENTI sopra FAB (senza Pianifica Percorso) -->
+                <button id="fab-menu" onclick="toggleFabMenu()"><i class="fas fa-bars"></i></button>
                 <div id="fab-overlay" onclick="closeFabMenu()"></div>
                 <div id="agent-popup">
                     <div class="popup-item" id="popup-pm" onclick="addAgentToChat('pm')">
                         <div class="popup-icon" style="background:#e8edf8; color:var(--primary);"><i class="fas fa-tasks"></i></div>
-                        <div>
-                            <div class="popup-label">Gestione Lavori</div>
-                            <div class="popup-sub">Project Manager</div>
-                        </div>
+                        <div class="popup-label">Gestione Lavori</div>
                     </div>
                     <div class="popup-item" id="popup-mkt" onclick="addAgentToChat('mkt')">
                         <div class="popup-icon" style="background:#fef3e8; color:#e67e22;"><i class="fas fa-bullhorn"></i></div>
-                        <div>
-                            <div class="popup-label">Vendite &amp; Promo</div>
-                            <div class="popup-sub">Marketing Agent</div>
-                        </div>
+                        <div class="popup-label">Vendite &amp; Promo</div>
                     </div>
                     <div class="popup-item" id="popup-hr" onclick="addAgentToChat('hr')">
                         <div class="popup-icon" style="background:#eafaf1; color:#27ae60;"><i class="fas fa-shield-alt"></i></div>
-                        <div>
-                            <div class="popup-label">Team &amp; Sicurezza</div>
-                            <div class="popup-sub">HR Agent</div>
-                        </div>
+                        <div class="popup-label">Team &amp; Sicurezza</div>
                     </div>
                     <div class="popup-item" id="popup-acc" onclick="addAgentToChat('acc')">
                         <div class="popup-icon" style="background:#f5eefb; color:#8e44ad;"><i class="fas fa-wallet"></i></div>
-                        <div>
-                            <div class="popup-label">Cassa &amp; Conti</div>
-                            <div class="popup-sub">Accounting Agent</div>
-                        </div>
+                        <div class="popup-label">Cassa &amp; Conti</div>
                     </div>
                 </div>
 
-                <input type="text" id="chat-input" placeholder="Chiedi all'AI..." onkeydown="handleInputKey(event)">
-                <button class="icon-btn" onclick="sendText()" title="Invia"><i class="fas fa-paper-plane"></i></button>
+                <input type="text" id="chat-input" placeholder="Chiedi all'AI..." onkeydown="if(event.key==='Enter') sendText()">
+                <button class="icon-btn" onclick="sendText()"><i class="fas fa-paper-plane"></i></button>
             </footer>
         </section>
 
-        <!-- ── SCHERMO 3: VOCALE ────────────────────────────── -->
+        <!-- SCHERMO 3: VOCALE -->
         <section class="screen" id="screen-voice">
             <header style="background:transparent; box-shadow:none; color:white;">
                 <button class="header-btn" style="color:white" onclick="goToScreen(1)"><i class="fas fa-chevron-left"></i></button>
-                <span style="color:white; font-weight:600;">Modalità Vocale</span>
+                <span style="font-weight:600;">Modalità Vocale</span>
                 <div style="width:36px"></div>
             </header>
             <div style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center;">
                 <div id="voice-status" style="margin-bottom:30px; font-size:18px; font-weight:300;">Tieni premuto per parlare</div>
                 <div id="mic-btn" class="mic-sphere"><i class="fas fa-microphone"></i></div>
                 
-                <!-- NUOVO: Selezione Agenti nella Schermata Vocale -->
+                <!-- SELETTORE AGENTI VOCALI -->
                 <div class="voice-agents-container">
-                    <button class="voice-agent-btn" id="v-btn-pm" onclick="addAgentToChat('pm')">🛠️ PM</button>
-                    <button class="voice-agent-btn" id="v-btn-mkt" onclick="addAgentToChat('mkt')">🚀 MKT</button>
-                    <button class="voice-agent-btn" id="v-btn-hr" onclick="addAgentToChat('hr')">🛡️ HR</button>
-                    <button class="voice-agent-btn" id="v-btn-acc" onclick="addAgentToChat('acc')">💰 CONTI</button>
+                    <button class="v-agent-btn" id="v-btn-pm" onclick="addAgentToChat('pm')">🛠️ PM</button>
+                    <button class="v-agent-btn" id="v-btn-mkt" onclick="addAgentToChat('mkt')">🚀 MKT</button>
+                    <button class="v-agent-btn" id="v-btn-hr" onclick="addAgentToChat('hr')">🛡️ HR</button>
+                    <button class="v-agent-btn" id="v-btn-acc" onclick="addAgentToChat('acc')">💰 CONTI</button>
                 </div>
-
-                <div id="audio-feedback" style="margin-top:50px; width:80%; text-align:center; font-style:italic; opacity:0.7;"></div>
             </div>
         </section>
     </div>
 
     <script>
         const tg = window.Telegram.WebApp;
-        tg.expand();
+        tg.expand(); tg.ready();
 
-        const urlParams  = new URLSearchParams(window.location.search);
-        const lang       = urlParams.get('lang')   || 'it';
-        const chatId     = urlParams.get('chatId') || null;
+        const WH_CHAT = "https://prod.workflow.trinai.it/webhook/81ab5292-43c3-4f93-afaf-7411b95fc010";
 
-        const WH_CHAT   = "https://prod.workflow.trinai.it/webhook/81ab5292-43c3-4f93-afaf-7411b95fc010";
+        // ── RECUPERO DATI SICURI DA SDK ──
+        const chatId = tg.initDataUnsafe.start_param || tg.initDataUnsafe.user?.id || "TEST_USER";
+        const lang = tg.initDataUnsafe.user?.language_code || "it";
 
-        // ── STATO ─────────────────────────────────────────────────────
-        let primaryAgent    = 'pm';
-        let activeAgents    = ['pm'];
+        let primaryAgent = 'pm';
+        let activeAgents = ['pm'];
         let currentThreadId = 'thread_001';
-        let currentScreen   = 1;
-        let threads = [
-            { id: 'thread_001', name: 'Discussione Attiva', agent: 'pm', date: new Date().toLocaleDateString('it-IT') }
-        ];
-
-        // Struttura dati per insight
-        let chatLog = [];          // ogni entry: { role, agentId, text, time }
-        let lastRationale = null;  // razionale dell'ultima risposta (da API o generato)
+        let currentScreen = 1;
+        let chatLog = [];
+        let threads = [{ id: 'thread_001', name: 'Discussione Attiva', agent: 'pm', date: new Date().toLocaleDateString() }];
 
         const AGENT_META = {
-            pm:  { label: '🛠️ Gestione Lavori', short: 'PM',        color: '#212D67', bg: '#e8edf8' },
-            mkt: { label: '🚀 Vendite & Promo', short: 'MKT',       color: '#e67e22', bg: '#fef3e8' },
-            hr:  { label: '🛡️ Team & Sicurezza', short: 'HR',       color: '#27ae60', bg: '#eafaf1' },
-            acc: { label: '💰 Cassa & Conti',    short: 'CONTI',    color: '#8e44ad', bg: '#f5eefb' }
+            pm:  { label: '🛠️ Gestione Lavori', short: 'PM', color: '#212D67', bg: '#e8edf8', icon: 'fas fa-tasks' },
+            mkt: { label: '🚀 Vendite & Promo', short: 'MKT', color: '#e67e22', bg: '#fef3e8', icon: 'fas fa-bullhorn' },
+            hr:  { label: '🛡️ Team & Sicurezza', short: 'HR', color: '#27ae60', bg: '#eafaf1', icon: 'fas fa-shield-alt' },
+            acc: { label: '💰 Cassa & Conti', short: 'CONTI', color: '#8e44ad', bg: '#f5eefb', icon: 'fas fa-wallet' }
         };
 
-        // ── SWIPE ORIZZONTALE (schermata) ─────────────────────────────
+        /* ── SWIPE LOGIC ── */
         let startX, startY, startTime;
-        document.addEventListener('touchstart', e => {
-            startX = e.touches[0].clientX;
-            startY = e.touches[0].clientY;
-            startTime = Date.now();
-        }, { passive: true });
-
+        document.addEventListener('touchstart', e => { startX = e.touches[0].clientX; startY = e.touches[0].clientY; startTime = Date.now(); }, { passive: true });
         document.addEventListener('touchend', e => {
-            if (document.body.classList.contains('drawer-open')) return;
-            if (document.getElementById('solver-overlay').classList.contains('active')) return;
-            if (document.getElementById('agent-popup').classList.contains('open')) return;
-            if (document.getElementById('insight-drawer').classList.contains('open')) return;
-
-            const endX   = e.changedTouches[0].clientX;
-            const endY   = e.changedTouches[0].clientY;
-            const diffX  = startX - endX;
-            const diffY  = startY - endY;
-            const elapsed = Date.now() - startTime;
-
-            // Swipe dal basso verso l'alto: diffY > 60, diffY > |diffX|, veloce
-            if (diffY > 60 && Math.abs(diffY) > Math.abs(diffX) && elapsed < 500 && currentScreen === 1) {
-                openInsightDrawer();
-                return;
-            }
-
-            // Swipe orizzontale
+            if (document.body.classList.contains('drawer-open') || document.getElementById('solver-overlay').classList.contains('active') || document.getElementById('insight-drawer').classList.contains('open')) return;
+            const endX = e.changedTouches[0].clientX, endY = e.changedTouches[0].clientY;
+            const diffX = startX - endX, diffY = startY - endY, elapsed = Date.now() - startTime;
+            if (diffY > 60 && Math.abs(diffY) > Math.abs(diffX) && elapsed < 500 && currentScreen === 1) { openInsightDrawer(); return; }
             if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 80) {
                 if (diffX > 0 && currentScreen < 2) goToScreen(currentScreen + 1);
                 else if (diffX < 0 && currentScreen > 0) goToScreen(currentScreen - 1);
             }
         }, { passive: true });
 
-        function goToScreen(index) {
-            currentScreen = index;
-            document.getElementById('viewport').style.transform = `translateX(-${index * 100}vw)`;
-            // Mostra/nascondi handle swipe solo sullo schermo chat
-            document.getElementById('swipe-handle').style.display = index === 1 ? 'flex' : 'none';
+        function goToScreen(i) { currentScreen = i; document.getElementById('viewport').style.transform = `translateX(-${i * 100}vw)`; document.getElementById('swipe-handle').style.display = (i===1)?'flex':'none'; }
+
+        /* ── CHAT API ── */
+        async function callApi(url, payload, showReply = true, targetAgentId = null) {
+            const fullPayload = {
+                ...payload,
+                _auth: tg.initData, // Passiamo initData per sicurezza server
+                chat_id: chatId,
+                user_id: tg.initDataUnsafe.user?.id,
+                agent_id: targetAgentId || primaryAgent,
+                active_agents: activeAgents,
+                thread_id: currentThreadId,
+                lang: lang
+            };
+            let loadingEl = null;
+            if (showReply) loadingEl = addMessage('ai', '⏳ Elaborazione...', true, targetAgentId || primaryAgent);
+            try {
+                const res = await fetch(url, { 
+                    method: 'POST', 
+                    headers: { 'Content-Type': 'application/json' }, 
+                    body: JSON.stringify(fullPayload) 
+                });
+                const data = await res.json();
+                if (loadingEl) loadingEl.remove();
+                if (data.reply && showReply) addMessage('ai', data.reply, false, data.agent_id || targetAgentId || primaryAgent);
+            } catch(e) { if (loadingEl) loadingEl.remove(); addMessage('ai', '⚠️ Errore di connessione col server TrinAI.'); }
         }
 
-        // ── INSIGHT DRAWER ────────────────────────────────────────────
-        function openInsightDrawer() {
-            buildInsightPanels();
-            document.getElementById('insight-drawer').classList.add('open');
-            document.getElementById('insight-backdrop').classList.add('open');
-        }
-        function closeInsightDrawer() {
-            document.getElementById('insight-drawer').classList.remove('open');
-            document.getElementById('insight-backdrop').classList.remove('open');
-        }
-        function switchInsightTab(tabName, btn) {
-            document.querySelectorAll('.insight-tab').forEach(t => t.classList.remove('active'));
-            document.querySelectorAll('.insight-panel').forEach(p => p.classList.remove('active'));
-            btn.classList.add('active');
-            document.getElementById('panel-' + tabName).classList.add('active');
+        function sendText(customText = null) {
+            const input = document.getElementById('chat-input');
+            const text = customText || input.value.trim();
+            if (!text) return;
+            addMessage('user', text);
+            if (!customText) input.value = '';
+            activeAgents.forEach(id => callApi(WH_CHAT, { action: 'npl_chat', message: text }, true, id));
         }
 
-        function buildInsightPanels() {
-            buildTrace();
-            buildSummary();
-            buildRationale();
-        }
-
-        // ── TAB 1: TRACCIABILITÀ ──────────────────────────────────────
-        function buildTrace() {
-            const container = document.getElementById('trace-timeline-content');
-            if (!chatLog.length) {
-                container.innerHTML = `<div class="insight-empty"><i class="fas fa-comments"></i>Nessun messaggio ancora.<br>Inizia una conversazione.</div>`;
-                return;
+        function addMessage(sender, text, isLoading = false, agentId = null) {
+            if (!isLoading) chatLog.push({ sender, text, agentId: agentId || primaryAgent, time: new Date().toLocaleTimeString() });
+            const div = document.createElement('div');
+            div.className = `message ${sender}${isLoading ? ' loading' : ''}`;
+            if (sender === 'ai' && activeAgents.length > 1) {
+                const meta = AGENT_META[agentId] || AGENT_META[primaryAgent];
+                div.innerHTML = `<span class="msg-agent-badge" style="color:${meta.color}">${meta.label}</span>`;
             }
-            container.innerHTML = chatLog.map(entry => {
-                const isUser = entry.role === 'user';
-                const meta   = isUser ? null : AGENT_META[entry.agentId];
-                const dotClass = isUser ? 'user-dot' : '';
-                const icon = isUser ? 'fas fa-user' : (meta ? agentIcon(entry.agentId) : 'fas fa-robot');
-                const label = isUser ? 'Tu' : (meta ? meta.short : entry.agentId);
-                const color = isUser ? '#212D67' : (meta ? meta.color : '#895FE0');
-                const shortText = entry.text.length > 90 ? entry.text.slice(0, 90) + '…' : entry.text;
-                return `
-                    <div class="trace-event">
-                        <div class="trace-dot ${dotClass}" style="${isUser ? '' : 'background:' + (meta ? meta.bg : '#f0ebff') + ';color:' + color + ';'}">
-                            <i class="${icon}"></i>
-                        </div>
-                        <div class="trace-body">
-                            <div class="trace-label" style="color:${color}">${label}</div>
-                            <div class="trace-text">${shortText}</div>
-                            <div class="trace-time">${entry.time}</div>
-                        </div>
-                    </div>`;
-            }).join('');
+            const txtSpan = document.createElement('span'); txtSpan.textContent = text;
+            div.appendChild(txtSpan);
+            const container = document.getElementById('chat-container');
+            container.appendChild(div); container.scrollTop = container.scrollHeight;
+            return div;
         }
 
-        // ── TAB 2: RIASSUNTO ──────────────────────────────────────────
-        function buildSummary() {
-            const container = document.getElementById('summary-content');
-            // Raggruppa messaggi AI per agente
-            const byAgent = {};
-            chatLog.forEach(entry => {
-                if (entry.role === 'ai') {
-                    if (!byAgent[entry.agentId]) byAgent[entry.agentId] = [];
-                    byAgent[entry.agentId].push(entry.text);
-                }
-            });
-            const agentIds = Object.keys(byAgent);
-            if (!agentIds.length) {
-                container.innerHTML = `<div class="insight-empty"><i class="fas fa-list-ul"></i>Nessuna risposta ancora da riassumere.</div>`;
-                return;
-            }
-            container.innerHTML = agentIds.map(id => {
-                const meta = AGENT_META[id] || { label: id, color: '#895FE0', bg: '#f0ebff' };
-                const msgs = byAgent[id];
-                const lastMsg = msgs[msgs.length - 1];
-                const count   = msgs.length;
-                const preview = lastMsg.length > 120 ? lastMsg.slice(0, 120) + '…' : lastMsg;
-                return `
-                    <div class="summary-agent-row">
-                        <div class="summary-agent-icon" style="background:${meta.bg};color:${meta.color};">
-                            <i class="${agentIcon(id)}"></i>
-                        </div>
-                        <div class="summary-agent-body">
-                            <div class="summary-agent-name" style="color:${meta.color}">${meta.label} <span style="font-weight:400;color:#aaa;">(${count} risposta${count > 1 ? 'e' : ''})</span></div>
-                            <div class="summary-agent-text">${preview}</div>
-                        </div>
-                    </div>`;
-            }).join('');
-        }
-
-        // ── TAB 3: RAZIONALE ─────────────────────────────────────────
-        function buildRationale() {
-            const container = document.getElementById('rationale-content');
-            // Cerca ultima risposta AI
-            const lastAI = [...chatLog].reverse().find(e => e.role === 'ai');
-            if (!lastAI) {
-                container.innerHTML = `<div class="insight-empty"><i class="fas fa-brain"></i>Nessuna risposta AI ancora generata.</div>`;
-                return;
-            }
-            // Se il server ha mandato un razionale esplicito, usalo
-            if (lastRationale && lastRationale.steps && lastRationale.steps.length) {
-                const meta = AGENT_META[lastAI.agentId] || { label: lastAI.agentId, color: '#895FE0' };
-                container.innerHTML = `
-                    <div class="insight-card">
-                        <p style="font-size:13px;color:#777;margin-bottom:8px;">Agente: <strong style="color:${meta.color}">${meta.label}</strong> · ${lastAI.time}</p>
-                        <p style="margin-bottom:12px;font-size:13px;color:#555;">${lastRationale.conclusion || ''}</p>
-                    </div>
-                    <div class="rationale-steps">
-                        ${lastRationale.steps.map((step, i) => `
-                            <div class="rationale-step">
-                                <div class="rationale-step-num">${i+1}</div>
-                                <div class="rationale-step-text">${step}</div>
-                            </div>`).join('')}
-                    </div>`;
-            } else {
-                // Fallback: genera razionale sintetico dal testo
-                const meta = AGENT_META[lastAI.agentId] || { label: lastAI.agentId, color: '#895FE0' };
-                const text = lastAI.text;
-                const steps = generateLocalRationale(text, lastAI.agentId);
-                container.innerHTML = `
-                    <div class="insight-card">
-                        <p style="font-size:13px;color:#777;margin-bottom:6px;">Agente: <strong style="color:${meta.color}">${meta.label}</strong> · ${lastAI.time}</p>
-                        <p style="font-size:12px;color:#aaa;margin-bottom:0;">💡 Razionale ricostruito localmente</p>
-                    </div>
-                    <div class="rationale-steps">
-                        ${steps.map((step, i) => `
-                            <div class="rationale-step">
-                                <div class="rationale-step-num">${i+1}</div>
-                                <div class="rationale-step-text">${step}</div>
-                            </div>`).join('')}
-                    </div>`;
-            }
-        }
-
-        // Genera un razionale locale sintetico basato sul ruolo agente
-        function generateLocalRationale(text, agentId) {
-            const meta = AGENT_META[agentId];
-            const label = meta ? meta.label.replace(/^[^\s]+\s/, '') : 'Assistente';
-            const preview = text.slice(0, 80) + (text.length > 80 ? '…' : '');
-            return [
-                `Richiesta ricevuta dall'utente nella conversazione attiva (thread: ${currentThreadId}).`,
-                `Il modulo <strong>${label}</strong> ha analizzato il contesto della domanda in base al suo dominio di competenza.`,
-                `È stata selezionata una risposta pertinente: "<em>${preview}</em>"`,
-                `La risposta è stata inviata all'utente alle ${text && new Date().toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' })}.`
-            ];
-        }
-
-        function agentIcon(id) {
-            const icons = { pm: 'fas fa-tasks', mkt: 'fas fa-bullhorn', hr: 'fas fa-shield-alt', acc: 'fas fa-wallet' };
-            return icons[id] || 'fas fa-robot';
-        }
-
-        // ── DRAWER ────────────────────────────────────────────────────
+        /* ── AGENTI & UI LOGIC ── */
         function toggleDrawer() { document.body.classList.toggle('drawer-open'); }
-
-        // ── FAB MENU ──────────────────────────────────────────────────
-        function toggleFabMenu() {
-            const popup   = document.getElementById('agent-popup');
-            const fab     = document.getElementById('fab-menu');
-            const overlay = document.getElementById('fab-overlay');
-            const isOpen  = popup.classList.contains('open');
-            if (isOpen) {
-                popup.classList.remove('open');
-                fab.classList.remove('open');
-                overlay.classList.remove('open');
-            } else {
-                updatePopupActiveState();
-                popup.classList.add('open');
-                fab.classList.add('open');
-                overlay.classList.add('open');
-            }
-        }
-        function closeFabMenu() {
-            document.getElementById('agent-popup').classList.remove('open');
-            document.getElementById('fab-menu').classList.remove('open');
-            document.getElementById('fab-overlay').classList.remove('open');
-        }
+        function toggleFabMenu() { document.getElementById('agent-popup').classList.toggle('open'); document.getElementById('fab-menu').classList.toggle('open'); document.getElementById('fab-overlay').classList.toggle('open'); updatePopupActiveState(); }
+        function closeFabMenu() { document.getElementById('agent-popup').classList.remove('open'); document.getElementById('fab-menu').classList.remove('open'); document.getElementById('fab-overlay').classList.remove('open'); }
+        
         function updatePopupActiveState() {
             Object.keys(AGENT_META).forEach(id => {
-                const item = document.getElementById('popup-' + id);
-                if (item) item.classList.toggle('active-agent', activeAgents.includes(id));
-                
-                // NUOVO: Sincronizza anche i bottoni della schermata vocale
-                const vBtn = document.getElementById('v-btn-' + id);
-                if (vBtn) vBtn.classList.toggle('active', activeAgents.includes(id));
+                const p = document.getElementById('popup-' + id);
+                if(p) p.classList.toggle('active-agent', activeAgents.includes(id));
+                const v = document.getElementById('v-btn-' + id);
+                if(v) v.classList.toggle('active', activeAgents.includes(id));
             });
+            renderAgentBar();
         }
 
-        // ── AGENTI COME COLLABORATORI ─────────────────────────────────
-        function addAgentToChat(agentId) {
-            closeFabMenu();
-            if (activeAgents.includes(agentId)) {
-                if (agentId !== primaryAgent) {
-                    removeAgentFromChat(agentId);
-                    addMessage('ai', `${AGENT_META[agentId].label} ha lasciato la conversazione.`, false, agentId);
-                }
-                updatePopupActiveState(); // Aggiorna UI
-                return;
+        function addAgentToChat(id) {
+            if (activeAgents.includes(id)) {
+                if (id !== primaryAgent) activeAgents = activeAgents.filter(a => a !== id);
+            } else {
+                activeAgents.push(id);
+                addMessage('ai', `👋 Sono ${AGENT_META[id].label}, pronto a collaborare su questa discussione.`, false, id);
             }
-            activeAgents.push(agentId);
-            renderAgentBar();
-            const meta = AGENT_META[agentId];
-            addMessage('ai', `👋 Ciao! Sono ${meta.label}. Sono qui per collaborare. In cosa posso aiutare?`, false, agentId);
-            
-            // RIMOSSO IL CALLAPI PER L'AGGIUNTA DELL'AGENTE (come richiesto)
-            updatePopupActiveState(); // Aggiorna UI (incluso il vocale)
-        }
-
-        function removeAgentFromChat(agentId) {
-            activeAgents = activeAgents.filter(a => a !== agentId);
-            renderAgentBar();
+            updatePopupActiveState();
         }
 
         function renderAgentBar() {
             const bar = document.getElementById('active-agents-bar');
             bar.innerHTML = '';
-            if (activeAgents.length <= 1) {
-                bar.classList.remove('has-agents');
-                return;
-            }
+            if (activeAgents.length <= 1) { bar.classList.remove('has-agents'); return; }
             bar.classList.add('has-agents');
             activeAgents.forEach(id => {
-                const meta  = AGENT_META[id];
-                const chip  = document.createElement('div');
-                const isPrimary = id === primaryAgent;
-                chip.className = 'agent-chip' + (isPrimary ? ' primary-chip' : '');
-                chip.innerHTML = `<span>${meta.short}</span>${isPrimary ? '' : '<span class="chip-remove" onclick="removeAgentChip(event, \'' + id + '\')">&times;</span>'}`;
-                chip.title = meta.label;
-                bar.appendChild(chip);
+                const isPri = id === primaryAgent;
+                bar.innerHTML += `<div class="agent-chip ${isPri?'primary-chip':''}"><span>${AGENT_META[id].short}</span>${isPri?'':`<i class="fas fa-times chip-remove" onclick="event.stopPropagation();addAgentToChat('${id}')"></i>`}</div>`;
             });
         }
 
-        function removeAgentChip(e, agentId) {
-            e.stopPropagation();
-            removeAgentFromChat(agentId);
-            addMessage('ai', `${AGENT_META[agentId].label} ha lasciato la conversazione.`, false, agentId);
-            
-            // RIMOSSO IL CALLAPI PER LA RIMOZIONE DELL'AGENTE (come richiesto)
-            updatePopupActiveState(); // Aggiorna UI
+        function switchAgent(id) {
+            primaryAgent = id;
+            if(!activeAgents.includes(id)) activeAgents.push(id);
+            document.getElementById('ui-agent-name').innerText = AGENT_META[id].label;
+            toggleDrawer(); updatePopupActiveState();
         }
 
-        // ── THREAD ────────────────────────────────────────────────────
-        function renderThreadList() {
-            const list = document.getElementById('thread-list');
-            list.innerHTML = '';
-            const filtered = threads.filter(t => t.agent === primaryAgent);
-            if (!filtered.length) {
-                list.innerHTML = '<p style="color:#aaa;text-align:center;padding:20px;font-size:14px;">Nessuna discussione. Creane una nuova.</p>';
-                return;
-            }
-            filtered.forEach(thread => {
-                const item = document.createElement('div');
-                item.className = 'thread-item' + (thread.id === currentThreadId ? ' active' : '');
-                item.innerHTML = `<div><div class="thread-name">${thread.name}</div><div class="thread-date">${thread.date}</div></div><i class="fas fa-chevron-right" style="color:#ccc"></i>`;
-                item.onclick = () => selectThread(thread.id);
-                list.appendChild(item);
-            });
-        }
-
-        function selectThread(threadId) {
-            currentThreadId = threadId;
-            chatLog = []; // resetta il log locale al cambio thread
-            const thread = threads.find(t => t.id === threadId);
-            if (thread) document.getElementById('ui-thread-name').innerText = thread.name;
-            renderThreadList();
-            goToScreen(1);
-            callApi(WH_CHAT, { action: 'load_thread' }, false);
-        }
-
-        function createNewThread() {
-            const id = 'thread_' + Date.now();
-            const newThread = { id, name: 'Nuova Discussione', agent: primaryAgent, date: new Date().toLocaleDateString('it-IT') };
-            threads.unshift(newThread);
-            currentThreadId = id;
-            chatLog = [];
-            document.getElementById('ui-thread-name').innerText = newThread.name;
-            document.getElementById('chat-container').innerHTML = '';
-            renderThreadList();
-            goToScreen(1);
-            callApi(WH_CHAT, { action: 'create_thread', thread_id: id }, false);
-        }
-
-        function loadThreads() { renderThreadList(); }
-
-        function switchAgent(agent) {
-            primaryAgent = agent;
-            if (!activeAgents.includes(agent)) activeAgents = [agent, ...activeAgents];
-            else { activeAgents = [agent, ...activeAgents.filter(a => a !== agent)]; }
-            document.getElementById('ui-agent-name').innerText = AGENT_META[agent].label;
-            toggleDrawer();
-            renderAgentBar();
-            
-            updatePopupActiveState(); // Sincronizza UI
-
-            const existing = threads.find(t => t.agent === agent);
-            if (existing) selectThread(existing.id);
-            else createNewThread();
-        }
-
-        function renameCurrentThread() {
-            const newName = prompt('Nuovo nome della discussione:');
-            if (newName && newName.trim()) {
-                const thread = threads.find(t => t.id === currentThreadId);
-                if (thread) thread.name = newName.trim();
-                document.getElementById('ui-thread-name').innerText = newName.trim();
-                callApi(WH_CHAT, { action: 'rename_thread', new_name: newName.trim() }, false);
-            }
-        }
-
-        // ── COMUNICAZIONE ─────────────────────────────────────────────
-        async function callApi(url, payload, showReply = true, targetAgentId = null) {
-            const fullPayload = {
-                ...payload,
-                agent_id:        targetAgentId || primaryAgent,
-                active_agents:   activeAgents, // <- ARRAY AGENTI ATTIVI INVIATO AL WH_CHAT QUI
-                thread_id:       currentThreadId,
-                user_id:         tg.initDataUnsafe?.user?.id || 'TEST',
-                chat_id:         chatId,
-                lang
-            };
-            let loadingEl = null;
-            if (showReply) loadingEl = addMessage('ai', '⏳ ...', true, targetAgentId || primaryAgent);
-            try {
-                const res  = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(fullPayload) });
-                if (!res.ok) throw new Error(`HTTP ${res.status}`);
-                const text = await res.text();
-                let data = {};
-                try { data = JSON.parse(text); } catch(e) { data = { reply: text }; }
-                if (loadingEl) loadingEl.remove();
-                if (data.reply && showReply) {
-                    const agId = data.agent_id || targetAgentId || primaryAgent;
-                    addMessage('ai', data.reply, false, agId);
-                    // Salva razionale se presente nella risposta
-                    if (data.rationale) lastRationale = data.rationale;
-                    else lastRationale = null;
-                }
-                if (data.audio_base64) playAudio(data.audio_base64);
-                if (data.threads) { threads = data.threads; renderThreadList(); }
-            } catch(err) {
-                if (loadingEl) loadingEl.remove();
-                if (showReply) addMessage('ai', '⚠️ Errore di connessione. Riprova.');
-                console.error('callApi error:', err);
-            }
-        }
-
-        function handleInputKey(e) {
-            if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendText(); }
-        }
-
-        function sendText() {
-            const input = document.getElementById('chat-input');
-            const text  = input.value.trim();
-            if (!text) return;
-            addMessage('user', text);
-            input.value = '';
-            
-            // Invia al backend (WH_CHAT)
-            activeAgents.forEach(agentId => {
-                callApi(WH_CHAT, { action: 'npl_chat', message: text }, true, agentId);
-            });
-        }
-
-        function addMessage(sender, text, isLoading = false, agentId = null) {
-            // Registra nel log
-            if (!isLoading) {
-                const now = new Date().toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
-                chatLog.push({ role: sender, agentId: agentId || primaryAgent, text, time: now });
-            }
-
-            const div = document.createElement('div');
-            div.className = `message ${sender}${isLoading ? ' loading' : ''}`;
-            if (sender === 'ai' && agentId && activeAgents.length > 1) {
-                const badge = document.createElement('span');
-                badge.className = 'msg-agent-badge';
-                const meta = AGENT_META[agentId];
-                badge.textContent = meta ? meta.label : agentId;
-                badge.style.color = (meta && meta.color) ? meta.color : 'var(--accent)';
-                div.appendChild(badge);
-            }
-            const textNode = document.createElement('span');
-            textNode.textContent = text;
-            div.appendChild(textNode);
-            const container = document.getElementById('chat-container');
-            container.appendChild(div);
-            container.scrollTop = container.scrollHeight;
-            return div;
-        }
-
-        // ── VOCALE ────────────────────────────────────────────────────
+        /* ── VOCALE RECORDER ── */
         const micBtn = document.getElementById('mic-btn');
         let mediaRecorder, audioChunks = [];
+        micBtn.addEventListener('mousedown', startRec); micBtn.addEventListener('mouseup', stopRec);
+        micBtn.addEventListener('touchstart', e => { e.preventDefault(); startRec(); }); micBtn.addEventListener('touchend', e => { e.preventDefault(); stopRec(); });
 
-        micBtn.addEventListener('mousedown',  startRecording);
-        micBtn.addEventListener('mouseup',    stopRecording);
-        micBtn.addEventListener('touchstart', e => { e.preventDefault(); startRecording(); }, { passive: false });
-        micBtn.addEventListener('touchend',   e => { e.preventDefault(); stopRecording();  }, { passive: false });
-
-        async function startRecording() {
+        async function startRec() {
             try {
-                micBtn.classList.add('recording');
-                document.getElementById('voice-status').innerText = 'Ti ascolto...';
-                audioChunks = [];
+                micBtn.classList.add('recording'); audioChunks = [];
                 const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
                 mediaRecorder = new MediaRecorder(stream);
                 mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
                 mediaRecorder.onstop = async () => {
-                    stream.getTracks().forEach(t => t.stop());
-                    const blob   = new Blob(audioChunks, { type: 'audio/webm' });
-                    const reader = new FileReader();
-                    reader.readAsDataURL(blob);
+                    const blob = new Blob(audioChunks, { type: 'audio/webm' });
+                    const reader = new FileReader(); reader.readAsDataURL(blob);
                     reader.onloadend = () => {
                         const base64 = reader.result.split(',')[1];
-                        document.getElementById('voice-status').innerText = 'Elaborazione...';
-                        
-                        // Invia l'audio a WH_CHAT
-                        activeAgents.forEach(agentId => {
-                            callApi(WH_CHAT, { action: 'npl_voice', audio_base64: base64, mime_type: 'audio/webm' }, true, agentId)
-                                .then(() => { document.getElementById('voice-status').innerText = 'Tieni premuto per parlare'; });
-                        });
+                        activeAgents.forEach(id => callApi(WH_CHAT, { action: 'npl_voice', audio_base64: base64, mime_type: 'audio/webm' }, true, id));
                     };
+                    stream.getTracks().forEach(t => t.stop());
                 };
                 mediaRecorder.start();
-            } catch(err) {
-                micBtn.classList.remove('recording');
-                document.getElementById('voice-status').innerText = 'Microfono non disponibile';
-                tg.showAlert('Permesso microfono negato.');
-            }
+                document.getElementById('voice-status').textContent = "Ti ascolto...";
+            } catch(e) { tg.showAlert("Permesso microfono negato o non disponibile."); micBtn.classList.remove('recording'); }
         }
-        function stopRecording() {
-            if (!mediaRecorder || mediaRecorder.state === 'inactive') return;
-            micBtn.classList.remove('recording');
-            document.getElementById('voice-status').innerText = 'Analisi voce...';
-            mediaRecorder.stop();
-        }
-        function playAudio(base64) {
-            const audio = new Audio('data:audio/webm;base64,' + base64);
-            audio.play().catch(e => console.warn('Audio play failed:', e));
-        }
+        function stopRec() { if(mediaRecorder && mediaRecorder.state !== 'inactive') { micBtn.classList.remove('recording'); mediaRecorder.stop(); document.getElementById('voice-status').textContent = "Analisi voce..."; } }
 
-        // ── SOLVER ────────────────────────────────────────────────────
+        /* ── SOLVER & POSTMESSAGE ── */
         function openSolver() {
             toggleDrawer();
-            const url = `solver.html?lang=${lang}&chatId=${chatId||''}&threadId=${currentThreadId}`;
-            document.getElementById('solver-frame').src = url;
+            document.getElementById('solver-frame').src = "solver.html";
             document.getElementById('solver-overlay').classList.add('active');
         }
-        function closeSolver() {
-            document.getElementById('solver-overlay').classList.remove('active');
-            document.getElementById('solver-frame').src = '';
-        }
+        function closeSolver() { document.getElementById('solver-overlay').classList.remove('active'); document.getElementById('solver-frame').src = ""; }
 
-        // ── NUOVO: INTEGRAZIONE SOLVER (Ricezione PostMessage) ───────────────────────
         window.addEventListener('message', (event) => {
             if (event.data && event.data.type === 'SOLVER_DATA') {
-                closeSolver(); // Chiude l'overlay del solver
-                
-                const summaryText = event.data.payload;
-                
-                // Mettiamo il testo nel campo input della chat
-                const input = document.getElementById('chat-input');
-                input.value = summaryText;
-                
-                // Chiamiamo sendText(), che stampa il messaggio nella chat e lo invia al WH_CHAT
-                sendText(); 
+                closeSolver();
+                sendText(event.data.payload);
             }
         });
 
-        // ── INIT ──────────────────────────────────────────────────────
-        updatePopupActiveState(); // Inizializza i tastini all'avvio
-        loadThreads();
-        // L'handle swipe è visibile solo sullo schermo chat (schermo 1)
-        document.getElementById('swipe-handle').style.display = 'flex';
+        /* ── INSIGHT PANELS ── */
+        function openInsightDrawer() {
+            const cont = document.getElementById('panel-trace');
+            cont.innerHTML = chatLog.map(e => `
+                <div class="trace-event">
+                    <div class="trace-dot ${e.sender==='user'?'user-dot':''}" style="${e.sender==='ai'?'background:'+AGENT_META[e.agentId].bg+';color:'+AGENT_META[e.agentId].color:''}">
+                        <i class="${e.sender==='user'?'fas fa-user':AGENT_META[e.agentId].icon}"></i>
+                    </div>
+                    <div class="trace-body">
+                        <div class="trace-label" style="color:${e.sender==='user'? 'var(--primary)': AGENT_META[e.agentId].color}">${e.sender==='user'?'TU':AGENT_META[e.agentId].short}</div>
+                        <div class="trace-text">${e.text}</div>
+                        <div class="trace-time">${e.time}</div>
+                    </div>
+                </div>`).join('');
+            document.getElementById('insight-drawer').classList.add('open');
+            document.getElementById('insight-backdrop').classList.add('open');
+        }
+        function closeInsightDrawer() { document.getElementById('insight-drawer').classList.remove('open'); document.getElementById('insight-backdrop').classList.remove('open'); }
+        function switchInsightTab(tab, btn) {
+            document.querySelectorAll('.insight-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.insight-panel').forEach(p => p.classList.remove('active'));
+            btn.classList.add('active');
+            document.getElementById('panel-' + tab).classList.add('active');
+        }
+
+        // Thread initialization
+        function renderThreadList() {
+            const list = document.getElementById('thread-list');
+            list.innerHTML = threads.map(t => `<div class="thread-item ${t.id===currentThreadId?'active':''}" onclick="selectThread('${t.id}')"><div><div class="thread-name">${t.name}</div><div class="thread-date">${t.date}</div></div><i class="fas fa-chevron-right" style="color:#ccc"></i></div>`).join('');
+        }
+        function createNewThread() {
+            const id = 'thread_' + Date.now();
+            threads.unshift({ id, name: 'Nuova Discussione', agent: primaryAgent, date: new Date().toLocaleDateString() });
+            currentThreadId = id; chatLog = []; document.getElementById('chat-container').innerHTML = ''; renderThreadList();
+        }
+        
+        renderThreadList();
+        updatePopupActiveState();
     </script>
 </body>
 </html>
