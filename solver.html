@@ -1,450 +1,284 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>Agenda & Percorsi</title>
-  <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <style>
-    /* ── TOKEN DI DESIGN ──────────── */
-    :root {
-      --primary:    #212D67;
-      --accent:     #895FE0;
-      --bg:         #f4f7f9;
-      --surface:    #ffffff;
-      --border:     #e8e8e8;
-      --text:       #1a1a2e;
-      --text-muted: #888;
-      --danger:     #ff4444;
-      --success:    #27ae60;
-      --radius-sm:  8px;
-      --radius-md:  12px;
-      --shadow-sm:  0 2px 5px rgba(0,0,0,0.05);
-      --trans:      180ms cubic-bezier(0.16,1,0.3,1);
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Agenda & Percorsi</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Protezione Iframe: Permette l'apertura solo in contesti Telegram ufficiali -->
+    <meta http-equiv="Content-Security-Policy" content="frame-ancestors 'self' https://web.telegram.org https://t.me;">
 
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; padding-bottom: env(safe-area-inset-bottom, 20px); }
+    <script>
+        // ── SICUREZZA ──
+        (function() {
+            if (!(window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initData)) {
+                document.body.innerHTML = "<div style='padding:50px; text-align:center; font-family:sans-serif;'><h2>🚫 Accesso Negato</h2><p>Questa risorsa è ad uso interno dell'App SiteBoS.</p></div>";
+                window.stop();
+            }
+        })();
+    </script>
 
-    /* HEADER */
-    .page-header { background: var(--surface); padding: 14px 16px 12px; box-shadow: var(--shadow-sm); position: sticky; top: 0; z-index: 10; display: flex; align-items: center; gap: 10px; }
-    .page-header-icon { width: 36px; height: 36px; background: #e8edf8; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--primary); font-size: 16px; flex-shrink: 0; }
-    .page-header-text h1 { font-size: 16px; font-weight: 700; color: var(--primary); line-height: 1.2; margin:0; }
-    .page-header-text p { font-size: 12px; color: var(--text-muted); margin-top: 1px; }
+    <style>
+        :root { 
+            --primary: #212D67; --accent: #895FE0; --bg: #f4f7f9; 
+            --surface: #ffffff; --border: #e8e8e8; --text: #1a1a2e; 
+            --text-muted: #888; --danger: #ff4444; --success: #27ae60; --radius: 12px; 
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+        body { background: var(--bg); color: var(--text); padding-bottom: 30px; }
+        
+        .page-header { background: var(--surface); padding: 14px 16px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); display: flex; align-items: center; gap: 10px; position: sticky; top: 0; z-index: 10; }
+        .container { padding: 14px; display: flex; flex-direction: column; gap: 14px; }
+        .card { background: var(--surface); border-radius: var(--radius); border: 1px solid var(--border); padding: 16px; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
+        .section-title { font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--primary); margin-bottom: 14px; display: flex; align-items: center; gap: 6px; }
+        
+        label { display: block; font-size: 12px; font-weight: 600; margin-bottom: 4px; }
+        input, select, textarea { width: 100%; border: 1px solid var(--border); border-radius: 8px; padding: 10px; font-size: 14px; outline: none; background: var(--surface); transition: 0.2s; }
+        input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(137,95,224,0.1); }
 
-    /* LAYOUT */
-    .container { padding: 14px 14px 24px; display: flex; flex-direction: column; gap: 14px; }
-    .card { background: var(--surface); border-radius: var(--radius-md); border: 1px solid var(--border); padding: 16px; box-shadow: var(--shadow-sm); }
-    .section-title { font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--primary); margin-bottom: 14px; display: flex; align-items: center; gap: 6px; }
-    .section-title.ai-title { color: var(--accent); }
+        .row { display: flex; gap: 10px; }
+        .col { flex: 1; }
 
-    /* FORM ELEMENTS */
-    .form-group { margin-bottom: 12px; }
-    .form-group:last-child { margin-bottom: 0; }
-    label { display: block; font-size: 12px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
-    label.required::after { content: ' *'; color: var(--danger); }
-    input[type="text"], input[type="date"], input[type="time"], select, textarea { width: 100%; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 10px 12px; font-family: 'Inter', sans-serif; font-size: 14px; color: var(--text); background: var(--surface); outline: none; transition: border-color var(--trans), box-shadow var(--trans); -webkit-appearance: none; }
-    input:focus, select:focus, textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(137,95,224,0.12); }
-    textarea { resize: none; line-height: 1.5; }
-    .row { display: flex; gap: 10px; }
-    .col { flex: 1; min-width: 0; }
+        /* Agenda Cards */
+        #agenda-container { display: flex; flex-direction: column; gap: 12px; }
+        .appt-card { background: #fff; border: 1px solid var(--border); border-radius: 10px; padding: 14px; position: relative; animation: fadeIn 0.3s ease; }
+        .appt-header { display: flex; justify-content: space-between; border-bottom: 1px solid #eee; padding-bottom: 8px; margin-bottom: 12px; font-weight: 700; font-size: 13px; color: var(--primary); }
+        
+        .segmented-control { display: flex; background: var(--bg); border-radius: 8px; padding: 3px; margin-bottom: 12px; border: 1px solid var(--border); }
+        .segmented-control input { display: none; }
+        .segmented-control label { flex: 1; text-align: center; padding: 8px; font-size: 12px; font-weight: 600; cursor: pointer; border-radius: 6px; margin: 0; color: #777; transition: 0.2s; }
+        .segmented-control input:checked + label { background: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.08); color: var(--primary); }
 
-    /* CHECKBOX TOGGLE BASE */
-    .checkbox-group { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
-    .checkbox-group input[type="checkbox"] { appearance: none; -webkit-appearance: none; width: 42px; height: 24px; border-radius: 12px; background: var(--border); cursor: pointer; flex-shrink: 0; position: relative; transition: background var(--trans); }
-    .checkbox-group input[type="checkbox"]::after { content: ''; position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.2); transition: transform var(--trans); }
-    .checkbox-group input[type="checkbox"]:checked { background: var(--primary); }
-    .checkbox-group.ai-toggle input[type="checkbox"]:checked { background: var(--accent); }
-    .checkbox-group input[type="checkbox"]:checked::after { transform: translateX(18px); }
-    .checkbox-group label { margin-bottom: 0; cursor: pointer; font-size: 14px; font-weight: 500; }
-    .checkbox-desc { font-size: 11px; color: var(--text-muted); margin-left: 52px; margin-top: -6px; margin-bottom: 10px; line-height: 1.3;}
+        .smart-tags-container { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+        .smart-tag { border: 1px solid var(--border); border-radius: 20px; padding: 5px 12px; font-size: 11px; font-weight: 500; color: #666; cursor: pointer; background: #fff; }
+        .smart-tag.active { background: #f0ebff; border-color: var(--accent); color: var(--accent); font-weight: 700; }
 
-    /* PER-STOP SEGMENTED CONTROL (Lavoro vs Libero) */
-    .segmented-control { display: flex; background: var(--bg); border-radius: var(--radius-sm); padding: 3px; margin-bottom: 12px; border: 1px solid var(--border); }
-    .segmented-control input[type="radio"] { display: none; }
-    .segmented-control label { flex: 1; text-align: center; padding: 8px; font-size: 13px; font-weight: 600; color: var(--text-muted); border-radius: 6px; cursor: pointer; margin: 0; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 6px; }
-    .segmented-control input[type="radio"]:checked + label { background: var(--surface); color: var(--primary); box-shadow: var(--shadow-sm); }
-    .segmented-control input[type="radio"].leisure-radio:checked + label { color: var(--accent); }
+        .btn-add { width: 100%; background: none; border: 2px dashed var(--border); padding: 14px; border-radius: 10px; color: var(--primary); font-weight: 700; cursor: pointer; transition: 0.2s; }
+        .btn-add:hover { background: #f0f3ff; border-color: var(--primary); }
+        
+        .btn-primary { width: 100%; padding: 16px; background: var(--primary); color: #fff; border: none; border-radius: 10px; font-weight: 700; font-size: 15px; cursor: pointer; transition: 0.2s; margin-top: 10px; }
+        .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn-success { background: var(--success) !important; }
 
-    /* APPUNTAMENTI / TAPPE */
-    #agenda-container { display: flex; flex-direction: column; gap: 15px; }
-    .appt-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 14px; position: relative; box-shadow: 0 1px 3px rgba(0,0,0,0.02); }
-    .appt-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; font-weight: 700; font-size: 14px; color: var(--text); border-bottom: 1px solid var(--border); padding-bottom: 8px;}
-    .btn-remove-appt { background: none; border: none; color: var(--danger); font-size: 16px; cursor: pointer; padding: 4px; }
-    .btn-add-appt { width: 100%; background: transparent; border: 2px dashed var(--border); color: var(--primary); font-weight: 600; padding: 12px; border-radius: var(--radius-sm); cursor: pointer; transition: all var(--trans); font-size: 14px; margin-top: 5px; }
-    .btn-add-appt:hover { border-color: var(--primary); background: #e8edf8; }
-
-    /* SMART TAGS */
-    .smart-tags-container { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
-    .smart-tag { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 5px 10px; font-size: 11px; font-weight: 500; color: var(--text-muted); cursor: pointer; transition: all 0.2s; user-select: none; }
-    .smart-tag.active { background: #f0ebff; color: var(--accent); border-color: var(--accent); font-weight: 600; }
-    .smart-tag.business-tag.active { background: #e8edf8; color: var(--primary); border-color: var(--primary); }
-
-    /* BOTTONE FINALE */
-    .btn-primary { width: 100%; padding: 14px; background: var(--primary); color: #fff; border: none; border-radius: var(--radius-sm); font-family: 'Inter', sans-serif; font-size: 15px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: background var(--trans); }
-    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
-    .btn-primary.btn-success { background: var(--success); }
-
-    .hidden { display: none !important; }
-    .input-group { padding: 4px 0 10px 52px; }
-  </style>
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .hidden { display: none !important; }
+    </style>
 </head>
 <body>
 
-  <div class="page-header">
-    <div class="page-header-icon"><i class="fas fa-calendar-alt"></i></div>
-    <div class="page-header-text">
-      <h1 id="title">Agenda & Percorsi</h1>
-      <p id="subtitle">Pianifica tappe miste: lavoro e tempo libero</p>
+    <div class="page-header">
+        <i class="fas fa-calendar-check" style="color:var(--primary); font-size:20px;"></i>
+        <div>
+            <h1 style="font-size:16px; font-weight:700;">Agenda & Percorsi</h1>
+            <p style="font-size:11px; color:var(--text-muted);">Organizza viaggi misti (Business & Leisure)</p>
+        </div>
     </div>
-  </div>
 
-  <div class="container">
-    <form id="travelForm">
+    <div class="container">
+        <form id="travelForm">
+            <!-- 1. BASE LOGISTICA -->
+            <div class="card">
+                <div class="section-title">📍 Punto di Partenza e Rientro</div>
+                <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px;">
+                    <input type="checkbox" id="partenzaDaSede" checked style="width:18px; height:18px; accent-color:var(--primary);">
+                    <label for="partenzaDaSede" style="margin:0; font-size:14px;">Partenza da Sede Principale</label>
+                </div>
+                <div id="customPartenzaContainer" class="hidden" style="margin-bottom:15px;">
+                    <input type="text" id="partenza" placeholder="Inserisci indirizzo di partenza...">
+                </div>
 
-      <!-- 1. BASE LOGISTICA -->
-      <div class="card">
-        <div class="section-title"><i class="fas fa-map-marker-alt"></i> Inizio e Fine Viaggio</div>
+                <div style="display:flex; align-items:center; gap:12px; margin-top:12px;">
+                    <input type="checkbox" id="arrivoInSede" checked style="width:18px; height:18px; accent-color:var(--primary);">
+                    <label for="arrivoInSede" style="margin:0; font-size:14px;">Ritorno in Sede a fine giornata</label>
+                </div>
+                <div id="customArrivoContainer" class="hidden" style="margin-top:12px;">
+                    <input type="text" id="arrivo" placeholder="Inserisci indirizzo di rientro...">
+                </div>
+            </div>
 
-        <div class="form-group checkbox-group">
-          <input type="checkbox" id="partenzaDaSede" checked>
-          <label for="partenzaDaSede">Partenza dalla Sede Principale</label>
-        </div>
-        <div id="customPartenzaContainer" class="hidden input-group">
-          <input type="text" id="partenza" placeholder="Es. Milano, Via Roma 1">
-        </div>
+            <!-- 2. AGENDA DINAMICA -->
+            <div id="agenda-container"></div>
 
-        <div class="form-group checkbox-group" style="margin-top:8px">
-          <input type="checkbox" id="arrivoInSede" checked>
-          <label for="arrivoInSede">Rientro in Sede a fine viaggio</label>
-        </div>
-        <div id="customArrivoContainer" class="hidden input-group">
-          <input type="text" id="arrivo" placeholder="Es. Bologna Centrale">
-        </div>
-      </div>
+            <button type="button" class="btn-add" id="btnAddStop">
+                <i class="fas fa-plus-circle"></i> Aggiungi Tappa / Appuntamento
+            </button>
 
-      <!-- 2. LA TUA AGENDA (TAPPE DINAMICHE) -->
-      <div class="card" style="background: transparent; border: none; padding: 0; box-shadow: none;">
-        <div class="section-title"><i class="fas fa-map-signs"></i> Il tuo Itinerario</div>
-        
-        <div id="agenda-container">
-          <!-- Le tappe vengono iniettate qui via JS -->
-        </div>
+            <!-- 3. AI CONFIG -->
+            <div class="card" style="border-color:var(--accent); background:#faf8ff; margin-top:20px;">
+                <div class="section-title" style="color:var(--accent);"><i class="fas fa-brain"></i> Ottimizzazione A.I. Globale</div>
+                <div style="display:flex; align-items:center; gap:12px; margin-bottom:10px;">
+                    <input type="checkbox" id="aiOptimize" checked style="width:18px; height:18px; accent-color:var(--accent);">
+                    <label for="aiOptimize" style="margin:0; font-size:14px;">Calcola Percorso Ottimale</label>
+                </div>
+                <div style="display:flex; align-items:center; gap:12px; margin-bottom:15px;">
+                    <input type="checkbox" id="aiLogistics" checked style="width:18px; height:18px; accent-color:var(--accent);">
+                    <label for="aiLogistics" style="margin:0; font-size:14px;">Pianifica Pasti e Soste</label>
+                </div>
+                <label>Direttive Extra per l'A.I.</label>
+                <textarea id="noteAI" rows="2" placeholder="Es. Preferenza per auto elettrica (cerca colonnine), dieta veg, etc..."></textarea>
+            </div>
 
-        <button type="button" id="btnAddAppt" class="btn-add-appt">
-          <i class="fas fa-plus"></i> Aggiungi Nuova Tappa
-        </button>
-      </div>
+            <button type="submit" id="submitBtn" class="btn-primary">Genera Piano di Viaggio</button>
+        </form>
+    </div>
 
-      <!-- 3. CERVELLO A.I. GLOBALE -->
-      <div class="card" style="border-color: var(--accent); background: #faf8ff;">
-        <div class="section-title ai-title"><i class="fas fa-brain"></i> Logistica A.I. Globale</div>
+    <script>
+        const tg = window.Telegram.WebApp;
+        tg.ready(); tg.expand();
 
-        <div class="form-group checkbox-group ai-toggle">
-          <input type="checkbox" id="aiOptimizeRoute" checked>
-          <label for="aiOptimizeRoute">Ottimizza Tragitto & Tempi</label>
-        </div>
-        <div class="checkbox-desc">L'A.I. calcolerà i tempi di spostamento tra una tappa e l'altra suggerendo l'orario migliore.</div>
+        const WH_SOLVER = "https://prod.workflow.trinai.it/webhook/26237ccb-3621-4dc7-b15f-fe8a50be3a6f";
+        const chatId = tg.initDataUnsafe.start_param || tg.initDataUnsafe.user?.id || "DEBUG_USER";
 
-        <div class="form-group checkbox-group ai-toggle">
-          <input type="checkbox" id="aiSuggestLogistics">
-          <label for="aiSuggestLogistics">Pianifica Pernottamento/Pasti</label>
-        </div>
-        <div class="checkbox-desc">Suggerisci automaticamente dove fermarsi a dormire o cenare in base alla mappa e agli orari.</div>
-        
-        <div class="form-group" style="margin-top:15px">
-          <label for="noteAI">Direttive di viaggio (Opzionale)</label>
-          <textarea id="noteAI" rows="2" placeholder="Es. Preferisco viaggiare in treno. Ho un budget limitato per gli hotel..."></textarea>
-        </div>
-      </div>
+        const dom = {
+            form: document.getElementById('travelForm'),
+            agenda: document.getElementById('agenda-container'),
+            btnAdd: document.getElementById('btnAddStop'),
+            btnSubmit: document.getElementById('submitBtn'),
+            pSede: document.getElementById('partenzaDaSede'),
+            aSede: document.getElementById('arrivoInSede')
+        };
 
-      <!-- BOTTONE FINALE -->
-      <div>
-        <button type="submit" id="submitBtn" class="btn-primary">
-          <i class="fas fa-magic"></i>
-          <span>Genera Itinerario Misto</span>
-        </button>
-      </div>
-    </form>
-  </div>
+        let stopCount = 0;
 
-  <script>
-    // WEBHOOK AGGIORNATO
-    const WH_SOLVER = "https://prod.workflow.trinai.it/webhook/26237ccb-3621-4dc7-b15f-fe8a50be3a6f";
+        function addStop() {
+            stopCount++;
+            const id = stopCount;
+            const div = document.createElement('div');
+            div.className = 'appt-card';
+            div.id = `stop-${id}`;
+            div.innerHTML = `
+                <div class="appt-header">
+                    <span>📍 Tappa #${id}</span>
+                    ${id > 1 ? `<i class="fas fa-trash-alt" style="color:var(--danger); cursor:pointer;" onclick="document.getElementById('stop-${id}').remove()"></i>` : ''}
+                </div>
+                
+                <div class="segmented-control">
+                    <input type="radio" id="bus-${id}" name="type-${id}" value="Lavoro" checked>
+                    <label for="bus-${id}"><i class="fas fa-briefcase"></i> Lavoro</label>
+                    <input type="radio" id="lei-${id}" name="type-${id}" value="Libero">
+                    <label for="lei-${id}"><i class="fas fa-camera"></i> Libero</label>
+                </div>
 
-    const tg = window.Telegram.WebApp;
-    tg.ready(); tg.expand();
-    const urlParams = new URLSearchParams(window.location.search);
+                <div class="row">
+                    <div class="col">
+                        <label>Data</label>
+                        <input type="date" class="s-date" value="${new Date().toISOString().split('T')[0]}" required>
+                    </div>
+                    <div class="col">
+                        <label>Fascia/Ora</label>
+                        <input type="text" class="s-time" placeholder="es. 10:30 o Pomeriggio" required>
+                    </div>
+                </div>
+                
+                <div style="margin-top:12px;">
+                    <label>Luogo / Azienda</label>
+                    <input type="text" class="s-loc" placeholder="Indirizzo o nome attività" required>
+                </div>
 
-    const dom = {
-      form: document.getElementById('travelForm'),
-      submitBtn: document.getElementById('submitBtn'),
-      partenzaDaSede: document.getElementById('partenzaDaSede'),
-      partenza: document.getElementById('partenza'),
-      customPartenzaContainer: document.getElementById('customPartenzaContainer'),
-      arrivoInSede: document.getElementById('arrivoInSede'),
-      arrivo: document.getElementById('arrivo'),
-      customArrivoContainer: document.getElementById('customArrivoContainer'),
-      agendaContainer: document.getElementById('agenda-container'),
-      btnAddAppt: document.getElementById('btnAddAppt'),
-      aiOptimizeRoute: document.getElementById('aiOptimizeRoute'),
-      aiSuggestLogistics: document.getElementById('aiSuggestLogistics'),
-      noteAI: document.getElementById('noteAI')
-    };
+                <div class="smart-tags-container" id="tags-${id}">
+                    <div class="smart-tag" data-val="Cerca prospect o clienti vicini">🔍 Cerca Clienti</div>
+                    <div class="smart-tag" data-val="Trova parcheggio comodo">🅿️ Parcheggio</div>
+                    <div class="smart-tag hidden" data-val="Consiglia ristorante tipico">🍝 Cibo Locale</div>
+                    <div class="smart-tag hidden" data-val="Cosa vedere in zona">🏛️ Arte/Storia</div>
+                </div>
+            `;
+            dom.agenda.appendChild(div);
 
-    let apptCounter = 0;
-
-    // Toggle Inizio/Fine
-    function toggleField(checkbox, container, input) {
-      checkbox.addEventListener('change', function() {
-        container.classList.toggle('hidden', !this.checked);
-        input.toggleAttribute('required', !this.checked);
-        validateForm();
-      });
-    }
-    toggleField(dom.partenzaDaSede, dom.customPartenzaContainer, dom.partenza);
-    toggleField(dom.arrivoInSede, dom.customArrivoContainer, dom.arrivo);
-
-    // Gestione Tappe Dinamiche
-    function addAppointment() {
-      apptCounter++;
-      const id = apptCounter;
-      const today = new Date().toISOString().split('T')[0];
-      
-      const div = document.createElement('div');
-      div.className = 'appt-card';
-      div.id = `appt-${id}`;
-      
-      div.innerHTML = `
-        <div class="appt-header">
-          <span>📍 Tappa #${id}</span>
-          ${id > 1 ? `<button type="button" class="btn-remove-appt" onclick="removeAppointment(${id})"><i class="fas fa-trash"></i></button>` : ''}
-        </div>
-
-        <!-- SELETTORE SCOPO PER QUESTA SINGOLA TAPPA -->
-        <div class="segmented-control">
-          <input type="radio" id="type_bus_${id}" name="type_${id}" value="business" class="type-radio" checked>
-          <label for="type_bus_${id}"><i class="fas fa-briefcase"></i> Lavoro</label>
-          
-          <input type="radio" id="type_leis_${id}" name="type_${id}" value="leisure" class="type-radio leisure-radio">
-          <label for="type_leis_${id}"><i class="fas fa-camera-retro"></i> Tempo Libero</label>
-        </div>
-
-        <div class="row form-group">
-          <div class="col">
-            <label class="required">Data</label>
-            <input type="date" class="appt-date" value="${today}" required>
-          </div>
-          <div class="col">
-            <label class="required">Fascia/Ora</label>
-            <input type="text" class="appt-time" placeholder="es. 14:30 o Pomeriggio" required>
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label class="required">Città o Luogo</label>
-          <input type="text" class="appt-location" placeholder="Es. Vicenza, Viale Roma" required>
-        </div>
-
-        <div class="row form-group">
-          <div class="col" style="flex: 0.5">
-            <label>Durata (ca.)</label>
-            <select class="appt-duration">
-              <option value="1h">1 Ora</option>
-              <option value="2h">2 Ore</option>
-              <option value="Mezza Giornata">Mezza Giornata</option>
-              <option value="Veloce">Veloce (15m)</option>
-            </select>
-          </div>
-          <div class="col">
-            <label id="lbl_notes_${id}">Chi / Azienda</label>
-            <input type="text" class="appt-notes" placeholder="es. Riunione Cliente X">
-          </div>
-        </div>
-
-        <!-- PANNELLI SMART TAGS (Dinamici in base al tipo) -->
-        <div class="form-group" style="margin-bottom:0;">
-          <label style="font-size:11px; color:var(--text-muted); margin-bottom:0;">Assistente A.I. per questa tappa:</label>
-          
-          <!-- Tags Business -->
-          <div id="tags_bus_${id}" class="smart-tags-container">
-            <div class="smart-tag business-tag" data-val="Trova prospect o clienti potenziali in zona">🔍 Cerca Prospect Vicini</div>
-            <div class="smart-tag business-tag" data-val="Trova un bar/cafè adatto per lavorare o meeting">☕ Bar per Lavorare</div>
-            <div class="smart-tag business-tag" data-val="Cerca parcheggio comodo per appuntamento">🅿️ Trova Parcheggio</div>
-          </div>
-
-          <!-- Tags Leisure (Nascosti di default) -->
-          <div id="tags_leis_${id}" class="smart-tags-container hidden">
-            <div class="smart-tag" data-val="Consiglia Ristoranti tipici o osterie locali">🍝 Cibo Locale</div>
-            <div class="smart-tag" data-val="Cosa vedere: monumenti storici o musei">🏛️ Arte e Storia</div>
-            <div class="smart-tag" data-val="Cerca punti panoramici, parchi o natura">🌲 Natura / Parchi</div>
-            <div class="smart-tag" data-val="Suggerisci attività di relax (terme, passeggiate)">💆 Relax</div>
-          </div>
-        </div>
-      `;
-      
-      dom.agendaContainer.appendChild(div);
-
-      // Logica UI per questa specifica card
-      const radioBus = div.querySelector(`#type_bus_${id}`);
-      const radioLeis = div.querySelector(`#type_leis_${id}`);
-      const tagsBus = div.querySelector(`#tags_bus_${id}`);
-      const tagsLeis = div.querySelector(`#tags_leis_${id}`);
-      const lblNotes = div.querySelector(`#lbl_notes_${id}`);
-      const inputNotes = div.querySelector('.appt-notes');
-
-      radioBus.addEventListener('change', () => {
-        tagsBus.classList.remove('hidden');
-        tagsLeis.classList.add('hidden');
-        lblNotes.textContent = "Chi / Azienda";
-        inputNotes.placeholder = "es. Riunione Cliente X";
-        // Reset tags dell'altra vista
-        tagsLeis.querySelectorAll('.smart-tag').forEach(t => t.classList.remove('active'));
-      });
-
-      radioLeis.addEventListener('change', () => {
-        tagsLeis.classList.remove('hidden');
-        tagsBus.classList.add('hidden');
-        lblNotes.textContent = "Cosa fare / Note";
-        inputNotes.placeholder = "es. Voglio visitare il centro";
-        // Reset tags dell'altra vista
-        tagsBus.querySelectorAll('.smart-tag').forEach(t => t.classList.remove('active'));
-      });
-
-      // Click sugli Smart Tags di questa card
-      div.querySelectorAll('.smart-tag').forEach(tag => {
-        tag.addEventListener('click', () => tag.classList.toggle('active'));
-      });
-
-      validateForm();
-    }
-
-    function removeAppointment(id) {
-      const el = document.getElementById(`appt-${id}`);
-      if (el) { el.remove(); validateForm(); }
-    }
-
-    // Aggiungi la prima tappa di default
-    addAppointment();
-    dom.btnAddAppt.addEventListener('click', addAppointment);
-
-    // Validazione
-    function validateForm() {
-      const requiredInputs = dom.form.querySelectorAll('input[required]');
-      let isValid = true;
-      requiredInputs.forEach(input => {
-        if (!input.value.trim() && !input.closest('.hidden')) isValid = false;
-      });
-      dom.submitBtn.disabled = !isValid;
-    }
-    dom.form.addEventListener('input', validateForm);
-
-    // SUBMIT ALL'A.I.
-    dom.form.addEventListener('submit', e => {
-      e.preventDefault();
-
-      const apptElements = document.querySelectorAll('.appt-card');
-      const agenda = [];
-      
-      // Cicliamo ogni singola tappa creata
-      apptElements.forEach((card, index) => {
-        const idStr = card.id.replace('appt-', '');
-        // Trova quale radio è checkato per questa card
-        const isBusiness = card.querySelector(`#type_bus_${idStr}`).checked;
-        const tipoTappa = isBusiness ? "Lavoro" : "Tempo Libero";
-
-        // Raccogli i tags attivi solo per il container visibile
-        const activeContainer = isBusiness ? card.querySelector(`#tags_bus_${idStr}`) : card.querySelector(`#tags_leis_${idStr}`);
-        const activeTags = [];
-        activeContainer.querySelectorAll('.smart-tag.active').forEach(t => activeTags.push(t.getAttribute('data-val')));
-
-        agenda.push({
-          tappa_numero: index + 1,
-          tipo_tappa: tipoTappa,
-          data: card.querySelector('.appt-date').value,
-          fascia_oraria: card.querySelector('.appt-time').value.trim(),
-          luogo: card.querySelector('.appt-location').value.trim(),
-          durata: card.querySelector('.appt-duration').value,
-          dettagli: card.querySelector('.appt-notes').value.trim() || "Nessun dettaglio",
-          richieste_ai: activeTags.length > 0 ? activeTags : null
-        });
-      });
-
-      // Configurazione Globale AI
-      const aiSettings = {
-        ottimizza_percorso: dom.aiOptimizeRoute.checked,
-        pianifica_logistica: dom.aiSuggestLogistics.checked,
-        direttive_extra: dom.noteAI.value.trim() || null
-      };
-
-      // Payload JSON per Make
-      const payload = {
-        type: 'AGENDA_MIXED_SUBMISSION',
-        payload: {
-          Partenza: dom.partenzaDaSede.checked ? 'Sede' : dom.partenza.value.trim(),
-          Arrivo:   dom.arrivoInSede.checked ? 'Sede' : dom.arrivo.value.trim(),
-          Agenda:   agenda,
-          AI_Config_Globale: aiSettings
-        },
-        context: {
-          chatId: urlParams.get('chatId'),
-          threadId: urlParams.get('threadId'),
-          user_id: tg.initDataUnsafe?.user?.id || null
+            // Toggle Smart Tags in base al tipo
+            const rBus = div.querySelector(`#bus-${id}`);
+            const rLei = div.querySelector(`#lei-${id}`);
+            const tags = div.querySelectorAll('.smart-tag');
+            
+            const updateTags = () => {
+                tags.forEach(t => {
+                    const isBus = t.dataset.val.includes("prospect") || t.dataset.val.includes("parcheggio");
+                    t.classList.toggle('hidden', rBus.checked ? !isBus : isBus);
+                    t.classList.remove('active');
+                });
+            };
+            rBus.onclick = updateTags; rLei.onclick = updateTags;
+            tags.forEach(t => t.onclick = () => t.classList.toggle('active'));
+            updateTags();
         }
-      };
 
-      // Costruzione Stringa Markdown per la UI dell'Assistente
-      let summary = `📍 *PIANIFICAZIONE ITINERARIO MISTO*\n\n`;
-      summary += `*Partenza:* ${payload.payload.Partenza}\n`;
-      summary += `*Rientro:* ${payload.payload.Arrivo}\n\n`;
-      
-      summary += `*Tappe Inserite:*\n`;
-      agenda.forEach(a => {
-        const icon = a.tipo_tappa === 'Lavoro' ? '💼' : '📸';
-        summary += `${icon} *${a.data} (${a.fascia_oraria})* - ${a.luogo}\n`;
-        summary += `   Dettagli: ${a.dettagli} [${a.durata}]\n`;
-        if (a.richieste_ai) {
-          summary += `   🤖 *AI:* ${a.richieste_ai.join(', ')}\n`;
-        }
-      });
-
-      if (aiSettings.ottimizza_percorso || aiSettings.pianifica_logistica || aiSettings.direttive_extra) {
-        summary += `\n*Impostazioni A.I. Globali:*\n`;
-        if(aiSettings.ottimizza_percorso) summary += `- Ottimizza i tempi di viaggio.\n`;
-        if(aiSettings.pianifica_logistica) summary += `- Gestisci pasti e pernottamenti.\n`;
-        if(aiSettings.direttive_extra) summary += `- Note: ${aiSettings.direttive_extra}\n`;
-      }
-
-      dom.submitBtn.disabled = true;
-      dom.submitBtn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Elaborazione A.I. in corso...';
-
-      // 1. Invia a Make
-      fetch(WH_SOLVER, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      })
-      .then(r => {
-        if (!r.ok) throw new Error();
-        dom.submitBtn.innerHTML = `<i class="fas fa-check"></i><span> Itinerario Affidato all'A.I.!</span>`;
-        dom.submitBtn.classList.add('btn-success');
+        dom.pSede.onchange = () => document.getElementById('customPartenzaContainer').classList.toggle('hidden', dom.pSede.checked);
+        dom.aSede.onchange = () => document.getElementById('customArrivoContainer').classList.toggle('hidden', dom.aSede.checked);
         
-        // 2. Invia alla UI della Chat per stamparlo e passarlo al WH_CHAT come contesto
-        setTimeout(() => {
-            window.parent.postMessage({
-                type: 'SOLVER_DATA',
-                payload: summary
-            }, '*');
-        }, 1200);
-      })
-      .catch(() => {
-        dom.submitBtn.disabled = false;
-        dom.submitBtn.innerHTML = `<i class="fas fa-magic"></i><span> Riprova Invio</span>`;
-        tg.showAlert('Errore di comunicazione con il server. Riprova.');
-      });
-    });
-  </script>
+        dom.btnAdd.onclick = addStop;
+        addStop(); // Tappa iniziale obbligatoria
+
+        dom.form.onsubmit = async (e) => {
+            e.preventDefault();
+            dom.btnSubmit.disabled = true;
+            dom.btnSubmit.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Elaborazione A.I....';
+
+            const stops = [];
+            document.querySelectorAll('.appt-card').forEach((card, i) => {
+                const id = card.id.split('-')[1];
+                const activeTags = [];
+                card.querySelectorAll('.smart-tag.active').forEach(t => activeTags.push(t.dataset.val));
+                stops.push({
+                    tappa: i + 1,
+                    tipo: card.querySelector(`input[name="type-${id}"]:checked`).value,
+                    data: card.querySelector('.s-date').value,
+                    ora: card.querySelector('.s-time').value,
+                    luogo: card.querySelector('.s-loc').value,
+                    richieste_extra: activeTags
+                });
+            });
+
+            const payload = {
+                _auth: tg.initData,
+                type: 'AGENDA_MIXED_SUBMISSION',
+                payload: {
+                    Partenza: dom.pSede.checked ? 'Sede Principale' : document.getElementById('partenza').value,
+                    Arrivo: dom.aSede.checked ? 'Sede Principale' : document.getElementById('arrivo').value,
+                    Agenda: stops,
+                    Ottimizza: document.getElementById('aiOptimize').checked,
+                    PianificaLogistica: document.getElementById('aiLogistics').checked,
+                    NoteUtente: document.getElementById('noteAI').value
+                },
+                context: { chatId, user_id: tg.initDataUnsafe.user?.id }
+            };
+
+            try {
+                const res = await fetch(WH_SOLVER, { 
+                    method: 'POST', 
+                    headers: { 'Content-Type': 'application/json' }, 
+                    body: JSON.stringify(payload) 
+                });
+                
+                if (res.ok) {
+                    dom.btnSubmit.innerHTML = '✅ Richiesta Inviata!';
+                    dom.btnSubmit.classList.add('btn-success');
+                    
+                    // Costruzione riassunto grafico per la chat
+                    let summary = `🗓️ *NUOVA PIANIFICAZIONE AGENDA*\n`;
+                    summary += `🏁 Partenza: ${payload.payload.Partenza}\n`;
+                    summary += `🔚 Rientro: ${payload.payload.Arrivo}\n\n`;
+                    
+                    stops.forEach(s => {
+                        summary += `${s.tipo === 'Lavoro' ? '💼' : '📸'} *${s.data} (${s.ora})* - ${s.luogo}\n`;
+                        if(s.richieste_extra.length > 0) summary += `   └ 🤖 AI: ${s.richieste_extra.join(', ')}\n`;
+                    });
+
+                    if(payload.payload.NoteUtente) summary += `\n*Note:* ${payload.payload.NoteUtente}`;
+
+                    setTimeout(() => {
+                        window.parent.postMessage({ type: 'SOLVER_DATA', payload: summary }, '*');
+                    }, 1200);
+                } else {
+                    throw new Error();
+                }
+            } catch (err) { 
+                tg.showAlert("Errore durante l'invio al server Make. Riprova."); 
+                dom.btnSubmit.disabled = false; 
+                dom.btnSubmit.innerHTML = "Genera Piano di Viaggio";
+            }
+        };
+    </script>
 </body>
 </html>
