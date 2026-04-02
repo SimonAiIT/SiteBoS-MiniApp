@@ -1,7 +1,7 @@
 # solver.html — Documentazione API & Comportamento
 
-> **Versione:** 2.0 · **Aggiornato:** 2026-04-02  
-> **Modalità:** Standalone (Telegram WebApp) + Embedded (`<iframe>` in `assistant.html`)  
+> **Versione:** 3.0 (Bleisure Agenda Builder)  
+> **Modalità:** Embedded (`<iframe>` in `assistant.html`)  
 > **Webhook:** `WH_SOLVER`
 
 ---
@@ -11,24 +11,20 @@
 1. [Panoramica](#1-panoramica)
 2. [Parametri URL](#2-parametri-url)
 3. [Costante Webhook](#3-costante-webhook)
-4. [Campi del form](#4-campi-del-form)
+4. [Struttura UI e Campi Dinamici](#4-struttura-ui-e-campi-dinamici)
 5. [Payload inviato a WH_SOLVER](#5-payload-inviato-a-wh_solver)
 6. [Risposta attesa da WH_SOLVER](#6-risposta-attesa-da-wh_solver)
-7. [postMessage verso assistant.html](#7-postmessage-verso-assistanthtml)
-8. [Logica di validazione form](#8-logica-di-validazione-form)
-9. [Internazionalizzazione](#9-internazionalizzazione)
-10. [Comportamento UI per stato](#10-comportamento-ui-per-stato)
+7. [Integrazione postMessage (assistant.html)](#7-integrazione-postmessage-assistanthtml)
+8. [Logica di validazione e dinamismi](#8-logica-di-validazione-e-dinamismi)
+9. [Comportamento UI per stato](#9-comportamento-ui-per-stato)
 
 ---
 
 ## 1. Panoramica
 
-`solver.html` è la pagina di pianificazione percorsi. Può essere usata:
+`solver.html` è il modulo avanzato di pianificazione itinerari e agende. Abbandona il concetto di singolo tragitto per abbracciare i viaggi multi-tappa misti (**Business + Leisure**).
 
-- **Standalone** → aperta direttamente come Telegram WebApp (`tg.close()` al completamento)
-- **Embedded** → caricata in un `<iframe>` dentro `assistant.html`; al completamento usa `postMessage` per passare i dati al parent e il parent chiude l'overlay
-
-La detection embedded/standalone avviene verificando `window.parent !== window`.
+L'utente definisce un punto di partenza/rientro globale e costruisce dinamicamente un'agenda aggiungendo N tappe. Per ogni tappa può definire se lo scopo è lavorativo o ricreativo, innescando "Smart Tags" specifici per istruire l'Intelligenza Artificiale (es. "Cerca prospect" vs "Suggerisci ristorante tipico").
 
 ---
 
@@ -36,8 +32,8 @@ La detection embedded/standalone avviene verificando `window.parent !== window`.
 
 | Parametro  | Tipo     | Default | Descrizione                                        |
 |------------|----------|---------|----------------------------------------------------|
-| `lang`     | `string` | `it`    | Lingua dell'interfaccia (it, en, fr, de, es, pt)   |
-| `chatId`   | `string` | `null`  | ID chat Telegram — incluso nel payload al webhook  |
+| `lang`     | `string` | `it`    | Lingua dell'interfaccia (predisposizione)          |
+| `chatId`   | `string` | `null`  | ID chat Telegram — passato nel context             |
 | `threadId` | `string` | `null`  | ID thread attivo in `assistant.html`               |
 
 **Esempio:**
@@ -49,256 +45,146 @@ solver.html?lang=it&chatId=123456789&threadId=thread_001
 
 ## 3. Costante Webhook
 
+Il modulo invia la configurazione dell'agenda a questo endpoint su Make.com:
+
 ```javascript
-const WH_SOLVER = "https://trinai.api.workflow.dcmake.it/webhook/a0b6b2cb-4e19-4a92-9269-6b6d8a7afb80";
+const WH_SOLVER = "https://prod.workflow.trinai.it/webhook/26237ccb-3621-4dc7-b15f-fe8a50be3a6f";
 ```
 
 ---
 
-## 4. Campi del form
+## 4. Struttura UI e Campi Dinamici
 
-### Sezione Itinerario
+Il form è diviso in 3 macro-sezioni.
 
-| Campo ID               | Tipo       | Default  | Descrizione                              |
-|------------------------|------------|----------|------------------------------------------|
-| `partenzaDaSede`       | `checkbox` | ✅ checked | Partenza dal punto fisso "Sede"           |
-| `partenza`             | `text`     | —        | Punto di partenza custom (se non sede)   |
-| `arrivoInSede`         | `checkbox` | ✅ checked | Arrivo al punto fisso "Sede"              |
-| `arrivo`               | `text`     | —        | Punto di arrivo custom (se non sede)     |
+### A. Base Logistica (Inizio/Fine)
+*   **Partenza da Sede** (Checkbox): Se disattivato, richiede inserimento testuale (es. "Milano Centrale").
+*   **Rientro in Sede** (Checkbox): Se disattivato, richiede inserimento testuale.
 
-### Sezione Scopo
+### B. Agenda (Tappe Dinamiche)
+L'utente può aggiungere infinite card "Tappa". Ogni card contiene:
+*   **Scopo Tappa** (Radio Toggle): `Lavoro` o `Tempo Libero`.
+*   **Data** (`date`, required).
+*   **Fascia/Ora** (`text`, required): Accetta orari (14:30) o descrittori (Pomeriggio).
+*   **Luogo** (`text`, required): Indirizzo o città.
+*   **Durata** (`select`): 1h, 2h, Mezza Giornata, Veloce.
+*   **Dettaglio/Note** (`text`): Cambia placeholder in base allo scopo.
+*   **Smart Tags** (Pillole cliccabili):
+    *   *Se Lavoro:* Cerca prospect, Bar per lavorare, Trova parcheggio.
+    *   *Se Tempo Libero:* Cibo locale, Arte/Storia, Natura, Relax.
 
-| Campo ID                     | Tipo    | Default       | Descrizione                              |
-|------------------------------|---------|---------------|------------------------------------------|
-| `tripType` (radio)           | `radio` | `interessi`   | Tipo percorso: `interessi` o `appuntamenti` |
-| `dataAppuntamento`           | `date`  | —             | Data (visibile solo se `appuntamenti`)   |
-| `midpoint`                   | `text`  | —             | Tappe intermedie (visibile se `interessi`) |
-| `dettagli`                   | `textarea` | —          | Note libere / elenco interessi           |
-
-### Sezione Logistica
-
-| Campo ID               | Tipo     | Default | Descrizione                    |
-|------------------------|----------|---------|--------------------------------|
-| `includeTripDetails`   | `checkbox` | ❌     | Abilita pernottamento          |
-| `notti`                | `number` | `1`     | Numero notti (se pernottamento) |
-| `adulti`               | `number` | `2`     | Numero adulti                  |
-| `bambini`              | `number` | `0`     | Numero bambini                 |
+### C. A.I. Globale
+Impostazioni che si applicano a tutto l'itinerario:
+*   **Ottimizza Tragitto** (Checkbox): Istruisce l'AI a calcolare i tempi di viaggio ottimali.
+*   **Pianifica Pernottamento/Pasti** (Checkbox): Istruisce l'AI a trovare hotel/ristoranti.
+*   **Direttive Extra** (`textarea`): Note libere (es. "Dieta vegetariana", "Usa treno").
 
 ---
 
 ## 5. Payload inviato a WH_SOLVER
 
-Al submit del form viene inviata una `POST` a `WH_SOLVER` con `Content-Type: application/json`.
+Al submit, viene inviata una `POST` con `Content-Type: application/json`. L'array `Agenda` conterrà tanti oggetti quante sono le tappe create dall'utente.
 
-### Struttura completa
+### Esempio di Payload (Itinerario Misto Lavoro/Tempo Libero)
 
 ```json
 {
-  "type": "TRIP_PLANNING_SUBMISSION",
+  "type": "AGENDA_MIXED_SUBMISSION",
   "payload": {
-    "Partenza":              "Sede",
-    "Arrivo":               "Sede",
-    "TipoPercorso":         "interessi",
-    "TappeIntermedie":      "Tappa 1, Tappa 2",
-    "Dettagli":             "Visita zona industriale nord",
-    "DataAppuntamento":     null,
-    "PernottamentoIncluso": false,
-    "Notti":                null,
-    "Adulti":               null,
-    "Bambini":              null
+    "Partenza": "Sede",
+    "Arrivo": "Stazione Termini, Roma",
+    "Agenda": [
+      {
+        "tappa_numero": 1,
+        "tipo_tappa": "Lavoro",
+        "data": "2026-05-10",
+        "fascia_oraria": "09:30",
+        "luogo": "Firenze, Viale dei Mille",
+        "durata": "2h",
+        "dettagli": "Meeting Cliente Alpha",
+        "richieste_ai": [
+          "Trova prospect o clienti potenziali in zona",
+          "Cerca parcheggio comodo per appuntamento"
+        ]
+      },
+      {
+        "tappa_numero": 2,
+        "tipo_tappa": "Tempo Libero",
+        "data": "2026-05-10",
+        "fascia_oraria": "Pomeriggio",
+        "luogo": "Firenze Centro Storico",
+        "durata": "Mezza Giornata",
+        "dettagli": "Voglio rilassarmi prima di ripartire",
+        "richieste_ai": [
+          "Consiglia Ristoranti tipici o osterie locali",
+          "Cosa vedere: monumenti storici o musei"
+        ]
+      }
+    ],
+    "AI_Config_Globale": {
+      "ottimizza_percorso": true,
+      "pianifica_logistica": true,
+      "direttive_extra": "Ho una macchina elettrica, cerca colonnine."
+    }
   },
   "context": {
-    "chatId":   "123456789",
+    "chatId": "123456789",
     "threadId": "thread_001",
-    "language": "it",
-    "user_id":  "987654321"
+    "user_id": "987654321"
   }
 }
 ```
-
-### Esempi per scenario
-
-#### Percorso per appuntamento con pernottamento
-```json
-{
-  "type": "TRIP_PLANNING_SUBMISSION",
-  "payload": {
-    "Partenza":              "Via Roma 1, Milano",
-    "Arrivo":               "Sede",
-    "TipoPercorso":         "appuntamenti",
-    "TappeIntermedie":      null,
-    "Dettagli":             "Cliente Rossi - Firma contratto",
-    "DataAppuntamento":     "2026-04-15",
-    "PernottamentoIncluso": true,
-    "Notti":                2,
-    "Adulti":               2,
-    "Bambini":              0
-  },
-  "context": {
-    "chatId":   "123456789",
-    "threadId": "thread_001",
-    "language": "it",
-    "user_id":  "987654321"
-  }
-}
-```
-
-#### Percorso per interessi senza pernottamento
-```json
-{
-  "type": "TRIP_PLANNING_SUBMISSION",
-  "payload": {
-    "Partenza":              "Sede",
-    "Arrivo":               "Sede",
-    "TipoPercorso":         "interessi",
-    "TappeIntermedie":      "Fiera Milano, Centro Commerciale Sarca",
-    "Dettagli":             "Sopralluogo potenziali clienti retail",
-    "DataAppuntamento":     null,
-    "PernottamentoIncluso": false,
-    "Notti":                null,
-    "Adulti":               null,
-    "Bambini":              null
-  },
-  "context": {
-    "chatId":   null,
-    "threadId": null,
-    "language": "it",
-    "user_id":  null
-  }
-}
-```
-
-### Valori dei campi in dettaglio
-
-| Campo                | Tipo      | Valore quando sede selezionata | Valore quando personalizzato  |
-|----------------------|-----------|-------------------------------|-------------------------------|
-| `Partenza`           | `string`  | `"Sede"`                      | Testo inserito dall'utente    |
-| `Arrivo`             | `string`  | `"Sede"`                      | Testo inserito dall'utente    |
-| `TipoPercorso`       | `string`  | —                             | `"interessi"` o `"appuntamenti"` |
-| `TappeIntermedie`    | `string\|null` | —                        | Stringa o `null`              |
-| `Dettagli`           | `string\|null` | —                        | Stringa o `null`              |
-| `DataAppuntamento`   | `string\|null` | —                        | Formato `YYYY-MM-DD` o `null` |
-| `PernottamentoIncluso` | `boolean` | —                           | `true` o `false`              |
-| `Notti`              | `number\|null` | —                        | Intero o `null`               |
-| `Adulti`             | `number\|null` | —                        | Intero o `null`               |
-| `Bambini`            | `number\|null` | —                        | Intero o `null`               |
 
 ---
 
 ## 6. Risposta attesa da WH_SOLVER
 
-Il webhook non necessita di restituire un body specifico. `solver.html` valuta solo lo **status HTTP**.
+Il frontend non legge il body JSON della risposta, valuta unicamente lo **Status Code HTTP**:
 
-| Status HTTP | Comportamento frontend                                       |
-|-------------|--------------------------------------------------------------|
-| `2xx`       | Bottone diventa verde ✓ → `postMessage` al parent → chiude  |
-| Non `2xx`   | Bottone ripristinato → `tg.showAlert()` con messaggio errore |
-
-> Il backend può comunque restituire JSON, ma `solver.html` lo ignora.  
-> Il risultato viene comunicato ad `assistant.html` tramite `postMessage` (§7),  
-> che poi opzionalmente lo invia a `WH_CHAT` con `action: npl_chat`.
+*   **HTTP 2xx (Successo):** Il bottone cambia stato (verde, "Affidato all'A.I.").
+*   **HTTP 4xx/5xx (Errore):** L'invio viene annullato, il bottone torna normale e viene mostrato un `tg.showAlert()` nativo di Telegram.
 
 ---
 
-## 7. postMessage verso assistant.html
+## 7. Integrazione postMessage (assistant.html)
 
-Se `solver.html` è caricato in un `<iframe>` (modalità embedded), al successo invia:
+Per funzionare in modo fluido come popup, `solver.html` non esegue ricaricamenti. 
+Dopo **1200ms** dalla ricezione del codice 200 dal Webhook, impacchetta un riassunto testuale (Markdown) e lo invia al documento genitore (`assistant.html`) tramite `postMessage`.
 
 ```javascript
-window.parent.postMessage(
-  {
-    type:    'SOLVER_RESULT',
-    payload: { /* stessi dati del payload inviato al webhook */ }
-  },
-  '*'
-);
+window.parent.postMessage({
+    type: 'SOLVER_DATA',
+    payload: summary // Stringa Markdown pre-formattata
+}, '*');
 ```
 
-### Payload completo del postMessage
-
-```json
-{
-  "type": "SOLVER_RESULT",
-  "payload": {
-    "Partenza":              "Sede",
-    "Arrivo":               "Sede",
-    "TipoPercorso":         "interessi",
-    "TappeIntermedie":      "Tappa 1, Tappa 2",
-    "Dettagli":             "Note percorso",
-    "DataAppuntamento":     null,
-    "PernottamentoIncluso": false,
-    "Notti":                null,
-    "Adulti":               null,
-    "Bambini":              null
-  }
-}
-```
-
-### Timing della sequenza
-
-```
-solver.html: fetch(WH_SOLVER) → risposta 2xx
-  → setTimeout 300ms (animazione ✓)
-  → window.parent.postMessage({ type: 'SOLVER_RESULT', payload })
-
-assistant.html: window.addEventListener('message', handler)
-  → verifica e.data.type === 'SOLVER_RESULT'
-  → closeSolver()         ← chiude overlay
-  → assembla testo
-  → addMessage('user', testo)
-  → callApi(WH_CHAT, { action: 'npl_chat', message: testo })
-```
+### Flusso Lato Assistant
+L'`assistant.html` in ascolto:
+1. Riceve l'evento `SOLVER_DATA`.
+2. Chiude l'iframe (`#solver-overlay`).
+3. Stampa il `payload` in chat grafica come fosse stato digitato dall'utente.
+4. Inoltra silente la stringa al Webhook Chat (`WH_CHAT`) fornendo il contesto agli agenti attivi.
 
 ---
 
-## 8. Logica di validazione form
+## 8. Logica di validazione e dinamismi
 
-Il bottone Submit è **disabilitato** finché tutti i campi con `required` non hanno un valore.
+Il tasto **"Genera Itinerario Misto"** rimane disabilitato finché la validazione non è superata.
 
-### Campi `required` dinamici
-
-| Condizione                              | Campo che diventa `required`                     |
-|-----------------------------------------|--------------------------------------------------|
-| `partenzaDaSede` deselezionato          | `#partenza`                                      |
-| `arrivoInSede` deselezionato            | `#arrivo`                                        |
-| `tripType === 'appuntamenti'`           | `#dataAppuntamento`                              |
-| `includeTripDetails` selezionato        | `#notti`, `#adulti`                              |
-
-### Sezioni dinamiche (visibilità)
-
-| Trigger                                 | Mostra                      | Nasconde                    |
-|-----------------------------------------|-----------------------------|-----------------------------|
-| `partenzaDaSede` → deselezionato        | `#customPartenzaContainer`  | —                           |
-| `arrivoInSede` → deselezionato          | `#customArrivoContainer`    | —                           |
-| `tripType` → `appuntamenti`             | `#dataAppuntamentoContainer`| `#midpointContainer`        |
-| `tripType` → `interessi`                | `#midpointContainer`        | `#dataAppuntamentoContainer`|
-| `includeTripDetails` → selezionato      | `#tripDetailsContainer`     | —                           |
+### Regole UI dinamiche
+*   Ogni volta che si clicca "Aggiungi Tappa", il DOM genera una nuova Card con ID incrementale (`appt-1`, `appt-2`, ecc.).
+*   Le card > 1 presentano un'icona "Cestino" per la rimozione dinamica.
+*   Il cambio del selettore `Lavoro/Tempo Libero` nasconde i tag di una categoria e mostra quelli dell'altra, azzerando le selezioni precedenti di quella card.
+*   Se la "Partenza da Sede" viene disabilitata, l'input testuale generato sottostante acquisisce automaticamente l'attributo `required`.
 
 ---
 
-## 9. Internazionalizzazione
+## 9. Comportamento UI per stato
 
-Le traduzioni sono gestite tramite un oggetto `translations` inline. Le lingue supportate sono:
-
-| Codice | Lingua     |
-|--------|------------|
-| `it`   | Italiano   |
-| `en`   | English    |
-| `fr`   | Français   |
-| `de`   | Deutsch    |
-| `es`   | Español    |
-| `pt`   | Português  |
-
-La lingua viene letta dal parametro URL `?lang=`. Se non presente o non riconosciuta, si usa `it` come fallback.
-
----
-
-## 10. Comportamento UI per stato
-
-| Stato                        | Bottone Submit                              | Comportamento                              |
-|------------------------------|---------------------------------------------|--------------------------------------------|
-| Form incompleto              | Disabilitato (opacity 0.45)                | Nessuna azione al click                    |
-| Form valido                  | Abilitato (`background: var(--primary)`)    | Click → invia richiesta                    |
-| Invio in corso               | Spinner `fa-circle-notch fa-spin`           | Disabilitato durante la chiamata           |
-| Successo (HTTP 2xx)          | Verde ✓ `btn-success`                       | Chiude automaticamente dopo 300ms delay    |
-| Errore (HTTP non 2xx)        | Ripristinato al testo originale             | `tg.showAlert()` con messaggio errore      |
+| Stato | UI Bottone Submit | Azione/Comportamento |
+| :--- | :--- | :--- |
+| **Incompleto** | Opacity 50%, Disabilitato | Attende compilazione dei campi `required`. |
+| **Pronto** | Attivo, Blu Scuro | Click scatena compilazione JSON e Fetch. |
+| **Loading** | Spinner rotante + "Elaborazione A.I. in corso..." | Disabilita doppi click durante la POST. |
+| **Successo** | Verde + "Itinerario Affidato all'A.I.!" | Attende 1.2 sec, spara `postMessage` e delega la chiusura al Parent. |
+| **Errore HTTP**| Ripristinato stato iniziale ("Riprova Invio") | Alert nativo Telegram (`tg.showAlert`). |
