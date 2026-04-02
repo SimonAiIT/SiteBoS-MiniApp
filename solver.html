@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>Pianifica Percorso</title>
+  <title>Agenda & Percorsi</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
-    /* ── TOKEN DI DESIGN (identici a assistant.html) ──────────── */
+    /* ── TOKEN DI DESIGN ──────────── */
     :root {
       --primary:    #212D67;
       --accent:     #895FE0;
@@ -21,588 +21,430 @@
       --success:    #27ae60;
       --radius-sm:  8px;
       --radius-md:  12px;
-      --radius-lg:  16px;
       --shadow-sm:  0 2px 5px rgba(0,0,0,0.05);
-      --shadow-md:  0 4px 16px rgba(0,0,0,0.08);
       --trans:      180ms cubic-bezier(0.16,1,0.3,1);
     }
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    html { -webkit-text-size-adjust: none; }
-    body {
-      font-family: 'Inter', sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      min-height: 100vh;
-      padding-bottom: env(safe-area-inset-bottom, 20px);
-    }
+    body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; padding-bottom: env(safe-area-inset-bottom, 20px); }
 
-    /* ── HEADER ───────────────────────────────────────── */
-    .page-header {
-      background: var(--surface);
-      padding: 14px 16px 12px;
-      box-shadow: var(--shadow-sm);
-      position: sticky; top: 0; z-index: 10;
-      display: flex; align-items: center; gap: 10px;
-    }
-    .page-header-icon {
-      width: 36px; height: 36px;
-      background: #e8edf8;
-      border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      color: var(--primary); font-size: 16px; flex-shrink: 0;
-    }
-    .page-header-text h1 {
-      font-size: 16px; font-weight: 700; color: var(--primary); line-height: 1.2;
-    }
-    .page-header-text p {
-      font-size: 12px; color: var(--text-muted); margin-top: 1px;
-    }
+    /* HEADER */
+    .page-header { background: var(--surface); padding: 14px 16px 12px; box-shadow: var(--shadow-sm); position: sticky; top: 0; z-index: 10; display: flex; align-items: center; gap: 10px; }
+    .page-header-icon { width: 36px; height: 36px; background: #e8edf8; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--primary); font-size: 16px; flex-shrink: 0; }
+    .page-header-text h1 { font-size: 16px; font-weight: 700; color: var(--primary); line-height: 1.2; margin:0; }
+    .page-header-text p { font-size: 12px; color: var(--text-muted); margin-top: 1px; }
 
-    /* ── CONTENITORE ───────────────────────────────────── */
-    .container {
-      padding: 14px 14px 24px;
-      display: flex; flex-direction: column; gap: 12px;
-    }
+    /* LAYOUT */
+    .container { padding: 14px 14px 24px; display: flex; flex-direction: column; gap: 14px; }
+    .card { background: var(--surface); border-radius: var(--radius-md); border: 1px solid var(--border); padding: 16px; box-shadow: var(--shadow-sm); }
+    .section-title { font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--primary); margin-bottom: 14px; display: flex; align-items: center; gap: 6px; }
+    .section-title.ai-title { color: var(--accent); }
 
-    /* ── CARD (stile identico ai thread-item di assistant) ────── */
-    .card {
-      background: var(--surface);
-      border-radius: var(--radius-md);
-      border: 1px solid var(--border);
-      padding: 16px;
-      box-shadow: var(--shadow-sm);
-    }
-
-    .section-title {
-      font-size: 11px; font-weight: 700;
-      letter-spacing: 0.08em; text-transform: uppercase;
-      color: var(--accent); margin-bottom: 14px;
-    }
-
-    /* ── FORM ELEMENTS ────────────────────────────────── */
-    .form-group {
-      margin-bottom: 14px;
-    }
+    /* FORM ELEMENTS */
+    .form-group { margin-bottom: 12px; }
     .form-group:last-child { margin-bottom: 0; }
-
-    label {
-      display: block;
-      font-size: 13px; font-weight: 500; color: var(--text);
-      margin-bottom: 6px;
-    }
-    label.required::after {
-      content: ' *'; color: var(--danger); font-weight: 700;
-    }
-
-    input[type="text"],
-    input[type="date"],
-    input[type="number"],
-    textarea {
-      width: 100%;
-      border: 1px solid var(--border);
-      border-radius: var(--radius-sm);
-      padding: 10px 12px;
-      font-family: 'Inter', sans-serif;
-      font-size: 14px; color: var(--text);
-      background: var(--surface);
-      outline: none;
-      transition: border-color var(--trans), box-shadow var(--trans);
-      -webkit-appearance: none;
-    }
-    input[type="text"]:focus,
-    input[type="date"]:focus,
-    input[type="number"]:focus,
-    textarea:focus {
-      border-color: var(--accent);
-      box-shadow: 0 0 0 3px rgba(137,95,224,0.12);
-    }
+    label { display: block; font-size: 12px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+    label.required::after { content: ' *'; color: var(--danger); }
+    input[type="text"], input[type="date"], input[type="time"], select, textarea { width: 100%; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 10px 12px; font-family: 'Inter', sans-serif; font-size: 14px; color: var(--text); background: var(--surface); outline: none; transition: border-color var(--trans), box-shadow var(--trans); -webkit-appearance: none; }
+    input:focus, select:focus, textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(137,95,224,0.12); }
     textarea { resize: none; line-height: 1.5; }
-    input[type="number"] { text-align: center; }
-
-    .hint {
-      font-size: 11px; color: var(--text-muted); margin-top: 5px;
-    }
-
-    /* ── CHECKBOX TOGGLE (stile pill) ────────────────────── */
-    .checkbox-group {
-      display: flex; align-items: center; gap: 10px;
-      margin-bottom: 10px;
-    }
-    .checkbox-group input[type="checkbox"] {
-      appearance: none; -webkit-appearance: none;
-      width: 42px; height: 24px; border-radius: 12px;
-      background: var(--border); cursor: pointer;
-      flex-shrink: 0;
-      position: relative;
-      transition: background var(--trans);
-    }
-    .checkbox-group input[type="checkbox"]::after {
-      content: '';
-      position: absolute; top: 3px; left: 3px;
-      width: 18px; height: 18px; border-radius: 50%;
-      background: #fff;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
-      transition: transform var(--trans);
-    }
-    .checkbox-group input[type="checkbox"]:checked {
-      background: var(--primary);
-    }
-    .checkbox-group input[type="checkbox"]:checked::after {
-      transform: translateX(18px);
-    }
-    .checkbox-group label {
-      margin-bottom: 0; cursor: pointer; font-size: 14px;
-    }
-
-    /* ── RADIO GROUP (card selezionabili) ─────────────────── */
-    .radio-group {
-      display: flex; gap: 10px;
-      margin-bottom: 0;
-    }
-    .radio-group input[type="radio"] { display: none; }
-    .radio-group label {
-      flex: 1; margin-bottom: 0;
-      padding: 10px 8px;
-      border: 1px solid var(--border);
-      border-radius: var(--radius-sm);
-      text-align: center;
-      font-size: 13px; font-weight: 500; color: var(--text-muted);
-      cursor: pointer;
-      transition: border-color var(--trans), color var(--trans), background var(--trans);
-      background: var(--bg);
-    }
-    .radio-group input[type="radio"]:checked + label {
-      border-color: var(--accent);
-      color: var(--accent);
-      background: #f0ebff;
-      font-weight: 600;
-    }
-
-    /* ── ROW / COL (per notti/adulti/bambini) ──────────────── */
     .row { display: flex; gap: 10px; }
-    .col { flex: 1; }
-    .col label { font-size: 12px; }
+    .col { flex: 1; min-width: 0; }
 
-    /* ── PULSANTE PRINCIPALE (identico a assistant.html btn-primary) ── */
-    .btn-container {
-      padding: 0;
-    }
-    .btn-primary {
-      width: 100%;
-      padding: 14px;
-      background: var(--primary);
-      color: #fff;
-      border: none;
-      border-radius: var(--radius-sm);
-      font-family: 'Inter', sans-serif;
-      font-size: 15px; font-weight: 600;
-      cursor: pointer;
-      display: flex; align-items: center; justify-content: center; gap: 8px;
-      transition: background var(--trans), opacity var(--trans);
-      -webkit-tap-highlight-color: transparent;
-    }
-    .btn-primary:hover:not(:disabled) { background: #1a2456; }
-    .btn-primary:active:not(:disabled) { background: #141d40; }
-    .btn-primary:disabled {
-      opacity: 0.45; cursor: not-allowed;
-    }
-    .btn-primary.btn-success {
-      background: var(--success);
-    }
+    /* CHECKBOX TOGGLE BASE */
+    .checkbox-group { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+    .checkbox-group input[type="checkbox"] { appearance: none; -webkit-appearance: none; width: 42px; height: 24px; border-radius: 12px; background: var(--border); cursor: pointer; flex-shrink: 0; position: relative; transition: background var(--trans); }
+    .checkbox-group input[type="checkbox"]::after { content: ''; position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.2); transition: transform var(--trans); }
+    .checkbox-group input[type="checkbox"]:checked { background: var(--primary); }
+    .checkbox-group.ai-toggle input[type="checkbox"]:checked { background: var(--accent); }
+    .checkbox-group input[type="checkbox"]:checked::after { transform: translateX(18px); }
+    .checkbox-group label { margin-bottom: 0; cursor: pointer; font-size: 14px; font-weight: 500; }
+    .checkbox-desc { font-size: 11px; color: var(--text-muted); margin-left: 52px; margin-top: -6px; margin-bottom: 10px; line-height: 1.3;}
 
-    .cancel-hint {
-      text-align: center;
-      font-size: 12px; color: var(--text-muted);
-      margin-top: 8px;
-    }
+    /* PER-STOP SEGMENTED CONTROL (Lavoro vs Libero) */
+    .segmented-control { display: flex; background: var(--bg); border-radius: var(--radius-sm); padding: 3px; margin-bottom: 12px; border: 1px solid var(--border); }
+    .segmented-control input[type="radio"] { display: none; }
+    .segmented-control label { flex: 1; text-align: center; padding: 8px; font-size: 13px; font-weight: 600; color: var(--text-muted); border-radius: 6px; cursor: pointer; margin: 0; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 6px; }
+    .segmented-control input[type="radio"]:checked + label { background: var(--surface); color: var(--primary); box-shadow: var(--shadow-sm); }
+    .segmented-control input[type="radio"].leisure-radio:checked + label { color: var(--accent); }
 
-    /* ── HIDDEN + ANIMAZIONE REVEAL ───────────────────────── */
+    /* APPUNTAMENTI / TAPPE */
+    #agenda-container { display: flex; flex-direction: column; gap: 15px; }
+    .appt-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 14px; position: relative; box-shadow: 0 1px 3px rgba(0,0,0,0.02); }
+    .appt-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; font-weight: 700; font-size: 14px; color: var(--text); border-bottom: 1px solid var(--border); padding-bottom: 8px;}
+    .btn-remove-appt { background: none; border: none; color: var(--danger); font-size: 16px; cursor: pointer; padding: 4px; }
+    .btn-add-appt { width: 100%; background: transparent; border: 2px dashed var(--border); color: var(--primary); font-weight: 600; padding: 12px; border-radius: var(--radius-sm); cursor: pointer; transition: all var(--trans); font-size: 14px; margin-top: 5px; }
+    .btn-add-appt:hover { border-color: var(--primary); background: #e8edf8; }
+
+    /* SMART TAGS */
+    .smart-tags-container { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+    .smart-tag { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 5px 10px; font-size: 11px; font-weight: 500; color: var(--text-muted); cursor: pointer; transition: all 0.2s; user-select: none; }
+    .smart-tag.active { background: #f0ebff; color: var(--accent); border-color: var(--accent); font-weight: 600; }
+    .smart-tag.business-tag.active { background: #e8edf8; color: var(--primary); border-color: var(--primary); }
+
+    /* BOTTONE FINALE */
+    .btn-primary { width: 100%; padding: 14px; background: var(--primary); color: #fff; border: none; border-radius: var(--radius-sm); font-family: 'Inter', sans-serif; font-size: 15px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: background var(--trans); }
+    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-primary.btn-success { background: var(--success); }
+
     .hidden { display: none !important; }
-    .reveal {
-      animation: revealDown 0.22s cubic-bezier(0.16,1,0.3,1);
-    }
-    @keyframes revealDown {
-      from { opacity: 0; transform: translateY(-6px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-
-    /* ── INPUT AGGIUNTIVO (sotto checkbox) ────────────────── */
-    .input-group {
-      padding: 10px 0 4px 52px;
-    }
-    .input-group label { font-size: 12px; color: var(--text-muted); }
+    .input-group { padding: 4px 0 10px 52px; }
   </style>
 </head>
 <body>
 
-  <!-- HEADER identico per stile all'header di assistant.html -->
   <div class="page-header">
-    <div class="page-header-icon"><i class="fas fa-route"></i></div>
+    <div class="page-header-icon"><i class="fas fa-calendar-alt"></i></div>
     <div class="page-header-text">
-      <h1 id="title">Pianifica Percorso</h1>
-      <p id="subtitle"></p>
+      <h1 id="title">Agenda & Percorsi</h1>
+      <p id="subtitle">Pianifica tappe miste: lavoro e tempo libero</p>
     </div>
   </div>
 
   <div class="container">
     <form id="travelForm">
 
-      <!-- SEZIONE 1: ITINERARIO -->
+      <!-- 1. BASE LOGISTICA -->
       <div class="card">
-        <div class="section-title">Itinerario</div>
+        <div class="section-title"><i class="fas fa-map-marker-alt"></i> Inizio e Fine Viaggio</div>
 
         <div class="form-group checkbox-group">
           <input type="checkbox" id="partenzaDaSede" checked>
-          <label for="partenzaDaSede"><span id="lblPartenzaSede">Partenza da Sede</span></label>
+          <label for="partenzaDaSede">Partenza dalla Sede Principale</label>
         </div>
         <div id="customPartenzaContainer" class="hidden input-group">
-          <label for="partenza" class="required"><span id="lblPartenza">Punto di Partenza</span></label>
-          <input type="text" id="partenza" placeholder="Es. Via Roma 1, Milano">
+          <input type="text" id="partenza" placeholder="Es. Milano, Via Roma 1">
         </div>
 
-        <div class="form-group checkbox-group" style="margin-top:4px">
+        <div class="form-group checkbox-group" style="margin-top:8px">
           <input type="checkbox" id="arrivoInSede" checked>
-          <label for="arrivoInSede"><span id="lblArrivoSede">Arrivo in Sede</span></label>
+          <label for="arrivoInSede">Rientro in Sede a fine viaggio</label>
         </div>
         <div id="customArrivoContainer" class="hidden input-group">
-          <label for="arrivo" class="required"><span id="lblArrivo">Punto di Arrivo</span></label>
-          <input type="text" id="arrivo" placeholder="Es. Piazza Verdi, Roma">
+          <input type="text" id="arrivo" placeholder="Es. Bologna Centrale">
         </div>
       </div>
 
-      <!-- SEZIONE 2: SCOPO -->
-      <div class="card">
-        <div class="section-title" id="lblTipoPercorso">Scopo del percorso</div>
-
-        <div class="form-group radio-group">
-          <input type="radio" name="tripType" value="interessi" id="radio-interessi" checked>
-          <label for="radio-interessi"><i class="fas fa-star" style="margin-right:5px"></i><span id="optInteressi">Interessi</span></label>
-
-          <input type="radio" name="tripType" value="appuntamenti" id="radio-appuntamenti">
-          <label for="radio-appuntamenti"><i class="fas fa-calendar" style="margin-right:5px"></i><span id="optAppuntamenti">Appuntamenti</span></label>
+      <!-- 2. LA TUA AGENDA (TAPPE DINAMICHE) -->
+      <div class="card" style="background: transparent; border: none; padding: 0; box-shadow: none;">
+        <div class="section-title"><i class="fas fa-map-signs"></i> Il tuo Itinerario</div>
+        
+        <div id="agenda-container">
+          <!-- Le tappe vengono iniettate qui via JS -->
         </div>
 
-        <div id="dataAppuntamentoContainer" class="form-group hidden" style="margin-top:12px">
-          <label for="dataAppuntamento" class="required"><span id="lblDataAppuntamento">Data Appuntamento</span></label>
-          <input type="date" id="dataAppuntamento">
-        </div>
-
-        <div id="midpointContainer" class="form-group" style="margin-top:12px">
-          <label for="midpoint"><span id="lblMidpoint">Tappe Intermedie</span></label>
-          <input type="text" id="midpoint" placeholder="Es. Tappa 1, Tappa 2...">
-          <div class="hint" id="hintMidpoint"></div>
-        </div>
-
-        <div class="form-group" style="margin-top:4px">
-          <label for="dettagli"><span id="lblDettagli">Dettagli</span></label>
-          <textarea id="dettagli" rows="2" placeholder="Aggiungi note o dettagli..."></textarea>
-        </div>
-      </div>
-
-      <!-- SEZIONE 3: LOGISTICA -->
-      <div class="card">
-        <div class="section-title">Logistica</div>
-
-        <div class="form-group checkbox-group">
-          <input type="checkbox" id="includeTripDetails">
-          <label for="includeTripDetails"><span id="lblPernottamento">Pianifica pernottamento</span></label>
-        </div>
-
-        <div id="tripDetailsContainer" class="hidden reveal">
-          <div class="row" style="margin-top:10px">
-            <div class="col">
-              <div class="form-group">
-                <label for="notti"><span id="lblNotti">Notti</span></label>
-                <input type="number" id="notti" min="1" value="1">
-              </div>
-            </div>
-            <div class="col">
-              <div class="form-group">
-                <label for="adulti"><span id="lblAdulti">Adulti</span></label>
-                <input type="number" id="adulti" min="1" value="2">
-              </div>
-            </div>
-            <div class="col">
-              <div class="form-group">
-                <label for="bambini"><span id="lblBambini">Bambini</span></label>
-                <input type="number" id="bambini" min="0" value="0">
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- BOTTONE -->
-      <div class="btn-container">
-        <button type="submit" id="submitBtn" class="btn-primary" disabled>
-          <i class="fas fa-route"></i>
-          <span id="btnLabel">Crea Itinerario</span>
+        <button type="button" id="btnAddAppt" class="btn-add-appt">
+          <i class="fas fa-plus"></i> Aggiungi Nuova Tappa
         </button>
       </div>
-      <p class="cancel-hint" id="cancelHint"></p>
+
+      <!-- 3. CERVELLO A.I. GLOBALE -->
+      <div class="card" style="border-color: var(--accent); background: #faf8ff;">
+        <div class="section-title ai-title"><i class="fas fa-brain"></i> Logistica A.I. Globale</div>
+
+        <div class="form-group checkbox-group ai-toggle">
+          <input type="checkbox" id="aiOptimizeRoute" checked>
+          <label for="aiOptimizeRoute">Ottimizza Tragitto & Tempi</label>
+        </div>
+        <div class="checkbox-desc">L'A.I. calcolerà i tempi di spostamento tra una tappa e l'altra suggerendo l'orario migliore.</div>
+
+        <div class="form-group checkbox-group ai-toggle">
+          <input type="checkbox" id="aiSuggestLogistics">
+          <label for="aiSuggestLogistics">Pianifica Pernottamento/Pasti</label>
+        </div>
+        <div class="checkbox-desc">Suggerisci automaticamente dove fermarsi a dormire o cenare in base alla mappa e agli orari.</div>
+        
+        <div class="form-group" style="margin-top:15px">
+          <label for="noteAI">Direttive di viaggio (Opzionale)</label>
+          <textarea id="noteAI" rows="2" placeholder="Es. Preferisco viaggiare in treno. Ho un budget limitato per gli hotel..."></textarea>
+        </div>
+      </div>
+
+      <!-- BOTTONE FINALE -->
+      <div>
+        <button type="submit" id="submitBtn" class="btn-primary">
+          <i class="fas fa-magic"></i>
+          <span>Genera Itinerario Misto</span>
+        </button>
+      </div>
     </form>
   </div>
 
   <script>
-    const translations = {
-      it: {
-        title: "Pianifica Percorso", subtitle: "Crea un itinerario o calcola un percorso per appuntamenti.",
-        lblPartenza: "Punto di Partenza Personalizzato", lblPartenzaSede: "Partenza da Sede",
-        lblArrivo: "Punto di Arrivo Personalizzato", lblArrivoSede: "Arrivo in Sede",
-        lblTipoPercorso: "Scopo del percorso", optInteressi: "Interessi", optAppuntamenti: "Appuntamenti",
-        lblDataAppuntamento: "Data Appuntamento",
-        lblMidpoint: "Tappe Intermedie (Opzionale)", hintMidpoint: "Separa le tappe con una virgola",
-        lblDettagliApp: "Dettagli Appuntamento (es. Cliente Rossi)", lblDettagliInt: "Elenca Interessi (es. cibo, musei)",
-        lblPernottamento: "Pianifica anche il pernottamento",
-        lblNotti: "Notti", lblAdulti: "Adulti", lblBambini: "Bambini",
-        btnSubmit: "Crea Itinerario", btnSuccess: "Richiesta inviata! ✓", cancelHint: "Per annullare, chiudi la finestra."
-      },
-      en: {
-        title: "Plan Route", subtitle: "Create an itinerary or calculate a route for appointments.",
-        lblPartenza: "Custom Starting Point", lblPartenzaSede: "Depart from Office",
-        lblArrivo: "Custom Destination", lblArrivoSede: "Arrive at Office",
-        lblTipoPercorso: "Purpose of the route", optInteressi: "Interests", optAppuntamenti: "Appointments",
-        lblDataAppuntamento: "Appointment Date",
-        lblMidpoint: "Midpoints / Stops (Optional)", hintMidpoint: "You can list multiple destinations here",
-        lblDettagliApp: "Appointment Details (e.g., Client Smith)", lblDettagliInt: "List Interests (e.g., food, museums)",
-        lblPernottamento: "Plan overnight stay as well",
-        lblNotti: "Nights", lblAdulti: "Adults", lblBambini: "Children",
-        btnSubmit: "Create Itinerary", btnSuccess: "Request sent! ✓", cancelHint: "To cancel, just close the window."
-      },
-      fr: {
-        title: "Planifier l'Itinéraire", subtitle: "Créez un itinéraire ou calculez un trajet pour des rendez-vous.",
-        lblPartenza: "Point de Départ Personnalisé", lblPartenzaSede: "Départ du Siège",
-        lblArrivo: "Destination Personnalisée", lblArrivoSede: "Arrivée au Siège",
-        lblTipoPercorso: "But du parcours", optInteressi: "Intérêts", optAppuntamenti: "Rendez-vous",
-        lblDataAppuntamento: "Date du Rendez-vous",
-        lblMidpoint: "Étapes Intermédiaires (Optionnel)", hintMidpoint: "Vous pouvez lister plusieurs destinations ici",
-        lblDettagliApp: "Détails du rendez-vous (ex: Client Durand)", lblDettagliInt: "Listez vos intérêts (ex: nourriture, musées)",
-        lblPernottamento: "Planifier aussi la nuitée",
-        lblNotti: "Nuits", lblAdulti: "Adultes", lblBambini: "Enfants",
-        btnSubmit: "Créer l'Itinéraire", btnSuccess: "Demande envoyée ! ✓", cancelHint: "Pour annuler, fermez la fenêtre."
-      },
-      de: {
-        title: "Route planen", subtitle: "Erstellen Sie eine Reiseroute oder berechnen Sie eine Strecke für Termine.",
-        lblPartenza: "Benutzerdefinierter Startpunkt", lblPartenzaSede: "Abfahrt vom Büro",
-        lblArrivo: "Benutzerdefiniertes Ziel", lblArrivoSede: "Ankunft im Büro",
-        lblTipoPercorso: "Zweck der Route", optInteressi: "Interessen", optAppuntamenti: "Termine",
-        lblDataAppuntamento: "Termindatum",
-        lblMidpoint: "Zwischenstopps (Optional)", hintMidpoint: "Sie können hier mehrere Ziele auflisten",
-        lblDettagliApp: "Termindetails (z.B. Kunde Müller)", lblDettagliInt: "Interessen auflisten (z.B. Essen, Museen)",
-        lblPernottamento: "Auch Übernachtung planen",
-        lblNotti: "Nächte", lblAdulti: "Erwachsene", lblBambini: "Kinder",
-        btnSubmit: "Route erstellen", btnSuccess: "Anfrage gesendet! ✓", cancelHint: "Zum Abbrechen, schließen Sie das Fenster."
-      },
-      es: {
-        title: "Planificar Ruta", subtitle: "Crea un itinerario o calcula una ruta para citas.",
-        lblPartenza: "Punto de Salida Personalizado", lblPartenzaSede: "Salida desde la Oficina",
-        lblArrivo: "Destino Personalizado", lblArrivoSede: "Llegada a la Oficina",
-        lblTipoPercorso: "Propósito de la ruta", optInteressi: "Intereses", optAppuntamenti: "Citas",
-        lblDataAppuntamento: "Fecha de la Cita",
-        lblMidpoint: "Paradas Intermedias (Opcional)", hintMidpoint: "Puedes listar múltiples destinos aquí",
-        lblDettagliApp: "Detalles de la cita (ej: Cliente García)", lblDettagliInt: "Enumera intereses (ej: comida, museos)",
-        lblPernottamento: "Planificar también la pernoctación",
-        lblNotti: "Noches", lblAdulti: "Adultos", lblBambini: "Niños",
-        btnSubmit: "Crear Itinerario", btnSuccess: "¡Solicitud enviada! ✓", cancelHint: "Para cancelar, cierra la ventana."
-      },
-      pt: {
-        title: "Planear Rota", subtitle: "Crie um itinérario ou calcule uma rota para compromissos.",
-        lblPartenza: "Ponto de Partida Personalizado", lblPartenzaSede: "Partida do Escritório",
-        lblArrivo: "Destino Personalizado", lblArrivoSede: "Chegada ao Escritório",
-        lblTipoPercorso: "Objetivo da rota", optInteressi: "Interesses", optAppuntamenti: "Compromissos",
-        lblDataAppuntamento: "Data do Compromisso",
-        lblMidpoint: "Paragens Intermédias (Opcional)", hintMidpoint: "Pode listar vários destinos aqui",
-        lblDettagliApp: "Detalhes do compromisso (ex: Cliente Silva)", lblDettagliInt: "Liste interesses (ex: comida, museus)",
-        lblPernottamento: "Planear também a pernoita",
-        lblNotti: "Noites", lblAdulti: "Adultos", lblBambini: "Crianças",
-        btnSubmit: "Criar Itinário", btnSuccess: "Pedido enviado! ✓", cancelHint: "Para cancelar, feche a janela."
-      }
+    // WEBHOOK AGGIORNATO
+    const WH_SOLVER = "https://prod.workflow.trinai.it/webhook/26237ccb-3621-4dc7-b15f-fe8a50be3a6f";
+
+    const tg = window.Telegram.WebApp;
+    tg.ready(); tg.expand();
+    const urlParams = new URLSearchParams(window.location.search);
+
+    const dom = {
+      form: document.getElementById('travelForm'),
+      submitBtn: document.getElementById('submitBtn'),
+      partenzaDaSede: document.getElementById('partenzaDaSede'),
+      partenza: document.getElementById('partenza'),
+      customPartenzaContainer: document.getElementById('customPartenzaContainer'),
+      arrivoInSede: document.getElementById('arrivoInSede'),
+      arrivo: document.getElementById('arrivo'),
+      customArrivoContainer: document.getElementById('customArrivoContainer'),
+      agendaContainer: document.getElementById('agenda-container'),
+      btnAddAppt: document.getElementById('btnAddAppt'),
+      aiOptimizeRoute: document.getElementById('aiOptimizeRoute'),
+      aiSuggestLogistics: document.getElementById('aiSuggestLogistics'),
+      noteAI: document.getElementById('noteAI')
     };
 
-    const WH_SOLVER = "https://trinai.api.workflow.dcmake.it/webhook/a0b6b2cb-4e19-4a92-9269-6b6d8a7afb80";
+    let apptCounter = 0;
 
-    try {
-      const tg = window.Telegram.WebApp;
-      tg.ready(); tg.expand();
+    // Toggle Inizio/Fine
+    function toggleField(checkbox, container, input) {
+      checkbox.addEventListener('change', function() {
+        container.classList.toggle('hidden', !this.checked);
+        input.toggleAttribute('required', !this.checked);
+        validateForm();
+      });
+    }
+    toggleField(dom.partenzaDaSede, dom.customPartenzaContainer, dom.partenza);
+    toggleField(dom.arrivoInSede, dom.customArrivoContainer, dom.arrivo);
 
-      const urlParams = new URLSearchParams(window.location.search);
-      const lang = urlParams.get('lang') || 'it';
-      const t = translations[lang] || translations['it'];
+    // Gestione Tappe Dinamiche
+    function addAppointment() {
+      apptCounter++;
+      const id = apptCounter;
+      const today = new Date().toISOString().split('T')[0];
+      
+      const div = document.createElement('div');
+      div.className = 'appt-card';
+      div.id = `appt-${id}`;
+      
+      div.innerHTML = `
+        <div class="appt-header">
+          <span>📍 Tappa #${id}</span>
+          ${id > 1 ? `<button type="button" class="btn-remove-appt" onclick="removeAppointment(${id})"><i class="fas fa-trash"></i></button>` : ''}
+        </div>
 
-      const dom = {
-        form:                     document.getElementById('travelForm'),
-        submitBtn:                document.getElementById('submitBtn'),
-        btnLabel:                 document.getElementById('btnLabel'),
-        title:                    document.getElementById('title'),
-        subtitle:                 document.getElementById('subtitle'),
-        lblPartenza:              document.getElementById('lblPartenza'),
-        lblPartenzaSede:          document.getElementById('lblPartenzaSede'),
-        lblArrivo:                document.getElementById('lblArrivo'),
-        lblArrivoSede:            document.getElementById('lblArrivoSede'),
-        lblTipoPercorso:          document.getElementById('lblTipoPercorso'),
-        optInteressi:             document.getElementById('optInteressi'),
-        optAppuntamenti:          document.getElementById('optAppuntamenti'),
-        lblDataAppuntamento:      document.getElementById('lblDataAppuntamento'),
-        lblMidpoint:              document.getElementById('lblMidpoint'),
-        hintMidpoint:             document.getElementById('hintMidpoint'),
-        lblPernottamento:         document.getElementById('lblPernottamento'),
-        lblNotti:                 document.getElementById('lblNotti'),
-        lblAdulti:                document.getElementById('lblAdulti'),
-        lblBambini:               document.getElementById('lblBambini'),
-        cancelHint:               document.getElementById('cancelHint'),
-        partenzaDaSede:           document.getElementById('partenzaDaSede'),
-        customPartenzaContainer:  document.getElementById('customPartenzaContainer'),
-        partenza:                 document.getElementById('partenza'),
-        arrivoInSede:             document.getElementById('arrivoInSede'),
-        customArrivoContainer:    document.getElementById('customArrivoContainer'),
-        arrivo:                   document.getElementById('arrivo'),
-        dataAppuntamentoContainer:document.getElementById('dataAppuntamentoContainer'),
-        dataAppuntamento:         document.getElementById('dataAppuntamento'),
-        midpointContainer:        document.getElementById('midpointContainer'),
-        midpoint:                 document.getElementById('midpoint'),
-        dettagli:                 document.getElementById('dettagli'),
-        lblDettagli:              document.getElementById('lblDettagli'),
-        includeTripDetails:       document.getElementById('includeTripDetails'),
-        tripDetailsContainer:     document.getElementById('tripDetailsContainer'),
-        notti:                    document.getElementById('notti'),
-        adulti:                   document.getElementById('adulti'),
-        bambini:                  document.getElementById('bambini'),
-        tripTypeRadios:           document.querySelectorAll('input[name="tripType"]')
+        <!-- SELETTORE SCOPO PER QUESTA SINGOLA TAPPA -->
+        <div class="segmented-control">
+          <input type="radio" id="type_bus_${id}" name="type_${id}" value="business" class="type-radio" checked>
+          <label for="type_bus_${id}"><i class="fas fa-briefcase"></i> Lavoro</label>
+          
+          <input type="radio" id="type_leis_${id}" name="type_${id}" value="leisure" class="type-radio leisure-radio">
+          <label for="type_leis_${id}"><i class="fas fa-camera-retro"></i> Tempo Libero</label>
+        </div>
+
+        <div class="row form-group">
+          <div class="col">
+            <label class="required">Data</label>
+            <input type="date" class="appt-date" value="${today}" required>
+          </div>
+          <div class="col">
+            <label class="required">Fascia/Ora</label>
+            <input type="text" class="appt-time" placeholder="es. 14:30 o Pomeriggio" required>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="required">Città o Luogo</label>
+          <input type="text" class="appt-location" placeholder="Es. Vicenza, Viale Roma" required>
+        </div>
+
+        <div class="row form-group">
+          <div class="col" style="flex: 0.5">
+            <label>Durata (ca.)</label>
+            <select class="appt-duration">
+              <option value="1h">1 Ora</option>
+              <option value="2h">2 Ore</option>
+              <option value="Mezza Giornata">Mezza Giornata</option>
+              <option value="Veloce">Veloce (15m)</option>
+            </select>
+          </div>
+          <div class="col">
+            <label id="lbl_notes_${id}">Chi / Azienda</label>
+            <input type="text" class="appt-notes" placeholder="es. Riunione Cliente X">
+          </div>
+        </div>
+
+        <!-- PANNELLI SMART TAGS (Dinamici in base al tipo) -->
+        <div class="form-group" style="margin-bottom:0;">
+          <label style="font-size:11px; color:var(--text-muted); margin-bottom:0;">Assistente A.I. per questa tappa:</label>
+          
+          <!-- Tags Business -->
+          <div id="tags_bus_${id}" class="smart-tags-container">
+            <div class="smart-tag business-tag" data-val="Trova prospect o clienti potenziali in zona">🔍 Cerca Prospect Vicini</div>
+            <div class="smart-tag business-tag" data-val="Trova un bar/cafè adatto per lavorare o meeting">☕ Bar per Lavorare</div>
+            <div class="smart-tag business-tag" data-val="Cerca parcheggio comodo per appuntamento">🅿️ Trova Parcheggio</div>
+          </div>
+
+          <!-- Tags Leisure (Nascosti di default) -->
+          <div id="tags_leis_${id}" class="smart-tags-container hidden">
+            <div class="smart-tag" data-val="Consiglia Ristoranti tipici o osterie locali">🍝 Cibo Locale</div>
+            <div class="smart-tag" data-val="Cosa vedere: monumenti storici o musei">🏛️ Arte e Storia</div>
+            <div class="smart-tag" data-val="Cerca punti panoramici, parchi o natura">🌲 Natura / Parchi</div>
+            <div class="smart-tag" data-val="Suggerisci attività di relax (terme, passeggiate)">💆 Relax</div>
+          </div>
+        </div>
+      `;
+      
+      dom.agendaContainer.appendChild(div);
+
+      // Logica UI per questa specifica card
+      const radioBus = div.querySelector(`#type_bus_${id}`);
+      const radioLeis = div.querySelector(`#type_leis_${id}`);
+      const tagsBus = div.querySelector(`#tags_bus_${id}`);
+      const tagsLeis = div.querySelector(`#tags_leis_${id}`);
+      const lblNotes = div.querySelector(`#lbl_notes_${id}`);
+      const inputNotes = div.querySelector('.appt-notes');
+
+      radioBus.addEventListener('change', () => {
+        tagsBus.classList.remove('hidden');
+        tagsLeis.classList.add('hidden');
+        lblNotes.textContent = "Chi / Azienda";
+        inputNotes.placeholder = "es. Riunione Cliente X";
+        // Reset tags dell'altra vista
+        tagsLeis.querySelectorAll('.smart-tag').forEach(t => t.classList.remove('active'));
+      });
+
+      radioLeis.addEventListener('change', () => {
+        tagsLeis.classList.remove('hidden');
+        tagsBus.classList.add('hidden');
+        lblNotes.textContent = "Cosa fare / Note";
+        inputNotes.placeholder = "es. Voglio visitare il centro";
+        // Reset tags dell'altra vista
+        tagsBus.querySelectorAll('.smart-tag').forEach(t => t.classList.remove('active'));
+      });
+
+      // Click sugli Smart Tags di questa card
+      div.querySelectorAll('.smart-tag').forEach(tag => {
+        tag.addEventListener('click', () => tag.classList.toggle('active'));
+      });
+
+      validateForm();
+    }
+
+    function removeAppointment(id) {
+      const el = document.getElementById(`appt-${id}`);
+      if (el) { el.remove(); validateForm(); }
+    }
+
+    // Aggiungi la prima tappa di default
+    addAppointment();
+    dom.btnAddAppt.addEventListener('click', addAppointment);
+
+    // Validazione
+    function validateForm() {
+      const requiredInputs = dom.form.querySelectorAll('input[required]');
+      let isValid = true;
+      requiredInputs.forEach(input => {
+        if (!input.value.trim() && !input.closest('.hidden')) isValid = false;
+      });
+      dom.submitBtn.disabled = !isValid;
+    }
+    dom.form.addEventListener('input', validateForm);
+
+    // SUBMIT ALL'A.I.
+    dom.form.addEventListener('submit', e => {
+      e.preventDefault();
+
+      const apptElements = document.querySelectorAll('.appt-card');
+      const agenda = [];
+      
+      // Cicliamo ogni singola tappa creata
+      apptElements.forEach((card, index) => {
+        const idStr = card.id.replace('appt-', '');
+        // Trova quale radio è checkato per questa card
+        const isBusiness = card.querySelector(`#type_bus_${idStr}`).checked;
+        const tipoTappa = isBusiness ? "Lavoro" : "Tempo Libero";
+
+        // Raccogli i tags attivi solo per il container visibile
+        const activeContainer = isBusiness ? card.querySelector(`#tags_bus_${idStr}`) : card.querySelector(`#tags_leis_${idStr}`);
+        const activeTags = [];
+        activeContainer.querySelectorAll('.smart-tag.active').forEach(t => activeTags.push(t.getAttribute('data-val')));
+
+        agenda.push({
+          tappa_numero: index + 1,
+          tipo_tappa: tipoTappa,
+          data: card.querySelector('.appt-date').value,
+          fascia_oraria: card.querySelector('.appt-time').value.trim(),
+          luogo: card.querySelector('.appt-location').value.trim(),
+          durata: card.querySelector('.appt-duration').value,
+          dettagli: card.querySelector('.appt-notes').value.trim() || "Nessun dettaglio",
+          richieste_ai: activeTags.length > 0 ? activeTags : null
+        });
+      });
+
+      // Configurazione Globale AI
+      const aiSettings = {
+        ottimizza_percorso: dom.aiOptimizeRoute.checked,
+        pianifica_logistica: dom.aiSuggestLogistics.checked,
+        direttive_extra: dom.noteAI.value.trim() || null
       };
 
-      // Applica traduzioni
-      document.title = t.title;
-      dom.title.textContent = t.title;
-      dom.subtitle.textContent = t.subtitle;
-      dom.lblPartenza.textContent = t.lblPartenza;
-      dom.lblPartenzaSede.textContent = t.lblPartenzaSede;
-      dom.lblArrivo.textContent = t.lblArrivo;
-      dom.lblArrivoSede.textContent = t.lblArrivoSede;
-      dom.lblTipoPercorso.textContent = t.lblTipoPercorso;
-      dom.optInteressi.textContent = t.optInteressi;
-      dom.optAppuntamenti.textContent = t.optAppuntamenti;
-      dom.lblDataAppuntamento.textContent = t.lblDataAppuntamento;
-      dom.lblMidpoint.textContent = t.lblMidpoint;
-      dom.hintMidpoint.textContent = t.hintMidpoint;
-      dom.lblPernottamento.textContent = t.lblPernottamento;
-      dom.lblNotti.textContent = t.lblNotti;
-      dom.lblAdulti.textContent = t.lblAdulti;
-      dom.lblBambini.textContent = t.lblBambini;
-      dom.btnLabel.textContent = t.btnSubmit;
-      dom.cancelHint.textContent = t.cancelHint;
+      // Payload JSON per Make
+      const payload = {
+        type: 'AGENDA_MIXED_SUBMISSION',
+        payload: {
+          Partenza: dom.partenzaDaSede.checked ? 'Sede' : dom.partenza.value.trim(),
+          Arrivo:   dom.arrivoInSede.checked ? 'Sede' : dom.arrivo.value.trim(),
+          Agenda:   agenda,
+          AI_Config_Globale: aiSettings
+        },
+        context: {
+          chatId: urlParams.get('chatId'),
+          threadId: urlParams.get('threadId'),
+          user_id: tg.initDataUnsafe?.user?.id || null
+        }
+      };
 
-      dom.dataAppuntamento.setAttribute('min', new Date().toISOString().split('T')[0]);
-
-      function updateFormUI() {
-        const tripType = document.querySelector('input[name="tripType"]:checked').value;
-        const isApp = tripType === 'appuntamenti';
-        dom.dataAppuntamentoContainer.classList.toggle('hidden', !isApp);
-        dom.dataAppuntamento.toggleAttribute('required', isApp);
-        dom.midpointContainer.classList.toggle('hidden', isApp);
-        dom.lblDettagli.textContent = isApp ? t.lblDettagliApp : t.lblDettagliInt;
-        validateForm();
-      }
-
-      function toggleField(checkbox, container, input) {
-        checkbox.addEventListener('change', function() {
-          const show = !this.checked;
-          container.classList.toggle('hidden', !show);
-          if (show) container.classList.add('reveal');
-          input.toggleAttribute('required', show);
-          validateForm();
-        });
-      }
-      toggleField(dom.partenzaDaSede, dom.customPartenzaContainer, dom.partenza);
-      toggleField(dom.arrivoInSede, dom.customArrivoContainer, dom.arrivo);
-
-      dom.tripTypeRadios.forEach(r => r.addEventListener('change', updateFormUI));
-
-      dom.includeTripDetails.addEventListener('change', function() {
-        const on = this.checked;
-        dom.tripDetailsContainer.classList.toggle('hidden', !on);
-        if (on) dom.tripDetailsContainer.classList.add('reveal');
-        dom.notti.toggleAttribute('required', on);
-        dom.adulti.toggleAttribute('required', on);
-        validateForm();
+      // Costruzione Stringa Markdown per la UI dell'Assistente
+      let summary = `📍 *PIANIFICAZIONE ITINERARIO MISTO*\n\n`;
+      summary += `*Partenza:* ${payload.payload.Partenza}\n`;
+      summary += `*Rientro:* ${payload.payload.Arrivo}\n\n`;
+      
+      summary += `*Tappe Inserite:*\n`;
+      agenda.forEach(a => {
+        const icon = a.tipo_tappa === 'Lavoro' ? '💼' : '📸';
+        summary += `${icon} *${a.data} (${a.fascia_oraria})* - ${a.luogo}\n`;
+        summary += `   Dettagli: ${a.dettagli} [${a.durata}]\n`;
+        if (a.richieste_ai) {
+          summary += `   🤖 *AI:* ${a.richieste_ai.join(', ')}\n`;
+        }
       });
 
-      function validateForm() {
-        const required = dom.form.querySelectorAll('[required]');
-        dom.submitBtn.disabled = !Array.from(required).every(i => i.value.trim() !== '');
+      if (aiSettings.ottimizza_percorso || aiSettings.pianifica_logistica || aiSettings.direttive_extra) {
+        summary += `\n*Impostazioni A.I. Globali:*\n`;
+        if(aiSettings.ottimizza_percorso) summary += `- Ottimizza i tempi di viaggio.\n`;
+        if(aiSettings.pianifica_logistica) summary += `- Gestisci pasti e pernottamenti.\n`;
+        if(aiSettings.direttive_extra) summary += `- Note: ${aiSettings.direttive_extra}\n`;
       }
 
-      dom.form.addEventListener('input', validateForm);
-      updateFormUI();
+      dom.submitBtn.disabled = true;
+      dom.submitBtn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Elaborazione A.I. in corso...';
 
-      dom.form.addEventListener('submit', e => {
-        e.preventDefault();
-        const tripType = document.querySelector('input[name="tripType"]:checked').value;
-        const pernottamento = dom.includeTripDetails.checked;
-        const payload = {
-          type: 'TRIP_PLANNING_SUBMISSION',
-          payload: {
-            Partenza:            dom.partenzaDaSede.checked ? 'Sede' : dom.partenza.value.trim(),
-            Arrivo:              dom.arrivoInSede.checked  ? 'Sede' : dom.arrivo.value.trim(),
-            TipoPercorso:        tripType,
-            TappeIntermedie:     tripType === 'interessi' ? (dom.midpoint.value.trim() || null) : null,
-            Dettagli:            dom.dettagli.value.trim() || null,
-            DataAppuntamento:    tripType === 'appuntamenti' ? dom.dataAppuntamento.value : null,
-            PernottamentoIncluso: pernottamento,
-            Notti:               pernottamento ? parseInt(dom.notti.value)   : null,
-            Adulti:              pernottamento ? parseInt(dom.adulti.value)  : null,
-            Bambini:             pernottamento ? parseInt(dom.bambini.value) : null
-          },
-          context: {
-            chatId:   urlParams.get('chatId'),
-            threadId: urlParams.get('threadId'),
-            language: lang,
-            user_id:  tg.initDataUnsafe?.user?.id || null
-          }
-        };
-
-        // ── AGGIUNTA: Costruiamo la stringa riassuntiva per la Chat (Assistant) ──
-        let summary = `📍 *PERCORSO INVIATO AL SISTEMA*\n`;
-        summary += `Partenza: ${payload.payload.Partenza}\n`;
-        summary += `Arrivo: ${payload.payload.Arrivo}\n`;
-        summary += `Tipo: ${tripType === 'appuntamenti' ? 'Appuntamenti' : 'Interessi'}\n`;
-        if(tripType === 'appuntamenti') summary += `Data: ${payload.payload.DataAppuntamento}\n`;
-        if(tripType === 'interessi' && payload.payload.TappeIntermedie) summary += `Tappe: ${payload.payload.TappeIntermedie}\n`;
-        if(payload.payload.Dettagli) summary += `Dettagli: ${payload.payload.Dettagli}\n`;
-        if(pernottamento) summary += `\n🏨 Pernottamento: Sì (${payload.payload.Notti} Notti, ${payload.payload.Adulti} Adulti, ${payload.payload.Bambini} Bambini)`;
-
-        dom.submitBtn.disabled = true;
-        dom.submitBtn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i>';
-
-        fetch(WH_SOLVER, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
-        })
-        .then(r => {
-          if (!r.ok) throw new Error();
-          dom.submitBtn.innerHTML = `<i class="fas fa-check"></i><span>${t.btnSuccess}</span>`;
-          dom.submitBtn.classList.add('btn-success');
-          
-          // ── MODIFICA: Invia i dati all'Assistant via postMessage invece di chiudere l'app intera ──
-          setTimeout(() => {
-              window.parent.postMessage({
-                  type: 'SOLVER_DATA',
-                  payload: summary
-              }, '*');
-          }, 1400); // Mantiene il ritardo per mostrare l'animazione di successo
-        })
-        .catch(() => {
-          dom.submitBtn.disabled = false;
-          dom.submitBtn.innerHTML = `<i class="fas fa-route"></i><span>${t.btnSubmit}</span>`;
-          tg.showAlert('Errore nell\'invio. Controlla la connessione e riprova.');
-        });
+      // 1. Invia a Make
+      fetch(WH_SOLVER, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      })
+      .then(r => {
+        if (!r.ok) throw new Error();
+        dom.submitBtn.innerHTML = `<i class="fas fa-check"></i><span> Itinerario Affidato all'A.I.!</span>`;
+        dom.submitBtn.classList.add('btn-success');
+        
+        // 2. Invia alla UI della Chat per stamparlo e passarlo al WH_CHAT come contesto
+        setTimeout(() => {
+            window.parent.postMessage({
+                type: 'SOLVER_DATA',
+                payload: summary
+            }, '*');
+        }, 1200);
+      })
+      .catch(() => {
+        dom.submitBtn.disabled = false;
+        dom.submitBtn.innerHTML = `<i class="fas fa-magic"></i><span> Riprova Invio</span>`;
+        tg.showAlert('Errore di comunicazione con il server. Riprova.');
       });
-
-    } catch(err) {
-      console.error(err);
-      document.body.innerHTML = '<div style="padding:24px;text-align:center"><h2>Oops!</h2><p style="margin-top:8px;color:#888">Apri questa pagina da Telegram.</p></div>';
-    }
+    });
   </script>
 </body>
 </html>
