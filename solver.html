@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Pianifica Percorso</title>
+  
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="container">
+    <h1 id="title">Caricamento...</h1>
+    <p class="subtitle" id="subtitle"></p>
+    
+    <form id="travelForm">
+      
+      <!-- SEZIONE 1: ITINERARIO -->
+      <div class="card">
+        <div class="section-title">Itinerario</div>
+        
+        <div class="form-group checkbox-group">
+          <input type="checkbox" id="partenzaDaSede" checked>
+          <label for="partenzaDaSede"><span id="lblPartenzaSede">Partenza da Sede</span></label>
+        </div>
+        <div id="customPartenzaContainer" class="hidden input-group">
+          <label for="partenza" class="required"><span id="lblPartenza">Punto di Partenza</span></label>
+          <input type="text" id="partenza" placeholder="Es. Via Roma 1, Milano">
+        </div>
+
+        <div class="form-group checkbox-group">
+          <input type="checkbox" id="arrivoInSede" checked>
+          <label for="arrivoInSede"><span id="lblArrivoSede">Arrivo in Sede</span></label>
+        </div>
+        <div id="customArrivoContainer" class="hidden input-group">
+          <label for="arrivo" class="required"><span id="lblArrivo">Punto di Arrivo</span></label>
+          <input type="text" id="arrivo" placeholder="Es. Piazza Verdi, Roma">
+        </div>
+      </div>
+
+      <!-- SEZIONE 2: DETTAGLI E SCOPO -->
+      <div class="card">
+        <div class="section-title" id="lblTipoPercorso">Scopo del percorso</div>
+        
+        <div class="form-group radio-group">
+          <input type="radio" name="tripType" value="interessi" id="radio-interessi" checked>
+          <label for="radio-interessi"><span id="optInteressi">Interessi</span></label>
+          
+          <input type="radio" name="tripType" value="appuntamenti" id="radio-appuntamenti">
+          <label for="radio-appuntamenti"><span id="optAppuntamenti">Appuntamenti</span></label>
+        </div>
+
+        <div id="dataAppuntamentoContainer" class="form-group hidden">
+          <label for="dataAppuntamento" class="required"><span id="lblDataAppuntamento">Data Appuntamento</span></label>
+          <input type="date" id="dataAppuntamento">
+        </div>
+
+        <div id="midpointContainer" class="form-group">
+          <label for="midpoint"><span id="lblMidpoint">Tappe Intermedie</span></label>
+          <input type="text" id="midpoint" placeholder="Es. Tappa 1, Tappa 2...">
+          <div class="hint" id="hintMidpoint"></div>
+        </div>
+
+        <div class="form-group">
+          <label for="dettagli"><span id="lblDettagli">Dettagli</span></label>
+          <textarea id="dettagli" rows="2"></textarea>
+        </div>
+      </div>
+      
+      <!-- SEZIONE 3: LOGISTICA -->
+      <div class="card">
+        <div class="form-group checkbox-group">
+          <input type="checkbox" id="includeTripDetails">
+          <label for="includeTripDetails"><span id="lblPernottamento">Pianifica pernottamento</span></label>
+        </div>
+        
+        <div id="tripDetailsContainer" class="hidden">
+          <div class="row">
+            <div class="col">
+              <div class="form-group">
+                <label for="notti"><span id="lblNotti">Notti</span></label>
+                <input type="number" id="notti" min="1" value="1">
+              </div>
+            </div>
+            <div class="col">
+              <div class="form-group">
+                <label for="adulti"><span id="lblAdulti">Adulti</span></label>
+                <input type="number" id="adulti" min="1" value="2">
+              </div>
+            </div>
+            <div class="col">
+              <div class="form-group">
+                <label for="bambini"><span id="lblBambini">Bambini</span></label>
+                <input type="number" id="bambini" min="0" value="0">
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- AZIONI -->
+      <div class="button-container">
+        <button type="submit" id="submitBtn" class="btn btn-primary btn-block">Crea Itinerario</button>
+      </div>
+      <p class="cancel-hint" id="cancelHint"></p>
+    </form>
+  </div>
+
+  <script>
+    const translations = {
+      it: {
+        title: "🚗 Pianifica Percorso", subtitle: "Crea un itinerario o calcola un percorso per appuntamenti.",
+        lblPartenza: "📍 Punto di Partenza Personalizzato", lblPartenzaSede: "Partenza da Sede",
+        lblArrivo: "🏁 Punto di Arrivo Personalizzato", lblArrivoSede: "Arrivo in Sede",
+        lblTipoPercorso: "Scopo del percorso", optInteressi: "Interessi", optAppuntamenti: "Appuntamenti",
+        lblDataAppuntamento: "🗓️ Data Appuntamento",
+        lblMidpoint: "🗺️ Tappe Intermedie (Opzionale)", hintMidpoint: "Separa le tappe con una virgola",
+        lblDettagliApp: "Dettagli Appuntamento (es. Cliente Rossi)", lblDettagliInt: "Elenca Interessi (es. cibo, musei)",
+        lblPernottamento: "Pianifica anche il pernottamento",
+        lblNotti: "🌙 Notti", lblAdulti: "👥 Adulti", lblBambini: "🧒 Bambini",
+        btnSubmit: "Crea Itinerario", btnSuccess: "Richiesta inviata!", cancelHint: "Per annullare, chiudi la finestra."
+      },
+      en: {
+        title: "🚗 Plan Route", subtitle: "Create an itinerary or calculate a route for appointments.",
+        lblPartenza: "📍 Custom Starting Point", lblPartenzaSede: "Depart from Office",
+        lblArrivo: "🏁 Custom Destination", lblArrivoSede: "Arrive at Office",
+        lblTipoPercorso: "Purpose of the route", optInteressi: "Interests", optAppuntamenti: "Appointments",
+        lblDataAppuntamento: "🗓️ Appointment Date",
+        lblMidpoint: "🗺️ Midpoints / Stops (Optional)", hintMidpoint: "You can list multiple destinations here",
+        lblDettagliApp: "Appointment Details (e.g., Client Smith)", lblDettagliInt: "List Interests (e.g., food, museums)",
+        lblPernottamento: "Plan overnight stay as well",
+        lblNotti: "🌙 Nights", lblAdulti: "👥 Adults", lblBambini: "🧒 Children",
+        btnSubmit: "Create Itinerary", btnSuccess: "Request sent!", cancelHint: "To cancel, just close the window."
+      },
+      fr: {
+        title: "🚗 Planifier l'Itinéraire", subtitle: "Créez un itinéraire ou calculez un trajet pour des rendez-vous.",
+        lblPartenza: "📍 Point de Départ Personnalisé", lblPartenzaSede: "Départ du Siège",
+        lblArrivo: "🏁 Destination Personnalisée", lblArrivoSede: "Arrivée au Siège",
+        lblTipoPercorso: "But du parcours", optInteressi: "Intérêts", optAppuntamenti: "Rendez-vous",
+        lblDataAppuntamento: "🗓️ Date du Rendez-vous",
+        lblMidpoint: "🗺️ Étapes Intermédiaires (Optionnel)", hintMidpoint: "Vous pouvez lister plusieurs destinations ici",
+        lblDettagliApp: "Détails du rendez-vous (ex: Client Durand)", lblDettagliInt: "Listez vos intérêts (ex: nourriture, musées)",
+        lblPernottamento: "Planifier aussi la nuitée",
+        lblNotti: "🌙 Nuits", lblAdulti: "👥 Adultes", lblBambini: "🧒 Enfants",
+        btnSubmit: "Créer l'Itinéraire", btnSuccess: "Demande envoyée !", cancelHint: "Pour annuler, fermez la fenêtre."
+      },
+      de: {
+        title: "🚗 Route planen", subtitle: "Erstellen Sie eine Reiseroute oder berechnen Sie eine Strecke für Termine.",
+        lblPartenza: "📍 Benutzerdefinierter Startpunkt", lblPartenzaSede: "Abfahrt vom Büro",
+        lblArrivo: "🏁 Benutzerdefiniertes Ziel", lblArrivoSede: "Ankunft im Büro",
+        lblTipoPercorso: "Zweck der Route", optInteressi: "Interessen", optAppuntamenti: "Termine",
+        lblDataAppuntamento: "🗓️ Termindatum",
+        lblMidpoint: "🗺️ Zwischenstopps (Optional)", hintMidpoint: "Sie können hier mehrere Ziele auflisten",
+        lblDettagliApp: "Termindetails (z.B. Kunde Müller)", lblDettagliInt: "Interessen auflisten (z.B. Essen, Museen)",
+        lblPernottamento: "Auch Übernachtung planen",
+        lblNotti: "🌙 Nächte", lblAdulti: "👥 Erwachsene", lblBambini: "🧒 Kinder",
+        btnSubmit: "Route erstellen", btnSuccess: "Anfrage gesendet!", cancelHint: "Zum Abbrechen, schließen Sie das Fenster."
+      },
+      es: {
+        title: "🚗 Planificar Ruta", subtitle: "Crea un itinerario o calcula una ruta para citas.",
+        lblPartenza: "📍 Punto de Salida Personalizado", lblPartenzaSede: "Salida desde la Oficina",
+        lblArrivo: "🏁 Destino Personalizado", lblArrivoSede: "Llegada a la Oficina",
+        lblTipoPercorso: "Propósito de la ruta", optInteressi: "Intereses", optAppuntamenti: "Citas",
+        lblDataAppuntamento: "🗓️ Fecha de la Cita",
+        lblMidpoint: "🗺️ Paradas Intermedias (Opcional)", hintMidpoint: "Puedes listar múltiples destinos aquí",
+        lblDettagliApp: "Detalles de la cita (ej: Cliente García)", lblDettagliInt: "Enumera intereses (ej: comida, museos)",
+        lblPernottamento: "Planificar también la pernoctación",
+        lblNotti: "🌙 Noches", lblAdulti: "👥 Adultos", lblBambini: "🧒 Niños",
+        btnSubmit: "Crear Itinerario", btnSuccess: "¡Solicitud enviada!", cancelHint: "Para cancelar, cierra la ventana."
+      },
+      pt: {
+        title: "🚗 Planear Rota", subtitle: "Crie um itinerário ou calcule uma rota para compromissos.",
+        lblPartenza: "📍 Ponto de Partida Personalizado", lblPartenzaSede: "Partida do Escritório",
+        lblArrivo: "🏁 Destino Personalizado", lblArrivoSede: "Chegada ao Escritório",
+        lblTipoPercorso: "Objetivo da rota", optInteressi: "Interesses", optAppuntamenti: "Compromissos",
+        lblDataAppuntamento: "🗓️ Data do Compromisso",
+        lblMidpoint: "🗺️ Paragens Intermédias (Opcional)", hintMidpoint: "Pode listar vários destinos aqui",
+        lblDettagliApp: "Detalhes do compromisso (ex: Cliente Silva)", lblDettagliInt: "Liste interesses (ex: comida, museus)",
+        lblPernottamento: "Planear também a pernoita",
+        lblNotti: "🌙 Noites", lblAdulti: "👥 Adultos", lblBambini: "🧒 Crianças",
+        btnSubmit: "Criar Itinerário", btnSuccess: "Pedido enviado!", cancelHint: "Para cancelar, feche a janela."
+      }
+    };
+    
+    const WH_SOLVER = "https://trinai.api.workflow.dcmake.it/webhook/a0b6b2cb-4e19-4a92-9269-6b6d8a7afb80";
+    
+    try {
+      const tg = window.Telegram.WebApp;
+      tg.ready();
+      tg.expand();
+      
+      const urlParams = new URLSearchParams(window.location.search);
+      const lang = urlParams.get('lang') || 'it';
+      const t = translations[lang] || translations['it'];
+      
+      const dom = {
+          form: document.getElementById('travelForm'),
+          submitBtn: document.getElementById('submitBtn'),
+          title: document.getElementById('title'),
+          subtitle: document.getElementById('subtitle'),
+          lblPartenza: document.getElementById('lblPartenza'),
+          lblPartenzaSede: document.getElementById('lblPartenzaSede'),
+          lblArrivo: document.getElementById('lblArrivo'),
+          lblArrivoSede: document.getElementById('lblArrivoSede'),
+          lblTipoPercorso: document.getElementById('lblTipoPercorso'),
+          optInteressi: document.getElementById('optInteressi'),
+          optAppuntamenti: document.getElementById('optAppuntamenti'),
+          lblDataAppuntamento: document.getElementById('lblDataAppuntamento'),
+          lblMidpoint: document.getElementById('lblMidpoint'),
+          hintMidpoint: document.getElementById('hintMidpoint'),
+          lblPernottamento: document.getElementById('lblPernottamento'),
+          lblNotti: document.getElementById('lblNotti'),
+          lblAdulti: document.getElementById('lblAdulti'),
+          lblBambini: document.getElementById('lblBambini'),
+          cancelHint: document.getElementById('cancelHint'),
+          partenzaDaSede: document.getElementById('partenzaDaSede'),
+          customPartenzaContainer: document.getElementById('customPartenzaContainer'),
+          partenza: document.getElementById('partenza'),
+          arrivoInSede: document.getElementById('arrivoInSede'),
+          customArrivoContainer: document.getElementById('customArrivoContainer'),
+          arrivo: document.getElementById('arrivo'),
+          dataAppuntamentoContainer: document.getElementById('dataAppuntamentoContainer'),
+          dataAppuntamento: document.getElementById('dataAppuntamento'),
+          midpointContainer: document.getElementById('midpointContainer'),
+          midpoint: document.getElementById('midpoint'),
+          dettagli: document.getElementById('dettagli'),
+          lblDettagli: document.getElementById('lblDettagli'),
+          includeTripDetails: document.getElementById('includeTripDetails'),
+          tripDetailsContainer: document.getElementById('tripDetailsContainer'),
+          notti: document.getElementById('notti'),
+          adulti: document.getElementById('adulti'),
+          bambini: document.getElementById('bambini'),
+          tripTypeRadios: document.querySelectorAll('input[name="tripType"]')
+      };
+
+      function applyTranslations() {
+        document.title = t.title.replace(/<[^>]*>?/gm, '');
+        dom.title.innerHTML = t.title;
+        dom.subtitle.textContent = t.subtitle;
+        dom.lblPartenza.textContent = t.lblPartenza;
+        dom.lblPartenzaSede.textContent = t.lblPartenzaSede;
+        dom.lblArrivo.textContent = t.lblArrivo;
+        dom.lblArrivoSede.textContent = t.lblArrivoSede;
+        dom.lblTipoPercorso.textContent = t.lblTipoPercorso;
+        dom.optInteressi.textContent = t.optInteressi;
+        dom.optAppuntamenti.textContent = t.optAppuntamenti;
+        dom.lblDataAppuntamento.textContent = t.lblDataAppuntamento;
+        dom.lblMidpoint.textContent = t.lblMidpoint;
+        dom.hintMidpoint.textContent = t.hintMidpoint;
+        dom.lblPernottamento.textContent = t.lblPernottamento;
+        dom.lblNotti.textContent = t.lblNotti;
+        dom.lblAdulti.textContent = t.lblAdulti;
+        dom.lblBambini.textContent = t.lblBambini;
+        dom.submitBtn.textContent = t.btnSubmit;
+        dom.cancelHint.textContent = t.cancelHint;
+      }
+      applyTranslations();
+      
+      dom.dataAppuntamento.setAttribute('min', new Date().toISOString().split('T')[0]);
+
+      function updateFormUI() {
+          const tripType = document.querySelector('input[name="tripType"]:checked').value;
+          const isAppointments = tripType === 'appuntamenti';
+          dom.dataAppuntamentoContainer.classList.toggle('hidden', !isAppointments);
+          dom.dataAppuntamento.toggleAttribute('required', isAppointments);
+          dom.midpointContainer.classList.toggle('hidden', isAppointments);
+          dom.lblDettagli.textContent = isAppointments ? t.lblDettagliApp : t.lblDettagliInt;
+          validateForm();
+      }
+
+      function createCheckboxToggleListener(checkbox, container, input) {
+          checkbox.addEventListener('change', function() {
+              container.classList.toggle('hidden', this.checked);
+              input.toggleAttribute('required', !this.checked);
+              validateForm();
+          });
+      }
+
+      createCheckboxToggleListener(dom.partenzaDaSede, dom.customPartenzaContainer, dom.partenza);
+      createCheckboxToggleListener(dom.arrivoInSede, dom.customArrivoContainer, dom.arrivo);
+      dom.tripTypeRadios.forEach(radio => radio.addEventListener('change', updateFormUI));
+      dom.includeTripDetails.addEventListener('change', function() {
+          const isChecked = this.checked;
+          dom.tripDetailsContainer.classList.toggle('hidden', !isChecked);
+          dom.notti.toggleAttribute('required', isChecked);
+          dom.adulti.toggleAttribute('required', isChecked);
+          validateForm();
+      });
+
+      function validateForm() {
+          const currentRequired = dom.form.querySelectorAll('[required]');
+          const isValid = Array.from(currentRequired).every(input => input.value.trim() !== '');
+          dom.submitBtn.disabled = !isValid;
+      }
+      
+      dom.form.addEventListener('input', validateForm);
+      updateFormUI();
+
+      dom.form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const tripType = document.querySelector('input[name="tripType"]:checked').value;
+        const pernottamento = dom.includeTripDetails.checked;
+        const tripData = {
+          type: 'TRIP_PLANNING_SUBMISSION',
+          payload: {
+              Partenza: dom.partenzaDaSede.checked ? "Sede" : dom.partenza.value.trim(),
+              Arrivo: dom.arrivoInSede.checked ? "Sede" : dom.arrivo.value.trim(),
+              TipoPercorso: tripType,
+              TappeIntermedie: tripType === 'interessi' ? (dom.midpoint.value.trim() || null) : null,
+              Dettagli: dom.dettagli.value.trim() || null,
+              DataAppuntamento: tripType === 'appuntamenti' ? dom.dataAppuntamento.value : null,
+              PernottamentoIncluso: pernottamento,
+              Notti: pernottamento ? parseInt(dom.notti.value) : null,
+              Adulti: pernottamento ? parseInt(dom.adulti.value) : null,
+              Bambini: pernottamento ? parseInt(dom.bambini.value) : null,
+          },
+          context: {
+              chatId: urlParams.get('chatId'),
+              threadId: urlParams.get('threadId'),
+              language: lang,
+              user_id: tg.initDataUnsafe?.user?.id || null
+          }
+        };
+
+        const btn = dom.submitBtn;
+        const originalText = btn.textContent;
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i>';
+
+        fetch(WH_SOLVER, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(tripData)
+        })
+        .then(response => {
+            if (!response.ok) throw new Error('Network response was not ok');
+            btn.textContent = t.btnSuccess;
+            btn.classList.add('btn-success');
+            setTimeout(() => { tg.close(); }, 1200);
+        })
+        .catch(() => {
+            btn.disabled = false;
+            btn.textContent = originalText;
+            tg.showAlert('Errore nell\'invio. Controlla la connessione e riprova.');
+        });
+      });
+
+    } catch (error) {
+        console.error("Errore nell'inizializzazione dell'app:", error);
+        document.body.innerHTML = '<div style="padding:20px;text-align:center"><h1>Oops!</h1><p>Qualcosa è andato storto. Assicurati di aprire questa pagina da Telegram.</p></div>';
+    }
+  </script>
+</body>
+</html>
