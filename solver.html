@@ -561,6 +561,16 @@
           }
         };
 
+        // ── AGGIUNTA: Costruiamo la stringa riassuntiva per la Chat (Assistant) ──
+        let summary = `📍 *PERCORSO INVIATO AL SISTEMA*\n`;
+        summary += `Partenza: ${payload.payload.Partenza}\n`;
+        summary += `Arrivo: ${payload.payload.Arrivo}\n`;
+        summary += `Tipo: ${tripType === 'appuntamenti' ? 'Appuntamenti' : 'Interessi'}\n`;
+        if(tripType === 'appuntamenti') summary += `Data: ${payload.payload.DataAppuntamento}\n`;
+        if(tripType === 'interessi' && payload.payload.TappeIntermedie) summary += `Tappe: ${payload.payload.TappeIntermedie}\n`;
+        if(payload.payload.Dettagli) summary += `Dettagli: ${payload.payload.Dettagli}\n`;
+        if(pernottamento) summary += `\n🏨 Pernottamento: Sì (${payload.payload.Notti} Notti, ${payload.payload.Adulti} Adulti, ${payload.payload.Bambini} Bambini)`;
+
         dom.submitBtn.disabled = true;
         dom.submitBtn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i>';
 
@@ -573,7 +583,14 @@
           if (!r.ok) throw new Error();
           dom.submitBtn.innerHTML = `<i class="fas fa-check"></i><span>${t.btnSuccess}</span>`;
           dom.submitBtn.classList.add('btn-success');
-          setTimeout(() => tg.close(), 1400);
+          
+          // ── MODIFICA: Invia i dati all'Assistant via postMessage invece di chiudere l'app intera ──
+          setTimeout(() => {
+              window.parent.postMessage({
+                  type: 'SOLVER_DATA',
+                  payload: summary
+              }, '*');
+          }, 1400); // Mantiene il ritardo per mostrare l'animazione di successo
         })
         .catch(() => {
           dom.submitBtn.disabled = false;
