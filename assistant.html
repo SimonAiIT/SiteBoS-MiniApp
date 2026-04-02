@@ -3,328 +3,345 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TrinAI Assistant</title>
-    <!-- Telegram WebApp SDK -->
+    <title>TrinAI Executive Assistant</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         :root {
-            --bg-color: #f4f7f9;
-            --chat-bg: #ffffff;
-            --primary: #212D67; /* Blu Brand */
-            --primary-light: #e8ebf5;
-            --user-msg: #DCF8C6;
-            --ai-msg: #ffffff;
-            --text-main: #1a1e24;
-            --text-muted: #888;
+            --bg-main: #f4f7f9;
+            --bg-chat: #ffffff;
+            --primary: #212D67; /* Blu TrinAI */
+            --accent: #895FE0; /* Viola AI */
+            --danger: #e53935;
+            --text-dark: #1a1e24;
+            --text-light: #7f8c8d;
+            --msg-user: #e3f2fd;
+            --msg-ai: #f8f9fa;
+            --summary-bg: #fffde7;
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+        body { background-color: var(--bg-main); color: var(--text-dark); display: flex; flex-direction: column; height: 100vh; overflow: hidden; position: relative; }
 
-        body {
-            background-color: var(--bg-color);
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-            overflow: hidden;
-            position: relative;
-        }
-
-        /* --- HEADER CON HAMBURGER --- */
+        /* --- HEADER --- */
         header {
-            background-color: var(--chat-bg);
-            padding: 15px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.08);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            z-index: 10;
+            background: var(--bg-chat); padding: 12px 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            display: flex; justify-content: space-between; align-items: center; z-index: 10;
         }
+        .header-btn { background: none; border: none; font-size: 22px; color: var(--primary); cursor: pointer; }
+        .header-title { text-align: center; line-height: 1.2; }
+        .agent-name { font-size: 16px; font-weight: bold; color: var(--primary); }
+        .thread-name { font-size: 11px; color: var(--text-light); }
 
-        .hamburger-btn {
-            background: none;
-            border: none;
-            font-size: 24px;
-            color: var(--primary);
-            cursor: pointer;
-            padding: 0 5px;
-        }
-
-        .current-agent-title {
-            font-size: 16px;
-            font-weight: bold;
-            color: var(--primary);
-        }
-
-        .spacer { width: 30px; /* Per bilanciare l'header flexbox */ }
-
-        /* --- SIDE MENU (DRAWER) --- */
-        #menu-overlay {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background-color: rgba(0,0,0,0.5);
-            z-index: 99;
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 0.3s ease;
-        }
-
-        #side-menu {
-            position: fixed;
-            top: 0; left: 0;
-            width: 260px;
-            height: 100%;
-            background-color: var(--chat-bg);
-            z-index: 100;
-            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
-            transform: translateX(-100%);
-            transition: transform 0.3s ease;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .menu-header {
-            padding: 20px;
-            font-size: 18px;
-            font-weight: bold;
-            color: white;
-            background-color: var(--primary);
-        }
-
-        .menu-item {
-            padding: 15px 20px;
-            font-size: 16px;
-            color: var(--text-main);
-            border-bottom: 1px solid #eee;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .menu-item:hover { background-color: #f9f9f9; }
+        /* --- DRAWERS (MENU LATERALE SX e DX) --- */
+        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); z-index: 99; opacity: 0; visibility: hidden; transition: 0.3s; }
+        .drawer { position: fixed; top: 0; height: 100%; background: var(--bg-chat); z-index: 100; width: 280px; box-shadow: 0 0 15px rgba(0,0,0,0.2); transition: transform 0.3s ease; display: flex; flex-direction: column; }
         
-        .menu-item.active {
-            background-color: var(--primary-light);
-            color: var(--primary);
-            font-weight: bold;
-            border-left: 4px solid var(--primary);
-        }
+        #left-drawer { left: 0; transform: translateX(-100%); }
+        #right-drawer { right: 0; transform: translateX(100%); }
+        
+        body.left-open #left-drawer { transform: translateX(0); }
+        body.left-open .overlay { opacity: 1; visibility: visible; }
+        body.right-open #right-drawer { transform: translateX(0); }
+        body.right-open .overlay { opacity: 1; visibility: visible; }
 
-        /* Classi per l'animazione di apertura menu */
-        body.menu-open #side-menu { transform: translateX(0); }
-        body.menu-open #menu-overlay { opacity: 1; visibility: visible; }
+        .drawer-header { padding: 20px; background: var(--primary); color: white; font-weight: bold; font-size: 18px; }
+        .menu-item { padding: 15px 20px; border-bottom: 1px solid #eee; display: flex; align-items: center; gap: 12px; cursor: pointer; font-size: 15px; color: var(--text-dark); }
+        .menu-item:hover { background: #f9f9f9; }
+        .menu-item.active { border-left: 4px solid var(--primary); background: #f0f4f8; font-weight: bold; }
+        .menu-item.danger { color: var(--danger); }
 
-        /* --- AREA CHAT --- */
-        #chat-container {
-            flex: 1;
-            padding: 15px;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
+        /* --- CHAT AREA --- */
+        #chat-container { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; scroll-behavior: smooth; }
+        
+        /* Summary Box (Documento Condensato) */
+        .summary-box { background: var(--summary-bg); border: 1px dashed #fbc02d; padding: 12px; border-radius: 10px; font-size: 13px; color: #5d4037; margin-bottom: 10px; }
+        .summary-title { font-weight: bold; margin-bottom: 5px; display: flex; justify-content: space-between; align-items: center;}
+        
+        .message { max-width: 85%; padding: 10px 14px; border-radius: 15px; font-size: 15px; line-height: 1.4; word-wrap: break-word; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+        .message.user { align-self: flex-end; background: var(--msg-user); border-bottom-right-radius: 4px; }
+        .message.ai { align-self: flex-start; background: var(--msg-ai); border-bottom-left-radius: 4px; border: 1px solid #eee; }
+        .message-time { font-size: 10px; color: var(--text-light); text-align: right; margin-top: 4px; display: block; }
+        
+        .audio-player { width: 100%; margin-top: 5px; height: 35px; }
+        .typing { display: none; align-self: flex-start; font-size: 12px; color: var(--accent); font-style: italic; padding: 5px 10px; }
 
-        .message {
-            max-width: 85%;
-            padding: 10px 14px;
-            border-radius: 15px;
-            font-size: 15px;
-            line-height: 1.4;
-            word-wrap: break-word;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-        }
-        .message.user { align-self: flex-end; background-color: var(--user-msg); border-bottom-right-radius: 4px; }
-        .message.ai { align-self: flex-start; background-color: var(--ai-msg); border-bottom-left-radius: 4px; }
-        .message-time { font-size: 11px; color: rgba(0,0,0,0.4); text-align: right; margin-top: 4px; display: block; }
+        /* --- FOOTER INPUT --- */
+        footer { background: var(--bg-chat); padding: 10px 15px; box-shadow: 0 -2px 10px rgba(0,0,0,0.05); display: flex; gap: 10px; align-items: center; padding-bottom: env(safe-area-inset-bottom, 15px); }
+        #chat-input { flex: 1; border: 1px solid #ddd; border-radius: 20px; padding: 12px 15px; font-size: 16px; outline: none; background: #f9f9f9; }
+        #chat-input:focus { border-color: var(--primary); background: #fff; }
+        
+        .action-btn { width: 45px; height: 45px; border-radius: 50%; border: none; display: flex; align-items: center; justify-content: center; font-size: 20px; cursor: pointer; transition: 0.2s; color: white; }
+        .btn-send { background: var(--primary); display: none; }
+        .btn-mic { background: var(--accent); }
+        .btn-mic.recording { background: var(--danger); animation: pulse 1.5s infinite; }
 
-        .typing-indicator {
-            display: none;
-            align-self: flex-start;
-            background-color: transparent;
-            color: var(--text-muted);
-            font-size: 13px;
-            font-style: italic;
-            padding-left: 5px;
-        }
+        @keyframes pulse { 0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(229, 57, 53, 0.7); } 70% { transform: scale(1.1); box-shadow: 0 0 0 10px rgba(229, 57, 53, 0); } 100% { transform: scale(1); } }
 
-        /* --- AREA INPUT --- */
-        footer {
-            background-color: var(--chat-bg);
-            padding: 10px 15px;
-            box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
-            display: flex;
-            gap: 10px;
-            align-items: center;
-        }
-        #chat-input {
-            flex: 1; border: 1px solid #ddd; border-radius: 20px; padding: 12px 15px; font-size: 16px; outline: none; background-color: #f9f9f9;
-        }
-        #chat-input:focus { border-color: var(--primary); background-color: #fff; }
-        #send-btn {
-            background-color: var(--primary); color: white; border: none; width: 42px; height: 42px; border-radius: 50%;
-            display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 18px;
-        }
-        #send-btn:disabled { background-color: #ccc; }
+        /* --- MODAL RAZIONALE --- */
+        #rationale-modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 85%; background: white; padding: 20px; border-radius: 15px; box-shadow: 0 5px 25px rgba(0,0,0,0.3); z-index: 200; display: none; }
+        .modal-title { font-weight: bold; color: var(--primary); margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 5px; }
+        .modal-close { background: var(--primary); color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; float: right; margin-top: 15px; }
 
     </style>
 </head>
 <body>
 
-    <!-- OVERLAY E MENU LATERALE -->
-    <div id="menu-overlay" onclick="toggleMenu()"></div>
-    <nav id="side-menu">
-        <div class="menu-header">Direzione Aziendale</div>
-        <div class="menu-item active" id="menu-pm" onclick="switchAgent('pm')">🛠️ Gestione Lavori</div>
-        <div class="menu-item" id="menu-mkt" onclick="switchAgent('mkt')">🚀 Vendite & Promo</div>
-        <div class="menu-item" id="menu-hr" onclick="switchAgent('hr')">🛡️ Team & Sicurezza</div>
-        <div class="menu-item" id="menu-acc" onclick="switchAgent('acc')">💰 Cassa & Conti</div>
+    <!-- OVERLAYS E DRAWERS -->
+    <div class="overlay" onclick="closeDrawers()"></div>
+
+    <!-- LEFT DRAWER: AGENTI (C-Suite) -->
+    <nav id="left-drawer" class="drawer">
+        <div class="drawer-header">C-Suite Aziendale</div>
+        <div class="menu-item active" onclick="switchAgent('pm')">🛠️ Gestione Lavori (PM)</div>
+        <div class="menu-item" onclick="switchAgent('mkt')">🚀 Vendite & Promo (MKT)</div>
+        <div class="menu-item" onclick="switchAgent('hr')">🛡️ Team & Sicurezza (HR)</div>
+        <div class="menu-item" onclick="switchAgent('acc')">💰 Cassa & Conti (ACC)</div>
     </nav>
 
-    <!-- HEADER FISSO -->
+    <!-- RIGHT DRAWER: GESTIONE CONTESTO -->
+    <nav id="right-drawer" class="drawer">
+        <div class="drawer-header">Gestione Contesto</div>
+        <div class="menu-item" onclick="triggerAction('new_thread')">➕ Nuova Discussione</div>
+        <div class="menu-item" onclick="triggerAction('rename_thread')">✏️ Rinomina Discussione</div>
+        <div class="menu-item" onclick="triggerAction('show_rationale')">🧠 Mostra Razionale Ultima Q/A</div>
+        <div class="menu-item danger" onclick="triggerAction('delete_last_qa')">✂️ Elimina Ultima Q/A</div>
+        <div class="menu-item danger" onclick="triggerAction('reset_thread')">🗑️ Resetta Tutto</div>
+    </nav>
+
+    <!-- MODAL RAZIONALE -->
+    <div id="rationale-modal">
+        <div class="modal-title">🧠 Razionale AI (Logica interna)</div>
+        <div id="rationale-content" style="font-size: 14px; color: #555; max-height: 200px; overflow-y: auto;">Caricamento...</div>
+        <button class="modal-close" onclick="document.getElementById('rationale-modal').style.display='none'">Chiudi</button>
+    </div>
+
+    <!-- HEADER -->
     <header>
-        <button class="hamburger-btn" onclick="toggleMenu()">☰</button>
-        <div class="current-agent-title" id="header-title">🛠️ Gestione Lavori</div>
-        <div class="spacer"></div>
+        <button class="header-btn" onclick="document.body.classList.add('left-open')">☰</button>
+        <div class="header-title">
+            <div class="agent-name" id="ui-agent-name">🛠️ Gestione Lavori</div>
+            <div class="thread-name" id="ui-thread-name">Discussione Attiva</div>
+        </div>
+        <button class="header-btn" onclick="document.body.classList.add('right-open')">⚙️</button>
     </header>
 
-    <!-- AREA CHAT -->
-    <main id="chat-container"></main>
-    <div id="typing" class="typing-indicator">L'Agente sta elaborando...</div>
+    <!-- CHAT AREA -->
+    <main id="chat-container">
+        <!-- Summary Visivo -->
+        <div class="summary-box" id="ui-summary" style="display: none;">
+            <div class="summary-title">📄 Documento Condensato <span style="font-size:10px; font-weight:normal;">Aggiornato ora</span></div>
+            <div id="summary-text">Nessun riassunto disponibile.</div>
+        </div>
+        <!-- Messaggi -->
+        <div id="messages-wrapper"></div>
+        <div id="typing" class="typing">L'AI sta analizzando i dati...</div>
+    </main>
 
-    <!-- AREA INPUT -->
+    <!-- FOOTER INPUT -->
     <footer>
         <input type="text" id="chat-input" placeholder="Scrivi un messaggio..." autocomplete="off">
-        <button id="send-btn">➤</button>
+        <button id="btn-send" class="action-btn btn-send" onclick="sendText()">➤</button>
+        <button id="btn-mic" class="action-btn btn-mic">🎤</button>
     </footer>
 
     <script>
-        // 1. Inizializza Telegram (se aperto in app)
+        // --- 1. INIZIALIZZAZIONE & CONFIG ---
         const tg = window.Telegram.WebApp;
         tg.expand();
-
+        
         const WEBHOOK_URL = "https://prod.workflow.trinai.it/webhook/81ab5292-43c3-4f93-afaf-7411b95fc010";
-
-        // Parametri utente
+        
         const urlParams = new URLSearchParams(window.location.search);
         const userId = urlParams.get('user_id') || tg.initDataUnsafe?.user?.id || 'TEST_USER';
         const vatNumber = urlParams.get('vat') || 'TEST_VAT';
 
-        // Definizione Agenti per titolo Header
-        const agents = {
-            "pm": "🛠️ Gestione Lavori",
-            "mkt": "🚀 Vendite & Promo",
-            "hr": "🛡️ Team & Sicurezza",
-            "acc": "💰 Cassa & Conti"
-        };
-
-        // Memoria delle 4 stanze
         let currentAgent = "pm";
-        const chatHistory = {
-            "pm": [{ sender: 'ai', text: "Ciao! Sono il Project Manager. Su quale procedura operativa lavoriamo oggi?", time: getTime() }],
-            "mkt": [{ sender: 'ai', text: "Pronto a vendere di più! Vuoi che ottimizziamo una pagina o creiamo un pacchetto?", time: getTime() }],
-            "hr": [{ sender: 'ai', text: "Sicurezza e Team. Dimmi tutto, sono qui per proteggere l'azienda dalle multe.", time: getTime() }],
-            "acc": [{ sender: 'ai', text: "Controllo conti attivato. Di quale fattura o scadenza vogliamo parlare?", time: getTime() }]
-        };
+        let threadId = "default";
+        let lastRationale = "Nessuna operazione recente effettuata.";
 
-        const chatContainer = document.getElementById('chat-container');
-        const chatInput = document.getElementById('chat-input');
-        const sendBtn = document.getElementById('send-btn');
-        const typingIndicator = document.getElementById('typing');
-        const headerTitle = document.getElementById('header-title');
+        // Riferimenti UI
+        const input = document.getElementById('chat-input');
+        const btnSend = document.getElementById('btn-send');
+        const btnMic = document.getElementById('btn-mic');
+        const msgWrapper = document.getElementById('messages-wrapper');
 
-        // 2. Gestione Menu Hamburger
-        function toggleMenu() {
-            document.body.classList.toggle('menu-open');
+        // --- 2. GESTIONE UI & SWIPE ---
+        function closeDrawers() {
+            document.body.classList.remove('left-open', 'right-open');
         }
 
-        // 3. Cambio Agente
-        function switchAgent(agentId) {
-            currentAgent = agentId;
-            
-            // Aggiorna Titolo Header
-            headerTitle.innerText = agents[agentId];
+        // Cambio bottone Mic/Send
+        input.addEventListener('input', () => {
+            if(input.value.trim() !== '') { btnMic.style.display = 'none'; btnSend.style.display = 'flex'; }
+            else { btnMic.style.display = 'flex'; btnSend.style.display = 'none'; }
+        });
 
-            // Aggiorna Menu Attivo (Grafica)
-            document.querySelectorAll('.menu-item').forEach(item => item.classList.remove('active'));
-            document.getElementById('menu-' + agentId).classList.add('active');
+        // Swipe Detection
+        let touchstartX = 0;
+        document.addEventListener('touchstart', e => touchstartX = e.changedTouches[0].screenX);
+        document.addEventListener('touchend', e => {
+            let touchendX = e.changedTouches[0].screenX;
+            if (touchendX - touchstartX > 70) document.body.classList.add('left-open'); // Swipe Right
+            if (touchstartX - touchendX > 70) document.body.classList.add('right-open'); // Swipe Left
+        });
 
-            // Chiudi menu e ricarica chat
-            toggleMenu();
-            renderChat();
+        function switchAgent(agent) {
+            currentAgent = agent;
+            const names = { "pm": "🛠️ Gestione Lavori", "mkt": "🚀 Vendite & Promo", "hr": "🛡️ Team & Sicurezza", "acc": "💰 Cassa & Conti" };
+            document.getElementById('ui-agent-name').innerText = names[agent];
+            document.querySelectorAll('#left-drawer .menu-item').forEach(el => el.classList.remove('active'));
+            event.target.classList.add('active');
+            closeDrawers();
+            triggerAction('load_app_state'); // Carica lo stato dal server
         }
 
-        // 4. Disegna Chat
-        function renderChat() {
-            chatContainer.innerHTML = '';
-            chatHistory[currentAgent].forEach(msg => {
-                const msgDiv = document.createElement('div');
-                msgDiv.className = `message ${msg.sender}`;
-                msgDiv.innerHTML = `${msg.text} <span class="message-time">${msg.time}</span>`;
-                chatContainer.appendChild(msgDiv);
-            });
-            scrollToBottom();
-        }
-
-        // 5. Invia Messaggio
-        async function sendMessage() {
-            const text = chatInput.value.trim();
-            if (!text) return;
-
-            chatInput.value = '';
-            sendBtn.disabled = true;
-
-            // Messaggio utente
-            chatHistory[currentAgent].push({ sender: 'user', text: text, time: getTime() });
-            renderChat();
-
-            // Sta scrivendo
-            chatContainer.appendChild(typingIndicator);
-            typingIndicator.style.display = 'block';
-            scrollToBottom();
-
-            const payload = {
-                action: "npl_chat",
-                agent_id: currentAgent,
-                user_id: userId,
-                vat_number: vatNumber,
-                message: text,
-                timestamp: new Date().toISOString()
-            };
-
+        // --- 3. COMUNICAZIONE WEBHOOK (n8n) ---
+        async function callWebhook(payload) {
+            document.getElementById('typing').style.display = 'block';
             try {
                 const response = await fetch(WEBHOOK_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
+                    body: JSON.stringify({ ...payload, user_id: userId, vat_number: vatNumber, agent_id: currentAgent, thread_id: threadId })
                 });
-
                 const data = await response.json();
-                const aiResponse = data.reply || "Messaggio ricevuto, elaborazione completata.";
-                chatHistory[currentAgent].push({ sender: 'ai', text: aiResponse, time: getTime() });
-
-            } catch (error) {
-                console.error("Errore:", error);
-                chatHistory[currentAgent].push({ sender: 'ai', text: "⚠️ Ops, errore di connessione con il server n8n.", time: getTime() });
+                handleServerResponse(data);
+            } catch (err) {
+                console.error(err);
+                addMessage("ai", "⚠️ Errore di comunicazione con il server operativo.", null);
             } finally {
-                typingIndicator.style.display = 'none';
-                sendBtn.disabled = false;
-                chatInput.focus();
-                renderChat();
+                document.getElementById('typing').style.display = 'none';
+                scrollToBottom();
             }
         }
 
-        // Utilities
-        function getTime() {
-            const now = new Date();
-            return now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0');
+        function handleServerResponse(data) {
+            // Aggiorna UI basato sulla risposta di n8n
+            if(data.thread_name) document.getElementById('ui-thread-name').innerText = data.thread_name;
+            if(data.rationale) lastRationale = data.rationale;
+            
+            // Gestione Summary Condensato
+            if(data.summary && data.summary !== "") {
+                document.getElementById('ui-summary').style.display = 'block';
+                document.getElementById('summary-text').innerText = data.summary;
+            } else {
+                document.getElementById('ui-summary').style.display = 'none';
+            }
+
+            // Gestione Messaggi (Ridisegna l'array delle ultime Q&A)
+            if(data.messages) {
+                msgWrapper.innerHTML = '';
+                data.messages.forEach(m => addMessage(m.sender, m.text, m.audio_base64));
+            } else if (data.reply) {
+                // Risposta singola standard
+                addMessage("ai", data.reply, data.audio_base64);
+            }
+            
+            if(data.notification) tg.showAlert(data.notification);
         }
-        function scrollToBottom() { chatContainer.scrollTop = chatContainer.scrollHeight; }
 
-        sendBtn.addEventListener('click', sendMessage);
-        chatInput.addEventListener('keypress', function (e) { if (e.key === 'Enter') sendMessage(); });
+        // --- 4. MESSAGGISTICA (Testo e Audio) ---
+        function addMessage(sender, text, audioBase64) {
+            const div = document.createElement('div');
+            div.className = `message ${sender}`;
+            let content = text ? `<span>${text}</span>` : '';
+            
+            // Se l'AI o l'utente ha un audio
+            if(audioBase64) {
+                const audioSrc = `data:audio/webm;base64,${audioBase64}`;
+                content += `<audio controls class="audio-player" src="${audioSrc}"></audio>`;
+            }
+            
+            const time = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            div.innerHTML = `${content} <span class="message-time">${time}</span>`;
+            msgWrapper.appendChild(div);
+            scrollToBottom();
+        }
 
-        // Init
-        renderChat();
+        function sendText() {
+            const text = input.value.trim();
+            if(!text) return;
+            addMessage("user", text, null);
+            input.value = '';
+            input.dispatchEvent(new Event('input')); // Resetta il bottone
+            callWebhook({ action: "npl_chat", message: text });
+        }
+
+        // --- 5. REGISTRAZIONE VOCALE (Push-to-Talk) ---
+        let mediaRecorder;
+        let audioChunks = [];
+
+        btnMic.addEventListener('touchstart', async (e) => {
+            e.preventDefault();
+            btnMic.classList.add('recording');
+            tg.HapticFeedback.impactOccurred('medium');
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
+                mediaRecorder.ondataavailable = event => audioChunks.push(event.data);
+                mediaRecorder.onstop = () => {
+                    const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                    const reader = new FileReader();
+                    reader.readAsDataURL(audioBlob);
+                    reader.onloadend = () => {
+                        const base64Audio = reader.result.split(',')[1];
+                        addMessage("user", "🎤 Messaggio Vocale inviato", base64Audio);
+                        callWebhook({ action: "npl_voice", audio_base64: base64Audio, mime_type: "audio/webm" });
+                    };
+                    audioChunks = [];
+                };
+                mediaRecorder.start();
+            } catch (err) {
+                tg.showAlert("Permesso microfono negato o non supportato.");
+                btnMic.classList.remove('recording');
+            }
+        });
+
+        btnMic.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            if(mediaRecorder && mediaRecorder.state === 'recording') {
+                mediaRecorder.stop();
+                mediaRecorder.stream.getTracks().forEach(track => track.stop());
+            }
+            btnMic.classList.remove('recording');
+        });
+
+        // Eventi Mouse per Desktop Test
+        btnMic.addEventListener('mousedown', (e) => btnMic.dispatchEvent(new Event('touchstart')));
+        btnMic.addEventListener('mouseup', (e) => btnMic.dispatchEvent(new Event('touchend')));
+
+        // --- 6. GESTIONE MENU DESTRA (Azioni Contesto) ---
+        function triggerAction(actionName) {
+            closeDrawers();
+            if(actionName === 'show_rationale') {
+                document.getElementById('rationale-content').innerText = lastRationale;
+                document.getElementById('rationale-modal').style.display = 'block';
+                return;
+            }
+            
+            if(actionName === 'rename_thread') {
+                tg.showPopup({ title: "Rinomina", message: "Inserisci il nuovo nome della discussione:", buttons: [{type: 'ok'}] }, function() {
+                   // Simulazione: In produzione useresti un prompt o un input field vero
+                   callWebhook({ action: actionName, new_name: "Discussione Rinominata" });
+                });
+                return;
+            }
+
+            if(actionName === 'delete_last_qa' || actionName === 'reset_thread') {
+                tg.showConfirm("Sei sicuro di voler procedere? L'operazione influirà sul contesto dell'AI.", function(confirm) {
+                    if(confirm) callWebhook({ action: actionName });
+                });
+                return;
+            }
+
+            callWebhook({ action: actionName });
+        }
+
+        function scrollToBottom() { document.getElementById('chat-container').scrollTop = document.getElementById('chat-container').scrollHeight; }
+
+        // Avvio: Carica lo stato iniziale
+        triggerAction('load_app_state');
+
     </script>
 </body>
 </html>
