@@ -3,99 +3,97 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>SiteBoS Bot Config</title>
+    <title>SiteBoS Full Config</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: #f4f7f9; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; min-height: 100vh; margin: 0; color: #1a1e24; padding-top: 20px; }
-        .container { text-align: center; padding: 20px; width: 100%; max-width: 500px; box-sizing: border-box; }
-        .logo { font-weight: bold; font-size: 24px; color: #212D67; margin-bottom: 5px; }
-        .subtitle { font-size: 14px; color: #6c757d; margin-bottom: 25px; font-weight: 500; }
-        .section { background: #ffffff; border-radius: 12px; padding: 20px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); text-align: left; }
-        .section-title { font-weight: bold; font-size: 13px; color: #212D67; text-transform: uppercase; margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 5px; }
-        .form-group { margin-bottom: 15px; }
-        label { display: block; font-size: 14px; font-weight: 600; margin-bottom: 5px; color: #4A4A4A; }
-        input[type="text"], input[type="number"], select, textarea { width: 100%; box-sizing: border-box; padding: 12px; border-radius: 10px; border: 1px solid #ddd; font-size: 16px; font-family: inherit; background: #fafafa; }
-        .row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; }
-        .switch { position: relative; display: inline-block; width: 44px; height: 24px; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: #f4f7f9; margin: 0; padding: 20px; color: #1a1e24; }
+        .container { max-width: 500px; margin: 0 auto; text-align: center; }
+        .logo { font-weight: bold; font-size: 22px; color: #212D67; margin-bottom: 5px; }
+        .subtitle { font-size: 13px; color: #6c757d; margin-bottom: 20px; }
+        .section { background: #ffffff; border-radius: 12px; padding: 15px; margin-bottom: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); text-align: left; }
+        .section-title { font-weight: bold; font-size: 12px; color: #212D67; text-transform: uppercase; margin-bottom: 12px; border-bottom: 1px solid #eee; padding-bottom: 5px; }
+        .form-group { margin-bottom: 12px; }
+        label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 4px; color: #4A4A4A; }
+        input, select, textarea { width: 100%; box-sizing: border-box; padding: 10px; border-radius: 8px; border: 1px solid #ddd; font-size: 15px; background: #fafafa; }
+        .row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; }
+        .switch { position: relative; display: inline-block; width: 40px; height: 22px; }
         .switch input { opacity: 0; width: 0; height: 0; }
         .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px; }
-        .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
+        .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
         input:checked + .slider { background-color: #212D67; }
-        input:checked + .slider:before { transform: translateX(20px); }
-        .action-btn { background-color: #212D67; color: white; border: none; padding: 18px 30px; border-radius: 50px; font-size: 18px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.2); width: 100%; transition: transform 0.2s; margin-top: 10px; }
-        .loader { display: none; border: 4px solid #f3f3f3; border-top: 4px solid #212D67; border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; margin: 20px auto; }
+        input:checked + .slider:before { transform: translateX(18px); }
+        .action-btn { background-color: #212D67; color: white; border: none; padding: 15px; border-radius: 50px; font-size: 16px; font-weight: bold; width: 100%; cursor: pointer; margin-top: 10px; }
+        .loader { display: none; border: 3px solid #f3f3f3; border-top: 3px solid #212D67; border-radius: 50%; width: 25px; height: 25px; animation: spin 1s linear infinite; margin: 15px auto; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .hidden { display: none !important; }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="logo">SiteBoS Config</div>
-        <div class="subtitle">Gestione Integrale Agente AI</div>
+        <div class="logo">SiteBoS Config Panel</div>
+        <div class="subtitle">Mappatura Integrale Parametri AI</div>
         <div id="main-loader" class="loader" style="display: block;"></div>
 
         <div id="config-form" class="hidden">
-            <!-- IDENTITÀ -->
+            <!-- 1. IDENTITY -->
             <div class="section">
-                <div class="section-title">Identità e Ruolo</div>
-                <div class="form-group">
-                    <label>Nome Agente</label>
-                    <input type="text" id="agent_name">
-                </div>
-                <div class="form-group">
-                    <label>Ruolo</label>
-                    <select id="role_persona">
-                        <option value="customer_support">Supporto Clienti</option>
-                        <option value="sales_agent">Consulente Vendite</option>
-                        <option value="technical_expert">Esperto Tecnico</option>
-                    </select>
-                </div>
+                <div class="section-title">Identity</div>
+                <div class="form-group"><label>Agent Name</label><input type="text" id="agent_name"></div>
+                <div class="form-group"><label>Role Persona</label><input type="text" id="role_persona"></div>
             </div>
 
-            <!-- PERSONALITÀ -->
+            <!-- 2. PERMISSIONS -->
             <div class="section">
-                <div class="section-title">Stile di Conversazione</div>
+                <div class="section-title">Permissions</div>
+                <div class="row"><label>Allow Images (Vision)</label><label class="switch"><input type="checkbox" id="allow_images"><span class="slider"></span></label></div>
+                <div class="row"><label>Allow Files (PDF/Docs)</label><label class="switch"><input type="checkbox" id="allow_files"><span class="slider"></span></label></div>
+            </div>
+
+            <!-- 3. PERSONALITY -->
+            <div class="section">
+                <div class="section-title">Personality</div>
                 <div class="form-group">
-                    <label>Tono di Voce</label>
+                    <label>Tone</label>
                     <select id="tone">
-                        <option value="professional">Professionale</option>
-                        <option value="friendly">Amichevole</option>
-                        <option value="technical">Tecnico</option>
+                        <option value="professional">Professional</option>
+                        <option value="friendly">Friendly</option>
+                        <option value="technical">Technical</option>
+                    </select>
+                </div>
+                <div class="form-group"><label>Vibe</label><input type="text" id="vibe"></div>
+                <div class="form-group">
+                    <label>Language Style</label>
+                    <select id="language_style">
+                        <option value="formal">Formal (Lei)</option>
+                        <option value="casual">Casual (Tu)</option>
                     </select>
                 </div>
                 <div class="form-group">
-                    <label>Istruzioni Custom</label>
-                    <textarea id="custom_instructions"></textarea>
+                    <label>Emoji Usage</label>
+                    <select id="emoji_usage">
+                        <option value="none">None</option>
+                        <option value="moderate">Moderate</option>
+                        <option value="frequent">Frequent</option>
+                    </select>
                 </div>
+                <div class="form-group"><label>Custom Instructions</label><textarea id="custom_instructions"></textarea></div>
             </div>
 
-            <!-- LIMITI DI SISTEMA -->
+            <!-- 4. BUSINESS LOGIC -->
             <div class="section">
-                <div class="section-title">Sicurezza e Consumi</div>
-                <div class="form-group">
-                    <label>Max Messaggi / Giorno per utente</label>
-                    <input type="number" id="max_daily_messages">
-                </div>
-                <div class="form-group">
-                    <label>Max Token per Risposta</label>
-                    <input type="number" id="max_tokens">
-                </div>
-                <div class="row">
-                    <label>Abilita Vision (Foto)</label>
-                    <label class="switch"><input type="checkbox" id="allow_images"><span class="slider"></span></label>
-                </div>
+                <div class="section-title">Business Logic</div>
+                <div class="form-group"><label>Primary Goal</label><input type="text" id="primary_goal"></div>
+                <div class="form-group"><label>Fallback Message</label><textarea id="fallback_message"></textarea></div>
             </div>
 
-            <!-- LOGICA BUSINESS -->
+            <!-- 5. SAFETY LIMITS -->
             <div class="section">
-                <div class="section-title">Gestione Fallback</div>
-                <div class="form-group">
-                    <label>Messaggio di cortesia (Handoff)</label>
-                    <textarea id="fallback_message"></textarea>
-                </div>
+                <div class="section-title">Safety Limits (System)</div>
+                <div class="form-group"><label>Max Daily Messages</label><input type="number" id="max_daily_messages"></div>
+                <div class="form-group"><label>Max Tokens per Chat</label><input type="number" id="max_tokens"></div>
             </div>
 
-            <button class="action-btn" onclick="saveData()">💾 AGGIORNA TUTTO</button>
+            <button class="action-btn" onclick="saveData()">💾 SALVA E AGGIORNA AI</button>
             <div id="save-loader" class="loader"></div>
         </div>
     </div>
@@ -103,7 +101,7 @@
     <script>
         const tg = window.Telegram.WebApp;
         const WEBHOOK_URL = 'https://prod.workflow.trinai.it/webhook/8eb69e84-d20d-486e-a70e-9acf31c3da9e';
-        let fullConfig = {}; // Memoria locale del blocco completo
+        let fullConfig = {}; 
 
         tg.expand();
         tg.ready();
@@ -117,33 +115,43 @@
                 });
                 fullConfig = await response.json();
 
-                // Popolamento UI
+                // MAPPA 1:1
                 document.getElementById('agent_name').value = fullConfig.identity.agent_name;
                 document.getElementById('role_persona').value = fullConfig.identity.role_persona;
-                document.getElementById('tone').value = fullConfig.personality.tone;
-                document.getElementById('custom_instructions').value = fullConfig.personality.custom_instructions;
                 document.getElementById('allow_images').checked = fullConfig.permissions.allow_images;
+                document.getElementById('allow_files').checked = fullConfig.permissions.allow_files;
+                document.getElementById('tone').value = fullConfig.personality.tone;
+                document.getElementById('vibe').value = fullConfig.personality.vibe;
+                document.getElementById('language_style').value = fullConfig.personality.language_style;
+                document.getElementById('emoji_usage').value = fullConfig.personality.emoji_usage;
+                document.getElementById('custom_instructions').value = fullConfig.personality.custom_instructions;
+                document.getElementById('primary_goal').value = fullConfig.business_logic.primary_goal;
+                document.getElementById('fallback_message').value = fullConfig.business_logic.fallback_message;
                 document.getElementById('max_daily_messages').value = fullConfig.system_safety_limits.max_daily_messages_per_user;
                 document.getElementById('max_tokens').value = fullConfig.system_safety_limits.max_tokens_per_chat;
-                document.getElementById('fallback_message').value = fullConfig.business_logic.fallback_message;
 
                 document.getElementById('main-loader').classList.add('hidden');
                 document.getElementById('config-form').classList.remove('hidden');
-            } catch (err) { tg.showAlert("Errore caricamento."); }
+            } catch (err) { tg.showAlert("Errore caricamento parametri."); }
         }
 
         async function saveData() {
             document.getElementById('save-loader').style.display = 'block';
             
-            // Aggiorniamo l'oggetto globale con i valori dei campi
+            // AGGIORNA OGGETTO 1:1
             fullConfig.identity.agent_name = document.getElementById('agent_name').value;
             fullConfig.identity.role_persona = document.getElementById('role_persona').value;
-            fullConfig.personality.tone = document.getElementById('tone').value;
-            fullConfig.personality.custom_instructions = document.getElementById('custom_instructions').value;
             fullConfig.permissions.allow_images = document.getElementById('allow_images').checked;
+            fullConfig.permissions.allow_files = document.getElementById('allow_files').checked;
+            fullConfig.personality.tone = document.getElementById('tone').value;
+            fullConfig.personality.vibe = document.getElementById('vibe').value;
+            fullConfig.personality.language_style = document.getElementById('language_style').value;
+            fullConfig.personality.emoji_usage = document.getElementById('emoji_usage').value;
+            fullConfig.personality.custom_instructions = document.getElementById('custom_instructions').value;
+            fullConfig.business_logic.primary_goal = document.getElementById('primary_goal').value;
+            fullConfig.business_logic.fallback_message = document.getElementById('fallback_message').value;
             fullConfig.system_safety_limits.max_daily_messages_per_user = parseInt(document.getElementById('max_daily_messages').value);
             fullConfig.system_safety_limits.max_tokens_per_chat = parseInt(document.getElementById('max_tokens').value);
-            fullConfig.business_logic.fallback_message = document.getElementById('fallback_message').value;
 
             try {
                 const response = await fetch(WEBHOOK_URL, {
@@ -153,7 +161,7 @@
                 });
                 if (response.ok) {
                     if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
-                    setTimeout(() => tg.close(), 800);
+                    setTimeout(() => tg.close(), 1000);
                 }
             } catch (err) { tg.showAlert("Errore salvataggio."); }
         }
