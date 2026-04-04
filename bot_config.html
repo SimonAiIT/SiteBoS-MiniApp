@@ -53,7 +53,6 @@
         .logo { font-weight: bold; font-size: 24px; color: #212D67; margin-bottom: 5px; }
         .subtitle { font-size: 14px; color: #6c757d; margin-bottom: 25px; font-weight: 500; }
         
-        /* Form Sections */
         .section {
             background: #ffffff;
             border-radius: 12px;
@@ -87,7 +86,6 @@
         }
         textarea { resize: vertical; min-height: 80px; }
 
-        /* Custom Switch */
         .row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; }
         .switch { position: relative; display: inline-block; width: 44px; height: 24px; }
         .switch input { opacity: 0; width: 0; height: 0; }
@@ -217,6 +215,9 @@
         tg.expand();
         tg.ready();
 
+        // Identificativi Sicuri
+        const userId = tg.initDataUnsafe.user?.id;
+
         // ── CARICAMENTO DATI (ACTION: GET) ──
         async function loadData() {
             try {
@@ -225,6 +226,7 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         _auth: tg.initData,
+                        user_id: userId,
                         action: "get_bot_config"
                     })
                 });
@@ -232,7 +234,7 @@
                 if (!response.ok) throw new Error();
                 const config = await response.json();
 
-                // Popolamento campi
+                // Mapping dati
                 document.getElementById('agent_name').value = config.identity?.agent_name || "";
                 document.getElementById('role_persona').value = config.identity?.role_persona || "customer_support";
                 document.getElementById('allow_images').checked = config.permissions?.allow_images || false;
@@ -246,7 +248,7 @@
                 document.getElementById('config-form').classList.remove('hidden');
 
             } catch (err) {
-                tg.showAlert("Errore durante il caricamento della configurazione.");
+                tg.showAlert("Impossibile caricare i dati. Verifica la connessione.");
             }
         }
 
@@ -256,6 +258,7 @@
             
             const updatePayload = {
                 _auth: tg.initData,
+                user_id: userId,
                 action: "save_bot_config",
                 config: {
                     identity: {
@@ -286,7 +289,6 @@
 
                 if (response.ok) {
                     if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
-                    tg.showScanQrPopup({ text: "Configurazione salvata!" }); // Piccolo trick per feedback visivo se disponibile o alert
                     setTimeout(() => tg.close(), 1000);
                 } else { throw new Error(); }
             } catch (err) {
