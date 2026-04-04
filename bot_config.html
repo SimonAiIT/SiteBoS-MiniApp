@@ -4,88 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>SiteBoS Bot Config</title>
-    
-    <!-- SDK ufficiale Telegram Mini Apps -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-
-    <!-- Protezione Iframe -->
-    <meta http-equiv="Content-Security-Policy" content="frame-ancestors 'self' https://web.telegram.org https://t.me;">
-
-    <script>
-        // ── 1. SICUREZZA: IL BUTTAFUORI ──
-        (function() {
-            const isTelegram = window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initData !== "";
-            if (!isTelegram) {
-                document.documentElement.innerHTML = `
-                    <body style="background:#000;color:#fff;display:flex;justify-content:center;align-items:center;height:100vh;text-align:center;font-family:sans-serif;padding:30px;">
-                        <div>
-                            <h1 style="font-size:60px;margin-bottom:20px;">🚫</h1>
-                            <h2>Accesso Negato</h2>
-                            <p style="opacity:0.7;">Modulo accessibile solo tramite l'App SiteBoS ufficiale su Telegram.</p>
-                        </div>
-                    </body>`;
-                window.stop();
-                throw new Error("Unauthorized Access");
-            }
-        })();
-    </script>
-
     <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: #f4f7f9;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: flex-start;
-            min-height: 100vh;
-            margin: 0;
-            color: #1a1e24;
-            padding-top: 20px;
-        }
-        .container {
-            text-align: center;
-            padding: 20px;
-            width: 100%;
-            max-width: 500px;
-            box-sizing: border-box;
-        }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: #f4f7f9; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; min-height: 100vh; margin: 0; color: #1a1e24; padding-top: 20px; }
+        .container { text-align: center; padding: 20px; width: 100%; max-width: 500px; box-sizing: border-box; }
         .logo { font-weight: bold; font-size: 24px; color: #212D67; margin-bottom: 5px; }
         .subtitle { font-size: 14px; color: #6c757d; margin-bottom: 25px; font-weight: 500; }
-        
-        .section {
-            background: #ffffff;
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 20px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-            text-align: left;
-        }
-        .section-title {
-            font-weight: bold;
-            font-size: 13px;
-            color: #212D67;
-            text-transform: uppercase;
-            margin-bottom: 15px;
-            border-bottom: 1px solid #eee;
-            padding-bottom: 5px;
-        }
-
+        .section { background: #ffffff; border-radius: 12px; padding: 20px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); text-align: left; }
+        .section-title { font-weight: bold; font-size: 13px; color: #212D67; text-transform: uppercase; margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 5px; }
         .form-group { margin-bottom: 15px; }
         label { display: block; font-size: 14px; font-weight: 600; margin-bottom: 5px; color: #4A4A4A; }
-        
-        input[type="text"], select, textarea {
-            width: 100%;
-            box-sizing: border-box;
-            padding: 12px;
-            border-radius: 10px;
-            border: 1px solid #ddd;
-            font-size: 16px;
-            font-family: inherit;
-            background: #fafafa;
-        }
-        textarea { resize: vertical; min-height: 80px; }
-
+        input[type="text"], input[type="number"], select, textarea { width: 100%; box-sizing: border-box; padding: 12px; border-radius: 10px; border: 1px solid #ddd; font-size: 16px; font-family: inherit; background: #fafafa; }
         .row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; }
         .switch { position: relative; display: inline-block; width: 44px; height: 24px; }
         .switch input { opacity: 0; width: 0; height: 0; }
@@ -93,55 +22,28 @@
         .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
         input:checked + .slider { background-color: #212D67; }
         input:checked + .slider:before { transform: translateX(20px); }
-
-        .action-btn {
-            background-color: #212D67;
-            color: white;
-            border: none;
-            padding: 18px 30px;
-            border-radius: 50px;
-            font-size: 18px;
-            font-weight: bold;
-            cursor: pointer;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-            width: 100%;
-            transition: transform 0.2s;
-            margin-top: 10px;
-        }
-        .action-btn:active { transform: scale(0.98); }
-
-        .loader {
-            display: none;
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #212D67;
-            border-radius: 50%;
-            width: 30px; height: 30px;
-            animation: spin 1s linear infinite;
-            margin: 20px auto;
-        }
+        .action-btn { background-color: #212D67; color: white; border: none; padding: 18px 30px; border-radius: 50px; font-size: 18px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.2); width: 100%; transition: transform 0.2s; margin-top: 10px; }
+        .loader { display: none; border: 4px solid #f3f3f3; border-top: 4px solid #212D67; border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; margin: 20px auto; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        
         .hidden { display: none !important; }
     </style>
 </head>
 <body>
-
     <div class="container">
         <div class="logo">SiteBoS Config</div>
-        <div class="subtitle">Personalizzazione Assistente AI</div>
-        
+        <div class="subtitle">Gestione Integrale Agente AI</div>
         <div id="main-loader" class="loader" style="display: block;"></div>
 
         <div id="config-form" class="hidden">
             <!-- IDENTITÀ -->
             <div class="section">
-                <div class="section-title">Identità Agente</div>
+                <div class="section-title">Identità e Ruolo</div>
                 <div class="form-group">
-                    <label>Nome dell'Agente</label>
-                    <input type="text" id="agent_name" placeholder="Es: Assistente SiteBoS">
+                    <label>Nome Agente</label>
+                    <input type="text" id="agent_name">
                 </div>
                 <div class="form-group">
-                    <label>Ruolo Professionale</label>
+                    <label>Ruolo</label>
                     <select id="role_persona">
                         <option value="customer_support">Supporto Clienti</option>
                         <option value="sales_agent">Consulente Vendite</option>
@@ -150,60 +52,50 @@
                 </div>
             </div>
 
-            <!-- PERMESSI -->
-            <div class="section">
-                <div class="section-title">Permessi Media</div>
-                <div class="row">
-                    <label>Consenti invio Foto (Vision)</label>
-                    <label class="switch">
-                        <input type="checkbox" id="allow_images">
-                        <span class="slider"></span>
-                    </label>
-                </div>
-                <div class="row">
-                    <label>Consenti invio Documenti/PDF</label>
-                    <label class="switch">
-                        <input type="checkbox" id="allow_files">
-                        <span class="slider"></span>
-                    </label>
-                </div>
-            </div>
-
             <!-- PERSONALITÀ -->
             <div class="section">
-                <div class="section-title">Personalità e Stile</div>
+                <div class="section-title">Stile di Conversazione</div>
                 <div class="form-group">
                     <label>Tono di Voce</label>
                     <select id="tone">
                         <option value="professional">Professionale</option>
                         <option value="friendly">Amichevole</option>
-                        <option value="technical">Pignolo / Tecnico</option>
+                        <option value="technical">Tecnico</option>
                     </select>
                 </div>
                 <div class="form-group">
-                    <label>Uso Emoji</label>
-                    <select id="emoji_usage">
-                        <option value="none">Nessuna</option>
-                        <option value="moderate">Moderate</option>
-                        <option value="frequent">Frequenti</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Istruzioni Custom (Prompt Eng)</label>
-                    <textarea id="custom_instructions" placeholder="Aggiungi regole specifiche..."></textarea>
+                    <label>Istruzioni Custom</label>
+                    <textarea id="custom_instructions"></textarea>
                 </div>
             </div>
 
-            <!-- BUSINESS LOGIC -->
+            <!-- LIMITI DI SISTEMA -->
             <div class="section">
-                <div class="section-title">Logica di Fallback</div>
+                <div class="section-title">Sicurezza e Consumi</div>
                 <div class="form-group">
-                    <label>Messaggio di mancata risposta</label>
-                    <textarea id="fallback_message" placeholder="Cosa dire se l'AI non sa rispondere..."></textarea>
+                    <label>Max Messaggi / Giorno per utente</label>
+                    <input type="number" id="max_daily_messages">
+                </div>
+                <div class="form-group">
+                    <label>Max Token per Risposta</label>
+                    <input type="number" id="max_tokens">
+                </div>
+                <div class="row">
+                    <label>Abilita Vision (Foto)</label>
+                    <label class="switch"><input type="checkbox" id="allow_images"><span class="slider"></span></label>
                 </div>
             </div>
 
-            <button class="action-btn" onclick="saveData()">💾 SALVA CONFIGURAZIONE</button>
+            <!-- LOGICA BUSINESS -->
+            <div class="section">
+                <div class="section-title">Gestione Fallback</div>
+                <div class="form-group">
+                    <label>Messaggio di cortesia (Handoff)</label>
+                    <textarea id="fallback_message"></textarea>
+                </div>
+            </div>
+
+            <button class="action-btn" onclick="saveData()">💾 AGGIORNA TUTTO</button>
             <div id="save-loader" class="loader"></div>
         </div>
     </div>
@@ -211,92 +103,60 @@
     <script>
         const tg = window.Telegram.WebApp;
         const WEBHOOK_URL = 'https://prod.workflow.trinai.it/webhook/8eb69e84-d20d-486e-a70e-9acf31c3da9e';
-        
+        let fullConfig = {}; // Memoria locale del blocco completo
+
         tg.expand();
         tg.ready();
 
-        // Identificativi Sicuri
-        const userId = tg.initDataUnsafe.user?.id;
-
-        // ── CARICAMENTO DATI (ACTION: GET) ──
         async function loadData() {
             try {
                 const response = await fetch(WEBHOOK_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        _auth: tg.initData,
-                        user_id: userId,
-                        action: "get_bot_config"
-                    })
+                    body: JSON.stringify({ _auth: tg.initData, user_id: tg.initDataUnsafe.user?.id, action: "get_bot_config" })
                 });
+                fullConfig = await response.json();
 
-                if (!response.ok) throw new Error();
-                const config = await response.json();
-
-                // Mapping dati
-                document.getElementById('agent_name').value = config.identity?.agent_name || "";
-                document.getElementById('role_persona').value = config.identity?.role_persona || "customer_support";
-                document.getElementById('allow_images').checked = config.permissions?.allow_images || false;
-                document.getElementById('allow_files').checked = config.permissions?.allow_files || false;
-                document.getElementById('tone').value = config.personality?.tone || "professional";
-                document.getElementById('emoji_usage').value = config.personality?.emoji_usage || "moderate";
-                document.getElementById('custom_instructions').value = config.personality?.custom_instructions || "";
-                document.getElementById('fallback_message').value = config.business_logic?.fallback_message || "";
+                // Popolamento UI
+                document.getElementById('agent_name').value = fullConfig.identity.agent_name;
+                document.getElementById('role_persona').value = fullConfig.identity.role_persona;
+                document.getElementById('tone').value = fullConfig.personality.tone;
+                document.getElementById('custom_instructions').value = fullConfig.personality.custom_instructions;
+                document.getElementById('allow_images').checked = fullConfig.permissions.allow_images;
+                document.getElementById('max_daily_messages').value = fullConfig.system_safety_limits.max_daily_messages_per_user;
+                document.getElementById('max_tokens').value = fullConfig.system_safety_limits.max_tokens_per_chat;
+                document.getElementById('fallback_message').value = fullConfig.business_logic.fallback_message;
 
                 document.getElementById('main-loader').classList.add('hidden');
                 document.getElementById('config-form').classList.remove('hidden');
-
-            } catch (err) {
-                tg.showAlert("Impossibile caricare i dati. Verifica la connessione.");
-            }
+            } catch (err) { tg.showAlert("Errore caricamento."); }
         }
 
-        // ── SALVATAGGIO DATI (ACTION: SAVE) ──
         async function saveData() {
             document.getElementById('save-loader').style.display = 'block';
             
-            const updatePayload = {
-                _auth: tg.initData,
-                user_id: userId,
-                action: "save_bot_config",
-                config: {
-                    identity: {
-                        agent_name: document.getElementById('agent_name').value,
-                        role_persona: document.getElementById('role_persona').value
-                    },
-                    permissions: {
-                        allow_images: document.getElementById('allow_images').checked,
-                        allow_files: document.getElementById('allow_files').checked
-                    },
-                    personality: {
-                        tone: document.getElementById('tone').value,
-                        emoji_usage: document.getElementById('emoji_usage').value,
-                        custom_instructions: document.getElementById('custom_instructions').value
-                    },
-                    business_logic: {
-                        fallback_message: document.getElementById('fallback_message').value
-                    }
-                }
-            };
+            // Aggiorniamo l'oggetto globale con i valori dei campi
+            fullConfig.identity.agent_name = document.getElementById('agent_name').value;
+            fullConfig.identity.role_persona = document.getElementById('role_persona').value;
+            fullConfig.personality.tone = document.getElementById('tone').value;
+            fullConfig.personality.custom_instructions = document.getElementById('custom_instructions').value;
+            fullConfig.permissions.allow_images = document.getElementById('allow_images').checked;
+            fullConfig.system_safety_limits.max_daily_messages_per_user = parseInt(document.getElementById('max_daily_messages').value);
+            fullConfig.system_safety_limits.max_tokens_per_chat = parseInt(document.getElementById('max_tokens').value);
+            fullConfig.business_logic.fallback_message = document.getElementById('fallback_message').value;
 
             try {
                 const response = await fetch(WEBHOOK_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(updatePayload)
+                    body: JSON.stringify({ _auth: tg.initData, user_id: tg.initDataUnsafe.user?.id, action: "save_bot_config", config: fullConfig })
                 });
-
                 if (response.ok) {
                     if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
-                    setTimeout(() => tg.close(), 1000);
-                } else { throw new Error(); }
-            } catch (err) {
-                document.getElementById('save-loader').style.display = 'none';
-                tg.showAlert("Errore durante il salvataggio.");
-            }
+                    setTimeout(() => tg.close(), 800);
+                }
+            } catch (err) { tg.showAlert("Errore salvataggio."); }
         }
-
         window.onload = loadData;
     </script>
 </body>
